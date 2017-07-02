@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ConfigViewController">
+   <children>
+      <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab fx:id="tabCarnet" text="fCarnet">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label fx:id="lbWorkingPath" layoutX="94.0" layoutY="46.0" prefHeight="17.0" prefWidth="249.0" text="fDossier de travail" />
+                        <Label fx:id="lbWorkingLog" layoutX="94.0" layoutY="100.0" text="fDossier Carnet(s)" />
+                        <Button fx:id="btNewLog" layoutX="94.0" layoutY="168.0" mnemonicParsing="false" onAction="#displayTextCarnet" text="fCréer un nouveau carnet" />
+                        <Button fx:id="btSelectLog" layoutX="94.0" layoutY="270.0" mnemonicParsing="false" onAction="#selectNewFolderDb" text="fSélectionner un nouveau dossier de carnets" />
+                        <Button fx:id="btMoveLog" layoutX="94.0" layoutY="219.0" mnemonicParsing="false" onAction="#moveDb" text="Déplacer le(s) carnet(s) vers un autre dossier" />
+                        <Label fx:id="lbCurrFolder" layoutX="94.0" layoutY="63.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
+                        <Label fx:id="lbCurrDbPath" layoutX="94.0" layoutY="122.0" prefHeight="17.0" prefWidth="296.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
+                        <Button fx:id="btCarnetEdit" layoutX="411.0" layoutY="49.0" mnemonicParsing="false" onAction="#changePathW" text="Modifier" />
+                        <Button fx:id="btCarnetClose" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="Fermer" />
+                        <ChoiceBox fx:id="chbCarnet" layoutX="411.0" layoutY="108.0" prefHeight="27.0" prefWidth="146.0" />
+                        <TextField fx:id="txnewdb" layoutX="397.0" layoutY="168.0" prefHeight="27.0" prefWidth="132.0" visible="false" />
+                        <Button fx:id="btnewcarnetcancel" layoutX="408.0" layoutY="201.0" mnemonicParsing="false" onAction="#annulNewCarnet" text="Annuler" visible="false" />
+                        <Button fx:id="btnewcarnetok" layoutX="493.0" layoutY="201.0" mnemonicParsing="false" onAction="#createNewCarnet" text="Ok" visible="false" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab fx:id="tabPilote" text="fPilote">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <GridPane layoutX="27.0" layoutY="14.0">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label fx:id="lbVoile" text="fVoile" GridPane.rowIndex="1" />
+                              <Label fx:id="lbPilote" text="fNom pilote" />
+                              <Label fx:id="lbGPS" text="fGPS habituel" GridPane.rowIndex="2" />
+                              <Label fx:id="lbIntegration" text="fIntegration" GridPane.rowIndex="3" />
+                              <Label fx:id="lbMail" text="fMail pilote" GridPane.rowIndex="4" />
+                              <Label fx:id="lbLeague" text="fLeague" GridPane.rowIndex="5" />
+                              <Label fx:id="lbIdentif" text="fIdentifiant" GridPane.rowIndex="6" />
+                              <Label fx:id="lbPass" text="fPass" GridPane.rowIndex="7" />
+                              <TextField fx:id="txPilote" prefHeight="27.0" prefWidth="143.0" GridPane.columnIndex="1" />
+                              <TextField fx:id="txVoile" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <ChoiceBox fx:id="chbGPS" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <TextField fx:id="txIntegration" maxWidth="50.0" minHeight="27.0" minWidth="50.0" prefHeight="27.0" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField fx:id="txMailPilote" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <TextField fx:id="txIdentif" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                              <ChoiceBox fx:id="chbLeague" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                              <PasswordField fx:id="txPass" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                           </children>
+                        </GridPane>
+                        <Button fx:id="btPilotOK" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
+                        <Button fx:id="btPilotAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab fx:id="tabCarte" text="fCarte">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label fx:id="lbNavigateur" layoutX="101.0" layoutY="47.0" text="fVisuGPS dans le navigateur" />
+                        <Label fx:id="lbDefaultMap" layoutX="101.0" layoutY="98.0" text="fCarte par defaut" />
+                        <CheckBox fx:id="checkBrowser" contentDisplay="GRAPHIC_ONLY" layoutX="300.0" layoutY="47.0" mnemonicParsing="false" text="CheckBox" />
+                        <ChoiceBox fx:id="chbCarte" layoutX="300.0" layoutY="93.0" prefWidth="150.0" />
+                        <Label fx:id="lbLatitude" layoutX="90.0" layoutY="160.0" text="fLatitude" />
+                        <Label fx:id="lbLongitude" layoutX="300.0" layoutY="160.0" text="fLongitude" />
+                        <TextField fx:id="txFinderLat" layoutX="173.0" layoutY="155.0" prefHeight="27.0" prefWidth="90.0" />
+                        <TextField fx:id="txFinderLong" layoutX="386.0" layoutY="155.0" prefHeight="27.0" prefWidth="90.0" />
+                        <TextField fx:id="txSeuilAb" layoutX="362.0" layoutY="211.0" prefHeight="27.0" prefWidth="61.0" />
+                        <Label fx:id="lbAberrants" layoutX="110.0" layoutY="216.0" text="fSeuil points aberrants" />
+                        <Button fx:id="btMapOK" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
+                        <Button fx:id="btMapAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+                     </children></AnchorPane>
+               </content>
+            </Tab>
+            <Tab fx:id="tabDivers" text="fDivers">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label fx:id="lbLanguage" layoutX="122.0" layoutY="62.0" text="fLangue" />
+                        <ChoiceBox fx:id="chbLang" layoutX="216.0" layoutY="57.0" prefWidth="150.0" />
+                        <Label fx:id="lbImport" layoutX="100.0" layoutY="116.0" text="fDossier Import" />
+                        <Button layoutX="480.0" layoutY="120.0" mnemonicParsing="false" onAction="#changePathImport" text="..." />
+                        <Label fx:id="lbImpFolder" layoutX="100.0" layoutY="138.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
+                        <Button fx:id="btDiversOk" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
+                        <Button fx:id="btDiversAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+                        <Label fx:id="lbPhotoAuto" layoutX="100.0" layoutY="184.0" prefHeight="17.0" prefWidth="250.0" text="fAffichage automatique des photos" />
+                        <CheckBox fx:id="checkPhoto" contentDisplay="GRAPHIC_ONLY" layoutX="485.0" layoutY="184.0" mnemonicParsing="false" text="CheckBox" />
+                     </children></AnchorPane>
+               </content>
+            </Tab>
+            <Tab fx:id="tabInternet" text="fInternet">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <GridPane layoutX="44.0" layoutY="21.0" prefHeight="206.0" prefWidth="363.0">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="170.0" minWidth="140.0" prefWidth="140.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="380.0" minWidth="320.0" prefWidth="320.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label fx:id="lbLogfly" text="fSite Logfly" />
+                              <Label fx:id="lbIcones" text="fUrl Icônes" GridPane.rowIndex="1" />
+                              <Label fx:id="lbLoadUrl" text="fUrl téléchargement" GridPane.rowIndex="2" />
+                              <Label fx:id="lbVisuAdress" text="fUrl VisuGPS" GridPane.rowIndex="3" />
+                              <Label fx:id="lbSupport" text="fUrl support" GridPane.rowIndex="4" />
+                              <Label fx:id="lbDeclaration" text="fUrl Déclaration" GridPane.rowIndex="5" />
+                              <Label fx:id="lbExport" text="fExport IGC" GridPane.rowIndex="6" />
+                              <TextField fx:id="txUrlSite" prefHeight="27.0" prefWidth="270.0" GridPane.columnIndex="1" />
+                              <TextField fx:id="txUrlIcones" prefHeight="27.0" prefWidth="270.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="txVisuUpload" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <TextField fx:id="txVisuGPS" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField fx:id="txMailPass" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <TextField fx:id="txUrlContest" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                              <Label fx:id="lbContestPath" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                           </children>
+                        </GridPane>
+                        <Button fx:id="btWebOk" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
+                        <Button fx:id="btWebAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+                        <Button layoutX="526.0" layoutY="200.0" mnemonicParsing="false" onAction="#changePathContest" text="..." />
+                     </children></AnchorPane>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

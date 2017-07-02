@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TraceViewController">
+   <children>
+      <VBox style="-fx-background-color: black;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxHeight="68.0" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="68.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <children>
+                  <Button fx:id="btnSelect" mnemonicParsing="false" onAction="#selectTrackFolder" text="fSeléctionner une trace">
+                     <HBox.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <HBox fx:id="buttonBar" alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" visible="false" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Button fx:id="btnMap" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#showFullMap" prefHeight="30.0" prefWidth="30.0" text="Button">
+                           <graphic>
+                              <ImageView fx:id="top_Map1" fitHeight="26.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/map_oeil.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="5.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btnVisuGPS" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#runVisuGPS" prefHeight="23.0" prefWidth="32.0" text="Button">
+                           <graphic>
+                              <ImageView fx:id="top_Visugps" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/Visu_GPS_5.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="2.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btnScore" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#showScore" prefHeight="23.0" prefWidth="32.0">
+                           <graphic>
+                              <ImageView fx:id="top_Score" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/trophy.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="2.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btnGEarth" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#askWinGE" prefHeight="30.0" prefWidth="30.0" text="Button">
+                           <graphic>
+                              <ImageView fx:id="top_GEarth" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/google.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="8.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <ImageView fx:id="top_Menu" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../images/list.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </ImageView>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <AnchorPane fx:id="webAnchor" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="357.0" visible="false">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <children>
+                  <WebView fx:id="mapViewer" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="7.0" AnchorPane.topAnchor="7.0" />
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

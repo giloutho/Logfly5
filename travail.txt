@@ -1,0 +1,35 @@
+19/06 
+Arrêt sur Flymaster qui semble fonctionner sur Linux. Faire vérification du dernier port mémorisé sur le Mac et un test complet 
+sur Windows
+
+
+06/06 Mise au point Gradle
+Initialement, il me semblait nécessaire de mettre ce bloc pour trouver les fxml dans le dossier Resources
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources"]
+            includes = ["**/*.fxml"]
+        }
+    }
+}
+
+Finalement il semble que ce soit inutile...
+
+Il faut recompiler les traductions...
+
+msgfmt --statistics --java2 -d src -r i18n.Messages -l en src/main/java/i18n/en.po
+
+
+msgfmt --statistics --java2 -d src/main/java -r i18n.Messages -l en src/main/java/i18n/en.po
+msgfmt --statistics --java2 -d src/main/java -r i18n.Messages -l de src/main/java/i18n/de.po
+
+C'est en mettant les classes dans le fichier resources que cela a fonctionné
+
+On essaye avec les properties (https://stackoverflow.com/questions/38862479/gettext-commons-resource-bundle-not-found)
+msgcat --properties-output src/main/java/i18n/en.po -o src/main/resources/lang/Messages_en.properties
+msgcat --properties-output src/main/java/i18n/de.po -o src/main/resources/lang/Messages_de.properties
+
+
+En fait c'est bien en mettant le fichier i18n dans le build/classes/main que cela fonctionne donc retour case départ

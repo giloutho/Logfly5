@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
+   <children>
+      <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxHeight="68.0" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="68.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <children>
+                  <ChoiceBox fx:id="top_chbYear" prefWidth="100.0">
+                     <HBox.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </HBox.margin>
+                  </ChoiceBox>
+                  <Button fx:id="btnStat" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#clicTop_Stat" text="Button">
+                     <graphic>
+                        <ImageView fx:id="top_Stat" fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/bar_chart2.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <HBox.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Button fx:id="btnMap" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#showFullMap" prefHeight="30.0" prefWidth="30.0" text="Button">
+                           <HBox.margin>
+                              <Insets right="5.0" top="10.0" />
+                           </HBox.margin>
+                           <graphic>
+                              <ImageView fx:id="top_Map1" fitHeight="26.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/map_oeil.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnVisuGPS" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#runVisuGPS" prefHeight="23.0" prefWidth="32.0" text="Button">
+                           <HBox.margin>
+                              <Insets right="2.0" top="10.0" />
+                           </HBox.margin>
+                           <graphic>
+                              <ImageView fx:id="top_Visugps" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/Visu_GPS_5.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnScore" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#showScore" prefHeight="23.0" prefWidth="32.0">
+                           <graphic>
+                              <ImageView fx:id="top_Score" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/trophy.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="2.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btnGEarth" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#askWinGE" prefHeight="30.0" prefWidth="30.0" text="Button">
+                           <graphic>
+                              <ImageView fx:id="top_GEarth" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/google.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="8.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <ImageView fx:id="top_Menu" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/list.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </ImageView>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <SplitPane dividerPositions="0.4145785876993166" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <items>
+                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="360.0" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="357.0">
+                     <children>
+                        <TableView fx:id="tableVols" minWidth="-Infinity" prefHeight="530.0" prefWidth="350.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-25.0" AnchorPane.topAnchor="0.0">
+                           <columns>
+                              <TableColumn fx:id="imgCol" editable="false" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" sortable="false" />
+                              <TableColumn fx:id="dateCol" maxWidth="90.0" minWidth="90.0" prefWidth="90.0" text="fDate" />
+                              <TableColumn fx:id="heureCol" editable="false" maxWidth="55.0" minWidth="55.0" prefWidth="55.0" sortable="false" text="fHeure" />
+                              <TableColumn fx:id="dureeCol" maxWidth="62.0" minWidth="62.0" prefWidth="62.0" text="fDurée" />
+                              <TableColumn fx:id="siteCol" maxWidth="160.0" minWidth="160.0" prefWidth="160.0" text="fSite" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="530.0" prefWidth="81.0">
+                     <children>
+                        <WebView fx:id="mapViewer" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+               </items>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </SplitPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" prefHeight="580.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.KmlViewController">
+   <children>
+      <RadioButton fx:id="rdAltGPS" layoutX="35.0" layoutY="52.0" mnemonicParsing="false" text="fAlt GPS">
+         <toggleGroup>
+            <ToggleGroup fx:id="altitude" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="rdAltBaro" layoutX="225.0" layoutY="52.0" mnemonicParsing="false" text="fAlt Baro" toggleGroup="$altitude" />
+      <CheckBox fx:id="checkReduc" layoutX="35.0" layoutY="86.0" mnemonicParsing="false" text="fReduction Points" />
+      <CheckBox fx:id="checkTrace" disable="true" layoutX="35.0" layoutY="112.0" mnemonicParsing="false" text="fTrace simple" />
+      <CheckBox fx:id="checkColorAlti" layoutX="225.0" layoutY="112.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="215.0" text="fTrace color Alti" />
+      <CheckBox fx:id="checkColorSpeed" layoutX="225.0" layoutY="140.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="215.0" text="fTrace color Speed" />
+      <CheckBox fx:id="checkColorVario" layoutX="225.0" layoutY="169.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="215.0" text="fTrace Color Vario" />
+      <CheckBox fx:id="checkScore" layoutX="35.0" layoutY="140.0" mnemonicParsing="false" text="fScore" />
+      <CheckBox fx:id="checkThermiq" layoutX="35.0" layoutY="169.0" mnemonicParsing="false" text="fThermiques" />
+      <CheckBox fx:id="checkReplay" layoutX="35.0" layoutY="200.0" mnemonicParsing="false" text="fReplay" />
+      <TextField fx:id="txCamStep" layoutX="315.0" layoutY="225.0" prefHeight="27.0" prefWidth="50.0" />
+      <Label fx:id="lbEchantillon" layoutX="86.0" layoutY="230.0" prefHeight="17.0" prefWidth="234.0" text="fEchantillonage" />
+      <TextField fx:id="txCamDessus" layoutX="315.0" layoutY="261.0" prefHeight="27.0" prefWidth="50.0" />
+      <Label fx:id="lbDessus" layoutX="86.0" layoutY="266.0" prefHeight="17.0" prefWidth="234.0" text="fAu dessus de la trace" />
+      <Label layoutX="374.0" layoutY="230.0" text="s" />
+      <Label layoutX="374.0" layoutY="266.0" text="m" />
+      <TextField fx:id="txCamTimer" layoutX="315.0" layoutY="299.0" prefHeight="27.0" prefWidth="50.0" />
+      <Label fx:id="lbTimer" layoutX="86.0" layoutY="304.0" prefHeight="17.0" prefWidth="234.0" text="fTimer de la camera" />
+      <TextField fx:id="txCamRecul" layoutX="315.0" layoutY="337.0" prefHeight="27.0" prefWidth="50.0" />
+      <Label fx:id="lbRecul" layoutX="86.0" layoutY="342.0" prefHeight="17.0" prefWidth="234.0" text="fRecul de la camera" />
+      <Label layoutX="374.0" layoutY="342.0" text="m" />
+      <TextField fx:id="txCamIncli" layoutX="315.0" layoutY="375.0" prefHeight="27.0" prefWidth="50.0" />
+      <Label fx:id="lbInclinaison" layoutX="86.0" layoutY="380.0" prefHeight="17.0" prefWidth="234.0" text="fInclinaison" />
+      <Label layoutX="374.0" layoutY="380.0" text="°" />
+      <CheckBox fx:id="checkSave" layoutX="35.0" layoutY="413.0" mnemonicParsing="false" onAction="#checkSaveState" prefHeight="18.0" prefWidth="254.0" text="fSauvegarder" />
+      <Label fx:id="lbKmlPath" layoutX="8.0" layoutY="439.0" prefHeight="17.0" prefWidth="436.0" style="-fx-font-style: italic;" textFill="#182ff8" visible="false" />
+      <CheckBox fx:id="checkMail" layoutX="35.0" layoutY="466.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="254.0" text="fEnvoyer par mail" />
+      <CheckBox fx:id="checkRunGE" layoutX="35.0" layoutY="497.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="254.0" text="fLancer Google Earth" />
+      <Label fx:id="lbTitle" layoutX="35.0" layoutY="18.0" prefHeight="17.0" prefWidth="285.0" text="11/08/2016   2125 points" textOverrun="CLIP">
+         <font>
+            <Font name="System Bold Italic" size="16.0" />
+         </font></Label>
+      <Button fx:id="btValider" layoutX="337.0" layoutY="530.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
+      <Button fx:id="btAnnuler" layoutX="237.0" layoutY="530.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+   </children>
+</AnchorPane>

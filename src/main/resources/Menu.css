@@ -1,0 +1,47 @@
+/*
+Copyright Gil THOMAS
+Ce fichier fait partie intégrante du projet Logfly
+Pour tous les détails sur la licence du projet Logfly
+Consulter le fichier LICENSE distribué avec le code source
+*/
+/* 
+    Created on : 28 janv. 2017, 15:43:11
+    Author     : gil
+*/
+
+
+.myLink{
+   -fx-text-fill: white;
+   -fx-border-color: transparent;
+   -fx-padding: 10 0 0 5;
+}
+/*
+.myLink:visited,
+.myLink:hover:visited{
+   -fx-text-fill: #FC9804;
+   -fx-underline: false;
+}
+*/
+.myLink:visited,
+.myLink:hover:visited{  
+   -fx-underline: false;
+}
+
+.myLink:focused{
+  -fx-text-fill: #01DF01;
+}
+
+.myLink:focus{
+  -fx-text-fill:  #01DF01;
+}
+/*
+.myLink:active{
+   -fx-background-color: white;   
+}
+
+-fx-background-color: white;
+
+.myLink:selected{
+   -fx-text-fill: #FFFFF00;     
+}
+*/

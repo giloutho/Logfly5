@@ -1,0 +1,854 @@
+# Language –no-wrap translations for PACKAGE package.
+# Copyright (C) 2017 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2017.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-04-14 21:28+0200\n"
+"PO-Revision-Date: 2017-04-14 21:38+0200\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.1\n"
+
+#: src/database/dbAdd.java:83
+msgid "Problème d'insertion dans la base de données"
+msgstr "Error on database insert."
+
+#: src/database/dbAdd.java:92
+msgid "Problème de lecture sur le fichier des vols"
+msgstr "Reading problem in flights file"
+
+#: src/database/dbAdd.java:120
+msgid "A renommer"
+msgstr "To rename"
+
+#: src/database/dbAdd.java:134
+msgid "Problème d'insertion le fichier des sites"
+msgstr "Error on sites file insert"
+
+#: src/database/dbAdd.java:142
+msgid "Problème de lecture sur le fichier des sites"
+msgstr "Reading problem in sites file"
+
+#: src/database/dbSearch.java:80 src/database/dbSearch.java:140
+msgid "Problème de lecture sur le carnet de vol"
+msgstr "Reading problem in logbook"
+
+#: src/dialogues/alertbox.java:25 src/dialogues/alertbox.java:107
+msgid "Erreur programme"
+msgstr "Program error"
+
+#: src/dialogues/alertbox.java:43 src/dialogues/alertbox.java:104
+msgid "Erreur indéterminée"
+msgstr "Undefined error"
+
+#: src/dialogues/alertbox.java:46 src/dialogues/alertbox.java:52
+#: src/igc/fileIGC.java:109
+msgid "Fichier non trouvé"
+msgstr "File not found"
+
+#: src/dialogues/alertbox.java:49
+msgid "Problème d'entrée sortie sur fichier"
+msgstr "File Output Input Problem"
+
+#: src/dialogues/alertbox.java:55
+msgid "Erreur de parsing"
+msgstr "Parsing error"
+
+#: src/dialogues/alertbox.java:58
+msgid "Erreur NullPointerException"
+msgstr "NullPointerException error"
+
+#: src/dialogues/alertbox.java:61
+msgid "Erreur InterruptedException"
+msgstr "InterruptedException error"
+
+#: src/dialogues/alertbox.java:64
+msgid "Module Points non trouvé..."
+msgstr "Points module not found"
+
+#: src/dialogues/alertbox.java:67
+msgid "JSON Score incorrect..."
+msgstr "Wrong JSON score"
+
+#: src/dialogues/alertbox.java:71
+msgid "Erreur pendant la génération de la trace simple"
+msgstr "Error during generation of simple track"
+
+#: src/dialogues/alertbox.java:75
+msgid "Erreur pendant la génération de la trace colorée par vario"
+msgstr "Error during generation of colored track by climb"
+
+#: src/dialogues/alertbox.java:79
+msgid "Erreur pendant la génération de la trace colorée par altitude"
+msgstr "Error during generation of colored track by altitude"
+
+#: src/dialogues/alertbox.java:83
+msgid "Erreur pendant la génération de la trace colorée par vitesse"
+msgstr "Error during generation of colored track by speed"
+
+#: src/dialogues/alertbox.java:87
+msgid "Erreur pendant la génération de la trace du score"
+msgstr "Error during generation of scoring track"
+
+#: src/dialogues/alertbox.java:91
+msgid "Erreur pendant la génération de la trace des thermiques"
+msgstr "Error during generation of thermals track"
+
+#: src/dialogues/alertbox.java:95
+msgid "Erreur pendant la génération de la trace du replay"
+msgstr "Error during generation of track replay"
+
+#: src/dialogues/alertbox.java:98
+msgid "Impossible de lancer Google Earth"
+msgstr "Unable to run Google Earth"
+
+#: src/dialogues/alertbox.java:101
+#, fuzzy
+msgid "Problème sur le décodage de la photo"
+msgstr "Decoding problem in file"
+
+#: src/dialogues/alertbox.java:117
+msgid "Information importante"
+msgstr "Important Information"
+
+#: src/igc/fileIGC.java:112
+msgid "Problème d'entrée sortie"
+msgstr "Input Output problem"
+
+#: src/igc/uploadIGC.java:74
+msgid "Impossible de créer le ficher temporaire"
+msgstr "Unable to create temporary file"
+
+#: src/kml/headersKml.java:72
+msgid "Nom Pilote"
+msgstr "Pilot name"
+
+#: src/kml/headersKml.java:75
+msgid "Heure Déco"
+msgstr "Take-off Time"
+
+#: src/kml/headersKml.java:77
+msgid "Heure Attero"
+msgstr "Landing Time"
+
+#: src/kml/headersKml.java:81
+msgid "Alt Deco Baro"
+msgstr "Take-off Baro Alt"
+
+#: src/kml/headersKml.java:83
+msgid "Alti Max Baro"
+msgstr "Max Baro Alt"
+
+#: src/kml/headersKml.java:85
+msgid "Alti Mini Baro"
+msgstr "Mini Barn Alt"
+
+#: src/kml/headersKml.java:86
+msgid "Alt Attero Baro"
+msgstr "Landing Baro Alt"
+
+#: src/kml/headersKml.java:88
+msgid "Alti Déco GPS"
+msgstr "Take-off GPS Alt"
+
+#: src/kml/headersKml.java:90
+msgid "Alti Max GPS"
+msgstr "Max GPS Alt"
+
+#: src/kml/headersKml.java:92
+msgid "Alti Min GPS"
+msgstr "Min GPS Alt"
+
+#: src/kml/headersKml.java:93
+msgid "Alt Attero GPS"
+msgstr "Landing GPS Alt"
+
+#: src/kml/headersKml.java:100 src/leaflet/map_pm.java:133
+#: src/leaflet/map_visu.java:520
+msgid "Gain max"
+msgstr "Max gain"
+
+#: src/kml/headersKml.java:103 src/leaflet/map_pm.java:132
+#: src/leaflet/map_visu.java:517
+msgid "Vario max"
+msgstr "Max climb"
+
+#: src/kml/headersKml.java:106 src/leaflet/map_visu.java:519
+msgid "Vario mini"
+msgstr "Max sink"
+
+#: src/kml/headersKml.java:109 src/leaflet/map_visu.java:522
+msgid "Vitesse max"
+msgstr "Max speed"
+
+#: src/kml/headersKml.java:111
+msgid "Aide sur l'exploitation de ce fichier kml"
+msgstr "Help for exploitation of this kml file"
+
+#: src/kml/trackColor.java:71
+msgid "Traces colorées"
+msgstr "Colored tracks"
+
+#: src/kml/trackColor.java:111
+msgid "Selon le vario"
+msgstr "By climb"
+
+#: src/kml/trackColor.java:188
+msgid "Selon l'altitude"
+msgstr "By altitude"
+
+#: src/kml/trackColor.java:263
+msgid "Selon la vitesse"
+msgstr "By speed"
+
+#: src/kml/trackReplay.java:95
+msgid "Refaire le vol"
+msgstr "Replay the flight"
+
+#: src/kml/trackScore.java:75 src/logfly/view/KmlViewController.java:340
+msgid "Score"
+msgstr "Score"
+
+#: src/kml/trackScore.java:85
+msgid "Moyenne"
+msgstr "Avg. Speed"
+
+#: src/kml/trackScore.java:110 src/leaflet/map_visu.java:535
+msgid "CFD"
+msgstr "Contest"
+
+#: src/kml/trackScore.java:113 src/leaflet/map_visu.java:538
+msgid "Challenge suisse"
+msgstr "Swiss contest"
+
+#: src/kml/trackScore.java:116 src/leaflet/map_visu.java:541
+msgid "World XContest"
+msgstr "World XContest"
+
+#: src/kml/trackScore.java:128 src/leaflet/map_visu.java:548
+msgid "Triangle FAI"
+msgstr "FAI Triangle"
+
+#: src/kml/trackScore.java:131 src/kml/trackScore.java:140
+#: src/leaflet/map_visu.java:551 src/leaflet/map_visu.java:560
+msgid "Distance 2 points"
+msgstr "Flight 2 points"
+
+#: src/kml/trackScore.java:134 src/leaflet/map_visu.java:554
+msgid "Triangle plat"
+msgstr "Flat Triangle"
+
+#: src/kml/trackScore.java:137 src/leaflet/map_visu.java:557
+msgid "Distance 1 point"
+msgstr "Flight 1 point"
+
+#: src/kml/trackScore.java:166 src/kml/trackScore.java:285
+#: src/kml/trackScore.java:340 src/leaflet/map_visu.java:312
+msgid "BD"
+msgstr "SP"
+
+#: src/kml/trackScore.java:190 src/kml/trackScore.java:262
+#: src/kml/trackScore.java:340 src/kml/trackScore.java:342
+#: src/kml/trackScore.java:344
+msgid "B"
+msgstr "P"
+
+#: src/kml/trackScore.java:229 src/kml/trackScore.java:285
+#: src/kml/trackScore.java:342 src/leaflet/map_visu.java:328
+msgid "BA"
+msgstr "EP"
+
+#: src/kml/trackScore.java:344
+msgid "P"
+msgstr "P"
+
+#: src/kml/trackScore.java:376 src/kml/trackScore.java:382
+msgid "Distance"
+msgstr "Distance"
+
+#: src/kml/trackSimple.java:60 src/logfly/view/KmlViewController.java:336
+msgid "Trace avec profil"
+msgstr "Track with profile"
+
+#: src/kml/trackSimple.java:61
+msgid "Clic droit pour profil"
+msgstr "Right clic for profile"
+
+#: src/kml/trackSimple.java:100
+msgid "Vario"
+msgstr "Climb"
+
+#: src/kml/trackThermals.java:69
+msgid "Analyse"
+msgstr "Analyze"
+
+#: src/kml/trackThermals.java:100 src/logfly/view/KmlViewController.java:341
+msgid "Thermiques"
+msgstr "Thermals"
+
+#: src/kml/trackThermals.java:139
+msgid "Meilleur gain"
+msgstr "Best gain"
+
+#: src/kml/trackThermals.java:205
+msgid "Transitions"
+msgstr "Transitions"
+
+#: src/kml/trackThermals.java:282 src/leaflet/map_visu.java:255
+msgid "Meilleure transition"
+msgstr "Best transition"
+
+#: src/leaflet/map_pm.java:130 src/leaflet/map_visu.java:513
+msgid "Alt max GPS"
+msgstr "Max GPS Alt"
+
+#: src/leaflet/map_visu.java:212
+msgid "Alt."
+msgstr "Alt."
+
+#: src/leaflet/map_visu.java:214
+msgid "Gain "
+msgstr "Gain "
+
+#: src/leaflet/map_visu.java:442 src/logfly/view/CarnetViewController.java:325
+#: src/logfly/view/CarnetViewController.java:929
+msgid "Durée"
+msgstr "Duration"
+
+#: src/leaflet/map_visu.java:447
+msgid "Décollage"
+msgstr "Take off"
+
+#: src/leaflet/map_visu.java:507
+msgid "Atterrissage"
+msgstr "Landing"
+
+#: src/leaflet/map_visu.java:515
+msgid "Alt mini GPS"
+msgstr "Mini GPS Alt"
+
+#: src/leaflet/map_visu.java:523
+msgid "Transition max"
+msgstr "Best transition"
+
+#: src/leaflet/map_visu.java:524
+msgid "Longueur"
+msgstr "Length"
+
+#: src/leaflet/map_visu.java:525 src/logfly/view/KmlViewController.java:240
+msgid "Points"
+msgstr "Points"
+
+#: src/leaflet/map_visu.java:526
+msgid "Aberrants"
+msgstr "Aberrants"
+
+#: src/leaflet/map_visu.java:527
+msgid "Signature"
+msgstr "Signature"
+
+#: src/littlewins/winComment.java:73
+#: src/logfly/view/ConfigViewController.java:646
+#: src/logfly/view/ConfigViewController.java:651
+#: src/logfly/view/ConfigViewController.java:657
+#: src/logfly/view/ConfigViewController.java:666
+#: src/logfly/view/KmlViewController.java:354
+msgid "Valider"
+msgstr "OK"
+
+#: src/littlewins/winPoints.java:146
+msgid "No"
+msgstr "No"
+
+#: src/littlewins/winPoints.java:148
+#: src/logfly/view/CarnetViewController.java:928
+#: src/logfly/view/ImportViewController.java:261
+msgid "Heure"
+msgstr "Hour"
+
+#: src/littlewins/winPoints.java:150 src/logfly/view/KmlViewController.java:352
+msgid "Alti Baro"
+msgstr "Baro El"
+
+#: src/littlewins/winPoints.java:152 src/logfly/view/KmlViewController.java:351
+msgid "Alti GPS"
+msgstr "GPS El"
+
+#: src/littlewins/winPoints.java:154
+msgid "Lat"
+msgstr "Lat"
+
+#: src/littlewins/winPoints.java:156
+msgid "Long"
+msgstr "Long"
+
+#: src/littlewins/winPoints.java:158
+msgid "Dist (m)"
+msgstr "Dist (m)"
+
+#: src/littlewins/winPoints.java:160
+msgid "Vit Sol"
+msgstr "Gbd Sp"
+
+#: src/littlewins/winPoints.java:188
+msgid "Eté"
+msgstr "Summer"
+
+#: src/littlewins/winPoints.java:190
+msgid "Hiver"
+msgstr "Winter"
+
+#: src/logfly/view/CarnetViewController.java:245
+#: src/logfly/view/CarnetViewController.java:297
+msgid "Pas de vols dans le carnet"
+msgstr "No flights in the logbook"
+
+#: src/logfly/view/CarnetViewController.java:326
+msgid "Suppression du vol"
+msgstr "Delete flight"
+
+#: src/logfly/view/CarnetViewController.java:341
+msgid "Aucun vol sélectionné..."
+msgstr "No flight selected"
+
+#: src/logfly/view/CarnetViewController.java:413
+#: src/logfly/view/TraceViewController.java:115
+msgid "Problème de décodage du fichier"
+msgstr "Decoding problem in file"
+
+#: src/logfly/view/CarnetViewController.java:485
+#: src/logfly/view/CarnetViewController.java:730
+msgid "Photo du jour"
+msgstr "Photo of the day"
+
+#: src/logfly/view/CarnetViewController.java:493
+#: src/logfly/view/CarnetViewController.java:662
+msgid "Commentaire"
+msgstr "Comment"
+
+#: src/logfly/view/CarnetViewController.java:501
+#: src/logfly/view/CarnetViewController.java:662
+#: src/logfly/view/CarnetViewController.java:730
+msgid "Supprimer"
+msgstr "Delete"
+
+#: src/logfly/view/CarnetViewController.java:531
+#: src/logfly/view/CarnetViewController.java:940
+msgid "Statistiques de vol"
+msgstr "Flight statistics"
+
+#: src/logfly/view/CarnetViewController.java:567
+#: src/logfly/view/TraceViewController.java:158
+msgid "Une erreur est survenue pendant la génération de la carte"
+msgstr "An error occurred during the map generation"
+
+#: src/logfly/view/CarnetViewController.java:625
+#: src/logfly/view/TraceViewController.java:186
+msgid "Echec du téléchargement de la trace"
+msgstr "The track download failed"
+
+#: src/logfly/view/CarnetViewController.java:631
+#: src/logfly/view/TraceViewController.java:192
+msgid "Mauvaise url de téléchargement"
+msgstr "Bad downloading url"
+
+#: src/logfly/view/CarnetViewController.java:636
+#: src/logfly/view/TraceViewController.java:197
+msgid "Problème de chargement de la trace"
+msgstr "The track download failed"
+
+#: src/logfly/view/CarnetViewController.java:662
+#: src/logfly/view/CarnetViewController.java:730
+msgid "Que voulez- vous faire ?"
+msgstr "What would you like to do?"
+
+#: src/logfly/view/CarnetViewController.java:662
+#: src/logfly/view/CarnetViewController.java:730
+msgid "Changer"
+msgstr "Change"
+
+#: src/logfly/view/CarnetViewController.java:662
+#: src/logfly/view/CarnetViewController.java:730
+#: src/logfly/view/ConfigViewController.java:645
+#: src/logfly/view/ConfigViewController.java:652
+#: src/logfly/view/ConfigViewController.java:656
+#: src/logfly/view/ConfigViewController.java:665
+#: src/logfly/view/KmlViewController.java:353
+msgid "Annuler"
+msgstr "Cancel"
+
+#: src/logfly/view/CarnetViewController.java:772
+#, fuzzy
+msgid "fichiers photos (*.jpg)"
+msgstr "Tracks files (*.igc)"
+
+#: src/logfly/view/CarnetViewController.java:866
+#: src/logfly/view/TraceViewController.java:289
+msgid "Génération fichier kml"
+msgstr "Generating kml file"
+
+#: src/logfly/view/CarnetViewController.java:917
+#: src/logfly/view/TraceViewController.java:342
+msgid "Génération du fichier terminée"
+msgstr "Generating the completed file"
+
+#: src/logfly/view/CarnetViewController.java:927
+#: src/logfly/view/ImportViewController.java:260
+msgid "Date"
+msgstr "Date"
+
+#: src/logfly/view/CarnetViewController.java:930
+msgid "Site"
+msgstr "Site"
+
+#: src/logfly/view/CarnetViewController.java:934
+#: src/logfly/view/TraceViewController.java:400
+msgid "Carte Google Maps plein écran"
+msgstr "Full screen Google Map"
+
+#: src/logfly/view/CarnetViewController.java:946
+#: src/logfly/view/TraceViewController.java:406
+msgid "Affichage VisuGPS"
+msgstr "VisuGPS display"
+
+#: src/logfly/view/CarnetViewController.java:952
+#: src/logfly/view/TraceViewController.java:412
+msgid "Evaluation de la trace"
+msgstr "Score evaluation"
+
+#: src/logfly/view/CarnetViewController.java:958
+#: src/logfly/view/TraceViewController.java:418
+msgid "Génération fichier Google Earth"
+msgstr "Generating Google Earth file"
+
+#: src/logfly/view/ConfigViewController.java:486
+msgid "Pas de carnets dans le dossier choisi..."
+msgstr "No logbook in the selected folder"
+
+#: src/logfly/view/ConfigViewController.java:625
+#: src/logfly/view/ImportViewController.java:259
+#: src/logfly/view/RootLayoutController.java:223
+msgid "Carnet"
+msgstr "Logbook"
+
+#: src/logfly/view/ConfigViewController.java:626
+msgid "Carte"
+msgstr "Map"
+
+#: src/logfly/view/ConfigViewController.java:627
+msgid "Divers"
+msgstr "Miscellaneous"
+
+#: src/logfly/view/ConfigViewController.java:628
+msgid "Internet"
+msgstr "Web"
+
+#: src/logfly/view/ConfigViewController.java:629
+msgid "Chemin du dossier de travail"
+msgstr "Working folder path"
+
+#: src/logfly/view/ConfigViewController.java:630
+msgid "Modifier"
+msgstr "Edit"
+
+#: src/logfly/view/ConfigViewController.java:631
+msgid "Chemin carnet(s)"
+msgstr "Logbook(s) path"
+
+#: src/logfly/view/ConfigViewController.java:632
+msgid "Créer un nouveau carnet"
+msgstr "Create a new logbook"
+
+#: src/logfly/view/ConfigViewController.java:633
+msgid "Déplacer le(s) carnet(s) vers un autre dossier"
+msgstr "Move logbook to a different folder"
+
+#: src/logfly/view/ConfigViewController.java:634
+msgid "Choisir un nouveau dossier de carnets"
+msgstr "Choose a new logbooks folder"
+
+#: src/logfly/view/ConfigViewController.java:635 src/systemio/filesmove.java:70
+msgid "Fermer"
+msgstr "Close"
+
+#: src/logfly/view/ConfigViewController.java:636
+msgid "Pilote"
+msgstr "Pilot"
+
+#: src/logfly/view/ConfigViewController.java:637
+#: src/logfly/view/ImportViewController.java:263
+msgid "Nom pilote"
+msgstr "Pilot name"
+
+#: src/logfly/view/ConfigViewController.java:638
+msgid "Voile"
+msgstr "Glider"
+
+#: src/logfly/view/ConfigViewController.java:639
+msgid "GPS habituel"
+msgstr "Usual GPS"
+
+#: src/logfly/view/ConfigViewController.java:640
+msgid "Intégration"
+msgstr "Integration"
+
+#: src/logfly/view/ConfigViewController.java:641
+msgid "Mail pilote"
+msgstr "Pilot mail"
+
+#: src/logfly/view/ConfigViewController.java:642
+msgid "League"
+msgstr "League"
+
+#: src/logfly/view/ConfigViewController.java:643
+msgid "Identifiant"
+msgstr "Login"
+
+#: src/logfly/view/ConfigViewController.java:644
+msgid "Mot de passe"
+msgstr "Password"
+
+#: src/logfly/view/ConfigViewController.java:647
+msgid "VisuGPS dans le navigateur"
+msgstr "VisGPS in the browser"
+
+#: src/logfly/view/ConfigViewController.java:648
+msgid "Carte par défaut"
+msgstr "Default map"
+
+#: src/logfly/view/ConfigViewController.java:649
+msgid "Longitude"
+msgstr "Longitude"
+
+#: src/logfly/view/ConfigViewController.java:650
+msgid "Seuil points aberrants"
+msgstr "Outliers threshold for map"
+
+#: src/logfly/view/ConfigViewController.java:653
+msgid "Langue"
+msgstr "Language"
+
+#: src/logfly/view/ConfigViewController.java:654
+msgid "Dossier d'import"
+msgstr "Import folder"
+
+#: src/logfly/view/ConfigViewController.java:655
+msgid "Affichage automatique des photos"
+msgstr "Automatic display of photos"
+
+#: src/logfly/view/ConfigViewController.java:658
+msgid "Url Site Logfly"
+msgstr "Url Logfly site"
+
+#: src/logfly/view/ConfigViewController.java:659
+msgid "Url Icônes"
+msgstr "Icons url"
+
+#: src/logfly/view/ConfigViewController.java:660
+msgid "Url Téléchargement"
+msgstr "Download url"
+
+#: src/logfly/view/ConfigViewController.java:661
+msgid "Url VisuGPS"
+msgstr "Visu GPS url"
+
+#: src/logfly/view/ConfigViewController.java:662
+msgid "Url mail support"
+msgstr "Mail support url"
+
+#: src/logfly/view/ConfigViewController.java:663
+msgid "Url Déclaration"
+msgstr "Claim URL"
+
+#: src/logfly/view/ConfigViewController.java:664
+msgid "Dossier Export IGC"
+msgstr "IGC export folder"
+
+#: src/logfly/view/ImportViewController.java:219
+msgid "vols à insérer"
+msgstr "Flights to insert"
+
+#: src/logfly/view/ImportViewController.java:262
+msgid "Nom Fichier"
+msgstr "File name"
+
+#: src/logfly/view/ImportViewController.java:264
+msgid "Sélectionner un dossier"
+msgstr "Select a folder"
+
+#: src/logfly/view/ImportViewController.java:265
+msgid "Décocher"
+msgstr "Unselect"
+
+#: src/logfly/view/ImportViewController.java:266
+msgid "Mise à jour Carnet"
+msgstr "Logbook updates"
+
+#: src/logfly/view/ImportViewController.java:267
+msgid "Nettoyage dossier"
+msgstr "Cleaning folder"
+
+#: src/logfly/view/KmlViewController.java:335
+msgid "Réduction du nombre de points"
+msgstr "Reduction of points"
+
+#: src/logfly/view/KmlViewController.java:337
+msgid "Trace colorée par altitude"
+msgstr "Colored track by altitude"
+
+#: src/logfly/view/KmlViewController.java:338
+msgid "Trace colorée par vario"
+msgstr "Colored track by climb"
+
+#: src/logfly/view/KmlViewController.java:339
+msgid "Trace colorée par vitesse"
+msgstr "Colored track by speed"
+
+#: src/logfly/view/KmlViewController.java:342
+msgid "Replay"
+msgstr "Replay"
+
+#: src/logfly/view/KmlViewController.java:343
+msgid "Exporter le fichier Google Earth"
+msgstr "Export Google Earth file"
+
+#: src/logfly/view/KmlViewController.java:344
+msgid "Envoyer par mail"
+msgstr "Send by mail"
+
+#: src/logfly/view/KmlViewController.java:345
+msgid "Lancer Google Earth"
+msgstr "Run Google Earth"
+
+#: src/logfly/view/KmlViewController.java:346
+msgid "Echantillonnage de points"
+msgstr "Sampling points"
+
+#: src/logfly/view/KmlViewController.java:347
+msgid "Distance au dessus de la trace"
+msgstr "Distance above the trace"
+
+#: src/logfly/view/KmlViewController.java:348
+msgid "Timer de la caméra"
+msgstr "Camera timer"
+
+#: src/logfly/view/KmlViewController.java:349
+msgid "Recul de la camera"
+msgstr "Camera range"
+
+#: src/logfly/view/KmlViewController.java:350
+msgid "Inclinaison caméra"
+msgstr "Camera tilt"
+
+#: src/logfly/view/RootLayoutController.java:121
+#: src/logfly/view/RootLayoutController.java:236
+msgid "Configuration"
+msgstr "Configuration"
+
+#: src/logfly/view/RootLayoutController.java:224
+msgid "Import GPS"
+msgstr "GPS import"
+
+#: src/logfly/view/RootLayoutController.java:225
+msgid "Import vols"
+msgstr "Flight import"
+
+#: src/logfly/view/RootLayoutController.java:226
+msgid "Trace externe"
+msgstr "External track"
+
+#: src/logfly/view/RootLayoutController.java:227
+msgid "Calendrier"
+msgstr "Calendar"
+
+#: src/logfly/view/RootLayoutController.java:228
+msgid "Statistiques"
+msgstr "Statistics"
+
+#: src/logfly/view/RootLayoutController.java:229
+msgid "Sites"
+msgstr "Sites"
+
+#: src/logfly/view/RootLayoutController.java:230
+msgid "Balises"
+msgstr "Turnpoints"
+
+#: src/logfly/view/RootLayoutController.java:231
+msgid "Espaces aériens"
+msgstr "Airspaces"
+
+#: src/logfly/view/RootLayoutController.java:232
+msgid "Photos"
+msgstr "Photos"
+
+#: src/logfly/view/RootLayoutController.java:233
+msgid "Cartographie"
+msgstr "Cartography"
+
+#: src/logfly/view/RootLayoutController.java:240
+msgid "Outils"
+msgstr "Tools"
+
+#: src/logfly/view/RootLayoutController.java:244
+msgid "Support"
+msgstr "Support"
+
+#: src/logfly/view/TraceViewController.java:93
+msgid "fichiers traces (*.igc)"
+msgstr "Tracks files (*.igc)"
+
+#: src/logfly/view/TraceViewController.java:355
+#: src/logfly/view/TraceViewController.java:359
+msgid "Fichier original"
+msgstr "Original file"
+
+#: src/logfly/view/TraceViewController.java:363
+msgid "Liste points"
+msgstr "Points list"
+
+#: src/logfly/view/TraceViewController.java:371
+#: src/logfly/view/TraceViewController.java:375
+msgid "Exporter"
+msgstr "Export"
+
+#: src/logfly/view/TraceViewController.java:395
+msgid "Sélectionner une trace"
+msgstr "Select a track"
+
+#: src/settings/listGPS.java:28
+msgid "Sélection GPS"
+msgstr "Select GPS"
+
+#: src/settings/listLangues.java:25
+msgid "Allemand"
+msgstr "German"
+
+#: src/settings/listLangues.java:26
+msgid "Anglais"
+msgstr "English"
+
+#: src/settings/listLangues.java:27
+msgid "Français"
+msgstr "French"
+
+#: src/systemio/filesmove.java:88
+msgid "Transfert terminé..."
+msgstr "Transfer completed..."
+
+#: src/systemio/filesmove.java:98
+msgid "Problème pendant le transfert..."
+msgstr "Problem during transfer"
+
+#~ msgid "Fiche Site"
+#~ msgstr "Site form"
+
+#~ msgid "Actualisation sites"
+#~ msgstr "Update sites"

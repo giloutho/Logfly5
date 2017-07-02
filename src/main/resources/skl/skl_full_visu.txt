@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="https://code.highcharts.com/4.2.2/highcharts.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
+
+    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.measurecontrol.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.measurecontrol.css" />
+
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.label.css" />
+    <script src="http://www.logfly.org/download/gmap/leaflet.label.js"></script>
+
+    <script src="http://www.logfly.org/download/gmap/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.awesome-markers.css">
+
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/easy-button.css">
+    <script src="http://www.logfly.org/download/gmap/easy-button.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <style>
+        html, body {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+        #carte { height: 75% }
+        #graphe { height: 25% }
+        .leaflet-google-layer{
+            z-index: 0 !important;
+        }
+        .leaflet-map-pane{
+            z-index: 100;
+        }
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
+        }
+        .legend {
+            padding: 6px 8px;
+            font: 12px/14px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .awesome-marker i {
+            font-size: 20px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div id="carte"></div>
+<div id="graphe"></div>
+
+<script type='text/javascript'>
+
+    var map = null;
+    var mousemarker = null;
+    var LayerBal = new L.LayerGroup();
+
+    var tabPoints = [];
+%tabPoints%
+
+    var altiLg = [%altiLg%];
+
+    var altiVal = [%altiVal%];
+
+    var Vario = [%Vario%];
+
+    var Speed = [%Speed%];
+
+    var Heure = [%Heure%];
+
+    function GrillePos(i) {
+        if (mousemarker != null) {
+            map.removeLayer(mousemarker);
+            mousemarker = null;
+        }
+        mousemarker = new L.marker(tabPoints[i]).addTo(map);
+        map.panTo(tabPoints[i]);
+        info.update(altiLg[i]+'<br/>Alt : '+altiVal[i]+'m<br/>Vz : '+Vario[i]+'m/s<br/>Vit : '+Speed[i]+' km/h');
+    }
+
+    //%ScoreBalises%
+
+    map = new L.Map('carte');
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+
+    var googleLayer = new L.Google('TERRAIN');
+    var googleSat = new L.Google('SATELLITE');
+
+    %layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+        "Google Terrain" : googleLayer,
+        "Google Sat" : googleSat
+    };
+
+
+    var THmarkers = new L.LayerGroup();
+
+    //%THmarker%
+
+    var ScoreMarkers = new L.LayerGroup();
+
+    //%ScoreLines%
+
+    // Couche trace
+    var trackOptions = {
+        color: 'red',
+        weight: 3,
+        opacity: 0.85
+    };
+
+    var info = L.control({position: 'bottomright'});
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this.update();
+        return this._div;
+    };
+
+    // method that we will use to update the control based on feature properties passed
+    info.update = function (paramVol) {
+        this._div.innerHTML = paramVol;
+    };
+
+    info.addTo(map);
+
+    info.update('');
+
+    var track = new L.Polyline(tabPoints, trackOptions);
+
+    var Affichage = {
+        "Trace": track,
+        "Thermiques": THmarkers
+        ,
+        //%ScoreOptions%
+    };
+
+    L.control.layers(baseMaps,Affichage).addTo(map);
+
+    map.addLayer(track);
+    //%AddScoreMarkers%
+
+    L.Control.measureControl().addTo(map);
+
+    var StartIcon = new L.Icon({
+        iconUrl: 'http://www.logfly.org/download/gmap/windsock.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [32, 32],
+        iconAnchor: [0, 32],
+        popupAnchor: [1, -34],
+        shadowSize: [25, 25]
+    });
+
+    L.marker(tabPoints[0],{icon: StartIcon}).addTo(map);
+
+    var EndIcon = new L.Icon({
+        iconUrl: 'http://www.logfly.org/download/gmap/Arrivee.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [32, 32],
+        iconAnchor: [8, 32],
+        popupAnchor: [1, -34],
+        shadowSize: [25, 25]
+    });
+
+    L.marker(tabPoints[tabPoints.length-1],{icon: EndIcon}).addTo(map);
+
+    $(function () {
+
+        $('#graphe').highcharts({
+
+            title: {
+                text: ''
+            },
+            subtitle: {
+                text: ''
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        // Sinon le point est dessiné pour les petites séries
+                        enabled: false
+                    },
+                    point: {
+                        events: {
+                            mouseOver: function () {
+                                if (mousemarker == null) {
+                                    // Le x correspond à l'index, ça tombe bien...
+                                    // Sinon on avait un obscur this.series.data.indexOf( this.point ) qui ne fonctionnait pas
+                                    // mousemarker = new L.marker(tabPoints[this.x], {icon: IconPara}).addTo(map);
+                                    //  mousemarker = new L.marker(tabPoints[this.x]).addTo(map);
+                                    mousemarker = new L.marker(tabPoints[this.x],{icon: L.AwesomeMarkers.icon({icon: 'fa-star-o', markerColor: 'orange', prefix: 'fa', iconColor: 'white'}) }).addTo(map);
+                                }
+                                else {
+                                    mousemarker.setLatLng(tabPoints[this.x]);
+                                }
+                                info.update(Heure[this.x]+'<br/>Alt : '+altiVal[this.x]+'m<br/>Vz : '+Vario[this.x]+'m/s<br/>Vit : '+Speed[this.x]+' km/h');
+                            },
+                            click: function () {
+                                // On peut préciser un niveau de zoom
+                                // On peut utiliser map.setView
+                                map.panTo(tabPoints[this.x]);
+                            }
+                        }
+                    },
+                    events: {
+                        mouseOut: function () {
+                            if (mousemarker != null) {
+                                map.removeLayer(mousemarker);
+                                mousemarker = null;
+                            }
+                            info.update('');
+                        }
+                    }
+                }
+            },
+
+            tooltip: {
+                enabled: false
+            },
+
+            xAxis: {
+                categories: altiLg
+            },
+
+            yAxis: {
+                title: {
+                    text: 'Altitude'
+                },
+                labels: {
+                    format: '{value} m'
+                }
+            },
+
+            series: [{
+                showInLegend: false,
+                data: altiVal
+            }]
+        });
+    });
+
+var toggle = L.easyButton({
+        states: [{
+            stateName: 'remove-infos',
+            icon: 'fa-user-times',
+            title: 'remove infos',
+            onClick: function(control) {
+                legend.getContainer().innerHTML='';
+                control.state('add-infos');
+            }
+        }, {
+            icon: 'fa-user-plus',
+            stateName: 'add-infos',
+            onClick: function(control) {
+                legend.update();
+                control.state('remove-infos');
+            },
+            title: 'remove infos'
+        }]
+    });
+
+    toggle.addTo(map);
+    var legend = L.control({position: 'topleft'});
+
+    legend.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'legend');
+        this.update();
+        return this._div;
+    };
+
+    legend.update = function () {
+        this._div.innerHTML = '';
+        %legende%        
+    };
+    legend.addTo(map);
+
+    setTimeout(function(){ map.fitBounds(track.getBounds()); }, 2000);
+</script>
+</body>
+</html>

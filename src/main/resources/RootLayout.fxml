@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" stylesheets="@Menu.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.RootLayoutController">
+   <left>
+      <VBox prefHeight="200.0" prefWidth="130.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="icoLogo" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@images/Logo_Duke.png" />
+               </image>
+               <VBox.margin>
+                  <Insets bottom="20.0" left="30.0" top="10.0" />
+               </VBox.margin>
+            </ImageView>
+            <Label fx:id="mnCarnet" layoutX="15.0" layoutY="444.0" prefWidth="110.0" text="fCarnet" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnGPS" layoutX="15.0" layoutY="417.0" prefWidth="110.0" text="fImport GPS" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnImport" prefWidth="110.0" text="fImport Vols" textFill="WHITE">
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+            </Label>
+            <Label fx:id="mnTrace" layoutX="15.0" layoutY="442.0" prefWidth="110.0" text="fTrace externe" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnCalendrier" layoutX="15.0" layoutY="469.0" prefWidth="110.0" text="fCalendrier" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnStat" layoutX="15.0" layoutY="206.0" prefWidth="110.0" text="fStatistiques" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnSites" layoutX="15.0" layoutY="436.0" prefWidth="110.0" text="fSites" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnBalises" layoutX="15.0" layoutY="434.0" prefWidth="110.0" text="fBalises" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnEspaces" layoutX="15.0" layoutY="432.0" prefWidth="110.0" text="fEspaces aériens" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnPhotos" layoutX="15.0" layoutY="430.0" prefWidth="110.0" text="fPhotos" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Label fx:id="mnCarto" layoutX="15.0" layoutY="428.0" prefWidth="110.0" text="fCartographie" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+         </children>
+      </VBox>
+   </left>
+   <top>
+      <HBox prefHeight="2.0" prefWidth="200.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+   </top>
+   <right>
+      <VBox prefHeight="600.0" prefWidth="10.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+   </right>
+   <bottom>
+      <HBox prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnConfig" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#showConfigDialog" style="-fx-background-color: transparent;" text="Button">
+               <graphic>
+                  <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/settings.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="btnTools" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#showOutils" style="-fx-background-color: transparent;" text="Button">
+               <graphic>
+                  <ImageView fx:id="icoTools" fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/spanner.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="btnSupport" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#showSupport" style="-fx-background-color: transparent;" text="Button">
+               <graphic>
+                  <ImageView fx:id="icoSupport" fitHeight="16.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/discuss-issue.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+         </children></HBox>
+   </bottom>
+</BorderPane>
