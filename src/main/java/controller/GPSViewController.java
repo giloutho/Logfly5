@@ -12,6 +12,7 @@ import com.serialpundit.serial.SerialComManager;
 import database.dbAdd;
 import database.dbSearch;
 import dialogues.ProgressForm;
+import dialogues.alertbox;
 import dialogues.dialogbox;
 import gps.flymaster;
 import java.io.IOException;
@@ -134,7 +135,7 @@ public class GPSViewController {
     // GPS choisi
     String currGPS;
     String currNamePort;  
-    int resCom;
+    int resCom;   // 0 etat initial  1 : communication établie   2 : pas de communication
     
     @FXML
     private void initialize() {               
@@ -420,38 +421,43 @@ public class GPSViewController {
     private void afficheFlyList()  {
         // Mise à jour de la LED
         actuLed();
-        if (dataImport.size() > 0) {
-            
-            // On personnalise les colonnes au cas par cas
-            Column4.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("col4"));
-            // on ajustera la largeur des colonnes au cas par cas
-            dateCol.setMinWidth(80);
-            heureCol.setMinWidth(80);
-            Column4.setMinWidth(80);
-            Column4.setText(i18n.tr("Durée"));
-            Column5.setVisible(false);
-            Column6.setVisible(false);
-            tableImp.setMaxWidth(300);
-            tableImp.setItems(dataImport); 
-            // Coloration des lignes déjà présentes dans le carnet
-            // http://stackoverflow.com/questions/32119277/colouring-table-row-in-javafx
-            tableImp.setRowFactory(tbrow -> new TableRow<Gpsmodel>() {
-                @Override
-                public void updateItem(Gpsmodel item, boolean empty) {
-                    super.updateItem(item, empty) ;
-                    if (item == null) {
-                        setStyle("");
-//                            } else if (item.getChecked()) {
-                    } else if (item.getCol6().equals("NON")) {
-                        setStyle("-fx-background-color: lightsalmon;");
-                    } else {
-                        setStyle("-fx-background-color: cadetblue;");
+        if (resCom == 2)  {
+            alertbox aError = new alertbox();
+            aError.alertError(i18n.tr("Impossible d'ouvrir le port série sélectionné"));  
+        } else {
+            if (dataImport.size() > 0) {
+
+                // On personnalise les colonnes au cas par cas
+                Column4.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("col4"));
+                // on ajustera la largeur des colonnes au cas par cas
+                dateCol.setMinWidth(80);
+                heureCol.setMinWidth(80);
+                Column4.setMinWidth(80);
+                Column4.setText(i18n.tr("Durée"));
+                Column5.setVisible(false);
+                Column6.setVisible(false);
+                tableImp.setMaxWidth(300);
+                tableImp.setItems(dataImport); 
+                // Coloration des lignes déjà présentes dans le carnet
+                // http://stackoverflow.com/questions/32119277/colouring-table-row-in-javafx
+                tableImp.setRowFactory(tbrow -> new TableRow<Gpsmodel>() {
+                    @Override
+                    public void updateItem(Gpsmodel item, boolean empty) {
+                        super.updateItem(item, empty) ;
+                        if (item == null) {
+                            setStyle("");
+    //                            } else if (item.getChecked()) {
+                        } else if (item.getCol6().equals("NON")) {
+                            setStyle("-fx-background-color: lightsalmon;");
+                        } else {
+                            setStyle("-fx-background-color: cadetblue;");
+                        }
                     }
+                });
+                if (tableImp.getItems().size() > 0) {
+                    buttonBar.setVisible(true);
+                    hbTable.setVisible(true);            
                 }
-            });
-            if (tableImp.getItems().size() > 0) {
-                buttonBar.setVisible(true);
-                hbTable.setVisible(true);            
             }
         }
     }
@@ -486,24 +492,32 @@ public class GPSViewController {
     private void actuLed() {
         Image imgImgLed=null;
         Image imgGo = null;
+        Tooltip goToolTip = new Tooltip();
+        goToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
 
         switch (resCom) {
             case 0 :
                 imgGo = new Image(getClass().getResourceAsStream("/images/download.png"));
                 btnGo.setGraphic(new ImageView(imgGo));
                 btnGo.setVisible(true);
+                goToolTip.setText(i18n.tr("Télécharger les traces du GPS"));
+                btnGo.setTooltip(goToolTip);
                 imgLed.setVisible(false);
                 break;        
             case 1 :                
                 imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_Green.png"));
-                imgLed.setImage(imgImgLed);
+                goToolTip.setText(i18n.tr("Télécharger les traces du GPS"));
+                btnGo.setTooltip(goToolTip);
+                imgLed.setImage(imgImgLed);                
                 imgLed.setVisible(true);
                 break;
             case 2 :
                 imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_red.png"));
                 imgLed.setImage(imgImgLed);
                 imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
-                btnGo.setGraphic(new ImageView(imgGo));
+                btnGo.setGraphic(new ImageView(imgGo));                
+                goToolTip.setText(i18n.tr("Actualiser la liste des ports"));
+                btnGo.setTooltip(goToolTip);
                 imgLed.setVisible(true);
                 break;
             case 3 :
