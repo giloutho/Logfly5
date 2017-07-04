@@ -92,7 +92,9 @@ public class scoring {
                 if (os.indexOf("Windows") != -1) {
                     pathModPoints = executionPath+"\\logfly_lib\\points.exe";            
                 } else  {
-                    pathModPoints = executionPath+"/logfly_lib/points";
+                    // ce que l'on faisait au départ
+                    //pathModPoints = executionPath+"/logfly_lib/points";
+                    pathModPoints = executionPath+"/points";
                 }
                 // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
                 // l'auteur émet des réserves : ce schéma ne fonctionne bien que si le programme s'éxecute ou se plante                                     
