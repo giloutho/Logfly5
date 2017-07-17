@@ -81,7 +81,7 @@ public class ImportViewController {
 
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());
+        i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
     }
         

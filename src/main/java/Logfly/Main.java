@@ -32,7 +32,7 @@ public class Main extends Application {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Logfly");
         
-        // Lecture paramètres
+        // Reading settings
         myConfig = new configProg();
         myConfig.readSettings(); 
                                   
@@ -59,10 +59,6 @@ public class Main extends Application {
             aError.alertError(errMsg.toString());  
             System.exit(0);                            
         }
-//        primaryStage.setOnCloseRequest(event -> {
-//            System.out.println("Stage is closing");
-//            // Save    file
-//        });
     }
     
     /**
@@ -83,7 +79,6 @@ public class Main extends Application {
             rootLayoutController = loader.getController();
             rootLayoutController.setMainApp(this);
 
-            // Show the scene containing the root layout.
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
@@ -97,7 +92,6 @@ public class Main extends Application {
      */
     public void showCarnetOverview() {
         try {
-            // Load carnet overview.
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/CarnetView.fxml"));
             AnchorPane carnetOverview = (AnchorPane) loader.load();            
@@ -108,7 +102,7 @@ public class Main extends Application {
             // Grâce à cela on évite un NullPointerException lors de l'appel à mainApp.getPrimaryStage()         
             controlCarnet.setMainApp(this);
             
-            // SPositionne le carnet sur le centre du root layout.
+            // Positionne le carnet sur le centre du root layout.
             rootLayout.setCenter(carnetOverview);                                                      
             
         } catch (IOException e) {
@@ -117,11 +111,10 @@ public class Main extends Application {
     }
     
     /**
-     * Affiche le carnet de vols dans la fenêtre racine (root layout).
+    *   Affiche la fenêtre Import dans la fenêtre racine (root layout).
     */     
     public void showImportview() {
         try {
-            // Load carnet overview.
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/ImportView.fxml"));
             AnchorPane importOverview = (AnchorPane) loader.load();            
@@ -131,7 +124,7 @@ public class Main extends Application {
             controlImport.setRootBridge(rootLayoutController);
             controlImport.setMyConfig(myConfig);
             
-            // SPositionne le carnet sur le centre du root layout.
+            // Positionne la fenêtre Import sur le centre du root layout.
             rootLayout.setCenter(importOverview);                                                      
             
         } catch (IOException e) {
@@ -139,10 +132,11 @@ public class Main extends Application {
         }
     }
 
-    
+    /**
+     * Fenêtre d'affichage d'une trace externe
+     */
     public void showTraceview() {
         try {
-            // Load carnet overview.
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/TraceView.fxml"));
             AnchorPane traceOverview = (AnchorPane) loader.load();            
@@ -153,7 +147,7 @@ public class Main extends Application {
             // Grâce à cela on évite un NullPointerException lors de l'appel à mainApp.getPrimaryStage()         
             controlTrace.setMainApp(this);
             
-            // SPositionne le carnet sur le centre du root layout.
+            // Positionne la fenêtre de la trace externe sur le centre du root layout.
             rootLayout.setCenter(traceOverview);                                                      
             
         } catch (IOException e) {
@@ -163,7 +157,6 @@ public class Main extends Application {
     
     public void showGPSview() {
         try {
-            // Load carnet overview.
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/GPSView.fxml"));
             AnchorPane gpsOverview = (AnchorPane) loader.load();            
@@ -173,7 +166,7 @@ public class Main extends Application {
             controlGPS.setRootBridge(rootLayoutController);
             controlGPS.setMyConfig(myConfig);
             
-            // SPositionne le carnet sur le centre du root layout.
+            // Positionne la fenêtre GPS sur le centre du root layout.
             rootLayout.setCenter(gpsOverview);                                                      
             
         } catch (IOException e) {
@@ -193,7 +186,6 @@ public class Main extends Application {
     public void stop(){
         if (myConfig.isValidConfig())  {
             myConfig.writeProperties();
-           // System.out.println("Stage is closing");
         }
     }
     

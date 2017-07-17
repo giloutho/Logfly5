@@ -1,0 +1,10 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}Copyright Gil THOMAS
+${licensePrefix}Ce fichier fait partie intégrante du projet Logfly
+${licensePrefix}Pour tous les détails sur la licence du projet Logfly
+${licensePrefix}Consulter le fichier LICENSE distribué avec le code source
+<#if licenseLast??>
+${licenseLast}
+</#if>

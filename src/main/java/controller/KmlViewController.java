@@ -145,7 +145,7 @@ public class KmlViewController implements Initializable {
         // 2 c'est TraceViewController qui appelle
         this.appel = appel;
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());
+        i18n = I18nFactory.getI18n("","lang/Messages",KmlViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         // Traduction des expressions
         winTraduction(); 
         iniTitre();  

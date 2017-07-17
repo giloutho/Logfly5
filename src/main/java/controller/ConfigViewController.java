@@ -215,7 +215,7 @@ public class ConfigViewController implements Initializable {
     
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(), myConfig.getLocale());  
+        i18n = I18nFactory.getI18n("","lang/Messages",ConfigViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         
         // Remplissage des champs APRES récupération de myConfig

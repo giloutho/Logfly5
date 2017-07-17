@@ -100,9 +100,8 @@ public class RootLayoutController {
      */
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp;  
-        myConfig = mainApp.myConfig;
-        //i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(), myConfig.getLocale());  
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());  
+        myConfig = mainApp.myConfig;       
+        i18n = I18nFactory.getI18n("","lang/Messages",RootLayoutController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
     }
     
