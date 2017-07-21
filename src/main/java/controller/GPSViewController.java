@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -61,26 +61,28 @@ import trackgps.traceGPS;
  *
  * @author gil
  * 
- * setMyConfig : Procedure de démarrage, initialise la choicebox des GPS supportés avec iniChbGPS
- * inichbGPS : Remplissage de la choicebox permettant de choisir le modèle de GPS parmi les différents GPS supportés par Logfly.
- * La choicebox est positionné sur le GPS par défaut (idxGPS = myConfig.getIdxGPS()). 
- * Ils sont mémorisés à partir de 1. 0 -> Sélectionner un GPS.
- * On lance choixGPS à chaque changement de valeur dans la choicebox
- * choixGPS : lance le process spécifique au modèle de GPS
- *             - Flymaster listing des ports série dans une choicebox listSerialPort()
+ * setMyConfig : Start method, GPS choicebox is initialized [iniChbGPS]
+ * inichbGPS : Fill the choicebox with supported GPS
+ * Default GPS defined in settings is selected (idxGPS = myConfig.getIdxGPS()) 
+ * First is 1. Index 0 -> Select a GPS
+ * choixGPS is launched when choicebox index change
+ * choixGPS : run the method of each supported GPS
+ *             - Flymaster serial port choiceboix become visible [listSerialPort()]
+ *             - Flytec ...
+ *             - Reversale ...
  *
- * listSerialPort : si au moins un port est détecté, le bouton Start (btnGo) est affiché
+ * listSerialPort : if at least one port is detected, start button become visible
  *
- * btnGo déclenche lectureGPS.
+ * btnGo run lectureGPS.
  *
- * lectureGPS : lance le process spécifique au modèle de GPS
- *             - Flymaster -> trois cas
- *             		1 : Première tentative, on lance runFlyWithProgress()
- *                       2 : La com a réussi, si on relance, on vide la table
- *		        3 : La com n'a pas fonctionnée, on relance listSerialPort()
+ * lectureGPS : run the reading method of each supported GPS
+ *             - Flymaster -> three cases
+ *             		1 : first attempt runFlyWithProgress()
+ *                      2 : successfull communication, a new run  clears the table
+ *		        3 : unsuccess communication, listSerialPort() reruns
  *
- * runFlyWithProgress : lance readFlymaster dans un thread séparé
- *		       A la fin du process, lance afficheFlyList();	
+ * runFlyWithProgress : run readFlymaster in a different thread
+ *		        at the end, afficheFlyList() is called	
 */
 
 public class GPSViewController {
@@ -126,31 +128,33 @@ public class GPSViewController {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
+    // Configuration settings
     configProg myConfig;
-            
-    // Reference au controller de base RootLayout
+                
     private RootLayoutController rootController;
     
-    // GPS choisi
+    // current GPS
     String currGPS;
     String currNamePort;  
-    int resCom;   // 0 etat initial  1 : communication établie   2 : pas de communication
+    int resCom;   // 0 initial state  1 : successfull communication   2 : unsuccess communication
     
     @FXML
     private void initialize() {               
         dataImport = FXCollections.observableArrayList();  
-        // Ces deux colonnes sont toujours présentes
+        // This colums are always displayed
         dateCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("date"));
         heureCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("heure"));
         checkCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel,Boolean>("checked"));
         checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );
     }
-            
+    
+    /**
+     * Uncheck all flights
+     */
     @FXML
     private void unCheckList() {
         ObservableList <Gpsmodel> checkData = tableImp.getItems();        
-        // Comptage du nombre de vols
+        // Flight counting
         for (Gpsmodel nbItem : checkData){
             if (nbItem.getChecked())  {               
                 nbItem.setChecked(Boolean.FALSE);
@@ -158,11 +162,14 @@ public class GPSViewController {
         }
         
     }
-    
+   
+    /**
+     * Checked flights are inserted in the logbook
+     */
    public void insertionCarnet()  {
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         int nbVols = 0;
-        // Comptage du nombre de vols
+        // Flight counting
         for (Gpsmodel nbItem : checkedData){
             if (nbItem.getChecked())  {               
                 nbVols++;
@@ -189,9 +196,8 @@ public class GPSViewController {
                 
         switch (idxGPS) {
             case 0:
-                // Sélectionner le GPS
-                // Pas de GPS mémorisé
-                // A voir s'il faut un traitement ou non
+                // Select a GPS
+                // No GPS defined in settings                
                 break;
             case 1:
                 // 6020/6030
@@ -261,11 +267,10 @@ public class GPSViewController {
     }
     
     /**
-     * Remplissage de la choicebox permettant de choisir le modèle de GPS
-     * parmi les différents GPS supportés par Logfly
+     * Choicebox is filled with supported GPS
      */
     private void iniChbGPS()  {          
-        listGPS suppGPS = new listGPS();
+        listGPS suppGPS = new listGPS(myConfig.getLocale());
         ObservableList <String> allGPS = suppGPS.fill();                
         chbGPS.getItems().clear();
         chbGPS.setItems(allGPS);
@@ -276,8 +281,7 @@ public class GPSViewController {
           public void changed(ObservableValue ov, Number value, Number new_value) {
             choixGPS(new_value.intValue());
           }
-        });
-        // Pour lancer la prcédure adéquate correspondant au choix par défaut
+        });        
         choixGPS(idxGPS);
     }
     
@@ -288,22 +292,22 @@ public class GPSViewController {
                 imgLed.setVisible(false);
                 switch (resCom) {
                     case 0 :     
-                        // Etat initial, on tente une communication
+                        // initial state, we try a communication
                         currNamePort = chbSerial.getSelectionModel().getSelectedItem().toString();
                         runFlyWithProgress();
                         break;
                     case 1 :
-                        // La com a réussi, si on relance la communication, on vide la table
+                        // Successfull communication, a new run  clears the table
                         tableImp.getItems().clear();
                         buttonBar.setVisible(false);
                         hbTable.setVisible(false);  
                         Image imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
                         btnGo.setGraphic(new ImageView(imgGo));
-                        // en mettant rescom à 2, on se replace dans le cas du bouton refresh
+                        // with value 2, we are in refresh button case
                         resCom = 2;
                         break;
                     case 2 :
-                        // La com n'a pas fonctionnée, on réinitialise la liste des ports 
+                        // unsuccess communication, listSerialPort() is called for a new attempt
                         listSerialPort();
                         break;                        
                 }               
@@ -312,7 +316,10 @@ public class GPSViewController {
         
     }
     
-    
+    /**
+     * choicebox is filled with available ports
+     * a filter is applied based on OS
+     */
     private void listSerialPort() {
         SerialComManager scm;     
         int idxSerialList = 0;
@@ -380,7 +387,9 @@ public class GPSViewController {
     
     
     
-    
+    /**
+     * New Flymaster series communication method
+     */
     private void readFlymaster()  {
         try {
             flymaster fms = new flymaster();
@@ -418,16 +427,19 @@ public class GPSViewController {
         }                
     }
     
+    /**
+     * Table is filled with GPS flights 
+     */
     private void afficheFlyList()  {
         // Mise à jour de la LED
         actuLed();
         if (resCom == 2)  {
-            alertbox aError = new alertbox();
+            alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(i18n.tr("Impossible d'ouvrir le port série sélectionné"));  
         } else {
             if (dataImport.size() > 0) {
 
-                // On personnalise les colonnes au cas par cas
+                // Under the GPS, columns are customized 
                 Column4.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("col4"));
                 // on ajustera la largeur des colonnes au cas par cas
                 dateCol.setMinWidth(80);
@@ -438,7 +450,7 @@ public class GPSViewController {
                 Column6.setVisible(false);
                 tableImp.setMaxWidth(300);
                 tableImp.setItems(dataImport); 
-                // Coloration des lignes déjà présentes dans le carnet
+                // Special color if a flight is already in the logbook
                 // http://stackoverflow.com/questions/32119277/colouring-table-row-in-javafx
                 tableImp.setRowFactory(tbrow -> new TableRow<Gpsmodel>() {
                     @Override
@@ -461,7 +473,10 @@ public class GPSViewController {
             }
         }
     }
-    
+   
+    /**
+     * run readFlymaster in a different thread
+     */
     private void runFlyWithProgress() {
         ProgressForm pForm = new ProgressForm();
            
@@ -476,8 +491,7 @@ public class GPSViewController {
         // binds progress of progress bars to progress of task:
         pForm.activateProgressBar(task);
 
-        // in real life this method would get the result of the task
-        // and update the UI based on its value:
+        // we update the UI based on result of the task
         task.setOnSucceeded(event -> {
             pForm.getDialogStage().close();
             afficheFlyList();
@@ -489,6 +503,9 @@ public class GPSViewController {
         thread.start();        
     }
     
+    /**
+     * Update of led icon
+     */
     private void actuLed() {
         Image imgImgLed=null;
         Image imgGo = null;
@@ -528,6 +545,9 @@ public class GPSViewController {
         }
     }
     
+    /**
+     * Checked flights are inserted in the logbook in a different thread
+     */
     private void insertWithProgress() {
         ProgressForm pForm = new ProgressForm();
            
@@ -542,8 +562,7 @@ public class GPSViewController {
         // binds progress of progress bars to progress of task:
         pForm.activateProgressBar(task);
 
-        // in real life this method would get the result of the task
-        // and update the UI based on its value:
+        // when task ended, return to logbook view
         task.setOnSucceeded(event -> {
             pForm.getDialogStage().close();
             rootController.changeCarnetView();
@@ -555,6 +574,9 @@ public class GPSViewController {
         thread.start();        
     }
     
+    /**
+     * Flymaster insertion method
+     */
     private void insertFlymaster() {
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         try {
@@ -563,8 +585,8 @@ public class GPSViewController {
                 for (Gpsmodel item : checkedData){
                     if (item.getChecked())  {     
                         try {
-                            // récupération de l'instruction de déchargement de la trace dans la colonne 5
-                            // Composition de la date pour l'entête IGC, à partir de la colonne 1 
+                            // Download instruction of the flight is stored in column 5
+                            // IGC date is compsed with column 1
                             // Col 1 [26.04.17] -> [260417]
                             String sDate = item.getDate().replaceAll("\\.", "");
                             if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
@@ -580,14 +602,19 @@ public class GPSViewController {
                     }
                 }
                 fms.closePort();
-                // mis en rem avec la jauge
-              //  rootController.changeCarnetView();
             }
         } catch (Exception e) {
             
         } 
     }
     
+    /**
+     * Check if a flight already exists in the db file
+     * @param strDate
+     * @param strHeure
+     * @param strDuree
+     * @return 
+     */
     private boolean checkInCarnet(String strDate, String strHeure, String strDuree)  {
         boolean res = false;
         String[] tbDate = strDate.split("\\.");
@@ -617,22 +644,23 @@ public class GPSViewController {
         return res;
     }
     
+    /**
+     * Display the selected flight
+     */
     public void showTrack()  {
         Gpsmodel selLine = tableImp.getSelectionModel().getSelectedItem();
-        // On récupère l'instruction de déchargement
-        System.out.println(selLine.getCol5());
         try {
             flymaster fms = new flymaster();
             if (fms.iniForFlights(currNamePort)) { 
-                // récupération de l'instruction de déchargement de la trace dans la colonne 5
-                // Composition de la date pour l'entête IGC, à partir de la colonne 1 
+                // Download instruction of the flight is stored in column 5
+                // IGC date is compsed with column 1
                 // Col 1 [26.04.17] -> [260417]
                 String sDate = selLine.getDate().replaceAll("\\.", "");
                 if (fms.getIGC(selLine.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
                     traceGPS currTrace = new traceGPS(fms.getFinalIGC(), "IGC", "", true);
                     fms.closePort();
                     if (currTrace.isDecodage()) { 
-                        // Copié collé showFullMap;
+                        // copied/pasted of showFullMap;
                         map_visu visuFullMap = new map_visu(currTrace, myConfig);
                         if (visuFullMap.isMap_OK()) {
                             AnchorPane anchorPane = new AnchorPane();                
@@ -644,12 +672,12 @@ public class GPSViewController {
                             anchorPane.getChildren().add(viewMap);  
 
                             String sHTML = visuFullMap.getMap_HTML();
-                            /** ----- Debut Debug --------*/                 
+                            /** ----- Begin Debug --------*/                 
                             final Clipboard clipboard = Clipboard.getSystemClipboard();
                             final ClipboardContent content = new ClipboardContent();
                             content.putString(sHTML);            
                             clipboard.setContent(content);                                
-                            /**------ Fin Debug --------- */
+                            /**------ End Debug --------- */
                             viewMap.getEngine().loadContent(sHTML,"text/html");
                             StackPane subRoot = new StackPane();
                             subRoot.getChildren().add(anchorPane);
@@ -674,7 +702,7 @@ public class GPSViewController {
     }
     
     /**
-     * Appellée pour obtenir un pont de communication avec RootLayoutController 
+     * set the bridge with RootLayoutController 
      * @param rootlayout 
      */
     public void setRootBridge(RootLayoutController rootlayout) {
@@ -683,7 +711,7 @@ public class GPSViewController {
     }
     
     /**
-     * Procedure de démarrage, initialise la choicebox des GPS supportés
+     * Starting method, recovered settings and GPS choicebox is filled
      * @param mainConfig 
      */
     public void setMyConfig(configProg mainConfig) {
@@ -693,6 +721,9 @@ public class GPSViewController {
         iniChbGPS();
     }
     
+    /**
+    * Translate labels of the window
+    */
     private void winTraduction() {
         lbPort.setText(i18n.tr("Port"));
         btnDecocher.setText(i18n.tr("Décocher"));

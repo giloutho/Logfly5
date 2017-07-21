@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package littlewins;
 
@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 /**
  *
  * @author gil
+ * 
+ * Show the plaint text of the track file
  */
 public class winTrackFile {
     private String traceTxt;
@@ -34,11 +36,11 @@ public class winTrackFile {
     private void showTrace() {
         Stage subStage = new Stage();
                
-         // On ajoute le textArea ancré en haut à gauche donc on utilise AnchorPane
+         // Using an anchorpane because we add a text area in the top left corner 
         AnchorPane anchorPane = new AnchorPane();
         TextArea txtTrace = new TextArea();
         txtTrace.setWrapText(true);          
-        // On l'ancre aux 4 coins
+        // anchor in four corners
         AnchorPane.setTopAnchor(txtTrace, 10.0);
         AnchorPane.setLeftAnchor(txtTrace, 10.0);
         AnchorPane.setRightAnchor(txtTrace, 10.0);
@@ -50,7 +52,6 @@ public class winTrackFile {
         subRoot.getChildren().add(anchorPane);
         
         Scene secondScene = new Scene(subRoot, 500, 600);
-        // On veut que cette fenêtre soit modale
         subStage.initModality(Modality.APPLICATION_MODAL);        
         subStage.setScene(secondScene);     
         subStage.showAndWait();

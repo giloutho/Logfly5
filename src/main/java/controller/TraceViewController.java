@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -50,12 +50,13 @@ import trackgps.traceGPS;
 /**
  *
  * @author gil
+ * Display an external GPS track
  */
 public class TraceViewController {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
+    // Settings
     configProg myConfig;
      
     private Stage dialogStage;
@@ -86,9 +87,13 @@ public class TraceViewController {
     
     @FXML
     private void initialize() {
-        
+        // empty but necessary
     }
     
+    /**
+     * Select the track in a folder
+     * @throws Exception 
+     */
     @FXML
     private void selectTrackFolder() throws Exception {
         FileChooser fileChooser = new FileChooser();
@@ -97,9 +102,7 @@ public class TraceViewController {
         File selectedFile = fileChooser.showOpenDialog(dialogStage);        
         if(selectedFile != null){
             extTrace = new traceGPS(selectedFile, "IGC",true);
-            if (extTrace.isDecodage()) { 
-                // On vérifiait le décodage correct de la date
-                //System.out.println("Decodage : "+myTrace.isDecodage()+"  "+myTrace.getDT_Deco().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            if (extTrace.isDecodage()) {                 
                 map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
                 if (visuMap.isMap_OK()) {
                     mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
@@ -113,13 +116,16 @@ public class TraceViewController {
                     }
             });  
             }  else {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(i18n.tr("Problème de décodage du fichier"));
             }             
         }
         
     }
     
+    /**
+     * Show a fullscreen map of the track in a new window with flght parameters
+     */
     @FXML
     private void showFullMap() {
         if (extTrace.isDecodage()) {        
@@ -134,23 +140,18 @@ public class TraceViewController {
                 anchorPane.getChildren().add(viewMap);  
                 
                 String sHTML = visuFullMap.getMap_HTML();
-                /** ----- Debut Debug --------*/                 
+                /** ----- Begin Debug --------*/                 
                 final Clipboard clipboard = Clipboard.getSystemClipboard();
                 final ClipboardContent content = new ClipboardContent();
                 content.putString(sHTML);            
                 clipboard.setContent(content);
                 
-                // On tente l'écriture sur le disque
-                //try(  PrintWriter out = new PrintWriter( "filename.txt" )  ){
-                  //  out.println( sDebug );
-               // }
-                /**------ Fin Debug --------- */
                 viewMap.getEngine().loadContent(sHTML,"text/html");
                 StackPane subRoot = new StackPane();
                 subRoot.getChildren().add(anchorPane);
                 Scene secondScene = new Scene(subRoot, 500, 400);
                 Stage subStage = new Stage();
-                // On veut que cette fenêtre soit modale
+                // window will be modal
                 subStage.initModality(Modality.APPLICATION_MODAL);
                 subStage.setScene(secondScene); 
                 subStage.setMaximized(true);
@@ -165,10 +166,9 @@ public class TraceViewController {
     }
     
     /**
-     * VisuGPS ne fonctione qu'avec une trace ayant une adresse http
-     * runVisuGPS télécharge la trace sur un serveur en utilisant un script php
-     * Ce script fait notamment le ménage sur le serveur pour les traces précédemment chargées
-     * afin de ne pas surcharger l'espace disuqe du serveur
+     * VisuGPS need a track with http url
+     * runVisuGPS upload the track with a special php script in a server
+     * This script upload the track and delete old tracks      
      */
     @FXML
     private void runVisuGPS() {
@@ -205,10 +205,10 @@ public class TraceViewController {
     }
     
     /**
-     * la trace a été téléchargée sur un serveur avec un nom de la forme 
-     * YYYYMMDDHHMMSS_Aleatoire  [Aléatoire = nombre entre 1 et 1000]
+     * track uploaded in a server with a name like
+     * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
      * @param webFicIGC 
-     */   
+     */    
     private void showVisuGPS(String webFicIGC)  {
         StringBuilder visuUrl = new StringBuilder();
         visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
@@ -216,7 +216,6 @@ public class TraceViewController {
         System.out.println(visuUrl.toString());
         AnchorPane anchorPane = new AnchorPane();                
         WebView viewMap = new WebView();   
-        // WebEngine webEngine = viewMap.getEngine();
         AnchorPane.setTopAnchor(viewMap, 10.0);
         AnchorPane.setLeftAnchor(viewMap, 10.0);
         AnchorPane.setRightAnchor(viewMap, 10.0);
@@ -234,6 +233,9 @@ public class TraceViewController {
         subStage.show();       
     }
     
+    /**
+     * if needed, call the scoring class
+     */
     @FXML
     private void showScore() {
         if (extTrace.isDecodage()) {
@@ -243,14 +245,18 @@ public class TraceViewController {
                 // On lance le calcul avec le module externe points (classe scoring) dont on DOIT attendre la fin d'execution
                 // C'est la classe scoring qui reviendra vers le controller en appellant scoreReturn()
                 // D'où la nécessité de mettre un pont avec ce controller
-                scoring currScore = new scoring(this,3,0);  
+                scoring currScore = new scoring(this,3,0, myConfig);  
                 currScore.start(extTrace, myConfig.getIdxLeague());                            
             }
         }
     }
-    
+       
+    /**
+     * Answer of scoring class
+     * @param pRetour 
+     */
     public void scoreReturn(int pRetour) {
-        // Si la trace n'a pas été évaluée, le message d'erreur a été envoyé par la classe scoring
+        // If scoring failed, error message was sent by Scoring class
         if (extTrace.isScored())  {            
             switch (pRetour) {
                 case 3:
@@ -263,38 +269,43 @@ public class TraceViewController {
         }         
     }
     
+    /**
+     * Manage Google Earth kml file generation
+     */
     @FXML
     private void askWinGE() {
-        // La trace sera systématiquement scorée avant génération du Kml
+        // Track will be scored before generation
         if (extTrace.isDecodage()) {
             if (extTrace.isScored())  {
                showWinGE();                
             } else {
-                // On lance le calcul avec le module externe points (classe scoring) dont on DOIT attendre la fin d'execution
-                // C'est la classe scoring qui reviendra vers le controller en appellant scoreReturn()
-                // D'où la nécessité de mettre un pont avec ce controller
-                scoring currScore = new scoring(this,4,0);  
+                // Launch computation with an external program "points" (Scoring class). We must wait the end of the process
+                // Scoring claas come back to controller with scoreReturn()
+                // Therefore a communication bridge is necessary
+                scoring currScore = new scoring(this,4,0, myConfig);  
                 currScore.start(extTrace, myConfig.getIdxLeague());                            
             }
         }        
     }
     
+    /**
+     * Display window with parameters kml generation
+     * @return 
+     */
     private boolean showWinGE() {
         try {                                  
-            // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getResource("view/KmlView.fxml")); 
             
             AnchorPane page = (AnchorPane) loader.load();
-            // Creation de la scène pour la fenêtre de Configuration
             Stage dialogStage = new Stage();
             dialogStage.setTitle(i18n.tr("Génération fichier kml"));
             dialogStage.initModality(Modality.WINDOW_MODAL);       
             dialogStage.initOwner(mainApp.getPrimaryStage());
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
-
-            // Initialisation d'un pont de communication entre le controller Configview et RootLayout
+            
+            // Initialization of a communication bridge 
             KmlViewController controller = loader.getController();
             controller.setTraceBridge(this);
             controller.setAppel(2, myConfig);
@@ -310,6 +321,11 @@ public class TraceViewController {
         }
     }
     
+    /**
+     * Answer of KmlViewController when kml generation is finished 
+     * @param currKml
+     * @throws IOException 
+     */
     public void configKml(makingKml currKml) throws IOException {  
         boolean kmlDisk = false;
         File ficKml = null;
@@ -335,21 +351,24 @@ public class TraceViewController {
                             Desktop dt = Desktop.getDesktop();     
                             dt.open(ficKml);            
                         } catch (Exception e) {
-                            alertbox aError = new alertbox();
+                            alertbox aError = new alertbox(myConfig.getLocale());
                             aError.alertNumError(1030); 
                         }       
                     }
                 } else {
-                    alertbox aInfo = new alertbox();
+                    alertbox aInfo = new alertbox(myConfig.getLocale());
                     aInfo.alertInfo(i18n.tr("Génération du fichier terminée")); 
                 }
             } else {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertNumError(currKml.getErrorCode()); 
             }
         }
     }
 
+    /**
+     * Track export on disk
+     */
     private void exportTrace() {
         int res = -1;
         FileChooser fileChooser = new FileChooser();
@@ -376,12 +395,12 @@ public class TraceViewController {
                 case "GPX":
                     break;
             }
-            alertbox finOp = new alertbox();
+            alertbox finOp = new alertbox(myConfig.getLocale());
             finOp.alertNumError(res);
         }        
     }        
         
-    // Ajout d'un menu contextuel fondé sur le dernier paragraphe Adding Context Menus
+    // Add a context menu based on Adding Context Menus from
     // http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm    
     private ContextMenu clicTop_Menu()   {
         final ContextMenu cm = new ContextMenu();
@@ -396,7 +415,7 @@ public class TraceViewController {
         MenuItem cmItem2 = new MenuItem(i18n.tr("Liste points"));
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                winPoints myGrid = new winPoints();    
+                winPoints myGrid = new winPoints(myConfig.getLocale());    
                 myGrid.showTablePoints(extTrace);
             }
         });
@@ -413,7 +432,7 @@ public class TraceViewController {
         MenuItem cmItemMa = new MenuItem(i18n.tr("Mail"));
         cmItemMa.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                alertbox aInfo = new alertbox();
+                alertbox aInfo = new alertbox(myConfig.getLocale());
                 aInfo.alertInfo(i18n.tr("Envoi par mail"));                    
             }
         });
@@ -423,7 +442,7 @@ public class TraceViewController {
     }    
     
     /**
-     * Appelée par l'application principale pour avoir une référence retour
+     * Is called by the main application to give a reference back to itself.
      * 
      * @param mainApp
      */
@@ -434,6 +453,9 @@ public class TraceViewController {
         winTraduction();
     }
 
+    /**
+    * Translate labels of the window
+    */
     private void winTraduction() {
         btnSelect.setText(i18n.tr("Sélectionner une trace"));
         

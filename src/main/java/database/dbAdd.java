@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package database;
 
@@ -18,20 +18,27 @@ import trackgps.traceGPS;
 /**
  *
  * @author gil
+ * database addition operations
  */
 public class dbAdd {
     
-     // Localization
+    // Localization
     private I18n i18n;
 
-    // Paramètres de configuration
+    // Settings
     configProg myConfig;
     
     public dbAdd(configProg pConfig)  {
         myConfig = pConfig;
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());
+        i18n = I18nFactory.getI18n("","lang/Messages",dbAdd.class.getClass().getClassLoader(),myConfig.getLocale(),0);
     }
     
+    
+    /**
+     * Add a flight in the logbook
+     * @param pTrace
+     * @return 
+     */
     public boolean addVolCarnet(traceGPS pTrace) {
         boolean res = false;
         String sReq;
@@ -40,7 +47,7 @@ public class dbAdd {
         String siteNom = null;
         String sitePays = null;
         
-        // Ultime vérification pour s'assurer que le vol ne figure pas dans le carnet
+        // last checking for flight existence in the logbook
         sReq = "SELECT * FROM Vol WHERE V_Date = '"+pTrace.getDate_Vol_SQL()+"'";
         try {
             ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq);           
@@ -48,12 +55,12 @@ public class dbAdd {
                 dbSearch myRech = new dbSearch(myConfig);
                 String siteDeco = myRech.rechSiteCorrect(pTrace.getLatDeco(),pTrace.getLongDeco(),true);   
                 if (siteDeco == null)  {
-                    // Aucun site trouvé il faut en créer un avec les coordonnées de décollage
+                    // No lauching site found, a new site must be created with takeoff coordinates
                     siteDeco = addBlankSite(pTrace.getLatDeco(),pTrace.getLongDeco(),pTrace.getAlt_Deco_GPS());
                 }
                 if (siteDeco != null && !siteDeco.isEmpty())  {
-                    // Attention le split en java repose sur les expressions régulières 
-                    // * fait partie des douze caractères devant être échappés
+                    // Warning java split founded on regular expressions
+                    // * is part of 12 characters must be escaped
                     String[] siteComplet = siteDeco.split("\\*");
                     if (siteComplet.length > 0) {
                         siteNom = siteComplet[0];
@@ -70,10 +77,9 @@ public class dbAdd {
                     sReqInsert.append(sQuote).append(siteNom).append(sQuoteVirg);
                     sReqInsert.append(sQuote).append(sitePays).append(sQuoteVirg);
                     sReqInsert.append(sQuote).append(pTrace.getFicIGC()).append(sQuoteVirg);
-                    // L'utilisation de ce GMTOffset n'est probabelement plus d'actualité
-                    // On le conserve à des fins de compatibilité avec xLogfly, il était en minutes
-                    // l'Offset de la trace est en heures stocké dans un double
-                    // Le cast en type long sert à éliminer les décimales du double
+                    // GMTOffset usage is only for compatibility with xLogfly, it was in minutes
+                    // Track offset is stored in a double
+                    // Cast in long type is for eliminate decimals
                     sReqInsert.append(sQuote).append(String.format("%d",(long)pTrace.getUtcOffset()*60)).append(sQuoteVirg);
                     sReqInsert.append(sQuote).append(pTrace.getsVoile()).append(sQuote).append(")");   
                     try {
@@ -99,9 +105,9 @@ public class dbAdd {
     }
     
     /**
-     * Ajoute un nouveau site avec un numéro et la mention "A renommer"
-     * Cette procédure n'existait pas dans xLogfly
-     * Elle était intégrée sur un else dans Rech_Site_Correct
+     * Add a new site in db with a number and a mention "To rename"
+     * This method didn't exist in xLogfly
+     * It was embedded in a else in Rech_Site_Correct method
      * @return 
      */   
     public String addBlankSite(double pLat,double pLong,int pAlt)  {
@@ -115,13 +121,13 @@ public class dbAdd {
         try {
             ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq.toString());
             if (rs != null)  {
-                // Obligatoire ->  Initially, the cursor is positioned before the first row.
+                // Mandatory ->  Initially, the cursor is positioned before the first row.
                 rs.next();
                 int totSiteNo = rs.getInt(1);                
                 String sNom = "Site No "+String.valueOf(totSiteNo + 1)+"  ("+i18n.tr("A renommer")+")";
-                // Longue discussion sur les StringBuilder
+                // Big post about StringBuilder
                 // http://stackoverflow.com/questions/8725739/correct-way-to-use-stringbuilder
-                sReq.setLength(0);   // Remise à zéro du sb                
+                sReq.setLength(0);   // Stringbuilder is cleared            
                 sReq.append("INSERT INTO Site (S_Nom,S_CP,S_Type,S_Alti,S_Latitude,S_Longitude,S_Maj) VALUES(");
                 sReq.append(sQuote).append(sNom).append(sQuote).append(", ").append(sQuote).append("***").append(sQuote);
                 sReq.append(", ").append(sQuote).append("D").append(sQuote).append(",").append(sQuote).append(String.valueOf(pAlt)).append(sQuote).append(",");

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package littlewins;
 
@@ -21,6 +21,9 @@ import org.xnap.commons.i18n.I18n;
 /**
  *
  * @author gil
+ * 
+ * For simple windows, we don't use SceneBuilder
+ * 
  */
 public class winComment {
     private String commentTxt;
@@ -65,7 +68,7 @@ public class winComment {
         TextArea txtComment = new TextArea();
         txtComment.setWrapText(true);
         txtComment.setText(commentTxt);
-        // Pour contenir les boutons
+        // for buttons
         HBox buttonBar = new HBox();
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
@@ -89,7 +92,7 @@ public class winComment {
         subRoot.getChildren().add(vbox);
         
         Scene secondScene = new Scene(subRoot, 500, 250);
-        // On veut que cette fenêtre soit modale
+        // modal mode
         subStage.initModality(Modality.APPLICATION_MODAL);        
         subStage.setScene(secondScene);     
         subStage.showAndWait();

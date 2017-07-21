@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -61,20 +61,16 @@ public class RootLayoutController {
     private Button btnSupport;
     
     
-    // Reference to the main application.
+    // Refer to the main application.
     private Main mainApp;
     
     private configProg myConfig;
         
-    /*
-    * Procédure destinée à afficher une AboutBox lors du clic sur le logo
-    */
-    
     @FXML
     private void initialize() {           
-        // Au premier lancement, on affiche le carnet donc on met l'option menu Carnet en surbrillance
+        // At startup, default display is logbook table, logbook option is highlighted
         mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
-        //Initialisation des zones cliquables avec les expressions Lambda
+        //Initialization of click areas with lambda expressions
         mnCarnet.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(1);
             mainApp.showCarnetOverview();
@@ -105,18 +101,19 @@ public class RootLayoutController {
         winTraduction();
     }
     
-    
+    /**
+     * Show Configuration window
+     * @return 
+     */
     @FXML
     public boolean showConfigDialog() {
         try {                     
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getResource("/ConfigView.fxml")); 
-            // Détermination de la langue à utiliser
             configProg myConfig = new configProg();   
             AnchorPane page = (AnchorPane) loader.load();
 
-            // Creation de la scène pour la fenêtre de Configuration
             Stage dialogStage = new Stage();
             dialogStage.setTitle(i18n.tr("Configuration"));
             dialogStage.initModality(Modality.WINDOW_MODAL);       
@@ -124,12 +121,12 @@ public class RootLayoutController {
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
 
-            // Initialisation d'un pont de communication entre le controller Configview et RootLayout
+            // Communication bridge between Configview and RootLayout controllers
             ConfigViewController controller = loader.getController();
             controller.setRootBridge(this);
             controller.setDialogStage(dialogStage); 
             controller.setMyConfig(myConfig);
-            // Cette fenêtre sera modale
+            // This window will be modal
             dialogStage.showAndWait();
             
             return true;
@@ -139,20 +136,26 @@ public class RootLayoutController {
         }
     }
     
+    /**
+     * Show support window
+     */
     @FXML 
     public void showSupport() {
         winTrackFile myTrace = new winTrackFile("Ceci est une trace ");                                    
     }
     
+    /**
+     * Show tools window
+     */
     @FXML 
     public void showOutils() {
-        alertbox myInfo = new alertbox();
+        alertbox myInfo = new alertbox(myConfig.getLocale());
         myInfo.alertInfo("Module en construction");
     }
     
     /**
-     * L'option sélectionnée (IdxMenu) est mise en surbrillance
-     * toutes les autres options sont remises en mode normal (fond noir, lettres blanches)
+     * Selected option is highlighted (IdxMenu)
+     * Others are in normal mode (black background, white letters)
      * @param idxMenu 
      */
     public void switchMenu(int idxMenu)  {
@@ -207,11 +210,15 @@ public class RootLayoutController {
         }        
     }
     
+    
     public void changeCarnetView()  {  
         switchMenu(1);
         mainApp.showCarnetOverview();
     }
     
+    /**
+    * Translate labels of the window
+    */
     private void winTraduction() {         
         mnCarnet.setText(i18n.tr("Carnet"));
         mnGPS.setText(i18n.tr("Import GPS")); 

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package leaflet;
 
@@ -18,6 +18,7 @@ import org.xnap.commons.i18n.I18n;
 /**
  *
  * @author gil
+ * HTML generation of a leaflet map with markers
  */
 public class map_markers {
     
@@ -37,7 +38,6 @@ public class map_markers {
         this.i18n = pI18n;
         idxMap = numMap;
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);  
         if (pointsList.size() > 0) genMap();       
@@ -58,9 +58,12 @@ public class map_markers {
         return pointsList;
     }
     
+    /**
+     * Default layer of the map
+     */
     private void genDefaultLayer() {
          
-        // On met une valeur par defaut au cas où, pour ne pas se retrouver sans AddTo(Map)       
+        // We put a default value to avoid an undefined case
         if(idxMap == 0) {
             jsLayer = "    osmlayer.addTo(map);";
         } else if (idxMap ==1) { 
@@ -77,10 +80,13 @@ public class map_markers {
         
     }
     
+    /**
+     * Generation of HTML code of comment if exists
+     */
     private void genComment() {
                 
         if (strComment != null && !strComment.equals("")) { 
-            // Code de construction du bouton
+            // Button building
             btnComment.append("        L.easyButton({").append(RC);  
             btnComment.append("            id: 'bt_comment',  // an id for the generated button").append(RC);  
             btnComment.append("            position: 'topleft',      // inherited from L.Control -- the corner it goes in").append(RC);  
@@ -100,8 +106,8 @@ public class map_markers {
             btnComment.append("            );").append(RC);  
             btnComment.append("        });").append(RC).append(RC);  
             btnComment.append("        $('#bt_comment').trigger( \"click\" );").append(RC);   
-            //Code de construction du texte de commentaire
-            // On est dans du HTML pas du javascript donc l'échappement de l'apostrophe est superflu
+            // Text building
+            // It's HTML not javascript apostrophe escape is not necessary
             String removeRC = strComment.replaceAll("\\r\\n", "<br>");
             String commentOk = removeRC.replaceAll("\\\n", "<br>");            
             txtComment.append("<div id=\"comment_to_pop_up\"><a class=\"b-close-c\">x<a/>");
@@ -113,6 +119,10 @@ public class map_markers {
         }         
     }
     
+    /**
+     * Generation of HTML code of the map
+     * @return 
+     */
     public int genMap() {
         int res = -1;
         StringBuilder sbHTML = new StringBuilder();
@@ -121,7 +131,6 @@ public class map_markers {
         
         try {
             try  {
-             //   BufferedReader br = new BufferedReader(new InputStreamReader(map_visu.class.getResourceAsStream("/skl_marker.txt")));
                 BufferedReader br = new BufferedReader(new InputStreamReader(map_visu.class.getResourceAsStream("/skl/skl_marker.txt")));
                 String line = null;            
                 while ((line = br.readLine()) != null) {
@@ -129,7 +138,7 @@ public class map_markers {
                 }
                 br.close();
             } catch (IOException e) {
-                res = 8;    // Problème de chargement de la ressource
+                res = 8;    // Unabel to load the resource
             }
             if (sbHTML.length() > 500)  {
                 String beginHTML = sbHTML.toString();
@@ -137,10 +146,10 @@ public class map_markers {
                 StringBuilder sbCoord = new StringBuilder();
                 sbCoord.append(decimalFormat.format(currPoint.Latitude)).append(",").append(decimalFormat.format(currPoint.Longitude));
                 String pointsHTML = beginHTML.replace("%Coord%", sbCoord.toString());
-                // Traitement du commentaire 
-                // Pour ne pas afficher un disgracieux \' à la place de l'apostophe
-                // il faut en HTML un \\' Or java a déjà placé un \ devant l'apostrophe
-                // donc il suffit d'ajouter un \
+                // Comment treatment
+                // To avoid an unsightly \ in place of apostrophe
+                // in HTML a  \\' is needed but java alredy place one \ before apostrophe
+                // therefore only one is added
                 if (currPoint.Comment != null && !currPoint.Comment.equals("")) {
                     commentOk = currPoint.Comment.replace("'", "\'"); 
                     sbComment.append(".bindPopup('").append(commentOk).append("').openPopup();");

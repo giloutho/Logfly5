@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package trackgps;
 
@@ -22,11 +22,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import settings.configProg;
 import systemio.textio;
 
 /**
  *
  * @author gil
+ * Scoring a track with an external program
  */
 public class scoring {
     
@@ -38,24 +40,30 @@ public class scoring {
     private CarnetViewController carnetController;
     private TraceViewController extController;
     
-    public scoring (int myParam)  {
-        // myParm ne sert à rien juste à faire un nouveau constructeur
+    // Settings
+    configProg myConfig;
+    
+    public scoring (int myParam, configProg currConfig)  {
+        // myParam unused... this is just a new constructor
+        myConfig = currConfig;
     }
     
-    public scoring (CarnetViewController callCarnet, int pRetour)  {
+    public scoring (CarnetViewController callCarnet, int pRetour, configProg currConfig)  {
+        myConfig = currConfig;
         this.carnetController = callCarnet;
-        // Code 0 uniquement pour test ...
-        // Code 1 au retour, on affiche la carte plein écran (fullMap) dans le CarnetViewController 
-        // Code 2 au retour, on génère le fichier kml dans le CarnetViewController 
+        // 0 only for test ...
+        // 1 when process finished, display a fullmao in CarnetViewController 
+        // 2 when process finished, kml file genration instruction will be called in CarnetViewController 
         codeRetour = pRetour;
     }
     
-    public scoring (TraceViewController callExterne, int pRetour, int myParam)  {
+    public scoring (TraceViewController callExterne, int pRetour, int myParam, configProg currConfig)  {
+        myConfig = currConfig;
         this.extController = callExterne;
-        // myParm ne sert à rien juste à faire un nouveau constructeur
+        // myParam unused... this is just a new constructor
         
-        // Code 3 au retour, on affiche la carte plein écran (fullMap) dans le TraceViewController
-        // Code 4 au retour, on génère le fichier kml dans le TraceViewController        
+        // 3 when process finished, display a fullmao in TraceViewController
+        // 4 when process finished, kml file genration instruction will be called in TraceViewController        
         codeRetour = pRetour;
     }
  
@@ -78,51 +86,68 @@ public class scoring {
     
     public int runScoring(traceGPS evalTrace, String scoreType) {
         int res = -1; 
-        String pathModPoints;
+        String pathModPoints = "";
+        boolean pointsOK = false;
 
         try{           
-            fileIGC tempf= new fileIGC();            
+            fileIGC tempf= new fileIGC(myConfig.getLocale());            
             int creaFile = tempf.creaIgcForCalcul(evalTrace, "tpoints.igc");
             if (creaFile == 0)  {
                 File optFile = systemio.tempacess.getAppFile("Logfly", "tpoints.opt");
                 if (optFile.exists())  optFile.delete();
 
                 String executionPath = System.getProperty("user.dir");
+                /* First code
                 String os = System.getProperty("os.name");
                 if (os.indexOf("Windows") != -1) {
                     pathModPoints = executionPath+"\\logfly_lib\\points.exe";            
                 } else  {
-                    // ce que l'on faisait au départ
-                    //pathModPoints = executionPath+"/logfly_lib/points";
                     pathModPoints = executionPath+"/points";
                 }
-                // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
-                // l'auteur émet des réserves : ce schéma ne fonctionne bien que si le programme s'éxecute ou se plante                                     
-                Process p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), scoreType});
-                //Process p = Runtime.getRuntime().exec(pathModPoints);           
-                BufferedReader error = getError(p);
-                String ligne = "";     
-                StringBuilder sbError = new StringBuilder();
-                while ((ligne = error.readLine()) != null) {
-                    sbError.append(ligne);
+                */
+                switch (myConfig.getCurrOS()) {
+                    case 1 :
+                        // to do windows path testing
+                        pathModPoints = executionPath+"\\logfly_lib\\points.exe";    // Windows
+                        break;
+                    case 2 :
+                        pathModPoints = executionPath+"/points";
+                        File fPoints = new File(pathModPoints);
+                        if(fPoints.exists()) pointsOK = true;                        
+                        break;
                 }
-                p.waitFor();
-                res = p.exitValue();  // Code 0 si tout est OK... 
-                if (res == 0) {
-                     FileReader reader = new FileReader(optFile.getAbsolutePath());            
-
-                    JSONParser jsonParser = new JSONParser();
-                    JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
-                    evalTrace.setScore_JSON(jsonObject.toString());
-                    res = decodeStrJson(evalTrace);
-                    if (res == 0)  {
-                        evalTrace.setScored(true);
-                    } else {
-                        evalTrace.setScored(false);
-                        errorScore = res;  
+                if (pointsOK)  {
+                    // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
+                    // the author has serious doubts : ok only if program run correctly or crashes
+                    Process p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), scoreType});
+                    //Process p = Runtime.getRuntime().exec(pathModPoints);           
+                    BufferedReader error = getError(p);
+                    String ligne = "";     
+                    StringBuilder sbError = new StringBuilder();
+                    while ((ligne = error.readLine()) != null) {
+                        sbError.append(ligne);
                     }
+                    p.waitFor();
+                    res = p.exitValue();  // 0 if all is OK
+                    if (res == 0) {
+                        FileReader reader = new FileReader(optFile.getAbsolutePath());            
 
-                }                        
+                        JSONParser jsonParser = new JSONParser();
+                        JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
+                        evalTrace.setScore_JSON(jsonObject.toString());
+                        res = decodeStrJson(evalTrace);
+                        if (res == 0)  {
+                            evalTrace.setScored(true);
+                        } else {
+                            evalTrace.setScored(false);
+                            errorScore = res;  
+                        }
+
+                    }
+                } else {
+                    res = 1001;
+                    errorScore = 1001;
+                }
             }
         } catch (FileNotFoundException ex) {
             res = 1;
@@ -162,8 +187,7 @@ public class scoring {
         // binds progress of progress bars to progress of task:
         pForm.activateProgressBar(task);
 
-        // in real life this method would get the result of the task
-        // and update the UI based on its value:
+        // task is finished 
         task.setOnSucceeded(event -> {
             pForm.getDialogStage().close();
             scoreClosing();
@@ -192,14 +216,15 @@ public class scoring {
                     break;                
             }
         else {
-            alertbox aError = new alertbox();
+            alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertNumError(errorScore);
         }
     }
         
     /**
-     * Méthode utilisée en interne après analyse par le module points
-     * mais aussi utilisée en externe pour décoder le json de scoring stockée dans la db
+     * Decode scoring json result 
+     * used directly in this class
+     * after scoring, json is stored in db. This method will be used to decode 
      * @return 
      */
     public int decodeStrJson(traceGPS evalTrace)  {
@@ -233,17 +258,17 @@ public class scoring {
                 JSONArray tabPoints = (JSONArray) jsonObject.get("drawPoints");
                 if (tabPoints != null)  {
                     for(int i=0; i<tabPoints.size(); i++){
-                        // Chaque élément est un ensemble de trois éléments : latitude, longitude, et index du point dans la trace
-                        // seul l'index nous intéresse
+                        // each element  : latitude, longitude, and track point index                        
                         // TabPoints[i] =  [44.63208333333333,5.189766666666667,839]
+                        // we need only index
                         JSONArray coord = (JSONArray) tabPoints.get(i);                
-                        // Le cast (int) coord.get(2) envoyait une exception 
+                        // cast (int) coord.get(2) triggered an exception
                         evalTrace.Score_Tb_Balises.add(Integer.parseInt(coord.get(2).toString()));
                         if (i == 0) IdxBD = Integer.parseInt(coord.get(2).toString());
                         if (i == tabPoints.size()-1) IdxBA = Integer.parseInt(coord.get(2).toString());                    
                     }
                 }
-                // pas d'exception ... Decodage OK, on peut calculer la moyenne
+                // all is OK, average speed is computed
                 if (IdxBD > -1 && IdxBD <  evalTrace.Tb_Calcul.size()) {
                     if (IdxBA > -1 && IdxBA < evalTrace.Tb_Calcul.size()) {
                         DureeBDBA = java.time.Duration.between(evalTrace.Tb_Calcul.get(IdxBD).dHeure, evalTrace.Tb_Calcul.get(IdxBA).dHeure).toMillis();            

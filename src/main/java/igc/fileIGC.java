@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package igc;
 
@@ -14,23 +14,33 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.time.format.DateTimeFormatter;
-import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
+import java.util.Locale;
 import trackgps.traceGPS;
 
 /**
  *
  * @author Gil Thomas logfly.org
+ * Creation of IGC files
  */
 public class fileIGC {
 
-    private I18n i18n = I18nFactory.getI18n(fileIGC.class.getClass());
+    private Locale currLocale;
     private String fileAbsPath;
+    
+    public fileIGC(Locale myLocale)  {
+        currLocale = myLocale;
+    }
 
     public String getFileAbsPath() {
         return fileAbsPath;
     }
-                
+     
+    /**
+     * Creation of an IGC file with Tb_Calcul (number of points is reduced)
+     * @param currTrace
+     * @param fName
+     * @return 
+     */
     public int creaIgcForCalcul(traceGPS currTrace, String fName)  {            
         
         String igc_Lat;
@@ -52,9 +62,7 @@ public class fileIGC {
             sbIGC.append(igc_Lat+igc_Long+"A00000");
             sbIGC.append(String.format("%05d",currPoint.AltiGPS)+RC);
         }
-        
-        // On essaye la procedure temp classique 
-        // File tempFile = systemio.tempacess.getTempFile("trk", "igc");                
+                       
         File tempFile = systemio.tempacess.getAppFile("Logfly", fName);
         try {        
             Writer output = new BufferedWriter(new FileWriter(tempFile));
@@ -64,15 +72,21 @@ public class fileIGC {
             res = 0;
         }
         catch (FileNotFoundException ex) {
-            res = 1;   // Fichier non trouvé
+            res = 1;   // File not found
         } catch (IOException ex) {
-            res = 2; // Problème d'entrée sortie sur fichier
+            res = 2; // File input/output error
         }            
         
         return res;        
     }
     
-     public  String creaTempIGC(traceGPS currTrace, String fName)  {            
+    /**
+     * Creation of an IGC file with Tb_Good_Points (track valid points only) 
+     * @param currTrace
+     * @param fName
+     * @return 
+     */
+    public  String creaTempIGC(traceGPS currTrace, String fName)  {            
         
         String igc_Lat;
         String igc_Long;
@@ -94,9 +108,7 @@ public class fileIGC {
             sbIGC.append(igc_Lat+igc_Long+"A00000");
             sbIGC.append(String.format("%05d",currPoint.AltiGPS)+RC);
         }
-        
-        // On essaye la procedure temp classique 
-        // File tempFile = systemio.tempacess.getTempFile("trk", "igc");                
+                       
         File tempFile = systemio.tempacess.getAppFile("Logfly", fName);
         try {        
             Writer output = new BufferedWriter(new FileWriter(tempFile));
@@ -105,14 +117,13 @@ public class fileIGC {
             res = tempFile.getAbsolutePath();
         }
         catch (FileNotFoundException ex) {
-            alertbox aError = new alertbox();
-            aError.alertError(i18n.tr("Fichier non trouvé"));
+            alertbox aError = new alertbox(currLocale);
+            aError.alertNumError(1);  // file not found
         } catch (IOException ex) {
-            alertbox aError = new alertbox();
-            aError.alertError(i18n.tr("Problème d'entrée sortie"));            
+            alertbox aError = new alertbox(currLocale);
+            aError.alertNumError(2);  // file input/output error           
         }            
         
-        return res;
-        
+        return res;        
     }
 }

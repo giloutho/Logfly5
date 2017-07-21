@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -18,10 +19,9 @@ import trackgps.traceGPS;
 
 /**
  *
- * @author Man's costumes Gil
- * Les procédures de cette classe peuvent paraitre étranges...
- * elles ont été traduites d' xLogfly
- * où elles avaient été traduites du PHP (moulinette Man's)
+ * @author Gil with great help of Emmanuel Chabani aka Man's 
+ * Translated in xLogfly from Man's php script 
+ * Manage generation of track color
  * 
  */
 public class trackColor {
@@ -37,21 +37,15 @@ public class trackColor {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
-    configProg myConfig;
-    
-    
     public String getKmlString() {
         return kmlString;
     } 
     
-    public trackColor(traceGPS pTrace, makingKml pMakingKml) {    
+    public trackColor(traceGPS pTrace, makingKml pMakingKml, Locale currLocale) {    
         colorOK = false;
         KmlTrace = pTrace;
         currMakingKml = pMakingKml;
-        // **** i18n = I18nFactory.getI18n(logfly.Logfly.class.getClass(),myConfig.getLocale());
-        // pour debug
-        i18n = I18nFactory.getI18n(getClass());
+        i18n = I18nFactory.getI18n("","lang/Messages",trackColor.class.getClass().getClassLoader(),currLocale,0);
         if (currMakingKml.isUseReduc())
             localReduc = currMakingKml.getKmlReduc();
         else
@@ -60,7 +54,8 @@ public class trackColor {
     }
 
     /**
-     * in xLogfly -> kml_D_Folder_Rad_Deb
+     * in xLogfly -> kml_D_Folder_Rad_Deb method
+     * Begin of folder code 
      */
     public String genDebFolder() {
         StringBuilder res = new StringBuilder();
@@ -74,7 +69,8 @@ public class trackColor {
     }
     
     /**
-     * in xLogfly -> kml_H_Folder_Rad_Fin
+     * in xLogfly -> kml_H_Folder_Rad_Fin method
+     * End of code folder
      * @return 
      */
     public String genFinFolder() {
@@ -84,6 +80,10 @@ public class trackColor {
         return res.toString();
     }
     
+    /**
+     * Changes colour under vario values
+     * @return 
+     */
     public boolean genColorVario() {
         StringBuilder res = new StringBuilder();
         int aMini;
@@ -91,7 +91,7 @@ public class trackColor {
         boolean resGeneration = false;
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
+        // Mandatory : separator must be a point
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
@@ -114,7 +114,7 @@ public class trackColor {
             res.append("m/s   </span><span style=\"color:#FF0000\">").append(fmtsigne.format(ptVarioMini.Vario)).append("m/s</span></b>]]></description>").append(RC);  
             res.append(genTraceDegradee(2));
 
-            // Place le point de vario minimum sur la trace
+            // Mini vario value
             res.append("                         <Placemark>").append(RC);  
             res.append("                              <Point>").append(RC);  
             res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC);  
@@ -124,7 +124,7 @@ public class trackColor {
             res.append("                              <styleUrl>#Point_Bleu</styleUrl>").append(RC);  
             res.append("                              <name>Min :").append(fmtsigne.format(ptVarioMini.Vario)).append("m/s</name>").append(RC);  
             res.append("                         </Placemark>").append(RC);  
-            // Place le point de vario maximum sur la trace
+            // Max vario value
             res.append("                         <Placemark>").append(RC);  
             res.append("                              <Point>").append(RC);  
             res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC);  
@@ -154,7 +154,8 @@ public class trackColor {
     }
     
     /**
-     * in xLogfly -> kml_F_Track_Alti
+     * in xLogfly -> kml_F_Track_Alti method
+     * Changes colour under altitude values
      * @return 
      */
     public boolean genColorAlti() {
@@ -166,7 +167,7 @@ public class trackColor {
         boolean resGeneration = false;
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
+        // Mandatory : separator must be a point
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
@@ -190,7 +191,7 @@ public class trackColor {
             res.append("               <description><![CDATA[<b><span style=\" color:#0000FF\">").append(String.valueOf(aMaxi));
             res.append("m    </span><span style=\"color:#FF0000\">").append(String.valueOf(aMini)).append("m</span></b>]]></description>").append(RC);             
             res.append(genTraceDegradee(1));
-            // Place le point d'altitude minimum sur la trace
+            // Mini altitude value
             res.append("                         <Placemark>").append(RC); 
             res.append("                              <Point>").append(RC); 
             res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC); 
@@ -200,7 +201,7 @@ public class trackColor {
             res.append("                              <styleUrl>#Point_Bleu</styleUrl>").append(RC); 
             res.append("                              <name>Min : ").append(String.valueOf(aMini)).append("m</name>").append(RC); 
             res.append("                         </Placemark>").append(RC); 
-            // Place le point d'altitude maximum sur la trace
+            // Max altitude value
             res.append("                         <Placemark>").append(RC); 
             res.append("                              <Point>").append(RC); 
             res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC); 
@@ -231,7 +232,8 @@ public class trackColor {
     }
           
     /**
-     * in xLogfly -> kml_G_Track_Speed
+     * in xLogfly -> kml_G_Track_Speed method
+     * Changes colour under speed values
      * @return 
      */
     public boolean genColorSpeed() {
@@ -243,7 +245,7 @@ public class trackColor {
         boolean resGeneration = false;
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
+        // Mandatory : separator must be a point
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
@@ -265,7 +267,7 @@ public class trackColor {
             res.append("               <description><![CDATA[<b><span style=\" color:#0000FF\">").append(String.format("%2.2f",pMaxi.Vitesse));
             res.append("km/h    </span><span style=\"color:#FF0000\">").append(String.format("%2.2f",pMini.Vitesse)).append("km/h</span></b>]]></description>").append(RC);             
             res.append(genTraceDegradee(3));
-            // Place le point de vitesse minimum sur la trace
+            // Mini speed value
             res.append("                         <Placemark>").append(RC); 
             res.append("                              <Point>").append(RC); 
             res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC); 
@@ -275,7 +277,7 @@ public class trackColor {
             res.append("                              <styleUrl>#Point_Bleu</styleUrl>").append(RC); 
             res.append("                              <name>Min : ").append(String.format("%2.2f",pMini.Vitesse)).append("Km/h</name>").append(RC); 
             res.append("                         </Placemark>").append(RC); 
-            // Place le point de vitesse maximum sur la trace
+            // Max speed value
             res.append("                         <Placemark>").append(RC); 
             res.append("                              <Point>").append(RC); 
             res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC); 
@@ -307,9 +309,9 @@ public class trackColor {
     
   
     /**
-     *  in xLogfly -> mGen_Trace_Degradee(2,0)
-     * le deuxième paramètre concernant le type d'altitude était inutilisé, il a été supprimé
-     * on utilisait uniquement le type absolute
+     *  in xLogfly -> mGen_Trace_Degradee(2,0) method
+     * Colour gradient for the track
+     * second parameter : altitude type was unused. It was deleted. We used only "absolute"     
      * @param typeTrace
      * @return 
      */
@@ -321,7 +323,7 @@ public class trackColor {
         
         DateTimeFormatter dtfHHmm = DateTimeFormatter.ofPattern("HH:mm");
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
+        // Mandatory : separator must be a point
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
@@ -345,7 +347,7 @@ public class trackColor {
         else
             sAlti = String.valueOf(firstPoint.AltiGPS);
         
-        // Initiaisation du kml
+        // kml initialization
         res.append("                         <Placemark>").append(RC);  
         res.append("                              <LineString>").append(RC);  
         switch (typeTrace) {
@@ -381,8 +383,8 @@ public class trackColor {
                     break;
             }
             if (!sCurrVal.equals(sRefVal)) {                 
-                sRefVal = sCurrVal;
-                // Changement de valeur, on boucle la série de valeurs en passant la dernière borne de la chaine de positions ayant la même RefVal
+                sRefVal = sCurrVal;                
+                // Value change : last value with same RefVal
                 res.append(" ").append(decimalFormat.format(currPoint.Longitude)).append(",").append(decimalFormat.format(currPoint.Latitude)).append(",").append(sAlti).append("</coordinates>").append(RC);
                 res.append("                              </LineString>").append(RC);  
                 res.append("                              <Style>").append(RC);  
@@ -405,7 +407,7 @@ public class trackColor {
                 res.append("                                   </LineStyle>").append(RC);  
                 res.append("                              </Style>").append(RC);  
                 res.append("                         </Placemark>").append(RC);  
-                // On redémarre la nouvelle série en passant la première borne de la chaine de positions ayant la nouvelle RefVal
+                // New set with first value with same RefVal
                 if (currMakingKml.isGraphAltiBaro()) 
                     sAlti = String.valueOf(currPoint.AltiBaro);
                 else
@@ -426,7 +428,7 @@ public class trackColor {
                 res.append("                                   <altitudeMode>absolute</altitudeMode>").append(RC);  
                 res.append("                                   <coordinates>").append(decimalFormat.format(currPoint.Longitude)).append(",").append(decimalFormat.format(currPoint.Latitude)).append(",").append(sAlti);
             }  else {
-                // Valeurs identiques, on empile les coordonnées
+                // same values
                 if (currMakingKml.isGraphAltiBaro()) 
                     res.append(" ").append(decimalFormat.format(currPoint.Longitude)).append(",").append(decimalFormat.format(currPoint.Latitude)).append(",").append(String.valueOf(currPoint.AltiBaro));
                 else
@@ -434,8 +436,8 @@ public class trackColor {
             }
         }
 
-        // Il faut nécessairement boucler la dernière série
-        // Changement de valeur, on boucle la série de valeurs en passant la dernière borne de la chaine de positions ayant la même RefVal
+        // It is necessary to complete the last set of values
+        // Value change : last value with same RefVal
         currPoint = KmlTrace.Tb_Good_Points.get(totalPoints);
         if (currMakingKml.isGraphAltiBaro()) 
             res.append(" ").append(decimalFormat.format(currPoint.Longitude)).append(",").append(decimalFormat.format(currPoint.Latitude)).append(",").append(String.valueOf(currPoint.AltiBaro)).append("</coordinates>").append(RC); 
@@ -467,8 +469,9 @@ public class trackColor {
     }
     
     /**
-     * Ce nom de procédure bizarre avait été consevé dans xLogfly par souci de relecture dans le source PHP de Man's
-     * on garde les noms de variables à l'identique
+     * This strange name come from PHP script and was kept in xLogfly
+     * We kept variable names
+     * Compute point color
      * @param x
      * @param Mini
      * @param maxi
@@ -516,9 +519,9 @@ public class trackColor {
     }
     
     /**
-     * mGen_Legende_Double
-     * Procedure destinée à générer une charte de dégradée pour placer une légende en overlay dans GE
-     * Cette procédure tarvaille sur des valeurs doubles
+     * in xLogfly -> mGen_Legende_Double method
+     * Chart legend generation for overlay dosplay in Google Earth
+     * use double values
      * @param Mini
      * @param Maxi
      * @return 
@@ -529,80 +532,79 @@ public class trackColor {
         gcURL.append("http://chart.googleapis.com/chart?chf=");
   
         String gcFontSize = "9";
-        String gcFontColor = "FFFFFF";  // Blanc
-        // Dim gcFontColor As String = "000000"  ' Noir
+        String gcFontColor = "FFFFFF";  // White
+        // Dim gcFontColor As String = "000000"  ' Black
         String gcAlignment = "0";
         String gcTicksMarkColor = "000000";
         String gcWidth, gcHeight, gcTitre;
         ArrayList<String> gcColor = new ArrayList<>();
         ArrayList<Double> gcValue = new ArrayList<>();              
-        // Arbitrairement on a fixé à 6 le nombre de couleurs la légende
+        // arbitrarily fixed to 6 colors in chart legend
   
-        // On prend le maxi et le mini, reste à déterminer les 4 valeurs intermédiaires
+        // Direct values for maxi and mini.  Compute 4 intermediate values
         double Tranche,Range;
   
-        // Pas de titre pour l'instant
+        // No title
         gcTitre = null;
         
-        gcValue.add(Mini);   // rang 0
+        gcValue.add(Mini);   // range 0
         Range = Maxi - Mini;
         Tranche = Range / 5;
         for (int i = 1; i <= 4; i++) {
             gcValue.add(gcValue.get(0)+(Tranche*i));
         }
-        gcValue.add(Maxi);     // Rang 5
+        gcValue.add(Maxi);     // range 5
         for (int i = 0; i <= 5; i++) {
             gcColor.add(couleurPoint(gcValue.get(i), gcValue.get(0), gcValue.get(4)));
         }
         
-        // On précise que le background doit être transparent, voir le configurateur en ligne pour les différentes combinaisons
+        // background is transparent
         gcURL.append("bg,s,00000000|");
-        // Fills dans Image Chart Editor
+        // Fills in Image Chart Editor
         gcURL.append("c,lg,90,");    // c -> chart lg -> linear gradient   Le dernier chiffre représente l'angle 0 horizontal, 90 vertical
-        // Je fais l'impasse pr l'instant sur les offsets, ils sont mis en dur
-        // PLUS GRAVE... Avec le code d'origine ci dessous j'obtenais un graphe complètement inversé, la couleur du max attribuée au mini et vv
-        // Cherché mais pas trouvé d'explis, j'ai tout simplement inversé mais sans explication rationnelle
+        // For instance offsets are skipped. They are hard coded
+        // No explanations, I inversed code and it's running  -:)
         // gcURL = gcURL + gcColor(0)+",0,"+ gcColor(1)+",0.1,"+ gcColor(2)+",0.2,"+ gcColor(3)+",0.567,"+ gcColor(4)+",0.75,"+ gcColor(5)+",1"
         gcURL.append(gcColor.get(5)).append(",0,").append(gcColor.get(4)).append(",0.1,").append(gcColor.get(3)).append(",0.2,").append(gcColor.get(2)).append(",0.567,").append(gcColor.get(1)).append(",0.75,").append(gcColor.get(0)).append(",1");
   
-        // Axes dans Image Chart Editor
-        // Dans &chxl=0 le chiffre 0 indique une première série mais il pt y en avoir plusiuers cf exemple Average electrical
-        // Problème de l'inversion
+        // Axes in Image Chart Editor
+        // In &chxl=0 figure 0 means a first set but but several are possible Cf Average electrical example
+        // reversal problem mentioned earlier
         gcURL.append("&chxl=0:|").append(fmtsigne.format(gcValue.get(0))).append("|").append(fmtsigne.format(gcValue.get(1))).append("|").append(fmtsigne.format(gcValue.get(2)));
         gcURL.append("|").append(fmtsigne.format(gcValue.get(3))).append("|").append(fmtsigne.format(gcValue.get(4))).append("|").append(fmtsigne.format(gcValue.get(5)));
-        // On indique mtnt leur position en pixel
+        // Position in pixel
         gcURL.append("&chxp=20,80,140,200,260,320");
         //gcURL = gcURL + "&chxp=0,8,30,50,70,90"
-        // Concerne le démarrage de l'écriture des labels, si l'axe est visble les couleurs, etc... Réglages par défaut me convenaient !
+        // Label writing start, default settings are OK
         gcURL.append("&chxs=0,").append(gcFontColor).append(",").append(gcFontSize).append(",").append(gcAlignment).append(",t,").append(gcTicksMarkColor);
-        // La légende est placée en bas : bottom -> x  Left -> y   Right -> r  top -> t
+        // Chart legend placed at the bottom : bottom -> x  Left -> y   Right -> r  top -> t
         gcURL.append("&chxt=r");
   
-        // Size dans Image Chart Editor
+        // Size in Image Chart Editor
         gcWidth = "40";
         gcHeight = "200";
         gcURL.append("&chs=").append(gcWidth).append("x").append(gcHeight);
   
-        // Type de schéma
+        // Pattern type
         gcURL.append("&cht=lc");   // lc comme linechart  [ je suppose ! ]
   
-        // Pour cette mention je ne sais pas  [ Une expression 0000000 par série de labels, ds l'ex d'origine, il y en a 2 ]
+        // For this, I don't know [ Une expression 0000000 par série de labels, ds l'ex d'origine, il y en a 2 ]
         gcURL.append("&chco=00000000");
   
-        // Data dans Image Chart Editor
-        // Occupe 100% de l'espace         t comme Encoding = Text
+        // Data in Image Chart Editor
+        // space 100%         t like Encoding = Text
         gcURL.append("&chd=t:100");
   
-        // DataStyle dans Image Chart Editor
-        // 1 pour width = 1
+        // DataStyle in Image Chart Editor
+        // 1 for width = 1
         gcURL.append("&chls=1");
   
-        // Margin dans Image Chart Editor
-        // Dans l'exemple Average electrical il y des marges, je ne les ai pas trouvé utiles dans notre cas
+        // Margin in Image Chart Editor
+        // In Average electrical example, there is margins, not usable for us
   
-        // Titre dans Image Chart Editor
-        // dans notre cas le titre me parait surcharger un peu
-        // Donc je ne le met pas mais on pourrait...
+        // Title in Image Chart Editor
+        // For us it seems too big
+        // We don't put it but if we want...
         if (gcTitre != null)
             gcURL.append("&chtt=").append(gcTitre);
         
@@ -610,9 +612,10 @@ public class trackColor {
     }
  
     /**
-     * mGen_Legende_Int
-     * Procedure destinée à générer une charte de dégradée pour placer une légende en overlay dans GE
-     * Cette procédure tarvaille sur des valeurs entières
+     * In xLogfly -> mGen_Legende_Int method
+     * Chart legend generation for overlay dosplay in Google Earth
+     * use integer values     
+     * For explanations see comments in genLegendeDouble just below
      * @param Mini
      * @param Maxi
      * @param NbMod
@@ -624,16 +627,16 @@ public class trackColor {
         gcURL.append("http://chart.googleapis.com/chart?chf=");
   
         String gcFontSize = "9";
-        String gcFontColor = "FFFFFF";  // Blanc
-        // Dim gcFontColor As String = "000000"  ' Noir
+        String gcFontColor = "FFFFFF";  // White
+        // Dim gcFontColor As String = "000000"  ' Black
         String gcAlignment = "0";
         String gcTicksMarkColor = "000000";
         String gcWidth, gcHeight, gcTitre;
         ArrayList<String> gcColor = new ArrayList<>();
         ArrayList<Integer> gcValue = new ArrayList<>();              
-        // Arbitrairement on a fixé à 6 le nombre de couleurs la légende
+        // arbitrarily fixed to 6 colors in chart legend
   
-        // On prend le maxi et le mini, reste à déterminer les 4 valeurs intermédiaires
+        // Direct values for maxi and mini.  Compute 4 intermediate values
         int Tranche,Range;
   
         // Pas de titre pour l'instant
@@ -703,16 +706,22 @@ public class trackColor {
         
         return gcURL.toString();
     }
-    
+    /**
+     * Manage round number
+     * @param Nb
+     * @param Sens
+     * @param NbMod
+     * @return 
+     */
     private int specArrondi(int Nb, int Sens,int NbMod)  {
-        // on arrondit auNbMod le plus proche
-        // Sens 0 -> on arrondit  à la valeur inférieure
-        // Sens 1 -> on arrondit  à la valeur supérieure
-        // Sens 3 -> on arrondit  à la valeur la plus proche
+        // NbMod rounded to a whole number
+        // Sens 0 -> rounded lower value
+        // Sens 1 -> rounded upper value
+        // Sens 3 -> rounded to the nearest whole value
         int Reste;
         int Res = 0;
   
-        Reste = Nb % NbMod;  // Equivalent fonction mod
+        Reste = Nb % NbMod;  // like mod function
         switch (Sens) {
             case 0:
                 Res = Nb - Reste;

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
@@ -19,6 +19,7 @@ import trackgps.traceGPS;
 /**
  *
  * @author gil
+ * Manage score display
  */
 public class trackScore {
     private boolean scoreOK;
@@ -38,19 +39,13 @@ public class trackScore {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
-    configProg myConfig;
-    
-    public trackScore(traceGPS pTrace, makingKml pMakingKml) {    
+    public trackScore(traceGPS pTrace, makingKml pMakingKml, Locale currLocale) {    
         scoreOK = false;
         KmlTrace = pTrace;
         currMakingKml = pMakingKml;
-        // **** i18n = I18nFactory.getI18n(logfly.Logfly.class.getClass(),myConfig.getLocale());
-        // pour debug
-        i18n = I18nFactory.getI18n(getClass());       
+        i18n = I18nFactory.getI18n("","lang/Messages",trackScore.class.getClass().getClassLoader(),currLocale,0);
         totalPoints = KmlTrace.Tb_Good_Points.size()-1;
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);       
         
@@ -62,9 +57,11 @@ public class trackScore {
     public String getKmlString() {
         return kmlString;
     }
-    
-    
-    
+    /**
+     * Generation of scoring display
+     * Track is scored by Scoring class before generation
+     * @return 
+     */
     public boolean genScore() {
         
         StringBuilder res = new StringBuilder();
@@ -103,6 +100,11 @@ public class trackScore {
         return resGeneration;        
     }
     
+    /**
+     * League -> specific online contest rules
+     * @param codeLeague
+     * @return 
+     */
     private String tradLeague(String codeLeague)  {
         String res;
         switch (codeLeague) {
@@ -121,6 +123,11 @@ public class trackScore {
         return res;
     }
     
+    /**
+     * Shape evaluation of a track according selected contest rules
+     * @param codeShape
+     * @return 
+     */
     private String tradShape(String codeShape)  {
         String res;
         switch (codeShape) {
@@ -144,7 +151,9 @@ public class trackScore {
         }
         return res;
     }
+    
     /**
+     * Details of the track (turnpoints)
      * in xLogfly -> kml_I_CFD_Detail
      * @return 
      */
@@ -159,7 +168,7 @@ public class trackScore {
         try {            
             LgTb = KmlTrace.Score_Tb_Balises.size()-1;
             kmlScoreDetails.append("                                   <TABLE><TR><TD></TD></TR>").append(RC);   
-            // Balise départ
+            // Start point
             int IdxBD = KmlTrace.Score_Tb_Balises.get(0);
             currPoint = KmlTrace.Tb_Calcul.get(IdxBD);
             kmlScoreDetails.append("                                                  <TR><TD nowrap>");
@@ -183,7 +192,7 @@ public class trackScore {
                     sCoordTrace.append(String.valueOf(currPoint.AltiGPS)).append(" ");
                 }
             }
-            // Balises
+            // Turnpoints
             for (int i = 1; i < LgTb; i++) {
                 int IdxBal = KmlTrace.Score_Tb_Balises.get(i);
                 currPoint = KmlTrace.Tb_Calcul.get(IdxBal);
@@ -223,7 +232,7 @@ public class trackScore {
                 }
             }
             
-            // Ballise arrivée BA
+            // End point
             int IdxBA = KmlTrace.Score_Tb_Balises.get(LgTb);
             currPoint = KmlTrace.Tb_Calcul.get(IdxBA);
             kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("BA")).append("</TD>");
@@ -305,6 +314,7 @@ public class trackScore {
     }
     
      /**
+     * Draw lines between turnpoints
      * in xLogfly -> kml_I_CFD_Trace
      * @return 
      */
@@ -334,7 +344,7 @@ public class trackScore {
             kmlScoreTrace.append("                                                   </coordinates>").append(RC); 
             kmlScoreTrace.append("                                            </LineString>").append(RC); 
             kmlScoreTrace.append("                                   </Placemark>").append(RC); 
-            // Balises
+            // Turnpoints
             for (int i = 0; i <= LgTb; i++) {
                 if (i == 0) {                    
                     kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("BD"),0,"",KmlTrace.Score_Tb_Balises.get(i+1),i18n.tr("B")+String.valueOf(i+1)));
@@ -354,6 +364,9 @@ public class trackScore {
         return res;
     }
     
+    /*
+    * Details of a turnpoint
+    */
     private String codeBalise(int IdxCurr, String nCurr,int IdxPcdt, String nPcdt, int IdxSvt, String nSvt) {
         StringBuilder res = new StringBuilder();
         String sAlti, sDist;

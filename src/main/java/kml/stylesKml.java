@@ -1,14 +1,15 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
 /**
  *
  * @author gil
+ * Styling kml
  */
 public class stylesKml {
     private static final String RC = "\n";
@@ -59,7 +60,7 @@ public class stylesKml {
         res.append("               <listItemType>checkHideChildren</listItemType>").append(RC);   // Individual placemarks don't appear in the list view
         res.append("          </ListStyle>").append(RC);
         res.append("     </Style>").append(RC);
-        res.append("     <Style id=\"Point_Rouge\">").append(RC);    // Alt Max par exemple
+        res.append("     <Style id=\"Point_Rouge\">").append(RC);    // Alt Max by example
         res.append("          <BalloonStyle>").append(RC);
         res.append("               <text>$[description]</text>").append(RC);
         res.append("          </BalloonStyle>").append(RC);
@@ -75,7 +76,7 @@ public class stylesKml {
         res.append("               <scale>0.774596669241</scale>").append(RC);
         res.append("          </LabelStyle>").append(RC);
         res.append("     </Style>").append(RC);
-        res.append("     <Style id=\"Point_Bleu\">").append(RC);    // Alt Max par exemple
+        res.append("     <Style id=\"Point_Bleu\">").append(RC);    
         res.append("          <BalloonStyle>").append(RC);
         res.append("               <text>$[description]</text>").append(RC);
         res.append("          </BalloonStyle>").append(RC);
@@ -98,7 +99,7 @@ public class stylesKml {
         res.append("               <gx:labelVisibility>1</gx:labelVisibility>").append(RC);
         res.append("          </LineStyle>").append(RC);
         res.append("     </Style>").append(RC);
-        res.append("     <Style id=\"Pushpin_G\">").append(RC);    // Alt Max par exemple
+        res.append("     <Style id=\"Pushpin_G\">").append(RC);    
         res.append("          <IconStyle>").append(RC);
         res.append("               <Icon>").append(RC);
         res.append("                    <href>http://maps.google.com/mapfiles/kml/pushpin/grn-pushpin_maps.png</href>").append(RC);
@@ -106,7 +107,7 @@ public class stylesKml {
         res.append("               <scale>1.2</scale>").append(RC);
         res.append("          </IconStyle>").append(RC);
         res.append("     </Style>").append(RC);
-        res.append("     <Style id=\"Pushpin_P\">").append(RC);    // Alt Max par exemple
+        res.append("     <Style id=\"Pushpin_P\">").append(RC);    
         res.append("          <IconStyle>").append(RC);
         res.append("               <Icon>").append(RC);
         res.append("                    <href>http://maps.google.com/mapfiles/kml/pushpin/pink-pushpin_maps.png</href>").append(RC);

@@ -1,23 +1,32 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package dialogues;
 
+import java.util.Locale;
 import java.util.Optional;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import org.xnap.commons.i18n.I18n;
+import org.xnap.commons.i18n.I18nFactory;
 
 /**
  *
  * @author Gil Thomas logfly.org
- * Toutes les explications sur http://code.makery.ch/blog/javafx-dialogs-official/
+ * from http://code.makery.ch/blog/javafx-dialogs-official/
  */
-public class dialogbox {
-         
+public class dialogbox {    
+    
+    /**
+     * Dialog box with Yes or No
+     * @param msgH
+     * @param msgT
+     * @return 
+     */
     public boolean YesNo(String msgH, String msgT )  {
         
         boolean answer = false;
@@ -36,12 +45,12 @@ public class dialogbox {
     }
     
     /**
-     * Dialogbox pour deux choix possibles + abandon
+     * Dialogbox with two choices and cancel option
      * @param msgH  Header
-     * @param msgT  Texte dans la boite
-     * @param choice1 Libellé Premier choix
-     * @param choice2 Libellé deuxième choix
-     * @param sCancel Libellé abandon
+     * @param msgT  Message text
+     * @param choice1 First text choice
+     * @param choice2 Second text choice
+     * @param sCancel Cancel text
      * @return 
      */
     public int twoChoices(String msgH, String msgT, String choice1, String choice2, String sCancel )  {

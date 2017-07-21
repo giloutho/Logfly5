@@ -1,15 +1,14 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package settings;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -22,13 +21,13 @@ import java.util.*;
 
 public class configProg {
     
-    private static String pathConfig;       // Chemin du fichier de configuration
-    private static boolean readConfig;      // Le fichier de configuration a été lu
-    private static boolean validConfig;     // La config a été validée (chemin db)
+    private static String pathConfig;       // Settings path file
+    private static boolean readConfig;      // Settings file read
+    private static boolean validConfig;     // Configuration validated (db path)
     private static boolean configDefault;
-    private static int currOS;              // Type OS    : 1/Windows  2/Mac  3/Linux    
+    private static int currOS;              // OS type    : 1/Windows  2/Mac  3/Linux    
     private static String osSeparator;
-                                            // App fait référence aux paramètres utilisés dans xLogfly
+                                            // App refers to xLogfly parameters
     private static String pathW;            // App.Wpath
     private static String dbName;           // App.db_Name  
     private static String pathDb;           // App.WpathDb
@@ -36,15 +35,14 @@ public class configProg {
     private static String finderLat;        // App.FinderLat       
     private static String finderLong;       // App.FinderLong      
     private static String pathImport;       // WImport
-    private static int  idxLang;            // Lang
-    private static String winLangue;        // Nom de la ressource correspondant à la langue utilisée
+    private static int  idxLang;            // Language index
     private static Locale locale;
-    private static String defaultPilote;    // Def_Pilote
+    private static String defaultPilote;    // Default pilote name
     private static String defaultVoile;     // App.Def_Voile
     private static int decGMT;              // App.GMT_Plus    
     private static boolean gmtCEST;         // App.GMT_CEST  Heure été 
-    private static int mainWidth;           // Largeur fenêtre principale App.Main_Width 
-    private static int mainHeight;          // Hauteur fenêtre principale App.Main_Height = 681                       
+    private static int mainWidth;           // Main window width App.Main_Width 
+    private static int mainHeight;          // Main window height App.Main_Height = 681                       
     private static String urlLogflyIGC;     // App.ServerURL
     private static String urlVisu;          // App.VisuURL
     private static String urlLogfly;        // App.urlSite  url du site de base de Logfly
@@ -56,18 +54,18 @@ public class configProg {
     private static int seuilAberrants;      // App.Seuil_Aberrants 
     private static String pathOpenAir;      // App.WOpenAir
     private static String urlContest;       // App.Contest_URL =  "http://parapente.ffvl.fr/user/746/cfd/declaration"
-    private static String pathContest;      // App.Contest_Path  Chemin dossier d'export de trace pour un contest
+    private static String pathContest;      // App.Contest_Path  Export path file for a contest
     private static int integration;         // App.Integration 
-    private static boolean visuGPSinNav;    // App.VisuGPSNav  VisuGPS affiché dans le navigateur par défaut
-    private static boolean photoAuto;       // Apparition automatique de la photo
+    private static boolean visuGPSinNav;    // App.VisuGPSNav  VisuGPS will be displayed in default browser
+    private static boolean photoAuto;       // Automatic display of the flight photo
     private static String piloteMail;       // App.MailPilote
     private static String lastSerialCom;    // App.SerialCom  
-    private static int idxMap;              // App.Default_Map Indice carte par défaut
-    private static String piloteID;         // App.Id_Pilote     Id Pilote contest
-    private static String pilotePass;       // App.Id_Pass
+    private static int idxMap;              // App.Default_Map map layer default index
+    private static String piloteID;         // App.Id_Pilote  Contest pilot id 
+    private static String pilotePass;       // App.Id_Pass    Contest pilot password 
     private static String lastTrace;        // App.LastTrace 
     private static String lastOpenAir;      // App.LastOpenAir    
-    private static final int distDeco = 300;// distance de référence pour trouver un décollage dans le fichier des sites
+    private static final int distDeco = 300;// distance for take off research
     
     private static Connection dbConn;
     
@@ -125,8 +123,11 @@ public class configProg {
     public static String getOsSeparator() {
         return osSeparator;
     }
-    
 
+    public static int getCurrOS() {
+        return currOS;
+    }
+            
     public static String getFullPathDb() {
         return fullPathDb;
     }   
@@ -241,26 +242,6 @@ public class configProg {
     public static void setIdxLang(int idxLang) {
         configProg.idxLang = idxLang;
     }
-
-    public static String getWinLangue() {
-        return winLangue;
-    }
-
-    public static void setWinLangue(int idxLang) {
-        switch (idxLang) {
-            case 0 :
-                winLangue = "i18n/win_DE";                
-                break;
-            case 1 :
-                winLangue = "i18n/win_EN";                
-                break;
-            case 2 :
-                winLangue = "i18n/win_FR";                
-                break;
-            default:
-                winLangue = "i18n/win_FR";
-        }
-    }    
 
     public static Locale getLocale() {
         return locale;
@@ -397,9 +378,11 @@ public class configProg {
         configProg.photoAuto = photoAuto;
     }
         
-    
-    
-    
+    /**
+     * Check db connection
+     * @param dbCheckName
+     * @return 
+     */      
     public boolean dbVerif(String dbCheckName) {
         Connection con;
         
@@ -408,9 +391,9 @@ public class configProg {
             con = DriverManager.getConnection("jdbc:sqlite:"+dbCheckName);
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='Vol';");    
-            // Essai de différentes méthodes Cf http://stackoverflow.com/questions/7886462/how-to-get-row-count-using-resultset-in-java
-            // Problème : SQLite method gives Error like `TYPE_FORWARD_ONLY' 
-            // Donc finalement on bourrine...             
+            // We try several methods http://stackoverflow.com/questions/7886462/how-to-get-row-count-using-resultset-in-java
+            // Problem : SQLite method gives Error like `TYPE_FORWARD_ONLY' 
+            // finally brute force...       
             int count = 0;
             while (rs.next()) {
                 ++count;
@@ -427,9 +410,9 @@ public class configProg {
         }       
     }
     
-    /* On change de db en cours de fonctionnement
-    *  donc tous les paramètres ont été initialisés
-    *  il faut juste vérifier que la db est opérationnelle avant de changer le paramètre
+    /**
+    * database change request
+    * check before accept change 
     */
     public boolean dbSwitch(String dbNewName) {        
         boolean res;        
@@ -445,8 +428,8 @@ public class configProg {
         
     }
     
-    /* On créé une nouvelle db en cours de fonctionnement
-    *  donc tous les paramètres ont été initialisés
+    /**
+    * new database creation request
     */
     
     public boolean dbNewOne(String dbNewName) {        
@@ -463,15 +446,19 @@ public class configProg {
         
     }
     
+    /**
+     * new database creation
+     * @param dbNewName
+     * @return 
+     */
     private boolean dbCreation(String dbNewName) {
         boolean res = false;
         Connection con;     
         
-        // On vérifie que la db n'est pas déjà existante
+        // db existence checking
         File f = new File(dbNewName);
         if(f.exists() && f.isFile()) {            
-            // On vérifie que la db est OK
-            // Si la db est OK dbConn est initialisé
+            // if db is OK, dbConn is initialized
             res = dbVerif(dbNewName);
         }  else  {                         
             try {
@@ -484,14 +471,14 @@ public class configProg {
                     req1.append("V_Site varchar(100), V_Pays varchar(50), V_Commentaire Long Text, V_IGC Long Text, V_Photos Long Text,UTC integer, V_CFD integer,V_Engin Varchar(10))");
                     Statement stmt = con.createStatement();
                     stmt.execute(req1.toString());
-                    // Discussions à l'infini sur l'avantage de réutiliser ou créer un nouveau StringBuilder
+                    // a debate about stringbuilder creation 
                     // http://stackoverflow.com/questions/242438/is-it-better-to-reuse-a-stringbuilder-in-a-loop
                     StringBuilder req2 = new StringBuilder();
                     req2.append("CREATE TABLE Site(S_ID integer NOT NULL primary key,S_Nom varchar(50),S_Localite varchar(50),");
                     req2.append("S_CP varchar(8),S_Pays varchar(50),S_Type varchar(1),S_Orientation varchar(20),S_Alti varchar(12),");
                     req2.append("S_Latitude double,S_Longitude double,S_Commentaire Long Text,S_Maj varchar(10))");
                     stmt.execute(req2.toString());
-                    // Tout est OK, on positionne dbConn
+                    // all is OK
                     dbConn = con;
                     res = true;
                 }               
@@ -504,6 +491,11 @@ public class configProg {
         return res;        
     }
     
+    /**
+     * Read settings of xLogfly
+     * @param prfFile
+     * @return 
+     */
     private boolean litOldPrf(File prfFile) {
         boolean res = false;
         int numLigne = 0;
@@ -518,8 +510,8 @@ public class configProg {
                 numLigne++;
                 switch (numLigne) {
                     case 1 :
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Documents:Logfly:
-                        // On veut /Users/gil/Dropbox/Logfly_data
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -539,9 +531,9 @@ public class configProg {
                         finderLong = line;    // App.FinderLong      
                         break;
                     case 5 :
-                        //  dossier d'import s'il existe  [pathImport]
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Documents:Logfly:
-                        // On veut /Users/gil/Dropbox/Logfly_data
+                        //  import file if exists  [pathImport]
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -552,7 +544,7 @@ public class configProg {
                         }
                         break;
                     case 6 :
-                        idxLang = Integer.parseInt(line);   // Numéro de la langue en cours    
+                        idxLang = Integer.parseInt(line);   // Language index  
                         break;
                     case 7 :
                         defaultPilote = line;    // App.Def_Pilote
@@ -569,13 +561,13 @@ public class configProg {
                         break;
                     // case 11 :  App.Rev_Exclu                         
                     case 12 :
-                        // Taille fenêtre principale App.Main_Width et App.Main_Height = 681
+                        // Main window size App.Main_Width et App.Main_Height = 681
                         break;
-                    // case 13 : App.Sky_Exclu  Deprec depuis la xLogfly V3 
+                    // case 13 : App.Sky_Exclu  Deprecated since xLogfly V3 
                     case 14 :
                         // App.WpathDb
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Dropbox:Logfly_data:
-                        // On veut /Users/gil/Dropbox/Logfly_data/
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -592,10 +584,10 @@ public class configProg {
                         urlVisu = line;    // App.VisuURL
                         break;
                     case 17 :
-                        urlLogfly = line;    // App.urlSite  url du site de base de Logfly
+                        urlLogfly = line;    // App.urlSite  logfly base url 
                         break;
                     case 18 :
-                        urlIcones = line;   // App.urlIcones Recup url des icônes utilisées dans les cartes Google
+                        urlIcones = line;   // App.urlIcones url of map icons
                         break;
                     case 19 :
                         mailPass = line;    // App.MailPass     
@@ -614,8 +606,8 @@ public class configProg {
                         break;
                     case 24 :
                         // App.WOpenAir
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Documents:Logfly:
-                        // On veut /Users/gil/Dropbox/Logfly_data
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -630,8 +622,8 @@ public class configProg {
                         break;
                     case 26 :
                         // App.Contest_Path
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Documents:Logfly:
-                        // On veut /Users/gil/Dropbox/Logfly_data
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -645,7 +637,7 @@ public class configProg {
                         integration = Integer.parseInt(line);    // App.Integration int
                         break;
                     case 28 :
-                        int inNav = Integer.parseInt(line);     // App.VisuGPSNav  VisuGPS dans le navigateur Boolean
+                        int inNav = Integer.parseInt(line);     // App.VisuGPSNav  VisuGPS in external browser
                         visuGPSinNav = (inNav != 0);                        
                         break;
                     case 29 :
@@ -655,18 +647,18 @@ public class configProg {
                         lastSerialCom = line;   // App.SerialCom   String
                         break;
                     case 31 :
-                        idxMap =  Integer.parseInt(line);    // App.Default_Map Indice carte par défaut
+                        idxMap =  Integer.parseInt(line);    // App.Default_Map Default map layer index
                         break;
                     case 32 :
-                        piloteID = line;    // App.Id_Pilote     Id Pilote FFVL
+                        piloteID = line;    // App.Id_Pilote     
                         break;
                     case 33 :
                         pilotePass = line;   // App.Id_Pass
                         break;
                     case 34 :
                         // App.LastTrace 
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Documents:Logfly:
-                        // On veut /Users/gil/Dropbox/Logfly_data
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -678,8 +670,8 @@ public class configProg {
                         break;
                     case 35 :
                         // App.LastOpenAir 
-                        // Pour Mac, le path a été stocké ainsi : Macintosh HD:Users:gil:Documents:Logfly:
-                        // On veut /Users/gil/Dropbox/Logfly_data
+                        // For Mac, pah was stored like Macintosh HD:Users:gil:Documents:Logfly:
+                        // we want /Users/gil/Dropbox/Logfly_data
                         if (line.indexOf("Users:") >= 0)  {
                             cleanLine = line.replaceAll(":", "/");
                             parsePath = cleanLine.split("Users/");
@@ -691,7 +683,7 @@ public class configProg {
                         break;
                 }               
             }
-            // la db enregistrée est elle opérationnelle ? 
+            // is recorded database operational ? 
             String oldDbPath;
             switch (currOS) {
                 case 1 :
@@ -704,7 +696,7 @@ public class configProg {
                     oldDbPath = "";
             }   
             if (dbVerif(oldDbPath)) {
-                // Si la db est OK dbConn est initialisé
+                // OK dbConn is initialized
                 fullPathDb = oldDbPath;
                 res = true;
             } else {
@@ -725,7 +717,10 @@ public class configProg {
         
     }  
     
-    // Existe il un fichier de configuration concernant xLogfly ?
+    /**
+     * Is there a settings file of xLogfly
+     * @return 
+     */
     public boolean setOldConfig()  {        
         boolean res = false;        
         
@@ -745,8 +740,10 @@ public class configProg {
                         
         return res;        
     }
-       
-    //************* Configuration par défaut *************  
+     
+    /**
+     * ************* Default settings *************  
+     */    
     public void setDefault() {
         
         String targetPath;
@@ -789,19 +786,18 @@ public class configProg {
                 pathW = targetPath;
                 dbName = "Logfly.db";
                 pathDb = targetPath;  
-                // fullPathDb a été défini plus haut
-                finderLat = "45.863";   //  lac d'Annecy
+                // fullPathDb is defined previously
+                finderLat = "45.863";   //  Lake of Annecy
                 finderLong = "6.1725";   
                 pathImport = importPath;
-                idxLang = 2;    // français par défaut
-                setWinLangue(idxLang);
+                idxLang = 2;    // by default french -:)
                 setLocale(idxLang);
                 defaultPilote = "";
                 defaultVoile = "";
                 decGMT = 0;
                 gmtCEST = false;
-                mainWidth = 900;  // Anciennes valeurs à préciser
-                mainHeight = 681;   // Anciennes valeurs à préciser            
+                mainWidth = 900;  // Old values need to be adjusted
+                mainHeight = 681;   // Old values need to be adjusted          
                 urlLogflyIGC = "http://www.logfly.org/Visu/";     
                 urlVisu = "http://www.victorb.fr/visugps/visugps.html?track=";          
                 urlLogfly = "http://www.logfly.org";       
@@ -829,13 +825,13 @@ public class configProg {
                 configDefault = false;
             }    
         } else {
-            // la config xLogfly a été lue et validée
+            // old settings of xLogfly read and validated
             configDefault = true; 
         }
     }
     
     /*
-    *  Vérification de l'existence du fichier de paramètrage
+    * Settings file checking
     *   - Windows :  - > \Users\UserName\AppData\Roaming\
     *   - Mac :  -> /Users/UserName/Library/Preferences
     *   - Linux : Home Folder 
@@ -846,7 +842,7 @@ public class configProg {
         
         switch (currOS) {
             case 1 :
-                // Ce chemin est valide à partir de Windows 7, avant c'était C:\Documents and Settings\<username>\Application Data
+                // It's ok from Windows 7, before it was C:\Documents and Settings\<username>\Application Data
                 searchPath = System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.properties"; 
                 break;
             case 2 :
@@ -873,6 +869,9 @@ public class configProg {
         return res;
     }
     
+    /**
+     * Read settings in a properties file
+     */
     private void readProperties()  {
         
         Properties prop = new Properties();
@@ -914,6 +913,10 @@ public class configProg {
         
     }
        
+    /**
+     * Set properties 
+     * @param prop 
+     */
     private static void setAllProperties(Properties prop)  {                
         prop.setProperty("pathw",pathW);
         prop.setProperty("dbname",dbName);
@@ -952,6 +955,10 @@ public class configProg {
         prop.setProperty("lastopenair",lastOpenAir);
     }
     
+    /**
+     * Get properties
+     * @param prop 
+     */
     private static void getAllProperties(Properties prop)  {                
               
         pathW = prop.getProperty("pathw");
@@ -965,7 +972,6 @@ public class configProg {
             idxLang = Integer.parseInt(prop.getProperty("idxlang"));
         else
             idxLang = 2;
-        setWinLangue(idxLang);
         setLocale(idxLang);
         defaultPilote = prop.getProperty("defaultpilote");
         defaultVoile = prop.getProperty("defaultvoile");
@@ -1023,7 +1029,10 @@ public class configProg {
         lastOpenAir = prop.getProperty("lastopenair");
     }
     
-    
+    /**
+     * Write settins in a properties file
+     * @return 
+     */
     public boolean writeProperties()  {
         
         Properties prop = new Properties();
@@ -1033,7 +1042,7 @@ public class configProg {
 	try {
             switch (currOS) {
                 case 1 :
-                    // Ce chemin est valide à partir de Windows 7, avant c'était C:\Documents and Settings\<username>\Application Data
+                    // Valid path from Windows 7, before it was C:\Documents and Settings\<username>\Application Data
                     output = new FileOutputStream(System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.properties"); 
                     break;
                 case 2 :
@@ -1062,7 +1071,10 @@ public class configProg {
         
         return res;
     }
-        
+       
+    /**
+     * manage settings reading
+     */
     public void readSettings()  {
         whichOS();
         if (existConfFile())  {

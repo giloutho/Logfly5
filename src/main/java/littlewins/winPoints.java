@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package littlewins;
 
@@ -10,11 +10,8 @@ import igc.pointIGC;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.util.Locale;
 import javafx.scene.Scene;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -33,12 +30,20 @@ import settings.configProg;
 
 
 /**
- * Affichage dans une fenêtre modale de la liste des points de la trace
- * Directement inspiré par http://java-buddy.blogspot.fr/2013/05/detect-mouse-click-on-javafx-tableview.html
- * voir aussi https://examples.javacodegeeks.com/desktop-java/javafx/tableview/javafx-tableview-example/
  * @author gil
+ * 
+ * All coordinates of track points are displayed in a modal windows
+ * code from http://java-buddy.blogspot.fr/2013/05/detect-mouse-click-on-javafx-tableview.html
+ * and  https://examples.javacodegeeks.com/desktop-java/javafx/tableview/javafx-tableview-example/
  */
 public class winPoints {
+    
+    // Localization
+    private I18n i18n; 
+    
+    public winPoints(Locale currLocale)  {
+        i18n = I18nFactory.getI18n("","lang/Messages",winPoints.class.getClass().getClassLoader(),currLocale,0);
+    }
     
     public static class trackPoint {
  
@@ -103,23 +108,15 @@ public class winPoints {
     
     private TableView<trackPoint> tableView = new TableView<>();
     private final ObservableList<trackPoint> pointList = FXCollections.observableArrayList();
-    
-
-    
-    // Localization
-    private I18n i18n; 
-    
-    // Paramètres de configuration
-     configProg myConfig;
-    
+       
     private void preparePointList(traceGPS currTrace) {
         int sizeTb = currTrace.Tb_Tot_Points.size();
         
-        // si on veut le séparateur correpsondant à la nationalité de l'OS decimalFormatSymbols.getDecimalSeparator();
-        // On force le point comme séparateur
+        // if we want national separator decimalFormatSymbols.getDecimalSeparator();
+        // we force to point as decimal separator
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');
-        // voir http://stackoverflow.com/questions/4885254/string-format-to-format-double-in-java
+        // see http://stackoverflow.com/questions/4885254/string-format-to-format-double-in-java
         DecimalFormat coordFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         DecimalFormat centiFormat = new DecimalFormat("##0.00", decimalFormatSymbols);
         
@@ -136,8 +133,7 @@ public class winPoints {
         }   
     }
           
-    public void showTablePoints(traceGPS currTrace)  {
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());
+    public void showTablePoints(traceGPS currTrace)  {       
         
         preparePointList(currTrace);
 
@@ -178,10 +174,9 @@ public class winPoints {
         subRoot.getChildren().add(vbox);
         Scene secondScene = new Scene(subRoot, 650, 400);
         Stage subStage = new Stage();
-        // On veut que cette fenêtre soit modale
         subStage.initModality(Modality.APPLICATION_MODAL);
         
-        // Préparation du titre avec la zone horaire et le décalage
+        // Title with UTC offset
         StringBuilder zdtTitle = new StringBuilder();
         zdtTitle.append(currTrace.getTzVol().getDisplayName()).append("  ").append(String.format("%+2.2f",currTrace.getUtcOffset()));
         if (currTrace.isDstOffset())  {
@@ -191,7 +186,7 @@ public class winPoints {
         }            
         subStage.setTitle(zdtTitle.toString());
         subStage.setScene(secondScene);
-        // Définit la position de la 2eme fenêtre par rapport à la première
+        // Define second window position against first window
         //subStage.setX(primaryStage.getX() + 250);
         //subStage.setY(primaryStage.getY() + 100);
         subStage.show();        

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package leaflet;
 
@@ -22,6 +22,7 @@ import trackgps.traceGPS;
 /**
  *
  * @author Gil
+ * HTML generation of a little leaflet map with a simplified track
  */
 public class map_pm {
     
@@ -70,12 +71,15 @@ public class map_pm {
     } 
     
     
-    
+    /**
+     * HTML generation of track data
+     * @param tracePM
+     * @return 
+     */    
     private static boolean genData(traceGPS tracePM)  {
         
         Boolean res = false;
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
@@ -104,9 +108,12 @@ public class map_pm {
         return res;
     }
     
+    /**
+     * Default layer of the map
+     */
     private void genDefaultLayer() {
          
-        // On met une valeur par defaut au cas où, pour ne pas se retrouver sans AddTo(Map)       
+        // We put a default value to avoid an undefined case    
         if(idxMap == 0) {
             jsLayer = "    osmlayer.addTo(map);";
         } else if (idxMap ==1) { 
@@ -123,6 +130,10 @@ public class map_pm {
         
     }
     
+    /**
+     * HTML generation of a little info panel
+     * @param tracePM 
+     */
     private void genInfo(traceGPS tracePM)  {
      //   jsInfo.append("this._div.innerHTML += '").append(i18n.tr("Voile")).append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
         jsInfo.append("            this._div.innerHTML += '").append("Voile").append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
@@ -134,11 +145,14 @@ public class map_pm {
         
     }
     
+    /**
+     * Generation of HTML code of comment if exists
+     */
     private void genComment(traceGPS tracePM) {
         
         String myComment = tracePM.getComment();        
         if (myComment != null && !myComment.equals("")) { 
-            // Code de construction du bouton
+            // Button building
             btnComment.append("        L.easyButton({").append(RC);  
             btnComment.append("            id: 'bt_comment',  // an id for the generated button").append(RC);  
             btnComment.append("            position: 'topleft',      // inherited from L.Control -- the corner it goes in").append(RC);  
@@ -158,12 +172,12 @@ public class map_pm {
             btnComment.append("            );").append(RC);  
             btnComment.append("        });").append(RC).append(RC);  
             btnComment.append("        $('#bt_comment').trigger( \"click\" );").append(RC);   
-            //Code de cosntruction du texte de commentaire
+            // Text building
             String removeRC = myComment.replaceAll("\\r\\n", "<br>");
             String removeR = removeRC.replaceAll("\\n", "<br>");
-            // Pour ne pas afficher un disgracieux \' à la place de l'apostophe
-            // il faut en HTML un \\' Or java a déjà placé un \ devant l'apostrophe
-            // donc il suffit d'ajouter un \
+            // To avoid an unsightly \ in place of apostrophe
+            // in HTML a  \\' is needed but java alredy place one \ before apostrophe
+            // therefore only one is added
             String commentOk = removeRC.replace("'", "\'");           
             txtComment.append("<div id=\"comment_to_pop_up\"><a class=\"b-close-c\">x<a/>");
             txtComment.append("<p>").append(commentOk).append("</p></div>").append(RC);
@@ -175,11 +189,12 @@ public class map_pm {
     }
     
     /**
-     * Cette procédure particulière est nécessaire à cause d'un bug du webview
-     * le cache n'est pas mis à jour pour une image située sur le disque dont le contenu
-     * a changé mais pas le nom. Prblème connu retrouvé sur le web
-     * On génère donc un nom aléatoire et on détruit les fichiers précédents
-     * pour éviter de surcharger le dossier temporaire
+     * Special method for the picture of the flight
+     * Necessary due to a webview bug 
+     * for a picture located on the disk 
+     * if the picture content change but not the name, the webview cache is not updated
+     * Known problem found in Stackoverflow
+     * a random name is generated and old files are deleted     
      * @return 
      */
     private File newTempJpg() {
@@ -199,6 +214,10 @@ public class map_pm {
         return fPhoto;
     }
     
+    /**
+     * HTML generation for the picture of the flight
+     * @param tracePM 
+     */
     private void genPhoto(traceGPS tracePM) {
         
         String myPhoto = tracePM.getPhoto();        
@@ -237,7 +256,7 @@ public class map_pm {
                 txtPhoto.append("\" width=").append(String.valueOf(currImage.getWidthImg()));
                 txtPhoto.append(" height=").append(String.valueOf(currImage.getHeightImg())).append(" /></div>");                
             } else {
-                // Problème de décodage
+                // decoding problem
                 errorCode = errPhoto;
                 btnPhoto.append("");
                 txtPhoto.append("<body>");
@@ -248,6 +267,10 @@ public class map_pm {
         }      
     }
     
+    /**
+     * HTML generation for a little map with a simplified track
+     * @param tracePM 
+     */
     public void cartePM(traceGPS tracePM)  {
         
         StringBuilder sbHTML = new StringBuilder();
@@ -280,7 +303,7 @@ public class map_pm {
             }
         } catch (Exception e) {
             map_OK = false;
-            errorCode = -1;    // Erreur indéterminée
+            errorCode = -1;    // Undefined error
         }                               
     } 
     

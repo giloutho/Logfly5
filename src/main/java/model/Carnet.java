@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package model;
 
@@ -16,6 +16,8 @@ import javafx.scene.image.Image;
 /**
  *
  * @author Gil Thomas logfly.org
+ * 
+ * Model for CarnetviewController
  */
 
 public class Carnet {
@@ -46,7 +48,7 @@ public class Carnet {
     }
     
     public void setDate(String dateStr) {    
-        // Ds la db la date est de la forme YYYY-MM-DD HH:MM:SS
+        // in database, date is YYYY-MM-DD HH:MM:SS
         date.set(dateStr.substring(0,10));
     }
 
@@ -55,7 +57,7 @@ public class Carnet {
     }
     
     public void setHeure(String dateStr) {
-        // Ds la db la date est de la forme YYYY-MM-DD HH:MM:SS
+        // in database, date is YYYY-MM-DD HH:MM:SS
         heure.set(dateStr.substring(11,16));
     }
     

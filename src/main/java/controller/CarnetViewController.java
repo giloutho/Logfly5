@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -116,7 +116,7 @@ public class CarnetViewController  {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
+    // Settings
     configProg myConfig;
     
     //START | SQLITE
@@ -124,17 +124,16 @@ public class CarnetViewController  {
     private PreparedStatement prep;
     //END | SQLITE
     
-    traceGPS currTrace=null;
-   // WebView viewMap = new WebView();    
+    traceGPS currTrace=null;    
 
     private ObservableList <Carnet> dataCarnet; 
     private ObservableList <String> dataYear; 
     
     @FXML
     private void initialize() {
-        // On besoin d'initialiser i18n avant de lancer la construction du TableView
-        // c'est la raison pour laquelle on déporte les instructions de construction dans iniTable() 
-        // Cette procédure sera appelée après setMainApp()
+        // We need to intialize i18n before TableView building
+        // For this reason we put building code in iniTable() 
+        // This procedure will be called after setMainApp()                
         
     }
     
@@ -148,7 +147,7 @@ public class CarnetViewController  {
         dureeCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("duree"));
         siteCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("site"));     
         
-        // essai de changement d'apparence sur la valeur de la colonne Site
+        // Try to change look with value of Site column
         dateCol.setCellFactory(column -> {
             return new TableCell<Carnet, String>() {
                 @Override
@@ -158,8 +157,8 @@ public class CarnetViewController  {
                         setText(null);
                         setStyle("");
                     } else {
-                        setText(item); // Remplit la cellule avec la string
-                        // Si besoin on peut charger toutes les infos de la table
+                        setText(item); // Fill cell with the string
+                        // If needing, we can change all informations of the table
                         Carnet currLigne = getTableView().getItems().get(getIndex());  
                         if (currLigne.getComment()) {                       
                             setTextFill(Color.CORAL); //The text in red                            
@@ -213,23 +212,23 @@ public class CarnetViewController  {
                 
         try {
                                     
-            // On cherche les années figurant dans le carnet
+            // We search years in the logbook
             ResultSet rsYear = myConfig.getDbConn().createStatement().executeQuery("SELECT strftime('%Y',V_date) FROM Vol GROUP BY strftime('%Y',V_date) ORDER BY strftime('%Y',V_date) DESC");
             if (rsYear != null)  {             
                 while (rsYear.next()) {
                     dataYear.add(rsYear.getString(1));
                 }
-                // Initialisation de la choicebox permettant de choisir l'année à visualiser
+                // Year choicebox initialization
                 top_chbYear.setItems(dataYear);
                 top_chbYear.getSelectionModel().select(0);
                 top_chbYear.setOnAction((event) -> {
                     String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
                     newVolsContent(selectedYear);
                 });
-                // Récupération de l'année la plus récente
+                // Most recent year
                 String yearFiltre = (String) top_chbYear.getSelectionModel().getSelectedItem();
                 
-                // Listener pour gérer le changment de ligne et afficher les détails correspondants
+                // Listener for line changes and  display relevant details
                 tableVols.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showCarnetDetails((Carnet) newValue));   
                 
@@ -284,7 +283,7 @@ public class CarnetViewController  {
                     dataCarnet.add(ca);                
                 }            
                 tableVols.setItems(dataCarnet); 
-                // On s'assure qu'il y a au moins un enregistrement
+                // At least one record
                 if (tableVols.getItems().size() > 0)
                     tableVols.getSelectionModel().select(0);
             }
@@ -313,6 +312,9 @@ public class CarnetViewController  {
         iniTable();
     }
     
+    /**
+     * Delete a flight in the logbook
+     */
     private void supprimeVol() {
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
@@ -328,17 +330,21 @@ public class CarnetViewController  {
                     pstmt.executeUpdate();    
                     tableVols.getItems().remove(selectedIndex);
                 } catch (Exception e) {
-                    alertbox aError = new alertbox();
+                    alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertError(e.getMessage()); 
                 }                                                
             }                                 
         } else {
-            // Aucun vol sélectionné
-            alertbox aError = new alertbox();
+            // no flight selected
+            alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(i18n.tr("Aucun vol sélectionné..."));                       
         }        
     }
-            
+    
+    /**
+     * Extract and decode the track from the logbook
+     * @param idVol 
+     */
     private void decodeVolCarnet(String idVol)  {
         
         Image dbImage = null;
@@ -350,38 +356,36 @@ public class CarnetViewController  {
                 if (rs.getString("V_IGC") != null && !rs.getString("V_IGC").equals(""))  {                        
                     currTrace = new traceGPS(rs.getString("V_IGC"), "IGC","",true);   // String pFichier, String pType, String pPath
                     if (currTrace.isDecodage()) {
-                        // Comme dans xLogfly on réaffecte la trace avec la voile et le site
+                        // Like in xLogfly we put glider and site
                         if (!rs.getString("V_Engin").equals(currTrace.getsVoile()))
                             currTrace.setsVoile(rs.getString("V_Engin"));
                         currTrace.setsSite(rs.getString("V_Site"));
-                        // dans la db, si V_League est null, rs.getInt("V_League") ramène 0
-                        // or pour compatibilité avec xLogfly, league FR a un index 0
-                        // donc on teste le JSON                        
+                        // in db, if V_League is null, rs.getInt("V_League") = 0                        
+                        // For xLogfly compatibility, FR league FR is zero 
+                        // therfore we need to test JSON presence                    
                         String sJSON = rs.getString("V_Score");                                               
                         if (sJSON != null && sJSON.contains("drawScore")) {
                             currTrace.setScore_Idx_League(rs.getInt("V_League"));
                             currTrace.setScore_JSON(rs.getString("V_Score"));
-                            scoring currScore = new scoring(0);
+                            scoring currScore = new scoring(0, myConfig);
                             int resScoring = currScore.decodeStrJson(currTrace);
                             if (resScoring == 0)
                                 currTrace.setScored(true);
                             else {
-                                alertbox aError = new alertbox();
+                                alertbox aError = new alertbox(myConfig.getLocale());
                                 aError.alertNumError(resScoring); 
                             }
                         } else {
                             currTrace.setScored(false);
                         }
-                        // Est ce qu'il y avait un commentaire ?
+                        // is there a comment ?
                         String sComment = rs.getString("V_Commentaire");
                         if (sComment != null) {
                             currTrace.setComment(sComment);
                         }
-                        // Est ce qu'il y avait une photo ?
+                        // is ther a photo ?
                         String sPhoto = rs.getString("V_Photos");
                         if (sPhoto != null) {
-                            // Pour affichage dans le webview
-                            //currTrace.setPhoto(sPhoto);
                             if (myConfig.isPhotoAuto()) {
                                 // Pour affichage dans une fenêtre externe
                                 imgmanip currImage = new imgmanip();
@@ -406,22 +410,27 @@ public class CarnetViewController  {
 
                         }
                     }  else {
-                        alertbox decodageError = new alertbox();
+                        alertbox decodageError = new alertbox(myConfig.getLocale());
                         decodageError.alertError(i18n.tr("Problème de décodage du fichier"));
                     }     
                 } else {
-                    // Pas de trace à afficher
+                    // No track to display
                     displayNoIGC(rs);
                 }
             }
         } catch ( Exception e ) {
-            alertbox aError = new alertbox();
+            alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(e.getClass().getName() + ": " + e.getMessage());                          
         }
         
         
     }
     
+    /**
+     * Flight without track
+     * @param rs
+     * @throws SQLException 
+     */
     private void displayNoIGC(ResultSet rs) throws SQLException {
         Image dbImage = null;
                 
@@ -444,7 +453,7 @@ public class CarnetViewController  {
         if (sComment != null) {
             currTrace.setComment(sComment);
         }
-        // Est ce qu'il y avait une photo ?
+        // Is ther a photo ?
         String sPhoto = rs.getString("V_Photos");
         if (sPhoto != null) {            
             if (myConfig.isPhotoAuto()) {
@@ -453,8 +462,8 @@ public class CarnetViewController  {
                 dbImage = currImage.strToImage(sPhoto, 700, 700);  
             }
         }
-        // Initialisation des paramètres de la carte
-        // Pas de trace IGC, on place simplement le point de décollage
+        // Map settings initialization
+        // No track, we put only a marker in takeoff
         pointIGC pPoint1 = new pointIGC();
         double dLatitude = currTrace.getLatDeco();
         if (dLatitude > 90 || dLatitude < -90) dLatitude = 0;
@@ -472,14 +481,14 @@ public class CarnetViewController  {
         mapNoIGC.getPointsList().add(pPoint1);
         mapNoIGC.setStrComment(currTrace.getComment());
         if (mapNoIGC.genMap() == 0) {
-            /** ----- Debut Debug --------*/ 
+            /** ----- Begin Debug --------*/ 
             String sDebug = mapNoIGC.getMap_HTML();
             final Clipboard clipboard = Clipboard.getSystemClipboard();
             final ClipboardContent content = new ClipboardContent();
             content.putString(mapNoIGC.getMap_HTML()); 
             System.out.println("C'est dans le clipboard...");
             clipboard.setContent(content);
-            /** ----- Fin Debug ---------*/
+            /** ----- End Debug ---------*/
             // Delete cache for navigate back
             mapViewer.getEngine().load("about:blank");            
             mapViewer.getEngine().loadContent(mapNoIGC.getMap_HTML()); 
@@ -490,6 +499,9 @@ public class CarnetViewController  {
         }                
     }
     
+    /**
+     * Track export
+     */
     private void exportTrace() {
         int res = -1;
         FileChooser fileChooser = new FileChooser();
@@ -516,11 +528,15 @@ public class CarnetViewController  {
                 case "GPX":
                     break;
             }
-            alertbox finOp = new alertbox();
+            alertbox finOp = new alertbox(myConfig.getLocale());
             finOp.alertNumError(res);
         }        
     }
     
+    /**
+     * Display details of a flight
+     * @param currCarnet 
+     */
     private void showCarnetDetails(Carnet currCarnet) {
         if (currCarnet != null) {                                   
             decodeVolCarnet(currCarnet.getIdVol());
@@ -532,13 +548,13 @@ public class CarnetViewController  {
                     }
             });                       
         } else {
-            // à implémenter
+            // todo
            
         }              
     }
                   
     /**
-     * Ajout d'un menu contextuel fondé sur le dernier paragraphe Adding Context Menus
+     * Adding Context Menus, last paragraph
     *     http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm    
     */
     private ContextMenu clicTop_Menu()   {
@@ -571,7 +587,7 @@ public class CarnetViewController  {
         MenuItem cmItemLp = new MenuItem(i18n.tr("Liste points"));
         cmItemLp.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                winPoints myGrid = new winPoints();    
+                winPoints myGrid = new winPoints(myConfig.getLocale());    
                 myGrid.showTablePoints(currTrace);
             }
         });
@@ -593,7 +609,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemFic);
         /**
-         * Il manque :
+         * Missing items :
          * Modifier la voile
          * Fusionne les vols
          * Modifier le décalage UTC        ? pertinent ou alors pour vieille compatibilitité
@@ -609,15 +625,17 @@ public class CarnetViewController  {
     
     
     /*
-    * Procédure qui lancera l'affichage des stats simplifiées du carnet
+    * Run simple logbook statistics 
     */
     @FXML
     private void clicTop_Stat() {
-        alertbox aInfo = new alertbox();
+        alertbox aInfo = new alertbox(myConfig.getLocale());
         aInfo.alertInfo(i18n.tr("Statistiques de vol"));              
     }   
         
-        
+    /**
+     * Display a fullscreen map of the track with flght parameters
+     */    
     @FXML
     private void showFullMap() {
         if (currTrace.isDecodage()) {        
@@ -632,18 +650,18 @@ public class CarnetViewController  {
                 anchorPane.getChildren().add(viewMap);  
                 
                 String sHTML = visuFullMap.getMap_HTML();
-                /** ----- Debut Debug --------*/                 
+                /** ----- Begin Debug --------*/                 
                 final Clipboard clipboard = Clipboard.getSystemClipboard();
                 final ClipboardContent content = new ClipboardContent();
                 content.putString(sHTML);            
                 clipboard.setContent(content);                                
-                /**------ Fin Debug --------- */
+                /**------ End Debug --------- */
                 viewMap.getEngine().loadContent(sHTML,"text/html");
                 StackPane subRoot = new StackPane();
                 subRoot.getChildren().add(anchorPane);
                 Scene secondScene = new Scene(subRoot, 500, 400);
                 Stage subStage = new Stage();
-                // On veut que cette fenêtre soit modale
+                // We want modal window
                 subStage.initModality(Modality.APPLICATION_MODAL);
                 subStage.setScene(secondScene); 
                 subStage.setMaximized(true);
@@ -658,8 +676,8 @@ public class CarnetViewController  {
     }
     
     /**
-     * la trace a été téléchargée sur un serveur avec un nom de la forme 
-     * YYYYMMDDHHMMSS_Aleatoire  [Aléatoire = nombre entre 1 et 1000]
+     * track uploaded in a server with a name like
+     * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
      * @param webFicIGC 
      */   
     private void showVisuGPS(String webFicIGC)  {
@@ -688,10 +706,9 @@ public class CarnetViewController  {
     }
 
     /**
-     * VisuGPS ne fonctione qu'avec une trace ayant une adresse http
-     * runVisuGPS télécharge la trace sur un serveur en utilisant un script php
-     * Ce script fait notamment le ménage sur le serveur pour les traces précédemment chargées
-     * afin de ne pas surcharger l'espace disuqe du serveur
+     * VisuGPS need a track with http url
+     * runVisuGPS upload the track with a special php script in a server
+     * This script upload the track and delete old tracks      
      */
     @FXML
     private void runVisuGPS() {
@@ -727,32 +744,38 @@ public class CarnetViewController  {
         }
     }
 
+    /**
+     * if needed, call the scoring class
+     */
     @FXML
     private void showScore() {
         if (currTrace.isDecodage()) {
             if (currTrace.isScored())  {
                 showFullMap();                
             } else {
-                // On lance le calcul avec le module externe points (classe scoring) dont on DOIT attendre la fin d'execution
-                // C'est la classe scoring qui reviendra vers le controller en appellant scoreReturn()
-                // D'où la nécessité de mettre un pont avec ce controller
-                scoring currScore = new scoring(this,1);  
+                // Launch computation with an external program "points" (Scoring class). We must wait the end of the process
+                // Scoring claas come back to controller with scoreReturn()
+                // Therefore a communication bridge is necessary
+                scoring currScore = new scoring(this,1, myConfig);  
                 currScore.start(currTrace, myConfig.getIdxLeague());                            
             }
         }
     }
     
+    /**
+     * Manage flight comment
+     */
     private void gestionComment() {
         if (tableVols.getSelectionModel().getSelectedItem().Comment.getValue()) {
             dialogbox actionReq = new dialogbox();
             int actionType = actionReq.twoChoices(i18n.tr("Commentaire"), i18n.tr("Que voulez- vous faire ?"), i18n.tr("Supprimer"), i18n.tr("Changer"), i18n.tr("Annuler"));
             switch (actionType) {
                 case 1:
-                    // Suppression
+                    // Delete
                     delComment();
                     break;
                 case 2:
-                    // Addition / Modidification
+                    // Add / Update
                     majComment();
                     break;
             }
@@ -762,6 +785,9 @@ public class CarnetViewController  {
         
     }
     
+    /**
+     * Delete a flight comment
+     */
     private void delComment() {
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
@@ -775,7 +801,7 @@ public class CarnetViewController  {
                 // Pour rafrachir la carte
                 decodeVolCarnet(currCarnet.getIdVol());
             } catch (Exception e) {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(e.getMessage()); 
             }  
             tableVols.getSelectionModel().getSelectedItem().comTexte.set(null);
@@ -784,10 +810,13 @@ public class CarnetViewController  {
         }               
     }
     
+    /**
+     * Update a flight comment
+     */
     private void majComment() {
         String commentStr = tableVols.getSelectionModel().getSelectedItem().comTexte.getValue();
         winComment myComment = new winComment(commentStr,i18n);                
-            alertbox myInfo = new alertbox();
+            alertbox myInfo = new alertbox(myConfig.getLocale());
         if (myComment.isModif())  {                        
             // l'échappement des apostrophes est fait automatiquement
             String strComment = myComment.getCommentTxt();
@@ -801,7 +830,7 @@ public class CarnetViewController  {
                 // Pour rafrachir la carte
                 decodeVolCarnet(currCarnet.getIdVol());
             } catch (Exception e) {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(e.getMessage()); 
             }  
             tableVols.getSelectionModel().getSelectedItem().comTexte.set(myComment.getCommentTxt());
@@ -810,6 +839,9 @@ public class CarnetViewController  {
         }         
     }
     
+    /**
+     * Manage photo of the flight
+     */
     private void gestionPhoto() {
         if (tableVols.getSelectionModel().getSelectedItem().Photo.getValue()) {
             dialogbox actionReq = new dialogbox();
@@ -830,6 +862,9 @@ public class CarnetViewController  {
         
     }
     
+    /**
+     * Delete photo of the flight
+     */
     private void delPhoto() {
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
@@ -841,7 +876,7 @@ public class CarnetViewController  {
                 pstmt.setInt(2, Integer.valueOf(currCarnet.getIdVol()));
                 pstmt.executeUpdate();    
             } catch (Exception e) {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(e.getMessage()); 
             }  
             tableVols.getSelectionModel().getSelectedItem().camera.set(null);
@@ -850,6 +885,9 @@ public class CarnetViewController  {
         }        
     }
     
+    /**
+     * Update photo of the flight
+     */
     private void majPhoto() {
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
@@ -863,14 +901,13 @@ public class CarnetViewController  {
                 try {
                     bufferedImage = ImageIO.read(selectedFile);
                     imgmanip currImage = new imgmanip();
-                    // Une réduction directe au chargement comme
+                    // A direct reduction during upload give bad results
                     // Image currImg = new Image(selectedFile.getAbsolutePath(), 700, 700, true, true);
-                    // donnait des résultats désastreux
                     BufferedImage redBufImage = currImage.reduitPhoto(bufferedImage,700,700);
                     String strImage = currImage.imgToBase64String(redBufImage, "jpg");
                     if (strImage != null)  {
                         currCarnet.setCamera(strImage);
-                        // Stockage db
+                        // db storage
                         String sReq = "UPDATE Vol SET V_Photos= ? WHERE V_ID = ?";                    
                         try {
                             PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
@@ -878,7 +915,7 @@ public class CarnetViewController  {
                             pstmt.setInt(2, Integer.valueOf(currCarnet.getIdVol()));
                             pstmt.executeUpdate();    
                         } catch (Exception e) {
-                            alertbox aError = new alertbox();
+                            alertbox aError = new alertbox(myConfig.getLocale());
                             aError.alertError(e.getMessage()); 
                         }  
                         tableVols.getSelectionModel().getSelectedItem().camera.set(strImage);
@@ -889,15 +926,19 @@ public class CarnetViewController  {
                         myPhoto.showDbPhoto(redImg);    
                     }
                 } catch (IOException ex) {
-                    alertbox aError = new alertbox();
+                    alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertError(ex.getMessage());                     
                 }            
             }
         }
     }
     
+    /**
+     * Answer of scoring class
+     * @param pRetour 
+     */
     public void scoreReturn(int pRetour) {
-        // Si la trace n'a pas été évaluée, le message d'erreur a été envoyé par la classe scoring
+        // If scoring failed, error message was sent by Scoring class
         if (currTrace.isScored())  {
             // Mise à jour de la db
             Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
@@ -918,37 +959,42 @@ public class CarnetViewController  {
                         break;  
                 }                
             } catch (Exception e) {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(e.getMessage()); 
             }       
         }         
     }
 
+    /**
+     * Manage Google Earth kml file generation
+     */
     @FXML
     private void askWinGE() {
-        // La trace sera systématiquement scorée avant génération du Kml
+        // Track will be scored before generation
         if (currTrace.isDecodage()) {
-            if (currTrace.isScored())  {
-                // Attention sous Linux on plante pas de score possible...
+            if (currTrace.isScored())  {               
                 showWinGE();                
             } else {
-                // On lance le calcul avec le module externe points (classe scoring) dont on DOIT attendre la fin d'execution
-                // C'est la classe scoring qui reviendra vers le controller en appellant scoreReturn()
-                // D'où la nécessité de mettre un pont avec ce controller
-                scoring currScore = new scoring(this,2);  
+                // Launch computation with an external program "points" (Scoring class). We must wait the end of the process
+                // Scoring claas come back to controller with scoreReturn()
+                // Therefore a communication bridge is necessary
+                scoring currScore = new scoring(this,2, myConfig);  
                 currScore.start(currTrace, myConfig.getIdxLeague());                            
             }
         }        
     }
-                
+    
+    /**
+     * Display window with parameters kml generation
+     * @return 
+     */
     private boolean showWinGE() {
         try {                                  
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getResource("view/KmlView.fxml")); 
+            loader.setLocation(Main.class.getResource("/KmlView.fxml")); 
             
             AnchorPane page = (AnchorPane) loader.load();
-            // Creation de la scène pour la fenêtre de Configuration
             Stage dialogStage = new Stage();
             dialogStage.setTitle(i18n.tr("Génération fichier kml"));
             dialogStage.initModality(Modality.WINDOW_MODAL);       
@@ -956,7 +1002,7 @@ public class CarnetViewController  {
             Scene scene = new Scene(page);
             dialogStage.setScene(scene);
 
-            // Initialisation d'un pont de communication entre le controller CarnetView et KmlView
+            // Initialization of a communication bridge between CarnetView and KmlView
             KmlViewController controller = loader.getController();
             controller.setCarnetBridge(this);
             controller.setDialogStage(dialogStage); 
@@ -970,6 +1016,11 @@ public class CarnetViewController  {
         }
     }
     
+    /**
+     * Answer of KmlViewController when kml generation is finished 
+     * @param currKml
+     * @throws IOException 
+     */
     public void configKml(makingKml currKml) throws IOException {  
         boolean kmlDisk = false;
         File ficKml = null;
@@ -995,21 +1046,24 @@ public class CarnetViewController  {
                             Desktop dt = Desktop.getDesktop();     
                             dt.open(ficKml);            
                         } catch (Exception e) {
-                            alertbox aError = new alertbox();
+                            alertbox aError = new alertbox(myConfig.getLocale());
                             aError.alertNumError(1030); 
                         }       
                     }
                 } else {
-                    alertbox aInfo = new alertbox();
+                    alertbox aInfo = new alertbox(myConfig.getLocale());
                     aInfo.alertInfo(i18n.tr("Génération du fichier terminée")); 
                 }
             } else {
-                alertbox aError = new alertbox();
+                alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertNumError(currKml.getErrorCode()); 
             }
         }
     }
 
+    /**
+    * Translate labels of the window
+    */
     private void winTraduction() {
         dateCol.setText(i18n.tr("Date"));
         heureCol.setText(i18n.tr("Heure"));

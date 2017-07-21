@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package photo;
 
@@ -33,11 +33,13 @@ import javax.imageio.ImageIO;
 /**
  *
  * @author gil
+ * 
+ * Image manipulation
  */
 public class imgmanip {
     
-    private int widthImg;     // Pour le HTML, on avait besoin de connaitre cette valeur
-    private int heightImg;    // Pour le HTML, on avait besoin de connaitre cette valeur
+    private int widthImg;     // for HTML, we need this value
+    private int heightImg;    // for HTML, we need this value
     private String strImage; 
     private int errorCode;
 
@@ -59,8 +61,8 @@ public class imgmanip {
             
     
     /**
-     * procédure de réduction simple d'une photo
-     * provenant de https://www.mkyong.com/java/how-to-resize-an-image-in-java/
+     * Simple reduction method
+     * from https://www.mkyong.com/java/how-to-resize-an-image-in-java/
      * @param originalImage
      * @param type
      * @param imgWidth
@@ -78,9 +80,9 @@ public class imgmanip {
     }
     
     /**
-     * Procédure de réduction avec moindre perte de qualité 
-     * différence avec resizeImage pas évidente pour des petits formats
-     * source provenant de https://www.mkyong.com/java/how-to-resize-an-image-in-java/
+     * Reduction method with small loss of quality
+     * difference with resizeImage is not obvious for little pictures
+     * from https://www.mkyong.com/java/how-to-resize-an-image-in-java/
      * @param originalImage
      * @param type
      * @param imgWidth
@@ -105,6 +107,13 @@ public class imgmanip {
 	return resizedImage;
     }
     
+    /**
+     * Manage picture reduction
+     * @param originalImage
+     * @param maxWidth
+     * @param maxHeight
+     * @return 
+     */
     public BufferedImage reduitPhoto(BufferedImage originalImage,int maxWidth, int maxHeight) {
         // Calcul du facteur de réduction
         int currWidth = originalImage.getWidth();
@@ -123,20 +132,21 @@ public class imgmanip {
     }
     
     /**
-     * La photo est extraite de la db sous forme d'une string
-     * Dans xLogfly, j'avais galéré sur le stockage des photos dans sqlLite
-     * Finalement j'étais tombé sur un post expliquant que le plus simple était de transformer le JPEG en string 
-     * https://forum.xojo.com/6984-write-picture-to-file avec encodage et décodage en base 64
-     * Pour des raisons de compatibilité, on garde cette procédure 
-     * Décodage et encodage en java : http://www.rgagnon.com/javadetails/java-0598.html
-     * La solution : https://myjeeva.com/convert-image-to-string-and-string-to-image-in-java.html
-     * Cette string est transformé en tableau de bytes puis en BufferedImage
-     * L'image est ensuite ajustée aux paramètres demandés : maxWidth et maxHeight
-     * Même en provenance de la db, on fixe une limite max car dans xLogfly, il y avait un bug : 
-     * la taille de la photo n'était pas réellement "limitée". 
-     * la taille de la photo était directement liée à la taille de la fenêtre d'xLogfly
+     * Picture decoding method
      * 
-     * Elle est finalement sauvegardée sur le disque 
+     * Picture is stored in database like a string
+     * in xLogfly, I had problems with sqlite storage
+     * best solution seems to transform JPEG in string
+     * see https://forum.xojo.com/6984-write-picture-to-file with 64 base coding and decoding
+     * for compatibilty with xLogfly we keep this process
+     * decoding and coding in Java : http://www.rgagnon.com/javadetails/java-0598.html
+     * solution : https://myjeeva.com/convert-image-to-string-and-string-to-image-in-java.html
+     * This string is transformed in bytes array then in BufferedImage
+     * Image is cropped at maxWidth and maxHeight
+     * We set a max limit
+     * In xLogfly, there was a bug, no limit for the picture. Picture size depend of window size
+     * 
+     * After decoding, picture is saved on disk
      * 
      * @param strPhoto
      * @param maxWidth
@@ -146,10 +156,10 @@ public class imgmanip {
         int res = -1;
         try {
             byte[] decodedValue = Base64.getDecoder().decode(strPhoto);   
-            // conversion du  byte array en BufferedImage
+            // byte array conversion in  BufferedImage
             InputStream in = new ByteArrayInputStream(decodedValue);
             BufferedImage originalImage = ImageIO.read(in);                       
-            // Calcul du facteur de réduction
+            // Reduction factor computing
             int currWidth = originalImage.getWidth();
             int currHeight = originalImage.getHeight();
             double factor = Math.min((double)maxWidth/currWidth,(double) maxHeight/currHeight);     
@@ -161,24 +171,31 @@ public class imgmanip {
 
             BufferedImage resizeImageJpg = resizeImage(originalImage);
             ImageIO.write(resizeImageJpg, "jpg", new File(fAbsPath));
-            // Emploi de la réduction améliorée
+            // Best reduction
             // BufferedImage resizeImageHintJpg = resizeImageWithHint(originalImage, type,  newWidth, newHeight);
             // ImageIO.write(resizeImageHintJpg, "jpg", new File(fAbsPath)); 
             res = 0;
         } catch (Exception e) {
-            res = 1042; // Problème sur le décodage de la photo
+            res = 1042; // Picture decoding problem
         }         
         return res;
     }
     
+    /**
+     * Convert a string to an image
+     * @param strPhoto
+     * @param maxWidth
+     * @param maxHeight
+     * @return 
+     */
     public Image strToImage(String strPhoto, int maxWidth, int maxHeight ) {  
         Image finalImage = null;
         try {
             byte[] decodedValue = Base64.getDecoder().decode(strPhoto);   
-            // conversion du  byte array en BufferedImage
+            // byte array converison in BufferedImage
             InputStream in = new ByteArrayInputStream(decodedValue);
             BufferedImage originalImage = ImageIO.read(in);                        
-            // Calcul du facteur de réduction
+            // Reduction factor computing
             int currWidth = originalImage.getWidth();
             int currHeight = originalImage.getHeight();
             double factor = Math.min((double)maxWidth/currWidth,(double) maxHeight/currHeight);     
@@ -189,15 +206,20 @@ public class imgmanip {
             heightImg = (int) dHeight;                                
 
             BufferedImage resizeImageJpg = resizeImage(originalImage);
-            // Astuce de transformation trouvée sur http://java-buddy.blogspot.fr/2013/01/convert-javaawtimagebufferedimage-to.html
+            // trick found on http://java-buddy.blogspot.fr/2013/01/convert-javaawtimagebufferedimage-to.html
             finalImage = SwingFXUtils.toFXImage(resizeImageJpg, null);
         } catch (Exception e) {
-            errorCode = 1042; // Problème sur le décodage de la photo
+            errorCode = 1042; // Picture decoding problem
         }          
         
         return finalImage;        
     }
     
+    /**
+     * Convert image to string
+     * @param fAbsPath
+     * @return 
+     */
     public int imageFileToStr(String fAbsPath) {
         int res = -1;
         File file = new File(fAbsPath);
@@ -205,7 +227,7 @@ public class imgmanip {
             FileInputStream imageInFile = new FileInputStream(file);
             byte imageData[] = new byte[(int)file.length()];           
             imageInFile.read(imageData);
-            // Encodage de l'image
+            // Image coding
             strImage = Base64.getEncoder().encodeToString(imageData);            
             imageInFile.close();
             res = 0;
@@ -248,12 +270,12 @@ public class imgmanip {
     }
     
     /**
-     * Procédure pur JavaFX pour transformer une "image" javafx en bytearray
-     * vue à plusieurs repises sur stackoverflow
+     * JavaFX method to convert an image in bytearray
+     * Unused but kept for further usage (See project imgbytearray)
+     * reference
      *    http://stackoverflow.com/questions/37008675/pure-javafx-convert-image-to-bytes-array-opposit-operation-whats-wrong
      *    http://stackoverflow.com/questions/34396679/javafx-image-to-byte-array-closed
-     * Transformation en string semble fonctionner mais  transformation inverse ne passe pas...
-     * Inutilisée mais gardée pour exploration ultérieure (Cf projet imgbytearray)
+     * String conversion Ok but inverse does not work.
      * @param img
      * @return 
      */    

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package database;
 
@@ -23,7 +23,7 @@ import settings.configProg;
  *
  * @author gil
  * 
- * Cette classe reprend toutes les procédures de recherches spécifiques dans la base de données
+ * Database search operations
  * 
  */
 public class dbSearch {
@@ -31,18 +31,17 @@ public class dbSearch {
     // Localization
     private I18n i18n;
 
-    // Paramètres de configuration
+    // settings
     configProg myConfig;
     
     public dbSearch(configProg pConfig)  {
         myConfig = pConfig;
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());
+        i18n = I18nFactory.getI18n("","lang/Messages",dbSearch.class.getClass().getClassLoader(),myConfig.getLocale(),0);
     }
     
     /**
-     * Détermine si un vol existe déjà dans la table des vols
-     * Pour un jour donné, cherche dans la table des vols s'il existe un vol
-     * démarrant dans un rayon de 300 mètres et dans un délai de deux minutes
+     * Search if a flight exist in current database
+     * For a specific day, search a flight started in 300m radius and a delay of two minutes      
      * @param pDate
      * @param pLatDeco
      * @param pLongDeco
@@ -80,7 +79,7 @@ public class dbSearch {
                 }
             }            
         } catch ( Exception e ) {
-            alertbox aError = new alertbox();
+            alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(e.getClass().getName() + ": " + e.getMessage());                         
         }
         
@@ -88,10 +87,10 @@ public class dbSearch {
     }    
     
     /**
-     * Depuis xLogfly V4 et la mise à l'heure locale exacte on ne peut plus comparer des heures UTC annoncées 
-     * sur la liste GPS (Flymaster) et les vols figurant dans le carnet. 
-     * On va donc se fonder uniquement sur la durée du vol ... un peu olé olé !
-     * @param strDate doit déjà être formaté sur un modèle YYYY-MM-DD
+     * From xLogfly V4 and new offset computation, it's not possible to compare takeoff hours
+     * on GPS flight list (Flymaster) and flights stored in db
+     * now based only on flight duration... not very safe !
+     * @param strDate must be formated : YYYY-MM-DD
      * @param totSec
      * @return 
      */
@@ -136,20 +135,21 @@ public class dbSearch {
                 }                
             }
         } catch (Exception e) {
-            alertbox aError = new alertbox();
+            alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(e.getClass().getName() + ": " + e.getMessage()); 
         }
         
         return res;        
     }
+    
     /**
-     * Appellation procédure vient de xLogfly où il y avait pls procédures rechSite.
-     * la dernière employée s'appelait ainsi...
-     * le paramètre pAlt n'est pas utilisé pour la recherche, il est nécessaire
-     * s'il faut créer un nouveau site avec addBlankSite
+     * Method name come from xLogfly where there was several rechSite methods
+     * this is the name of the last one
+     * pAlt (altitude) is not required for searching operation but it is necessary
+     * to create a new site with addBlankSite method
      * @param pLat
      * @param pLong
-     * @param exAtterro   Si vrai on exclut de la recherche les sites marqués "A" commme atterro     
+     * @param exAtterro   if true, sites with "A" like landing (Atterrissage in french)are excluded of searching operation   
      * @return 
      */
     public String rechSiteCorrect(double pLat,double pLong,boolean exAtterro) {
@@ -160,8 +160,8 @@ public class dbSearch {
         double distMini = myConfig.getDistDeco();
                 
         /*
-        * A NOTER : Sous nos latitudes, en prenant la deuxième décimales cela donne un périmètre de recherche de 1,11km. 
-        * Si on passe à la troisième décimale, on passe à 222 mètres ...      
+        * NOTE : under our latitudes, second decimal give a search perimeter of 1,11km. 
+        * third decimal, perimeter is 222 meters ...      
         */
         double arrLat = Math.ceil(pLat*1000)/1000;
         double arrLong = Math.ceil(pLong*1000)/1000;
@@ -170,8 +170,9 @@ public class dbSearch {
         double LongMin = arrLong - 0.01;
         double LongMax = arrLong + 0.01;
         
-        // Dans les versions précedentes, on se limitait aux sites marqués décos dans le fichier Sites. 
-        // Ce marquage peut être absent.. Donc on excluera simplement ce qui est marqué comme atterrissage 
+        // In old versions, search is limited to launching sites
+        // But this information can be absent
+        // Only landing sites are excluded
         StringBuilder sReq = new StringBuilder();
         sReq.append("SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Alti,S_Localite,S_Pays FROM Site WHERE S_Latitude > ").append(String.valueOf(LatMin)).append(" AND S_Latitude < ").append(String.valueOf(LatMax));
         sReq.append(" AND S_Longitude > ").append(String.valueOf(LongMin)).append(" AND S_Longitude < ").append(String.valueOf(LongMax));

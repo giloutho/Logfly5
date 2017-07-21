@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -141,19 +141,18 @@ public class KmlViewController implements Initializable {
     traceGPS kmlTrace;
 
     public void setAppel(int appel, configProg currConfig) {
-        // 1 c'est CarnetViewController qui appelle
-        // 2 c'est TraceViewController qui appelle
+        // 1 -> call by CarnetViewController
+        // 2 -> call by TraceViewController 
         this.appel = appel;
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",KmlViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
-        // Traduction des expressions
+        i18n = I18nFactory.getI18n("","lang/Messages",KmlViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);        
         winTraduction(); 
         iniTitre();  
     }
         
     
     /**
-     * Initializes the controller class.
+     * Initialize the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {               
@@ -169,8 +168,8 @@ public class KmlViewController implements Initializable {
         checkThermiq.setSelected(true);
         checkReplay.setSelected(true);
         checkRunGE.setSelected(true);        
-        // On prépare un formatter pour limiter les textfields à la saisie numérique
-        // vu sur http://www.javaworld.com/article/2991463/learn-java/javafx-improvements-in-java-se-8u40.html?page=4
+        // a formatter for numeric input in textfields
+        // seen on  http://www.javaworld.com/article/2991463/learn-java/javafx-improvements-in-java-se-8u40.html?page=4
         StringConverter<Integer> formatter;
         formatter = new StringConverter<Integer>()
         {
@@ -216,7 +215,7 @@ public class KmlViewController implements Initializable {
     }
     
     /**
-     * Appellée pour obtenir un pont de communication avec CarnetViewController 
+     * Set a communication bridge with CarnetViewController 
      * @param callExterne 
      */
     public void setCarnetBridge(CarnetViewController callCarnet)  {
@@ -225,7 +224,7 @@ public class KmlViewController implements Initializable {
     }
     
     /**
-     * Appellée pour obtenir un pont de communication avec TraceViewController 
+     * Set a communication bridge with TraceViewController 
      * @param callExterne 
      */
     public void setTraceBridge(TraceViewController callExterne)  {
@@ -241,6 +240,10 @@ public class KmlViewController implements Initializable {
         lbTitle.setText(sbTitre.toString());
     }
     
+    /**
+     * Check if kml file must be saved on disk
+     * @throws InterruptedException 
+     */
     @FXML
     private void checkSaveState() throws InterruptedException {
         if (checkSave.isSelected() )
@@ -249,19 +252,22 @@ public class KmlViewController implements Initializable {
             lbKmlPath.setText(null);
     }
     
+    /**
+     * save kml file on disk
+     * @throws InterruptedException 
+     */
     @FXML
     private void selectDiskKml() throws InterruptedException {
-        // Création du nom par défaut du fichier kml
-        // Composition du nom par défaut de la trace
+        // kml file default name creation
         String suggName1 = kmlTrace.getDate_Vol_SQL().replaceAll("-","_");
         String suggName2 = suggName1.replaceAll(":","_");
         String suggName = suggName2.replaceAll(" ","_");
-        // Il y a un problème s'il y a un point dans l'expression comme Gégé avait fait -> sPilote = G. LEGRAS...        
+        // Warning... Problem if a point exists in pilot name like Gégé -> sPilote = G. LEGRAS      
         String suggPilote;
         String finalName;
         String sPilote = kmlTrace.getsPilote();
         if (sPilote != null && !sPilote.equals(""))  {
-            // Il y a un problème s'il y a un point dans l'expression [le pilote saisit -> "G. DUPOND"]        
+            // a point is replaced by an underscore  
             String suggPilote1 = sPilote.replaceAll("\\.","_");
             suggPilote = suggPilote1.replaceAll(" ","_");      
             finalName = suggPilote+"_"+suggName+".kml"; 
@@ -283,12 +289,12 @@ public class KmlViewController implements Initializable {
     }
     
     /**
-     * Valide les paramètres de génération
+     * Validate parameters of kml file generation
      */
     @FXML
     private void handleOk() throws IOException {
-        makingKml currKml = new makingKml();
-        // Les valeurs saisies sont obligatoirement des entiers
+        makingKml currKml = new makingKml(myConfig.getLocale());
+        // Values must be integer
         currKml.setCamStep(Integer.parseInt(txCamStep.getText()));  
         currKml.setCamDessus(Integer.parseInt(txCamDessus.getText()));                          
         currKml.setCamTimer(Integer.parseInt(txCamTimer.getText()));   
@@ -324,13 +330,16 @@ public class KmlViewController implements Initializable {
         
     
     /**
-     * Abanadon génération fichier kml
+     * Genration is cancelled 
      */
     @FXML
     private void handleCancel() {
         dialogStage.close();
     }
 
+    /**
+    * Translate labels of the window
+    */
     private void winTraduction() {
         checkReduc.setText(i18n.tr("Réduction du nombre de points"));
         checkTrace.setText(i18n.tr("Trace avec profil"));

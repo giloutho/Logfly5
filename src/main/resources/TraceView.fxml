@@ -26,7 +26,7 @@
                            <graphic>
                               <ImageView fx:id="top_Map1" fitHeight="26.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@../../images/map_oeil.png" />
+                                    <Image url="@images/map_oeil.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -38,7 +38,7 @@
                            <graphic>
                               <ImageView fx:id="top_Visugps" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@../../images/Visu_GPS_5.png" />
+                                    <Image url="@images/Visu_GPS_5.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -50,7 +50,7 @@
                            <graphic>
                               <ImageView fx:id="top_Score" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@../../images/trophy.png" />
+                                    <Image url="@images/trophy.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -62,7 +62,7 @@
                            <graphic>
                               <ImageView fx:id="top_GEarth" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
-                                    <Image url="@../../images/google.png" />
+                                    <Image url="@images/google.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -72,7 +72,7 @@
                         </Button>
                         <ImageView fx:id="top_Menu" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../../images/list.png" />
+                              <Image url="@images/list.png" />
                            </image>
                            <HBox.margin>
                               <Insets right="10.0" top="10.0" />

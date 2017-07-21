@@ -1,14 +1,11 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package gps;
 
-import com.serialpundit.core.SerialComException;
-import com.serialpundit.core.SerialComPlatform;
-import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.core.util.SerialComUtil;
 import com.serialpundit.serial.SerialComManager;
 import static geoutils.convigc.Lat_Dd_IGC;
@@ -30,18 +27,18 @@ import model.Gpsmodel;
 /**
  *
  * @author Rishi Gupta https://github.com/RishiGupta12/SerialPundit
- * sans l'aide précieuse de Rishi, ce module n'existerait pas...
+ * without Rishi help, this class doesn't exist
  * 
- * Init           : demande le pedigree du GPS, et la liste des vols bruts. Renvoie vrai si réponse de l'appareil. 
- *                  Il faut fermer le port car si l'utilisateur repart, le port ne doit pas rester ouvert
- * IniForFights   : la fermeture évoquée ci dessus oblige à "rouvrir" le port mais sans demander la liste des vols
- * getListPFMLST  : lecture de la liste des vols bruts stocké dans un ArrayList
- * getListFlights : appelé par le controller pour obtenir la liste des vols décodée pour le tableView
- * getIGC         : appelé par le controller pour lecture d'un vol. 
- *                  appelle getFlightPOS : lecture d'un vol brut dans la mémoire du GPS sous forme d'une liste de POSitions
- *                  appelle makeIGC pour fabrication et certification d'un fichier IGC de la trace 
- * getFlightPOS   : lecture d'un vol brut dans la mémoire du GPS sous forme d'une liste de POSitions
- * makeIGC        : mise au format IGC et certification du fichier 
+ * Init           : call GPS id and raw flight list. True if GPS answers
+ *                  serial port must be closed
+ * IniForFlights  : serial port closing in Init requires to open again the serial port (without flight list request)
+ * getListPFMLST  : raw flight list stored in a ArrayList
+ * getListFlights : called by GPSViewController for extracted flight list 
+ * getIGC         : called by GPSViewController for extracted flight track in IGC format
+ *                  call getFlightPOS : download a raw flight track form GPS memory [POSitions list]
+ *                  call makeIGC : production and certification of an IGC file for the raw dowloaded track
+ * getFlightPOS   : download a raw flight track form GPS memory [POSitions list]
+ * makeIGC        : production and certification of an IGC file for the raw dowloaded track 
  */
 public class flymaster {
     
@@ -89,7 +86,11 @@ public class flymaster {
         return finalIGC;
     }
     
-    
+    /**
+     * Initialize serial port and request GPS id [getDeviceInfo]
+     * @param namePort
+     * @return 
+     */
     public boolean init(String namePort) {
         boolean res = false;
         try {
@@ -105,7 +106,7 @@ public class flymaster {
             if (getDeviceInfo(true)) {
                 res = true;
             }   
-            // quelque soit le retour IL FAUT fermer le port
+            // Closing port mandatory
             scm.closeComPort(handle);
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,6 +114,11 @@ public class flymaster {
         return res;        
     }
     
+    /**
+     * Initialize the serial port for flight downloading operation
+     * @param namePort
+     * @return 
+     */
     public boolean iniForFlights(String namePort) {
         boolean res = false;
         try {
@@ -142,7 +148,7 @@ public class flymaster {
     }
     
     /**
-     * * Get information about device. Keep reading until timeout happens.
+     * Get information id about device. Keep reading until timeout happens.
      * @throws Exception 
      */
     private boolean getDeviceInfo(boolean listPFM) throws Exception {
@@ -159,7 +165,7 @@ public class flymaster {
         // give some time to GPS to send data to computer. We do not depend upon 100 because we also used 
         Thread.sleep(100);
 
-        // On doit obtenir une réponse genre $PFMSNP,GpsSD,,02988,1.06j, 872.20,*3C
+        // Answer must be something like : $PFMSNP,GpsSD,,02988,1.06j, 872.20,*3C
         String data = scm.readString(handle);
         if (data != null && !data.isEmpty()) {
             String[] tbdata = data.split(",");
@@ -181,9 +187,8 @@ public class flymaster {
    
     
     /**
-     * Décode l'arrayList des vols brut ($PFMLST,025,025,28.06.16,12:33:05,01:15:10*35)
-     * poour mise en forme dans une ObservableList 
-     * afin de mettre à jour le tableView appelant
+     * raw flight list decoding  [$PFMLST,025,025,28.06.16,12:33:05,01:15:10*35]
+     * for an ObservableList used by controller's tableview
      * @param listFlights 
      */
     public void getListFlights(ObservableList <Gpsmodel> listFlights) {
@@ -195,7 +200,7 @@ public class flymaster {
                 Gpsmodel oneFlight = new Gpsmodel();                                             
                 oneFlight.setChecked(false);
                 oneFlight.setDate(idVol[3]);
-                // On compose l'instruction qui permet de charger le vol
+                // Specific download instruction of this flight is builded
                 StringBuilder sbVol = new StringBuilder();
                 sbVol.append("$PFMDNL,");
                 String[] tbDate = idVol[3].split("\\.");
@@ -213,8 +218,8 @@ public class flymaster {
     }        
     
     /**
-     * Obtention de la liste des vols qui sort ainsi :
-     * $PFMLST,025,025,28.06.16,12:33:05,01:15:10*35
+     * raw flight list request.
+     * output format : $PFMLST,025,025,28.06.16,12:33:05,01:15:10*35
      * @throws Exception 
      */
     private void getListPFMLST() throws Exception {
@@ -260,6 +265,16 @@ public class flymaster {
         }
     }
     
+    /**
+     * IGC file request with two steps 
+     *   - getFlightPOS
+     *   - makeIGC
+     * @param gpsCommand
+     * @param strDate
+     * @param strPilote
+     * @param strVoile
+     * @return 
+     */
     public boolean getIGC(String gpsCommand, String strDate, String strPilote, String strVoile)  {
         boolean res = false;
                 
@@ -276,8 +291,8 @@ public class flymaster {
     }
     
     /**
-     * Appelé par getIGC pour lecture brute d'un vol
-     * sortie sous forme dun arrayList de POSition
+     * called by getIGC  for raw flight track download from GPS memory 
+     * result is an Arraylist of POSition
      * @param gpsCommand
      * @throws Exception 
      */
@@ -306,7 +321,7 @@ public class flymaster {
         ArrayList<byte[]> rawData = new ArrayList<byte[]>();
         listPOS = new ArrayList<String>();
        
-        scm.writeString(handle, gpsCommand, 0);  // // gpsCommand genre -> $PFMDNL,160709110637,2\n
+        scm.writeString(handle, gpsCommand, 0);  // // gpsCommand like -> $PFMDNL,160709110637,2\n
 
         // Give some time to GPS firmware to prepare and start sending blocks.
         Thread.sleep(100);
@@ -494,7 +509,7 @@ public class flymaster {
     }
     
     /**
-     * Décodage d'un entier long pour obtenir jour et heure
+     * Extract day and hour from a long integer
      * @param itime 
      */
     private void long2Time(int itime) {
@@ -558,8 +573,7 @@ public class flymaster {
     }
     
     /**
-     * Sur une expression type 11:8:7
-     * il faut sortir 110807
+     * With a string like 11:8:7, we must have 110807
      * @param sHour
      * @return 
      */
@@ -582,13 +596,13 @@ public class flymaster {
     }
     
     /**
-     * Génération de la signature numérique
+     * digital signature generation
      * @param b
      * @return 
      */
     private static String bytesToHex(byte[] b) {
-        // Initialement les lettres étaient en majuscules
-        // on les passe en minuscules pour être compatible avec xLogfly
+        // Initialy letters were in upperercase
+        // for xLogfly compatibility, they are converted in lowercase
         char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7',
                            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
         StringBuffer buf = new StringBuffer();
@@ -600,7 +614,7 @@ public class flymaster {
     }
     
     /**
-     * Appelé par makeIGC pour décodage de l'arrayList de POSitions
+     * called by makeIGC POSitions arraylist decoding
      */
     private void decodagePOS() {
         for (int i = 0; i < listPOS.size(); i++) {
@@ -625,7 +639,7 @@ public class flymaster {
     }
     
     /**
-     * Fabrication et signature du fichier IGC de la trace
+     * production and certification of an IGC file for the raw dowloaded track 
      * @param sDate
      * @param sPilote
      * @param sVoile 
@@ -665,12 +679,13 @@ public class flymaster {
             finalIGC = txtIGC.toString();            
         } catch (Exception e) {
             
-        }
-        
-        
-
+        }                
     }        
     
+    /**
+     * Debugging
+     * @param listFlights 
+     */
     public void debugListFlights(ObservableList <Gpsmodel> listFlights) {
         File fFlight = new File("flylist.txt");
 	listFlights.clear();
@@ -713,7 +728,5 @@ public class flymaster {
 		System.out.println(ex.getMessage());
 	}   
         
-    }
-
-    
+    }    
 }

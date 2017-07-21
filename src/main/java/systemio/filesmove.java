@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package systemio;
 
@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -31,6 +32,7 @@ import org.xnap.commons.i18n.I18nFactory;
 /**
  *
  * @author gil
+ * moving files utility
  */
 public class filesmove {
     
@@ -43,14 +45,14 @@ public class filesmove {
     private boolean taskOK;
     private static File[] filesToMove;
     private static String destPath;
-
+    
     public boolean isTaskOK() {
         return taskOK;
     }
     
-    public filesmove(File[] files, String newPath) throws InterruptedException {
+    public filesmove(File[] files, String newPath, Locale currLocale) throws InterruptedException {
         
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass());
+        i18n = I18nFactory.getI18n("","lang/Messages",filesmove.class.getClass().getClassLoader(),currLocale,0); 
         taskOK = false;
         filesToMove = files;
         destPath = newPath;
@@ -67,7 +69,7 @@ public class filesmove {
         vBox.setPadding(new Insets(5, 5, 5, 5));
         vBox.setSpacing(5);
         btClose.setVisible(false);
-        btClose.setText(i18n.tr("Fermer"));
+        btClose.setText(i18n.tr("Fermer"));  // Close
         btClose.setOnAction(new EventHandler<ActionEvent>() {            
             @Override
             public void handle(ActionEvent event) {
@@ -85,7 +87,7 @@ public class filesmove {
         myService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent t) {
-                labelSucceeded.setText(i18n.tr("Transfert terminé..."));
+                labelSucceeded.setText(i18n.tr("Transfert terminé..."));    // File transfer finished
                 taskOK = true;                
                 btClose.setVisible(true);
             }
@@ -95,11 +97,11 @@ public class filesmove {
             @Override
             public void handle(WorkerStateEvent t) {
                 taskOK = false; 
-                labelSucceeded.setText(i18n.tr("Problème pendant le transfert..."));
+                labelSucceeded.setText(i18n.tr("Problème pendant le transfert..."));   // Problem during file transfer
             }
         });
         
-        // Binding des éléments de la fenêtre avec les évènements de la task
+        // Window elements binding with task evenments
         pb.progressProperty().bind(myService.progressProperty());
         labelCount.textProperty().bind(myService.messageProperty());
 

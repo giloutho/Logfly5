@@ -1,3 +1,9 @@
+/* 
+ * Copyright Gil THOMAS
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
+ */
 package Logfly;
 
 import dialogues.alertbox;
@@ -13,10 +19,13 @@ import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.RootLayoutController;
 import controller.TraceViewController;
+import org.xnap.commons.i18n.I18n;
+import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 
 public class Main extends Application {
     private Stage primaryStage;
+    private I18n i18n;
     private BorderPane rootLayout;
     private CarnetViewController controlCarnet;
     private TraceViewController controlTrace;
@@ -31,38 +40,37 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Logfly");
-        
+             
         // Reading settings
         myConfig = new configProg();
-        myConfig.readSettings(); 
+        myConfig.readSettings();         
                                   
         if (myConfig.isValidConfig()) {
+            i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
             initRootLayout();        
             showCarnetOverview();           
         } else  {            
-            alertbox aError = new alertbox();
-            // Localisation nécessaire
-            // aError.alertError(i18n.tr("Fichier non trouvé"));  
+            alertbox aError = new alertbox(java.util.Locale.ENGLISH);            
             StringBuilder errMsg = new StringBuilder();
             
             if (myConfig.isReadConfig())  {
-                errMsg.append("Logfly.properties lu\n");
+                errMsg.append("Logfly.properties read\n");
             } else {
-                errMsg.append("Logfly.properties non lu\n");
+                errMsg.append("Logfly.properties not read\n");
             }
             if (myConfig.isConfigDefault())  {
-                errMsg.append("Configuration par défaut\n");
+                errMsg.append("CDefault settings\n");
             } else {
-                errMsg.append("Configuration personnalisée\n");
+                errMsg.append("custom settings\n");
             }
-            errMsg.append("Chemin carnet : "+myConfig.getFullPathDb());                
+            errMsg.append("Logbook path : "+myConfig.getFullPathDb());                
             aError.alertError(errMsg.toString());  
             System.exit(0);                            
         }
     }
     
     /**
-     * Initialise la fenêtre racine qui contient le menu latéral
+     * Initialization of root window with lateral menu 
      */
     public void initRootLayout() {
         try {
@@ -72,9 +80,9 @@ public class Main extends Application {
             loader.setLocation(Main.class.getResource("/RootLayout.fxml"));
             rootLayout = (BorderPane) loader.load();   
             
-             // Le controller va avoir besoin d'un accès au stage de l'appli principale
-             // Grâce à cela on évite un NullPointerException lors de l'appel 
-             // à mainApp.getPrimaryStage()  dans le RootLayoutController                        
+            // Controller needs an access to main app
+            // with this, we avoid a NullPointerException with a call to
+            // mainApp.getPrimaryStage() in RootLayoutController                        
            
             rootLayoutController = loader.getController();
             rootLayoutController.setMainApp(this);
@@ -88,7 +96,7 @@ public class Main extends Application {
     }
     
     /**
-     * Affiche le carnet de vols dans la fenêtre racine (root layout).
+     * Display logbook inside root window
      */
     public void showCarnetOverview() {
         try {
@@ -96,13 +104,14 @@ public class Main extends Application {
             loader.setLocation(Logfly.Main.class.getResource("/CarnetView.fxml"));
             AnchorPane carnetOverview = (AnchorPane) loader.load();            
             
-            // Initialisation d'un pont de communication entre le controller Carnet et RootLayout
+            // Initialization of a communication bridge between Carnetcontroller an RootLayout
             controlCarnet = loader.getController();  
-            // Le controller va avoir besoin d'un accès au stage de l'appli principale
-            // Grâce à cela on évite un NullPointerException lors de l'appel à mainApp.getPrimaryStage()         
+            // Controller needs an access to main app
+            // with this, we avoid a NullPointerException with a call to
+            // mainApp.getPrimaryStage() in RootLayoutController     
             controlCarnet.setMainApp(this);
             
-            // Positionne le carnet sur le centre du root layout.
+            // Place logbook window in center of RootLayout.
             rootLayout.setCenter(carnetOverview);                                                      
             
         } catch (IOException e) {
@@ -111,7 +120,7 @@ public class Main extends Application {
     }
     
     /**
-    *   Affiche la fenêtre Import dans la fenêtre racine (root layout).
+    *   Display Import window inside root window
     */     
     public void showImportview() {
         try {
@@ -119,12 +128,12 @@ public class Main extends Application {
             loader.setLocation(Logfly.Main.class.getResource("/ImportView.fxml"));
             AnchorPane importOverview = (AnchorPane) loader.load();            
             
-            // Initialisation d'un pont de communication entre le controller ImportView et RootLayout
+            // Initialization of a communication bridge between ImportView and RootLayout
             ImportViewController controlImport = loader.getController(); 
             controlImport.setRootBridge(rootLayoutController);
             controlImport.setMyConfig(myConfig);
             
-            // Positionne la fenêtre Import sur le centre du root layout.
+            // Place Import window in center of RootLayout.
             rootLayout.setCenter(importOverview);                                                      
             
         } catch (IOException e) {
@@ -133,7 +142,7 @@ public class Main extends Application {
     }
 
     /**
-     * Fenêtre d'affichage d'une trace externe
+     * Display External GPS track window
      */
     public void showTraceview() {
         try {
@@ -141,13 +150,14 @@ public class Main extends Application {
             loader.setLocation(Logfly.Main.class.getResource("/TraceView.fxml"));
             AnchorPane traceOverview = (AnchorPane) loader.load();            
             
-            // Initialisation d'un pont de communication entre le controller TraceView et RootLayout
+            // Initialization of a communication bridge between TraceView and RootLayout
             controlTrace = loader.getController();     
-            // Le controller va avoir besoin d'un accès au stage de l'appli principale
-            // Grâce à cela on évite un NullPointerException lors de l'appel à mainApp.getPrimaryStage()         
+            // Controller needs an access to main app
+            // with this, we avoid a NullPointerException with a call to
+            // mainApp.getPrimaryStage() in RootLayoutController        
             controlTrace.setMainApp(this);
             
-            // Positionne la fenêtre de la trace externe sur le centre du root layout.
+            // Place External track window in center of RootLayout.
             rootLayout.setCenter(traceOverview);                                                      
             
         } catch (IOException e) {
@@ -155,18 +165,21 @@ public class Main extends Application {
         }
     }
     
+    /*
+    * Display GPS communication window
+    */
     public void showGPSview() {
         try {
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/GPSView.fxml"));
             AnchorPane gpsOverview = (AnchorPane) loader.load();            
             
-            // Initialisation d'un pont de communication entre le controller GPSView et RootLayout
+            // Initialization of a communication bridge between GPSView and RootLayout
             controlGPS = loader.getController();     
             controlGPS.setRootBridge(rootLayoutController);
             controlGPS.setMyConfig(myConfig);
             
-            // Positionne la fenêtre GPS sur le centre du root layout.
+            // Place GPS Import window in center of RootLayout..
             rootLayout.setCenter(gpsOverview);                                                      
             
         } catch (IOException e) {
@@ -175,7 +188,7 @@ public class Main extends Application {
     }
     
     /**
-     * Renvoie la scène principale.
+     * Return main stage
      * @return
      */
     public Stage getPrimaryStage() {

@@ -1,10 +1,16 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package trackgps;
+
+/**
+ *
+ * @author Gil Thomas logfly.org
+ * Decoding track IGC format or GPX format
+ */
 
 
 import gapchenko.llttz.Converter;
@@ -32,7 +38,7 @@ import java.util.TimeZone;
 import systemio.textio;
 
 public class traceGPS {
-    // La plupart des variables ont gardés leur nom xLogfly, seules les introductions respectent les conventions Java
+    // variables names from xLogfly
     private static final int APP_INTEGRATION = 15;
     
     private String pathFichier;
@@ -100,6 +106,13 @@ public class traceGPS {
     public List<thermique> Tb_Thermique = new ArrayList<thermique>();
     public ArrayList<Integer> Score_Tb_Balises = new ArrayList<Integer>();
     
+    /**
+     * Track is a file
+     * @param pFile 
+     * @param pType
+     * @param pPath
+     * @param totalPoints 
+     */
     public traceGPS(File pFile, String pType, Boolean totalPoints)
     {
         Decodage = false;
@@ -124,9 +137,7 @@ public class traceGPS {
     } 
     
     /**
-     * Le contructeur peut prendre deux formes :
-     *   - on passe la string contenant la trace
-     *   - on passe le chemin du fichier pour lecture avant décodage
+     *  Track is a string
      * @param pFichier
      * @param pType
      * @param pPath
@@ -462,15 +473,15 @@ public class traceGPS {
                    
     
     /**
-     * S'il y a un seul caractère non numérique, Integer.parseInt renvoie une exception
-     * On gère l'exception en renvoyant une valeur par défaut
-     * Issu d'une longue discussion sur http://stackoverflow.com/questions/1486077/java-good-way-to-encapsulate-integer-parseint
+     * if there is a non numeric character, Integer.parseInt triggers an exception
+     * exception is managed with a default value
+     * see http://stackoverflow.com/questions/1486077/java-good-way-to-encapsulate-integer-parseint
      * @param number
      * @param defaultVal
      * @return 
      */
     private static int checkParseInt(String number, int defaultVal) {
-        // On élimine les espaces éventuels avec une regex
+        // spaces are removed with a regex
         number = number.replaceAll("\\s+","");
         try {
             return Integer.parseInt(number);
@@ -479,16 +490,13 @@ public class traceGPS {
         }
     }
     
-    /**
-     * S'il y a un seul caractère non numérique, Integer.parseInt renvoie une exception
-     * On gère l'exception en renvoyant une valeur par défaut
-     * Issu d'une longue discussion sur http://stackoverflow.com/questions/1486077/java-good-way-to-encapsulate-integer-parseint
+    /** Double checking
      * @param number
      * @param defaultVal
      * @return 
      */
     private static double checkParseDouble(String number, double defaultVal) {
-        // On élimine les espaces éventuels avec une regex
+        // spaces are removed with a regex
         number = number.replaceAll("\\s+","");
         try {
             return Double.parseDouble(number);
@@ -498,9 +506,8 @@ public class traceGPS {
     }
                    
     /**
-     * Decodage partiel ou total du fichier IGC
-     * Si avecPoints est à faux, on s'arrête au premier point de la trace
-     * Ce premier point n'est pas forcément le plus pertinent, car le GPS peut ne pas être calé
+     * decoding all track points or only header and firstpoint (boolean avecPoints)
+     * This choice of the first point is not relevant : GPS fix can be bad when first point is recorded
      */
     
     private void Decode_IGC()
@@ -530,8 +537,8 @@ public class traceGPS {
         sVoile = "";
         sPilote = "";
         
-        // Pour les détails sur les PEV c'est page 44 de la doc FAI
-        // En résumé
+        // For PEV details see FAI documentation p44
+        // In a nutshell
         // The form of the E-Record is record identifer, time, TLC, textstring. Some examples follow, with extra spaces for clarity:
         // E 104533 PEV CR LF
         // B104533 4945333N 01132444EA 01357 01501CRLF
@@ -539,33 +546,33 @@ public class traceGPS {
         // Some events require more than just the TLC for interpretation (with extra spaces for clarity):
         // E 104544 ATS 102312 CR LF
         flag_PEV = false;
-        // On élimine le fameux caractère DC3 Device control 3 envoyé par le XON qui posait problème sur la validation du fichier IGC
-        // En effet ce caractère non valable et surtout non visible faisiat échouer la validation sur le site de la CFD
+        // we remove DC3 character sent by XON. This was a problem for IGC validation
+        // This invisible character is detected by FFVL server. IGC file is rejected
         String BadCar = Character.toString((char)19);
         FicIGC = FicIGC.replace(BadCar,"");       
-        // De la même façon on élimine le DC1 situé à la fin du fichier (le XOFF)
+        // likewise DC1 character sent by XOFF is removed
         BadCar = Character.toString((char)17);
         FicIGC = FicIGC.replace(BadCar,"");    
         
-        // On transforme la variable en un tableau
-        // Au départ je splitait sur EndOfLine.Windows soir chr(13)+chr(10)
-        // sLine = ficIGC.Split(EndOfLine.Windows)  ' IMPORTANT de spécifier Retour Chariot Windows
-        // En examinant la trace envoyée par un internaute, il n'y avait que du chr(10) donc on adopte un split sur ce caractère
+        // File is converted in an array
+        // At beginning split charracter was in xLogfly EndOfLine.Windows -> chr(13)+chr(10)
+        // sLine = ficIGC.Split(EndOfLine.Windows)  
+        // We received some tracklogs where there is only chr(10)
         BadCar = Character.toString((char)10);
         String[] sLine = FicIGC.split(BadCar);
         int Lg_sLine =  sLine.length;
         
-        // mais depuis j'ai eu un nouveau problème il n'y avait que du chr(13), donc on refait une tentative avec celui-ci
+        // later we received a track file with only chr(13) -:)
         if (Lg_sLine == 1) {
             BadCar = Character.toString((char)13);
             sLine = FicIGC.split(BadCar);
             Lg_sLine = sLine.length;
         }
         
-        // Sur le 6020 il y a trois rec G + une ligne vide
-        // Sur GPSDump, il y en a un seul + 1 ligne vide
-        // il y au moins trois enreg G et parfois une ligne vide en dernier, on prend donc l'avant avant dernière ligne
-        // Est-ce qu'on a une trace valide ?
+        // On Flytec 6020, there is three G records + one empty line
+        // with GPSDump, only one G records + one empty line
+        // there is an empty line -> test on second-to-last row
+        // Is is a valid track ?
         if (Lg_sLine > 3) {          
             // Use the string.equals(Object other) function to compare strings, not the == operator
             if (sLine[Lg_sLine - 1].substring(0,1).equals("G"))
@@ -578,7 +585,7 @@ public class traceGPS {
                     Valid_Trace = true;   
         }           
         if ( !Valid_Trace){
-            // Plantage lecture ou pas de record G à se mettre sous la dent
+            // crash or no G record
             for (int k = 0; k < Lg_sLine; k++) {
                 DebChar = sLine[k].substring(0,1);
                 if (DebChar.equals("B") && sLine[k].length() > 23 ) {
@@ -589,36 +596,35 @@ public class traceGPS {
       
         }
         
-        // Pour les substring, the begin index is inclusive but the end index isexclusive.
+        // for substring, the begin index is inclusive but the end index isexclusive.
         if (Valid_Trace) {
             LignesNonB = 0;
             long topDebut = System.currentTimeMillis();
             for (int i = 0; i < Lg_sLine; i++) {
                 if (!sLine[i].trim().equals("")) {
                     DebChar = sLine[i].substring(0,1);
-                    // Décodage de la signature
+                    // signature decoding
                     if (DebChar.equals("A") && sLine[i].length() > 3) {
                         Signature = sLine[i].substring(1,4);
                     }          
                     if (!DebChar.equals("B")) {
                         if (DebChar.equals("E") && sLine[i].indexOf("PEV")> -1)
                             flag_PEV = true;
-                        // On compte les lignes ne commençant pas par B ni par E
+                        // count of lines except line beginning by B or by E
                         LignesNonB++;
-                        // la ligne ne commence pas par B ce n'est donc pas une ligne de position standard
-                        // Apparemment je reçois parfois une trame avec un cr lf mal placé... ( trace Gérard)
-                        // B1541104553226N00627642EA0221002345000<CR> et 5562 <LF> incroyable non ?
-                        // Donc on n'exploitera que si la ligne fait plus de 11 caractères car le découpage
-                        // d'une chaine qui arriverait plus courte (mauvaise récup) provoque une exception
+                        // if ligne not begin by B, this is not a standard position line
+                        // sometimes, we have a line with a bad carriage return (CR+LF) 
+                        // B1541104553226N00627642EA0221002345000<CR> and 5562 <LF> GPS record problem  ?
+                        // To avoid exceptions, we keep the line if length > 11 
                         if (sLine[i].length() > 10) {
                             DebMot = sLine[i].substring(0,5);
                             switch (DebMot)
                             {
                               case "HFDTE": 
-                                // il peut arriver que l'IGC soit tronquée (mauvaise récup) dans ce cas la date ne sera pas intialisée correctement
-                                // Petit nouveauté 2016 -> de HFDTE060910 on aura HFDTEDATE:070816,01
-                                // où le nombre après la virgule représente le numéro du vol du jour...
-                                // du coup on passe au regex car la présence des deux points ne sera pas constante
+                                // sometime IGC is truncated, in this case date can be wrong
+                                // 2016 new  -> from HFDTE060910 we will have HFDTEDATE:070816,01
+                                // after comma, number is the day flight number
+                                // better to use regex, semi colon is not constant
                                 Pattern pHDte = Pattern.compile("\\D+(\\d{2})(\\d{2})(\\d{2})");       
                                 Matcher SearchDate = pHDte.matcher(sLine[i]);
                                 if(SearchDate.find() && SearchDate.groupCount() == 3) {
@@ -633,14 +639,12 @@ public class traceGPS {
                                 }                                                                 
                                 break;   
                               case "HFPLT":
-                                  // Decodage du nom du pilote, il peut y avoir moins de 17 caractères
+                                  // pilot name decoding, 17 characters or less
                                   String[] LineHFPLT = sLine[i].split(":");
                                   if (LineHFPLT.length > 1) sPilote = LineHFPLT[1];
                                   GoodName = "";
-                                  // Un accent apparaissant comme un signe cabalistique dans un nom (Daphné ->Daphn@)
-                                  // Cela plantait l'affichage des détails dans la listbox d'où l'élimination
-                                  // j'ai la flemme de faire une procédure complète de remplacement par le bon signe
-                                  // Pallie également la présence d'un caractère de retour chariot laissé par le split
+                                  // bad display of accent (Daphné ->Daphn@), we remove
+                                  // we can find a carriage return
                                   for (int kk = 0 ; kk < sPilote.length() ; kk++) {
                                         char aChar = sPilote.charAt(kk);                                      
                                         if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sPilote.substring(kk,kk+1));
@@ -648,7 +652,7 @@ public class traceGPS {
                                   sPilote = GoodName;
                                 break;
                                 case "HOPLT":
-                                  // Ds GPSDump on a HOPLTPILOT: G. Legras au lieu de HFPLTPILOT:G. Legras
+                                  // in GPSDump we have HOPLTPILOT: G. Legras instead of HFPLTPILOT:G. Legras
                                   String[] LineHOPLT = sLine[i].split(":");
                                   if (LineHOPLT .length > 1) sPilote = LineHOPLT[1];
                                   GoodName = "";
@@ -659,11 +663,11 @@ public class traceGPS {
                                   sPilote = GoodName;
                                 break;
                                 case "HFGTY":
-                                  // Decodage du nom de la voile ou de l'appareil
+                                  // glider name decoding
                                   String[] LineHFGTY = sLine[i].split(":");
                                   if (LineHFGTY.length > 1) sVoile = LineHFGTY[1];  
                                   GoodName = "";
-                                  // Toujours le problème d'un retour chariot possible
+                                  // always a possible CR in the string
                                   for (int kk = 0 ; kk < sVoile.length() ; kk++) {
                                         char aChar = sVoile.charAt(kk);                                      
                                         if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
@@ -671,12 +675,12 @@ public class traceGPS {
                                   sVoile = GoodName;
                                 break;
                                 case "HOGTY":
-                                  // ' Ds GPSDump on a HOGTYGLIDERTYPE: None
-                                  // Decodage du nom de la voile ou de l'appareil
+                                  // ' In GPSDump -> HOGTYGLIDERTYPE: None
+                                  // glider name decoding
                                   String[] LineHOGTY = sLine[i].split(":");
                                   if (LineHOGTY.length > 1) sVoile = LineHOGTY[1];
                                   GoodName = "";
-                                  // Toujours le problème d'un retour chariot possible
+                                  // always a possible CR in the string
                                   for (int kk = 0 ; kk < sVoile.length() ; kk++) {
                                         char aChar = sVoile.charAt(kk);                                      
                                         if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
@@ -684,12 +688,11 @@ public class traceGPS {
                                   sVoile = GoodName;                                  
                                 break;
                                 case "HFRFW":
-                                  // ' Ds GPSDump on a HOGTYGLIDERTYPE: None
-                                  // Decodage du nom de la voile ou de l'appareil
+                                  // Other case for glider name
                                   String[] LineHFRFW = sLine[i].split(":");
                                   if (LineHFRFW.length > 1) sFirmware = LineHFRFW[1];    
                                   GoodName = "";
-                                  // Toujours le problème d'un retour chariot possible
+                                  // always a possible CR in the string
                                   for (int kk = 0 ; kk < sVoile.length() ; kk++) {
                                         char aChar = sVoile.charAt(kk);                                      
                                         if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
@@ -702,12 +705,11 @@ public class traceGPS {
                     }
                     else
                     {
-                        // Décodage des lignes de points donc commençant par B
-                        // TAS > 9 donc vitesse... 3 derniers octets du record B ds le fichier IGC
-                        //  L'octet doit être à A pour signifier acquisition en 3D dc alti valide
-                        //  On a eu une trace où TAS reste à 0 dc on ne s'appuie plus que sur l'octet à A 
-                        //   Verifie qu'il y a tous les caractères pour sortir la position et les altis
-                        //   Il faut qu'on ait au minimum 35 caractères pour parser la ligne sans encombres
+                        // B line decoding
+                        // TAS > 9 therefore speed... last 3 bytes of B record in IGC file
+                        //  Byte must be "A" for a valid altitude 
+                        //  we had a track where TAS is 0 we take care only of byte "A"
+                        //  checking of all characters mini is 35 for correct parsing                        
                         if (sLine[i].length() > 34) {
                             if (sLine[i].length() > 24)
                                 DebMot = sLine[i].substring(24,25);
@@ -716,15 +718,13 @@ public class traceGPS {
                             Alti_Baro = 0;
                             Alti_GPS = 0;
                             if (DebMot.equals("V"))  {
-                                if (sLine[i].length() > 30)
-                                    // Acquisition en 2D seule l'alti baro est valide
+                                if (sLine[i].length() > 30)                                    
                                     Alti_Baro = checkParseInt(sLine[i].substring(25,30),0);
                                 else
                                     Alti_Baro = 0;              
                             }
                             if (DebMot.equals("A"))  {
-                                if (sLine[i].length() > 30)
-                                    // Acquisition en 2D seule l'alti baro est valide
+                                if (sLine[i].length() > 30)                                    
                                     Alti_Baro = checkParseInt(sLine[i].substring(25,30),0);
                                 else
                                     Alti_Baro = 0;    
@@ -738,108 +738,108 @@ public class traceGPS {
                             Point1.setAltiBaro(Alti_Baro);
                             Point1.setAltiGPS(Alti_GPS);
                             if (Point1.AltiGPS <= 0) Point1.setComment("ZERO");
-                            // Comparaison des altis baro et GPS
+                            // make a comparison of GPS lat and baro alt
                             if (Point1.AltiBaro > 0 && Point1.AltiGPS > 0 && Math.abs(Point1.AltiGPS -  Point1.AltiBaro) > 500) Point1.setComment("BAD");
-                            // Cf trace 02/08/11 où alti GPS = 46500...
+                            // Cf. track 02/08/11 where GPS alt = 46500...
                             if (Point1.AltiGPS > BadAlti) Point1.setComment("BAD");
-                            //Vitesse air
+                            // air speed
                             if (sLine[i].length() > 37) Point1.setTAS(checkParseInt(sLine[i].substring(35,38),0));                                                                                       
-                            // Traitement de la latitude
+                            // latitude decoding
                             Deg = checkParseInt(sLine[i].substring(7,9),0);
                             Min = checkParseDouble(sLine[i].substring(9,11),0);
                             Sec = (checkParseDouble(sLine[i].substring(11,14),0)/1000) * 60;                           
                             Point1.setLatitudeDMS(Deg, Min, Sec, sLine[i].substring(14,15));
-                            // On enregistre en secondes pour évaluation Score
+                            // recorded in seconds for scoring
                             Min = checkParseDouble(sLine[i].substring(9,14),0);
                             Point1.setLatitudeSec(Deg,(int)Min,sLine[i].substring(14,15)); 
                             
-                            // Traitement de la longitude
+                            // longitude decoding
                             Deg = checkParseInt(sLine[i].substring(15,18),0);
                             Min = checkParseDouble(sLine[i].substring(18,20),0);
                             Sec = (checkParseDouble(sLine[i].substring(20,23),0)/1000) * 60;
                             Point1.setLongitudeDMS(Deg, Min, Sec, sLine[i].substring(23,24));
-                            // On enregistre en secondes pour évaluation Score
+                            // recorded in seconds for scoring
                             Min = checkParseDouble(sLine[i].substring(18,23),0);
                             Point1.setLongitudeSec(Deg,(int)Min,sLine[i].substring(23,24));
-                            // Calcul de la période en secondes (CFD)                            
+                            // period computing (seconds)
                             Point1.setPeriode(checkParseInt(sLine[i].substring(1,3),0)*3600+checkParseInt(sLine[i].substring(3,5),0)*60+checkParseInt(sLine[i].substring(5,7),0));                            
-                            // Calcul de l'heure en format date uniquement si Date_Vol a bien été initialisée
+                            // date coding
                             if (Decodage_HFDTE) {
                                 Point1.setdHeure(Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));            
                             }
                             
                             if (i-LignesNonB == 0) {   
-                                // Premier point de la trace IGC
+                                // first point
                                 if (!Decodage_HFDTE)  {
-                                    // Histoire de la trace SeeYou qui ne met pas de date, pas d'enregsitrement HFDTE en conversion GPX -> IGC...
-                                    // Enorme... du coup on plantait Pour éviter cela on initialise au 01 01 2000
+                                    // We can find a track without date header (SeeYou export).
+                                    // To avoid exception we initialize 01/01/2000
                                     Date_Vol = LocalDateTime.of(2000, 1, 1, 0, 0, 0); 
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                                    // Encodage de la date pour SQLite
+                                    // For SQLIte
                                     Date_Vol_SQL = "2000-01-01 ";
                                     Decodage_HFDTE = true;
-                                    // Dans ce cas Point1.dHeure n'avait pas été initialisé...
+                                    // In this case Point1.dHeure was not initialized
                                     Point1.setdHeure(Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));                            
                                 }
-                                // Decodage sans les points, on ne veut que l'en tête 
+                                // Decoding without points, we want only header with global informations :date, pilot name, etc...
                                 if (!avecPoints) {
-                                    // Détermination de la TimeZone du vol
+                                    // timezone computing
                                     tzVol = tzCalcul(Point1);
                                     if (tzVol.getID() != null)  {
                                         ZonedDateTime utcZDT = Point1.dHeure.atZone(ZoneId.of("Etc/UTC"));
                                         DT_Deco = LocalDateTime.ofInstant(utcZDT.toInstant(), ZoneId.of(tzVol.getID()));                                         
                                     } else  {
-                                        // Pas de zone UTC epxloitable, on reste en heure UTC                                        
+                                        // no timezone, we keep UTC time
                                         DT_Deco = Point1.dHeure;
                                     }
-                                    // Mise à jour du décalage UTC
+                                    // Update UTC offset
                                     majParamUTC(DT_Deco);
                                     DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");                                        
                                     Date_Vol_SQL = DT_Deco.format(formatterSQL); 
-                                    // On actualise pour les vols réalisés près des changements de date (Australie, NZ)
+                                    // update of day date if necessary (Australia, NZ)
                                     Date_Vol = DT_Deco;
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                         
-                                    // Mise à jour des coordonnées
+                                    // take okk paremeters update
                                     LatDeco = Point1.Latitude;
                                     LongDeco = Point1.Longitude;
                                     Alt_Deco_Baro = Point1.AltiBaro;
                                     Alt_Deco_GPS = Point1.AltiGPS;
                                     Decodage = true;
-                                    // On sort du traitement
+                                    // process end
                                     return;
                                 }                                                                        
                             }
                             else  {                                        
                                 pointIGC PtPcdt = Tb_Tot_Points.get(TotPoint - 1);                                 
-                                // On calcule les paramètres avec le point précédent
-                                // Totpoint vaut 1 unité de plus que le dernier indice du tableau                                
+                                // parameters computing with previos point
+                                // Totpoint = 1 more than last array index
                                 Point1.setDistPtPcdt(trigo.CoordDistance(Point1.Latitude,Point1.Longitude,PtPcdt.Latitude,PtPcdt.Longitude));
                                 long DiffSec = ChronoUnit.SECONDS.between(PtPcdt.dHeure, Point1.dHeure);
                                 Point1.setPeriodePtPcdt((int)DiffSec);
-                                // Division par zero pas glop              
+                                // to avoid a division by zero
                                 if (Point1.PeriodePtPcdt > 0) {
                                     Point1.setVitesse(Point1.DistPtPcdt / Point1.PeriodePtPcdt * 3.6);
                                     if (flag_PEV)  {
-                                        // La ligne précédente indiquait qu'il s'agissait d'une indication de position PEV, on l'enregistre
+                                        // previous line indicate a PEV position, we record it
                                         Point1.setComment("PEV");
                                         flag_PEV = false;
                                      }
                                 }
                                 else  {
-                                    // Le Reversale peut enregistrer plusieurs points à la même seconde...
-                                    // Problème : ces doublons introduisaient des erreurs dans les calculs de Max et de moyenne
-                                    // puisqu'on divise par exemple la distance avec le nombre de points
+                                    // Reversale GPS record several points by second
+                                    // this duplicates points give false results in average and max computing
+                                    // we put a flag to skip this point in flight analysis
                                     Point1.setComment("DOUBLON");
-                                }             
-                                // Il peut arriver que l'on vole après minuit UTC (?)... problème donc... cghmt de jour pour les calculs Cf trace envoyée depuis les US [Vol_minuit]
-                                // On a eu un retour sur une trace Reversale débile ou un point on avait 
+                                }   
+                                // in Australia or NZ, a flight around midnight UTC is possible. We must manage a date change
+                                // we had a track with outliers like
                                 // Point X 18:38.38     Point X+1 18:38.39         Point X+2 18:38.38
-                                // Du coup on vérifie s'il y a bien eu changement d'heure en confimant avec le premier point ce qui merd... si le point aberrant est le deuxième...                                
+                                // we must check with first point
                                 if (Point1.dHeure.isBefore(PtPcdt.dHeure))  {
                                     PtPcdt = Tb_Tot_Points.get(0);
                                     if (Point1.dHeure.isBefore(PtPcdt.dHeure)) {
-                                        // il faut incrémenter la date 
+                                        // day date must be incremented
                                         Date_Vol.plusDays(1);                       
                                     }
                                 }
@@ -849,7 +849,7 @@ public class traceGPS {
               
                             } 
                            if (!"DOUBLON".equals(Point1.Comment))   {
-                                // Gestion des points aberrants              
+                                // outliers management            
                                 if (Point1.Comment == "ZERO" || Point1.Comment == "DIST" || Point1.Comment == "BAD" || Point1.Comment == "PEV")
                                     NbPointsAberr++;
                                 Tb_Tot_Points.add(Point1);              
@@ -866,45 +866,44 @@ public class traceGPS {
             float seconds = (topFin - topDebut) / 1000F;
             System.out.println("Décodage IGC : "+ Float.toString(seconds) + " secondes.");
             if (TotPoint > 5 && Decodage_HFDTE)  {
-                // Decalage de tous les points à l'heure réelle du vol
+                // time shift to laocal time for all points
                 utcToLocalDecalage();
 
-                // Remplissage de Tb_Good_Points                
+                // filling Tb_Good_Points                
                 topDebut = System.currentTimeMillis();
-                // Le premier False est un paramètre imposé par le décodage des GPX    
-                // 2ème paramètre est pour la prise en compte des aberrants
+                // first False is a parameter imposed by GPX decoding
+                // second is for inclusion of outliers
                 Verif_Tb_Tot_Points(false, false);
                 topFin = System.currentTimeMillis();
                 seconds = (topFin - topDebut) / 1000F;
                 System.out.println("Verif_Tb_Tot_Points : "+ Float.toString(seconds) + " secondes.");
       
-                // On a eu un cas où il y avait zéro good points (mauvais fichier IGC) 
-                // Dt_Deco est mis au point dans Verif_Tb_Tot_Points
-                // donc on plantait direct sur la durée de vol                
+                // we had a case with zero good points (bad IGC file) 
+                // Dt_Deco is updated in Verif_Tb_Tot_Points
+                // therefore we crashed in flight duration
                 if (Tb_Good_Points.size() > 1)  {
                     pointIGC LastPoint = Tb_Good_Points.get(Tb_Good_Points.size() - 1);                                        
                     DT_Attero = LastPoint.dHeure;
-                    // On enregistre l'altitude de l'attero
+                    // altitude landing recorded
                     Alt_Attero_Baro = LastPoint.AltiBaro;
                     Alt_Attero_GPS = LastPoint.AltiGPS;
-                    // On peut donc calculer la durée du vol
+                    // it's possible to compute flight duration
                     Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
-                    // Calcul de la période moyenne entre deux points
+                    // compute average period between two points
                     int AvgPeriode = (int) (Duree_Vol / Tb_Good_Points.size());
                     if (AvgPeriode < 1) AvgPeriode = 1;
                     LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
                     sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
                     NbPoints = TotPoint;
-                    // Dans Xojo on recalculait une vitesse moyenne
-                    // A la relecture cela me semble inutile vu que l'on fait déjà une moyenne
-                    // dans Verif_Tb_Tot_Points avec un  temps d'intégration paramètrable    
+                    // in xLogfly we recalculated an average speed
+                    // it seems unnecessary an average is computed in Verif_Tb_Tot_Points with an integration parameter
                     
-                    // Réduction des points pour le scoring
+                    // Reduce number of points for scoring
                     fillTb_Calcul();
                     
+                    // compoute thermals points
                     calc_Thermiques();
-                    
-                    // On a tout bon ?
+                                        
                     Decodage = true;
                 }
             }
@@ -919,9 +918,11 @@ public class traceGPS {
         // System.out.println(TotPoint+" points ajoutés");                              
     }
     
+    /**
+     * Compute TimeZone
+     */
     private void utcToLocalDecalage()  {
-        
-         // Détermination de la TimeZone du vol
+                
         tzVol = tzCalcul(Tb_Tot_Points.get(0));
         if (tzVol.getID() != null)  {
             int i = 0;
@@ -936,15 +937,22 @@ public class traceGPS {
         }         
     }
     
-    private TimeZone tzCalcul(pointIGC p1)  {
-        
-        // Appel de la librairie llttz d'Artem Gapchenko   https://github.com/agap/llttz
+    /**
+     * For TimeZone computing, llttz of Artem Gapchenko (https://github.com/agap/llttz) is called
+     * @param p1
+     * @return 
+     */
+    private TimeZone tzCalcul(pointIGC p1)  {        
         IConverter iconv = Converter.getInstance(TimeZoneListStore.class);
         TimeZone tzCalc = iconv.getTimeZone(p1.Latitude,p1.Longitude); 
         
         return tzCalc;
     }
     
+    /**
+     * offset UTC is updated
+     * @param ldt 
+     */
     private void majParamUTC(LocalDateTime ldt)  {
         ZoneId idz = ZoneId.of(tzVol.getID()); 
         ZonedDateTime zdt = ZonedDateTime.of(ldt, idz);  
@@ -959,11 +967,9 @@ public class traceGPS {
     }
     
     /**
-     * Bien que performant, le calcul du score peut prendre un temps très important
-     * surtout avec des grosses traces à un point par seconde
-     * On génére si besoin une liste de points avec un point tous les 5 secondes
-     * cette liste servira à générer un fichier igc temporaire 
-     * qui sera analysé par le module externe points
+     * scoring program is fast but can take time with big tracks (1 point/seconde)
+     * if necessary we reduce to 1 point / 5 secondes
+     * IGC temp file for scoring comuting is created with this array
      */
     private void fillTb_Calcul() {
         
@@ -986,12 +992,11 @@ public class traceGPS {
            
     private void Verif_Tb_Tot_Points(boolean MissTime, boolean WithAberrant)
     {
-        /* Ce calcul spécifique est intervenu après être tombé sur un cas barbare (barbare.igc)
-        * le premier point était aberrant, donc le point 2 avait une vitesse énorme donc 
-        * c'était le point 2 qui était tagué aberrant
-        * Après refonte du calcul dans cette procédure ce point 2 devient le premier de Tb_Good_Points
-        * Problème Si on ne remet pas a vitesse à zéro, comme il est tagué OK, cette vitesse énorme devient la Max de référence
-        * et entre dans les calculs de moyenne
+        /* this specific methos was introduced after a nightmare track file (barbare.igc)
+        * first point is not good, therefore at point 2 we had a big speed
+        * and point 2 was tagged like an outlier
+        * this is why point 2 is now the first point of Tb_Good_Points
+        * Problem : speed must be zero. If not, point is tagged OK and this big speed becomes the reference for max and average computing
         */
         int i, ii, TotPoints, TotGoodPoints;
         int BadVitesse;
@@ -1016,7 +1021,7 @@ public class traceGPS {
         BadAlti = 9000;
         TotPoints = Tb_Tot_Points.size();
         TotGoodPoints = 0;
-        // On attaque avec le deuxième point
+        // begin with second point
         i = 1;
         TrackLen = 0;
         pointIGC Pcdt2Point = null;
@@ -1027,13 +1032,13 @@ public class traceGPS {
                 pointIGC CurrPoint = Tb_Tot_Points.get(i);
                 pointIGC PcdtPoint = Tb_Tot_Points.get(i-1);
                 pointIGC NextPoint = Tb_Tot_Points.get(i+1);
-                // Avant l'utilisation de HSPoints  je n'avais pas les points "DOUBLON" dans Tb_Tot_Points, depuis, je veux garder tous les points
+                // for scoring, we keep all points even tagged "DOUBLON" in Tb_Tot_Points
                 if (!"DOUBLON".equals(CurrPoint.Comment))   {
                     if (CurrPoint.PeriodePtPcdt > 0 || MissTime)  {
                         if (CurrPoint.Vitesse > BadVitesse)  {
-                            // Comment est le suivant ?
+                            // how is the next point ?
                             if (NextPoint.Vitesse < BadVitesse)  {
-                                // Le suivant est correct il faut donc examiner le précédent par rapport au suivant
+                                // next point is good, we can exam previous point against next
                                 DistVerif = trigo.CoordDistance(NextPoint.Latitude,NextPoint.Longitude,PcdtPoint.Latitude,PcdtPoint.Longitude);
                                 if (NextPoint.DistPtPcdt == 0)  {
                                     DistVerifDiv = 1;
@@ -1042,17 +1047,17 @@ public class traceGPS {
                                     DistVerifDiv = NextPoint.DistPtPcdt;
                                 }
                                 if (DistVerif/DistVerifDiv > 3) {
-                                    // C'est le point i-1 qui est aberrant, on le tague DIST
+                                    // Point i-1 is an outlier, it is tagged DIST
                                     PcdtPoint.setComment("DIST");
                                     Tb_Tot_Points.set(i-1, PcdtPoint);
-                                    // mais du coup la vitesse du point i est fausse sans que le point soit tagué
-                                    // il faut donc mettre ces paramètres à zéro pour ne pas fausser les calculs de moyenne
+                                    // but the speed at point i is wrong with no tag
+                                    // we put zero not to distort average computing
                                     CurrPoint.Vitesse = 0;
                                     CurrPoint.DistPtPcdt = 0;
                                     Tb_Tot_Points.set(i, CurrPoint);              
                                 }
                                 else   {
-                                    // C'est bien le point i qui est aberrant, on le tague BAD
+                                    // point i is really an outlier, it is tagged
                                     CurrPoint.setComment("DIST");
                                     CurrPoint.Vitesse = 0;
                                     CurrPoint.DistPtPcdt = 0;
@@ -1063,24 +1068,24 @@ public class traceGPS {
                         }
                         if (PcdtPoint.Comment.trim() == "" || WithAberrant)   {
                             TotGoodPoints++;
-                            // Si c'est le premier point, on enregistre les coord du décollage
+                            // if point 1, take off coordinates are recorded
                             if (TotGoodPoints == 1)   {                                                                                                                                                  
-                                // on enregistre l'heure de décollage
+                                // take off time is recorded
                                 DT_Deco = PcdtPoint.dHeure;
-                                // Mise à jour du décalage UTC
+                                // UTC offset is updated
                                 majParamUTC(DT_Deco);
                                 DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd ");                                        
                                 Date_Vol_SQL = DT_Deco.format(formatterSQL);          
-                                // On complète l'Heure de déco pour SQLIte
+                                // datetime is formatted for SQLIte
                                 Date_Vol_SQL = Date_Vol_SQL +PcdtPoint.dHeure.format(DateTimeFormatter.ofPattern("HH:mm:ss"));                                    
-                                // On complète Date_Vol 
+                                // Date_Vol completed
                                 Date_Vol = Date_Vol.plusHours(PcdtPoint.dHeure.getHour());
                                 Date_Vol = Date_Vol.plusMinutes(PcdtPoint.dHeure.getMinute());
                                 Date_Vol = Date_Vol.plusSeconds(PcdtPoint.dHeure.getSecond());            
-                                // les coordonnées
+                                // take off coordinates
                                 LatDeco = PcdtPoint.Latitude;
                                 LongDeco = PcdtPoint.Longitude;
-                                // Altitude
+                                // take off altitude
                                 Alt_Deco_Baro = PcdtPoint.AltiBaro;
                                 Alt_Deco_GPS = PcdtPoint.AltiGPS;
                                 AltMaxBaro = PcdtPoint;
@@ -1091,14 +1096,13 @@ public class traceGPS {
                                 VitMini = PcdtPoint;
                             } else   {
 
-                                // ------------ Debut Calcul Vitesse moyennée -------------------
-                                // Calcul d'une vitesse moyennée sur au moins 20 secondes
-                                // Si on a un intervalle sup à 20 secondes, on se contente de prendre entre deux points successifs
+                                // ------------ begin average speed computing -------------------
+                                // average speed with min period 20 seconds
                                 PcdtPoint = Tb_Tot_Points.get(i-1);
                                 DeltaTime = PcdtPoint.PeriodePtPcdt;
                                 ii = 2;
                                 DeltaDist = PcdtPoint.DistPtPcdt;
-                                // Calcul longueur brute de la trace                            
+                                // direct length track                            
                                 TrackLen += DeltaDist;
                                 if (DeltaTime < APP_INTEGRATION - 1)   {
                                     if ((i-1) - ii > -1) {
@@ -1106,8 +1110,8 @@ public class traceGPS {
                                                 CurrPoint = Tb_Tot_Points.get((i-1)-ii);
                                                 if (CurrPoint.Comment.equals(""))  {                                                
                                                     DeltaTime = Duration.between(CurrPoint.dHeure, PcdtPoint.dHeure).getSeconds();
-                                                    // on remonte de deux indices (ii) pour le temps écoulé, 
-                                                    // mais la distance doit être prise sur ii -1
+                                                    // we go back two points (ii) for elapsed time
+                                                    // but distance must be computed with ii -1
                                                     Pcdt2Point = Tb_Tot_Points.get((i-1)-(ii-1));
                                                     DeltaDist += Pcdt2Point.DistPtPcdt;                    
                                                 }
@@ -1125,10 +1129,10 @@ public class traceGPS {
                                     VitMax = PcdtPoint;
                                 if (PcdtPoint.Vitesse < VitMini.Vitesse && PcdtPoint.Vitesse > 0)
                                     VitMini = PcdtPoint;
-                                // ------------ Fin Calcul Vitesse moyennée -------------------
+                                // ------------ end average speed computing -------------------
 
 
-                                // Calcul des alti maxi mini
+                                // max and mini altitude computing
                                 if (PcdtPoint.AltiBaro > AltMaxBaro.AltiBaro && PcdtPoint.AltiBaro < BadAlti)
                                     AltMaxBaro = PcdtPoint;
                                 if (PcdtPoint.AltiGPS > AltMaxGps.AltiGPS && PcdtPoint.AltiGPS < BadAlti)
@@ -1138,9 +1142,7 @@ public class traceGPS {
                                 if (PcdtPoint.AltiGPS < AltMiniGps.AltiGPS && PcdtPoint.AltiGPS > 0)
                                     AltMiniGps = PcdtPoint;
 
-                                // Calcul du vario que l'on va moyenner sur 20 secondes
-                                // On a un intervalle sup à 20 secondes, on se contente
-                                // de prendre entre deux points successifs
+                                // average vario with min period 20 seconds                                
                                 DeltaTime = PcdtPoint.PeriodePtPcdt;
                                 ii = 2;
                                 //----------------------------------
@@ -1153,22 +1155,21 @@ public class traceGPS {
                                         } while (DeltaTime <= APP_INTEGRATION - 1 && TotGoodPoints - ii > -1);
                                     }
                                 } else {
-                                    // Nécessaire... Cas du petit tour du lac avec un 1 point toutes les 15 s
-                                    // supérieur au paramètre d'intégration. On obtenait des Vz nulles
-                                    // en le mettant à 3, le ii = ii - 1 le fait repasser à 2, la valeur initiale
+                                    // necessary if time between two points is  superior to integration setting
+                                    // with a priod of 15 secons in the track and an integration setting of 10 seconds, Vz is zero
+                                    // with 3, ii = ii - 1 give 2, initial value
                                     ii = 3;
                                 }
                                 //-----------------------------------
                                 ii = ii - 1;
-                                // De préference on prend l'alti baro, à priori plus sûr pour calculer les VZ
+                                // for Vz computing we prefer baro altitudes
                                 if (PcdtPoint.AltiBaro > 0) {
                                     iiPoint = Tb_Tot_Points.get(TotGoodPoints-ii);
                                     Vz = (double)(PcdtPoint.AltiBaro - iiPoint.AltiBaro)/DeltaTime;
-                                    // On m'a envoyé une trace avec 500 m d'écart entre les 2 premiers points baro 
-                                    // donc il faut tester la valeur de chute libre 
-                                    // trouvé sur internet tournait autour de 50 m/s
+                                    // we had a track with a difference of 500 meters between two points
+                                    // we must test a free failing value ( near 50m/s)                                    
                                     if (Vz > 20 || Vz < -55) {
-                                        // Vz aberrrante, on prend l'alti GPS
+                                        // bad Vz , we take GPS altitude
                                         PcdtPoint.setVario((double) (PcdtPoint.AltiGPS - iiPoint.AltiGPS)/DeltaTime);                                    
                                     } else {
                                         PcdtPoint.setVario(Vz);
@@ -1191,20 +1192,21 @@ public class traceGPS {
             System.out.println("ERROR -> Index : "+i);
         }
         /*  
-            On s'est arrêté à deux points de la fin, il faut les inclure....
+            We stopped two points before the end of the track, we must include them            
+            
             Ou bien prendre le parti de laisser tomber, les deux derniers points sont au sol...
   
             Cependant si c'est un tracé GPX avec points aberrants et sans base temps,
             on prends le parti d'ajouter les deux points manquants sans les vérifier
         
-            En faisant la conversion java, je m'aperçois que 'lon introduit une erreur
+            En faisant la conversion java, je m'aperçois que l'on introduit une erreur
             les deux derniers points sont absents même s'ils sont bon
         */
         if (MissTime && WithAberrant) {
             Tb_Good_Points.add(Tb_Tot_Points.get(TotPoints-1));
             Tb_Good_Points.add(Tb_Tot_Points.get(TotPoints));         
         }
-        // On met à jour les mini maxi  
+        // mini max updated  
         Alt_Maxi_Baro = AltMaxBaro;
         Alt_Maxi_GPS = AltMaxGps;
         Alt_Mini_Baro = AltMiniBaro;
@@ -1213,12 +1215,12 @@ public class traceGPS {
         Vit_Mini = VitMini;
         Vario_Max = VarioMax;
         Vario_Mini = VarioMini;
-        TrackLen = TrackLen / 1000;   // Calcul en mètres est converti en km
+        TrackLen = TrackLen / 1000;   // meters converted to km
     }
     
-    /* Procedure de calcul adaptée du source php
-    * d'Emmanuel Chabani [Man's] et P.O. Gueneguo (Parawing.net)
-    * aimablement envoyée par Emmanuel pour xLogfly
+    /**
+    * Thermal points computing
+    * adapted from a php script [Emmanuel Chabani [Man's] and P.O. Gueneguo (Parawing.net)]
     */
     private void calc_Thermiques()   {
         
@@ -1258,8 +1260,7 @@ public class traceGPS {
         Th_DeltaAltMini = 0;
   
         for (int i = 0; i < fin; i++) {
-            // On décide que pour le thermique le calcul ne se fera que sur la variation d'altitude barométrique
-            // si elle est naturellement renseignée ...
+            // for thermal computing, we take baro altitude 
             pointIGC currPoint = Tb_Good_Points.get(i);
             pointIGC pointMax = Tb_Good_Points.get(localAltMax);
             pointIGC pointMin = Tb_Good_Points.get(localAltMin);
@@ -1291,14 +1292,13 @@ public class traceGPS {
                 if (deltaTime == 0) {
                     deltaTime = 1;
                 }
-                // Particularité Java -> le résulat est la division de deux entiers donc c'est un entier
-                // Pour avoir un double il faut caster !!!
+                // special Java -> division result of two integers is an integer. We must cast in double                
                 MeanvarioValue = (double) deltaAlt / deltaTime;
                 if (MeanvarioValue < MeanVarioMinValue) {
                     MeanVarioMinValue = MeanvarioValue;
                     MeanVarioMin = i;
                 }
-                if (meanvario > MeanVarioMaxValue) {     // ATTENTION Changement if ($meanvario!!!!>$meanvariomaxValue){
+                if (meanvario > MeanVarioMaxValue) {     // WARNING Change original code -> if ($meanvario!!!!>$meanvariomaxValue){
                     MeanVarioMaxValue = MeanvarioValue;
                     MeanVarioMax = i;
                 }
@@ -1342,7 +1342,7 @@ public class traceGPS {
                 // Ajouté en version Xojo
                 if (deltaAlt < Th_DeltaAltMini) Th_DeltaAltMini = deltaAlt;
                 if (deltaAlt > Th_DeltaAltMax) Th_DeltaAltMax = deltaAlt;
-                // Le point est mémorisé comme "Point de Thermique"
+                // this point is considered like a "thermal point"
                 thermique Thermal1 = new thermique();
                 Thermal1.NumPoint = i;
                 Thermal1.GlideRatioValue = GlideRatioValue;
@@ -1400,6 +1400,10 @@ public class traceGPS {
         return res;
     }
     
+    /**
+     * IGC file is converted in an array of bytes
+     * @return 
+     */
     public byte[] exportBytes()  {
         
         byte[] txtData = FicIGC.getBytes(StandardCharsets.UTF_8);

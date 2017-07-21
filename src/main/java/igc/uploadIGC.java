@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package igc;
 
@@ -21,27 +21,27 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Random;
 import javafx.concurrent.Task;
-import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import trackgps.traceGPS;
 
 /**
  *
  * @author Gil Thomas logfly.org
+ * Upload a track in a server and call VisuGPS service
  */
 public class uploadIGC {
     
     private boolean uploadOk;
     private String fTempName;
     private final String CrLf = "\r\n";
-    String pathTemp;
-    String fName;
-    
-    private I18n i18n = I18nFactory.getI18n(alertbox.class.getClass());
-    
-    public uploadIGC(traceGPS currTrace)  {
+    private String pathTemp;
+    private String fName;
+    private Locale currLocale;
+       
+    public uploadIGC(traceGPS currTrace, Locale myLocale)  {
+        currLocale = myLocale;
         uploadOk = false;
         Export_Visu(currTrace);  
     }
@@ -55,26 +55,33 @@ public class uploadIGC {
     }
                
     
+    /**
+     * Selected track is exported in an IGC temp file
+     * @param currTrace 
+     */
     private void Export_Visu(traceGPS currTrace)  {        
         
-        // La trace IGC est exportée avec un nom de la forme YYYYMMDDHHMMSS+Nombre aleatoire
+        // Name of the file is YYYYMMDDHHMMSS+random number
         LocalDateTime ldt = LocalDateTime.now(); 
         DateTimeFormatter dTF = DateTimeFormatter.ofPattern("YYYYMMddHHmm");
         Random rand = new Random();
-        // nextInt(n) renvoie un entier compris entre 0 inclus et n exclu donc ici entre 0 et 1000
+        // nextInt(n) send back an integer from 0 (included) to n (excluded) 
         int nombre = rand.nextInt(1001);
-        // Obtention du fichier YYYYMMDDHHMMSS_Aleatoire dans le répertoire utilisé pour les fichiers temporaires        
-        fileIGC tempTrack = new fileIGC();
+        // file YYYYMMDDHHMMSS_Random is created in usaul temp folder
+        fileIGC tempTrack = new fileIGC(currLocale);
         fName = ldt.format(dTF)+String.valueOf(nombre)+".igc";
         pathTemp = tempTrack.creaTempIGC(currTrace, fName);
         if (pathTemp != null)  {
            uploadTxt();
         } else  {
-            alertbox errMsg = new alertbox();
-            errMsg.alertError(i18n.tr("Impossible de créer le ficher temporaire"));
+            alertbox errMsg = new alertbox(currLocale);
+            errMsg.alertNumError(9);   // Unable to create temp file
         }       
     }
     
+    /**
+     * Upload the temp file to the server logfly.org with a special php script
+     */
     private void uploadTxt()  {
             ProgressForm pForm = new ProgressForm();
            
@@ -134,9 +141,9 @@ public class uploadIGC {
                                     size = txtData.length - index;
                                 }
                                 os.write(txtData, index, size);
-                                // Sans l'updateProgress, l'animation est infinie
-                                // ce que l'on veut car la progressbar affichait 100% bien avant le lancement de la page
                                 // updateProgress(index, sizeProg);
+                                // Without UpdateProgress animation is infinite
+                                // We prefer this because progressbar display 100% before page display by VisuGPS
                                 index += size;
                             } while (index < txtData.length);
                             System.out.println("written:" + index);
@@ -153,10 +160,10 @@ public class uploadIGC {
                             int idxProg = index;
                             byte[] data = new byte[buff];
                             do {
-                                System.out.println("READ");
-                                // Sans l'updateProgress, l'animation est infinie
-                                // ce que l'on veut car la progressbar affichait 100% bien avant le lancement de la page
+                                System.out.println("READ");                                
                                 //  updateProgress(idxProg, sizeProg);
+                                // Without UpdateProgress animation is infinite
+                                // We prefer this because progressbar display 100% before page display by VisuGPS
                                 len = is.read(data);                                
                                 if (len > 0) {
                                     System.out.println(new String(data, 0, len));
@@ -193,8 +200,7 @@ public class uploadIGC {
             // binds progress of progress bars to progress of task:
             pForm.activateProgressBar(task);
 
-            // in real life this method would get the result of the task
-            // and update the UI based on its value:
+            // End of task, we run the page display of VisuGPS
             task.setOnSucceeded(event -> {
                 pForm.getDialogStage().close();
                 lanceVisu();
@@ -206,6 +212,9 @@ public class uploadIGC {
             thread.start();        
     }
     
+    /**
+     * Run page display of VisuGPS
+     */
     private void lanceVisu()  {
         // En principe, initilisés par un fichier de configuration
         String appVisuURL = "http://www.victorb.fr/visugps/visugps.html?track=";
@@ -213,9 +222,7 @@ public class uploadIGC {
 
         String totUrl = appVisuURL+appServerURL+fName;
         System.out.println("url : "+totUrl);
-        // On avait un simple code avec la classe Desktop 
-        // mais qui semble t il n'est pas bien supportée sous Linux
-        // 
+        // A simple code with Desktp class seems to be unsupported on Linux         
         if(Desktop.isDesktopSupported()){
             Desktop desktop = Desktop.getDesktop();
             try {

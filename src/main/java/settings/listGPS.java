@@ -1,11 +1,12 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package settings;
 
+import java.util.Locale;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.xnap.commons.i18n.I18n;
@@ -14,14 +15,18 @@ import org.xnap.commons.i18n.I18nFactory;
 /**
  *
  * @author gil
+ * Supported GPS list
  */
 public class listGPS {
      
     private static I18n i18n;
     
+    public listGPS(Locale currLocale)  {
+        i18n = I18nFactory.getI18n("","lang/Messages",listGPS.class.getClass().getClassLoader(),currLocale,0);
+    }
+    
     public static  ObservableList <String>  fill()  {        
         ObservableList <String> GPS_List;
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass());
         
         GPS_List = FXCollections.observableArrayList();
         

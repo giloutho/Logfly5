@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package leaflet;
 
@@ -29,6 +29,7 @@ import settings.configProg;
 /**
  *
  * @author Gil Thomas logfly.org
+ * HTML generation of a full screen leaflet map
  */
 public class map_visu {
     
@@ -90,17 +91,21 @@ public class map_visu {
         jsLegende = new StringBuilder();
         jsBalises = new StringBuilder();
         jsScore = new StringBuilder();
-        
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass(),myConfig.getLocale());
+               
+        i18n = I18nFactory.getI18n("","lang/Messages",map_visu.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);        
         
         carteVisu(traceVisu);       
     } 
-            
+    
+    /**
+     * HTML generation of track data
+     * @param traceGPS
+     * @return 
+     */    
     private boolean genData(traceGPS traceVisu)  {
         
         Boolean res = false;
@@ -110,14 +115,14 @@ public class map_visu {
         int step;
         int totPoints = traceVisu.Tb_Good_Points.size();
         
-        // Gare aux grosses traces, on affecte un coeff de réduction tous les 1500 points
+        // Be careful with big tracklogs, we reduced total number of points 
         if (totPoints > 1500)  {
             step = totPoints / 1500;
         }  else  {
             step = 1;
         }               
         
-        // Verification des doubles transformés en string
+        // Checking of double cast to string
         Pattern DOUBLE = Pattern.compile("\\d");
         
         for(int i = 1; i<=totPoints; i = i+step)
@@ -131,20 +136,20 @@ public class map_visu {
             }  else {
                 jsaltiVal.append(String.valueOf(currPoint.AltiGPS)).append(",");
             }
-            // locale.ROOT -> impose le point comme séparateur décimal sinon en config FR, on aura la virgule
+            // locale.ROOT -> force point a decimal separator
             sNb = String.format(Locale.ROOT,"%5.2f",currPoint.Vario);
-            // Sous Xojo on aboutissait parfois à une expression comme celle ci : -NAN(000).00 ce qui evidemment plantait l'affichage de la carte
-            // d'où une vérifiaction de la string obtenue
+            // in xLogfly sometimes we have expressions like : -NAN(000).00 
+            // that is why we check result string
             if (DOUBLE.matcher(sNb).find()) {
                 jsVario.append(sNb).append(",");
             }  else {
                 jsVario.append("0.00,");
             }
          
-            // locale.ROOT -> impose le point comme séparateur décimal sinon en config FR, on aura la virgule
+            // locale.ROOT -> force point a decimal separator
             sNb = String.format(Locale.ROOT,"%6.2f",currPoint.Vitesse);
-            // Sous Xojo on aboutissait parfois à une expression comme celle ci : -NAN(000).00 ce qui evidemment plantait l'affichage de la carte
-            // d'où une vérifiaction de la string obtenue
+            // in xLogfly sometimes we have expressions like : -NAN(000).00 
+            // that is why we check result string
             if (DOUBLE.matcher(sNb).find()) {
                 jsSpeed.append(sNb).append(",");
             }  else {
@@ -154,7 +159,7 @@ public class map_visu {
             jsHeure.append("'").append(currPoint.dHeure.format(DateTimeFormatter.ISO_TIME)).append("',");
         }
         
-        // Suppression de la dernière virgule
+        // last comma is removed
         if (jsaltiLg.length() > 0 ) {
             jsaltiLg.setLength(jsaltiLg.length() - 1);
             res = true;
@@ -174,7 +179,12 @@ public class map_visu {
           
         return res;
     }
-           
+    
+    /**
+     * HTML generation of thermals markers
+     * @param traceVisu
+     * @return 
+     */
     private boolean genThermData(traceGPS traceVisu)   {
         
         boolean res = false;
@@ -185,12 +195,11 @@ public class map_visu {
         int totPoints = traceVisu.Tb_Thermique.size();
                       
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);  
         
         if (totPoints > 0) {
-            // On fixe un gain mini à 10% du meilleur gain
+            // Mini gain is 10% of best gain
             minGain = (int) (traceVisu.getBestGain() * 0.10);     
             for (int i = 0; i < totPoints; i++) {
                 thermique currTh = traceVisu.Tb_Thermique.get(i);
@@ -217,7 +226,7 @@ public class map_visu {
                     
                 }
             }
-            // On trace la meilleure transition
+            // best transition
             pointIGC bestPoint2 = traceVisu.Tb_Good_Points.get(traceVisu.getBestTransIndice2());
             pointIGC bestPoint1 = traceVisu.Tb_Good_Points.get(traceVisu.getBestTransIndice1());
             dBestT = (geoutils.trigo.CoordDistance(bestPoint2.Latitude,bestPoint2.Longitude,bestPoint1.Latitude,bestPoint1.Longitude))/1000;
@@ -239,8 +248,8 @@ public class map_visu {
             jsThermique.append("   BTPolyline.addTo(THmarkers);").append(RC);
             jsThermique.append(RC);
             
-            /*   Code supprimé dans la dernière version Xojo 
-            *   **************** Je trouvais que les marqueurs nuisaient à la lisibilité
+            /*   removed code in last xLogfly version
+            *   **************** with yhis markers, the map seems less readable
                 's=s+"     var BT1marker = new google.maps.Marker({").append(RC); 
                 's=s+"           position: new google.maps.LatLng("+Str(LeafTrace.Tb_Good_Points(LeafTrace.BestTransIndice1).Latitude)+","+Str(LeafTrace.Tb_Good_Points(LeafTrace.BestTransIndice1).Longitude)+"),").append(RC); 
                 's=s+"           map: map,").append(RC); 
@@ -262,11 +271,10 @@ public class map_visu {
     }
     
     /**
+     * HTML generation of trunpoints markers
      * in xLogfly -> jsVisuBal
-     * Génération des markers de de balises
-     * Pour des raisons historiques, on garde une incohérence :
-     * on redécode le JSON alors qu'il a été traité dans le traitement de la trace
-     * Comme cela ne pose pas de problème de temps de traitement, on conserve cette bizarrerie
+     * this code is bad, we keep it for historical reasons
+     * JSON is decoded twice : first in the track treatment and second here
      * @param traceVisu
      * @return 
      */
@@ -301,20 +309,20 @@ public class map_visu {
                 final int idxBA = tabPoints.size() -1;                
                 for(int i=0; i<tabPoints.size(); i++){                    
                     JSONArray coord = (JSONArray) tabPoints.get(i);                                            
-                    // Le json coord est de la forme 45.94393,6.4455833,371 avec trois valeurs : Lat, long et numéro de point 
-                    // Si la string obtenue n'est pas transposable en entier -> exception
+                    // In json, corrdinate is like 45.94393,6.4455833,371 -> Lat, long and point number 
+                    // if the string can't be casted in integer -> exception
                     Idx = Integer.valueOf(coord.get(2).toString());                    
                     pointIGC currPoint = traceVisu.Tb_Calcul.get(Idx);
-                    // Pas de switch possible car "Constant expression required" pour les différents cas 
+                    // No switch possible -> "Constant expression required" for different cases
                     if ( i == 0) {                    
-                            // Balise départ BD                            
+                            // start point BD                            
                             jsBalises.append("    var markerBal = new L.marker(new L.LatLng(").append(coord.get(0)).append(",").append(coord.get(1)).append("), {icon: StartIcon})").append(RC); 
                             jsBalises.append("                    .bindPopup(\"<b>").append(i18n.tr("BD")).append("</b><br/>");
                             jsBalises.append(currPoint.dHeure.format(dtfHHmm)).append("<br/>Alt GPS : ").append(String.valueOf(currPoint.AltiGPS)).append("<br/>");
                             jsBalises.append(String.format("%3.2f",currPoint.Vitesse)).append("km/h<br/>").append(fmtsigne.format(currPoint.Vario)).append("m/s\");").append(RC); 
                             jsBalises.append("    LayerBal.addLayer(markerBal);").append(RC).append(RC); 
                     } else if (i == idxBA) {
-                        // Balise arrivée BA
+                        // end point BA
                         jsBalises.append(RC);
                         jsBalises.append("    var IconEP = L.Icon.Default.extend({").append(RC); 
                         jsBalises.append("        options: {").append(RC); 
@@ -362,12 +370,11 @@ public class map_visu {
     }        
     
     /**
-     * in xLogfly -> jsVisuScore
-     * Génration du tracé du score
-     * Pour des raisons historiques, on garde une incohérence :
-     * on redécode le JSON alors qu'il a été traité dans le traitement de la trace
-     * toutefois ici c'est un peu plus justifié dansla mesure où l'on s'appuie sur les valeurs drawLines
-     * qui n'ont pas été décodées dans la classe score. 
+     * HTML generation of lines between turnpoints
+     * in xLogfly -> jsVisuScore     
+     * this code is bad, we keep it for historical reasons
+     * JSON is decoded twice : first in the track treatment and second here
+     * Here this more justified : drawlines values were not decoded in track treatment
      * @param traceVisu
      * @return 
      */
@@ -380,7 +387,7 @@ public class map_visu {
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(traceVisu.getScore_JSON());
   
-            // Est ce un triangle ou non ?
+            // is it a triangle or not ?
             JSONObject score = (JSONObject) jsonObject.get("drawScore");            
             legLeague = score.get("scoreLeague").toString();           
             legShape = score.get("scoreShape").toString();
@@ -433,7 +440,11 @@ public class map_visu {
         
         return res;
     }
-            
+    
+    /**
+     * HTML generation of detailed info panel
+     * @param traceVisu 
+     */
     public void genLegende(traceGPS traceVisu)  {
         
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsDate_Vol()).append("<br>';").append(RC);
@@ -442,17 +453,17 @@ public class map_visu {
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Durée")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
         
         jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
-        // Heure déco
+        // Launching time
         String hDeco = traceVisu.getDT_Deco().format(DateTimeFormatter.ofPattern("HH:mm"));                
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Décollage")).append(" : ").append(hDeco).append("<br>';").append(RC);   
         jsLegende.append("this._div.innerHTML += '").append("GPS : ").append(String.valueOf(traceVisu.getAlt_Deco_GPS())).append("m<br>';").append(RC);
         String[] siteComplet;       
-        // Recherche du décollage
+        // Search for launching site
         String finalSiteDeco = null; 
         dbSearch myRech = new dbSearch(myConfig);
         String siteDeco = myRech.rechSiteCorrect(traceVisu.getLatDeco(),traceVisu.getLongDeco(),true);   
         if (siteDeco != null)  {
-            // On récupère qq chose de la forme PLANFAIT*France
+            // we found something like PLANFAIT*France
             siteComplet = siteDeco.split("\\*");
             if (siteComplet.length > 0) {    
                 siteDeco = siteComplet[0]; 
@@ -464,7 +475,6 @@ public class map_visu {
         } else {
             reversegeocode rechDeco = new reversegeocode();
             DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-            // Imperatif -> forcer le point comme séparateur
             decimalFormatSymbols.setDecimalSeparator('.');        
             DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
             String sCoord = decimalFormat.format(traceVisu.getLatDeco())+","+decimalFormat.format(traceVisu.getLongDeco());
@@ -474,10 +484,12 @@ public class map_visu {
             else
                 finalSiteDeco = siteDeco;
         }
-        // A corriger
-        jsLegende.append("this._div.innerHTML += '").append(finalSiteDeco).append("<br>';").append(RC);         
+        // To avoid an unsightly \ in place of apostrophe
+        String goodSiteDeco = finalSiteDeco.replace("'", "\\'");     
+        //String goodSiteDeco = "Plan de L\\'AIGOUILLER"; 
+        jsLegende.append("this._div.innerHTML += '").append(goodSiteDeco).append("<br>';").append(RC);         
         
-        // Recherche de l'atterro avec les coordonnées du dernier point valide
+        // Search for landing site with last point coordinates
         pointIGC lastPoint = traceVisu.Tb_Good_Points.get(traceVisu.Tb_Good_Points.size()-1);      
         String finalSiteAtterro = null;
         String siteAtterro = myRech.rechSiteCorrect(lastPoint.Latitude,lastPoint.Longitude,false);         
@@ -493,7 +505,6 @@ public class map_visu {
         } else {    
             reversegeocode rechSite = new reversegeocode();
             DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-            // Imperatif -> forcer le point comme séparateur
             decimalFormatSymbols.setDecimalSeparator('.');        
             DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
             String sCoord = decimalFormat.format(lastPoint.Latitude)+","+decimalFormat.format(lastPoint.Longitude);
@@ -503,10 +514,12 @@ public class map_visu {
             else
                 finalSiteAtterro = siteAtterro;
         }            
+        // To avoid an unsightly \ in place of apostrophe
+        String goodSiteAterro = finalSiteAtterro.replace("'", "\\'");    
         String hAttero = traceVisu.getDT_Attero().format(DateTimeFormatter.ofPattern("HH:mm"));                 
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Atterrissage")).append(" : ").append(hAttero).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(" GPS : ").append(String.valueOf(traceVisu.getAlt_Attero_GPS())).append("m<br>';").append(RC);        
-        jsLegende.append("this._div.innerHTML += '").append(finalSiteAtterro).append("<br>';").append(RC);
+        jsLegende.append("this._div.innerHTML += '").append(goodSiteAterro).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
        
         pointIGC ptAltMax = traceVisu.getAlt_Maxi_GPS();
@@ -528,6 +541,9 @@ public class map_visu {
         
     }
     
+    /**
+     * HTML generation of socre info panel
+     */
     private void genScoreLegende() {
         jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
         switch (legLeague) {
@@ -562,7 +578,7 @@ public class map_visu {
             default:
                 jsLegende.append("this._div.innerHTML += '<b>&nbsp;&nbsp;").append(legShape).append("</b><br>';").append(RC);    
         }
-        // Formatage de la distance qui sort sous la forme : 21.89160109032659
+        // Formatting distance is of the form 21.89160109032659
         int iLength = legPoints.length();
         String legFormate = null;
         if (iLength > legDistance.indexOf(".")+3) {
@@ -571,7 +587,7 @@ public class map_visu {
             legFormate = legDistance;
         }
         jsLegende.append("this._div.innerHTML += '&nbsp;&nbsp;&nbsp;&nbsp;").append(legFormate).append(" km").append("<br>';").append(RC);    
-        // Formatage du score qui sort sous la forme : 9.89160109032659
+        // Formatting score is of the form 9.89160109032659
         iLength = legPoints.length();        
         if (iLength > legPoints.indexOf(".")+3) {
             legFormate = legPoints.substring(0,legPoints.indexOf(".")+3);
@@ -582,7 +598,8 @@ public class map_visu {
     }
     
     /**
-     * A l'origine on testait les coordonnées de départ
+     * Default layer of the map
+     * A the beginning, we tested the first point
      * if UBound(Tb_Coord) > -1 Then
      *     if Tb_Coord(0).Latitude < 71 and Tb_Coord(0).Latitude > 35 and Tb_Coord(0).Longitude > -10 and Tb_Coord(0).Longitude < 50 Then
      *        OpenTopo = True
@@ -592,12 +609,12 @@ public class map_visu {
      *         OpenTopo = True
      *       end
      *     end
-     * Selon ces coordonnées on forçait vers OSM qui seul coyuvre le monde entier ( à aprt Google évidemment)
-     * Ici on laisse le choix à l'utilisateur
+     * According to coordinates we force to OSM layer or Google
+     * Only these layers cover whole world
      */
     private void genDefaultLayer() {
          
-        // On met une valeur par defaut au cas où, pour ne pas se retrouver sans AddTo(Map)
+        // We put a default value to avoid an undefined case   
         int idxMap = myConfig.getIdxMap();
         if(idxMap == 0) {
             jsLayer = "    osmlayer.addTo(map);";
@@ -615,6 +632,10 @@ public class map_visu {
         
     }
     
+    /**
+     * HTML generation of the map
+     * @param traceVisu 
+     */
     public void carteVisu(traceGPS traceVisu)  {
         StringBuilder sbHTML = new StringBuilder();
         
@@ -640,7 +661,7 @@ public class map_visu {
                 genDefaultLayer();
                 String layerHTML = heureHTML.replace("%layer%", jsLayer); 
                 String thermiqHTML;
-                // La génération de la représentation des thermiques demande  une procédure spécifique
+                // special method for thermals
                 if (genThermData(traceVisu)) {
                     thermiqHTML = layerHTML.replace("//%THmarker%", jsThermique.toString());
                 } else  {

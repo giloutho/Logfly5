@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -57,10 +57,10 @@ public class ImportViewController {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
+    // Settings
     configProg myConfig;
      
-    // Liste des traces à examiner
+    // Track list
     ArrayList<String> trackPathList = new ArrayList<>(); 
     
     private ObservableList <Import> dataImport; 
@@ -70,15 +70,15 @@ public class ImportViewController {
     @FXML
     private HBox buttonBar;
     
-   // @FXML
-   // private AnchorPane anchorTable;
-    
     @FXML
     private HBox hbTable;
     
-    // Reference au controller de base RootLayout
     private RootLayoutController rootController;
 
+    /**
+     * recovered settings
+     * @param mainConfig 
+     */
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
@@ -98,6 +98,10 @@ public class ImportViewController {
         checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );       
     }
        
+    /**
+     * Select import folder
+     * @throws Exception 
+     */
     @FXML
     private void selectImpFolder() throws Exception {
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -118,8 +122,7 @@ public class ImportViewController {
     }
     
     /**
-     * Recherche récursive de toutes les traces IGC ou GPX présntes dans le dosssier dir
-     * et les sous dossiers de celui-ci
+     * Recursive track search in selected folder and sub folders
      * @param dir
      * @throws Exception 
      */
@@ -140,14 +143,18 @@ public class ImportViewController {
         }
     }
     
-    //private ObservableList InitialiseTableData() 
+    /**
+     * each IGC or GPX file is decoded
+     * Flight parameters pushed in the table
+     * if a flight not exists in  the logbook, the line is checked
+     */
     private void InitialiseTableData() {
         
         traceGPS myTrace;
         
         dataImport.clear();
         tableImp.getItems().clear();
-        // Parcourt de l'arraylist des fichiers traces (contient le path)
+        // Loop on arraylist of track files with path 
         for (String sTracePath : trackPathList) {
             File fMyTrace = new File(sTracePath);
             if(fMyTrace.exists() && fMyTrace.isFile()) {           
@@ -155,7 +162,7 @@ public class ImportViewController {
                 if (myTrace.isDecodage()) { 
                     Import imp = new Import();
                     dbSearch rechDeco = new dbSearch(myConfig); 
-                    // Pour débugging 
+                    // For debugging
                     boolean resDeco = rechDeco.searchVolByDeco(myTrace.getDT_Deco(),myTrace.getLatDeco(),myTrace.getLongDeco());
                     imp.setChecked(!resDeco);
                     imp.setDate(myTrace.getDate_Vol_SQL());
@@ -164,13 +171,13 @@ public class ImportViewController {
                     imp.setPilotName(myTrace.getsPilote());
                     imp.setFilePath(sTracePath); 
                     dataImport.add(imp);
-                    // Le pattern doit être appliqué au décodage...
+                    // Pattern must be applied in decoding
                     System.out.println("Carnet : "+resDeco+" Decodage : "+fMyTrace.getName()+" "+myTrace.isDecodage()+"  "+myTrace.getsPilote());
                     // Arrêt boulot faire un sout des paramètres attendus pour la tableview
                     // Si c'est bon on poussera dans l'ObservableList
                 
-                // On vérifiait le décodage correct de la date
-                //System.out.println("Decodage : "+myTrace.isDecodage()+"  "+myTrace.getDT_Deco().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    // Decoding date checking
+                    //System.out.println("Decodage : "+myTrace.isDecodage()+"  "+myTrace.getDT_Deco().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 }
             
             }
@@ -183,7 +190,7 @@ public class ImportViewController {
         }
         
         
-        // Gardé au cas où...
+        // Just in case...
         // https://examples.javacodegeeks.com/desktop-java/javafx/tableview/javafx-tableview-example/
         
         //List list = new ArrayList();
@@ -193,6 +200,9 @@ public class ImportViewController {
        // return data;
     }
     
+    /**
+     * Uncheck all flights
+     */
     @FXML
     private void unCheckList() {
         ObservableList<Import> data = tableImp.getItems();        
@@ -204,6 +214,9 @@ public class ImportViewController {
         }
     }
     
+    /**
+     * Checked flights are inserted in the logbook
+     */
     public void insertionCarnet()  {
         ObservableList<Import> data = tableImp.getItems();
         int nbVols = 0;
@@ -235,26 +248,28 @@ public class ImportViewController {
     }               
     
     /** 
-     * Procédure qui balaie la table pour savoir ce qui est coché ou non... 
+     * check the boolean value of each item to determine checkbox state
      */
     public void getValues(){        
         ObservableList<Import> data = tableImp.getItems();
 
-        for (Import item : data){
-            //check the boolean value of each item to determine checkbox state
+        for (Import item : data){            
             System.out.println("Valeur table : "+item.getChecked());
         }
     }
 
     /**
-     * Appellée pour obtenir un pont de communication avec RootLayoutController 
+     * set the bridge with RootLayoutController  
      * @param rootlayout 
      */
     public void setRootBridge(RootLayoutController rootlayout) {
         this.rootController = rootlayout; 
         
     }
-
+    
+    /**
+    * Translate labels of the window
+    */
     private void winTraduction() {
         checkCol.setText(i18n.tr("Carnet"));
         dateCol.setText(i18n.tr("Date"));

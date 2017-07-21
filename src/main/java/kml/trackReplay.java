@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
@@ -18,6 +18,8 @@ import trackgps.traceGPS;
 /**
  *
  * @author gil
+ * 
+ * Manage generation of track replay in Google Earth
  */
 public class trackReplay {
     
@@ -40,25 +42,20 @@ public class trackReplay {
     
     // Localization
     private I18n i18n; 
-    
-    // Paramètres de configuration
-    configProg myConfig;
-    
+       
     public String getKmlString() {
         return kmlString;
     } 
     
-    public trackReplay(traceGPS pTrace, makingKml pMakingKml) {    
+    public trackReplay(traceGPS pTrace, makingKml pMakingKml,Locale currLocale) {    
         replayOK = false;
         KmlTrace = pTrace;
         currMakingKml = pMakingKml;
-        // **** i18n = I18nFactory.getI18n(logfly.Logfly.class.getClass(),myConfig.getLocale());
-        // pour debug
-        i18n = I18nFactory.getI18n(getClass());
+        i18n = I18nFactory.getI18n("","lang/Messages",trackReplay.class.getClass().getClassLoader(),currLocale,0);
         
         totalPoints = KmlTrace.Tb_Good_Points.size()-1;
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
+        // Mandatory : separator must be a point
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
@@ -78,7 +75,7 @@ public class trackReplay {
         StringBuilder res = new StringBuilder();
         int totalPoints = KmlTrace.Tb_Good_Points.size()-1;
         double Bearing;
-        // Calcul du step
+        // Step computing
         int NbMin;
         pointIGC currPoint;
         pointIGC secondPoint;
@@ -88,7 +85,7 @@ public class trackReplay {
         try {             
             NbMin = (int) (KmlTrace.getDuree_Vol() / currMakingKml.getCamStep());
 
-            // La doc de base sur l'animation dans GE est sur https://developers.google.com/kml/documentation/touring
+            // Basic documentation https://developers.google.com/kml/documentation/touring
   
             res.append("          <gx:Tour>").append(RC); 
             res.append("             <visibility>0</visibility>").append(RC); 
@@ -155,7 +152,7 @@ public class trackReplay {
                 res.append("                   </LookAt>").append(RC); 
                 res.append("                </gx:FlyTo>").append(RC); 
             }
-            // Pour être à l'atterro
+            // To be at landing
             currPoint = KmlTrace.Tb_Good_Points.get(totalPoints);
             res.append("                <gx:FlyTo>").append(RC); 
             res.append("                   <gx:duration>").append(String.valueOf(camTimer)).append("</gx:duration>").append(RC); 
@@ -178,7 +175,7 @@ public class trackReplay {
             res.append("             </gx:Playlist>").append(RC); 
             res.append("            </gx:Tour>").append(RC); 
   
-            // Génération des overlays Alti Vitesse Vario
+            // Alt and vario overlay generation
             res.append("            <Folder>").append(RC); 
             res.append("                   <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
             res.append("                   <name>Compteurs</name>").append(RC); 
@@ -187,7 +184,7 @@ public class trackReplay {
                 res.append("                        <Icon>").append(RC); 
     
                 /*
-                ' Mis en commentaires in xLogfly
+                ' This code was deactivated in xLogfly
                 ' Envoi un bandeau simple de foind jaune pâle avec Altitude et Vitesse
                 'if GraphAltiBaro then
                 'res.append("                             <href><![CDATA[http://chart.apis.google.com/chart?chf=bg,s,FFF4C2&chs=300x20&cht=v&chd=s:&chtt=Alt+%3A+"+_
@@ -200,8 +197,8 @@ public class trackReplay {
                 'end
                 */
                 currPoint = KmlTrace.Tb_Good_Points.get(i);
-                // Envoi le compteur Google avec Simplement l'altitude et la vitesse. 
-                // Parait préférable pour éviter un "oh mais la vitesse est pas bonne là !"
+                // Meter with speed and altitude
+                // Less detailed but prefered to digital display to avoid "Oh... This speed is bad at point 1252 "
                 if (currMakingKml.isGraphAltiBaro()) {
                     res.append("                             <href><![CDATA[http://chart.apis.google.com/chart?chxl=0:%7C0%7C40%7C80&chxt=y&chs=140x90&cht=gm&chds=0,98.333&chd=t:");
                     res.append(String.valueOf(currPoint.Vitesse)).append("&chl=").append(String.valueOf(currPoint.Vitesse)).append("&chtt=Alt+%3A+");

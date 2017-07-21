@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package controller;
 
@@ -206,11 +206,11 @@ public class ConfigViewController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {   
-        // Cette méthode indispensable est laissée vide
-        // car toute l'initialisation des champs se fait à partir de la classe de configuration [myConfig]
-        // Or celle celle ci ne peut être récupérée qu'après initialisation.
-        // toute tentative dans cette méthode provoquait une exception
-        // La méthode d'initialisation setMyConfig se trouve ci dessous       
+        // Empty but necessary
+        // fields initialization is in [myConfig]
+        // But we can read it only after initialization
+        // Any attempt in this method throw an exception
+        // setMyConfig is just below
     }    
     
     public void setMyConfig(configProg mainConfig) {
@@ -218,14 +218,14 @@ public class ConfigViewController implements Initializable {
         i18n = I18nFactory.getI18n("","lang/Messages",ConfigViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         
-        // Remplissage des champs APRES récupération de myConfig
+        // Fields will be filled after myConfig reading
         ObservableList <String> listDb;
         int idxDb = 0;                
         
         listDb = FXCollections.observableArrayList();
                
         
-        // Recherche de tous les fichiers db existant dans le dossier db (pathDb)
+        // Search all existing db files in the db folder (pathDb)
         File folderDb = new File(myConfig.getPathDb());
         if (folderDb.exists() && folderDb.isDirectory() ) {
             FilenameFilter filter = new FilenameFilter() {
@@ -238,11 +238,11 @@ public class ConfigViewController implements Initializable {
             iniChbCarnet(files);            
         }    
         
-        // Initialisation onglet Carnet
+        // Logbook Tab
         lbCurrFolder.setText(myConfig.getPathW());
         lbCurrDbPath.setText(myConfig.getPathDb());
         
-        // Initialisation Onglet Pilote
+        // Pilot Tab
         txPilote.setText(myConfig.getDefaultPilote());
         txVoile.setText(myConfig.getDefaultVoile());
         iniChbGPS();
@@ -252,7 +252,7 @@ public class ConfigViewController implements Initializable {
         txIdentif.setText(myConfig.getPiloteID());
         txPass.setText(myConfig.getPilotePass());
         
-        // Initialisation Onglet Cartes
+        // Map Tab
         if (myConfig.isVisuGPSinNav())  {
             checkBrowser.setSelected(true);
         } else {
@@ -263,7 +263,7 @@ public class ConfigViewController implements Initializable {
         txFinderLong.setText(myConfig.getFinderLong());
         txSeuilAb.setText(String.valueOf(myConfig.getSeuilAberrants()));
         
-        // Initialisation Onglet Divers
+        // Miscellaneous Tab
         iniChbLang();
         lbImpFolder.setText(myConfig.getPathImport());
         if (myConfig.isPhotoAuto())  {
@@ -272,7 +272,7 @@ public class ConfigViewController implements Initializable {
             checkPhoto.setSelected(false);
         }
         
-        // Initialisation Onglet Internet
+        // Internet Tab
         txUrlSite.setText(myConfig.getUrlLogfly());
         txUrlIcones.setText(myConfig.getUrlIcones());
         txVisuUpload.setText(myConfig.getUrlLogflyIGC());
@@ -292,7 +292,7 @@ public class ConfigViewController implements Initializable {
     }
      
     /**
-     * Valide les changements &ffectués dans la fenêtre de configuration
+     * Validate changes
      */
     @FXML
     private void handleOk() {
@@ -313,7 +313,6 @@ public class ConfigViewController implements Initializable {
         myConfig.setSeuilAberrants(Integer.parseInt(txSeuilAb.getText()));
         // Onglet Divers
         myConfig.setIdxLang(chbLang.getSelectionModel().getSelectedIndex());
-        myConfig.setWinLangue(chbLang.getSelectionModel().getSelectedIndex());
         myConfig.setLocale(chbLang.getSelectionModel().getSelectedIndex());
         myConfig.setPathImport(lbImpFolder.getText());
         myConfig.setPhotoAuto(checkPhoto.isSelected());
@@ -329,7 +328,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Fermeture de la fenêtre de configuration sans valider les changements
+     * Discard changes
      */
     @FXML
     private void handleCancel() {
@@ -337,8 +336,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Création d'un nouveau carnet
-     * Les champs nécessaires deviennent visibles
+     * New logbook creation
      */
     @FXML
     private void displayTextCarnet() {
@@ -349,8 +347,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * La création d'un nouveau carnet est annulée
-     * Les champs nécessaires deviennent invisibles
+     * New logbook creation is cancelled     
      */
     @FXML
     private void annulNewCarnet() {
@@ -360,8 +357,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Après vérification et mise aux normes du nom du nouveau carnet
-     * Le fichier SQLite est créé
+     * Name is checked, SQLIte file is created     
      */
     @FXML
     private void createNewCarnet() {
@@ -376,14 +372,13 @@ public class ConfigViewController implements Initializable {
                 btnewcarnetcancel.setVisible(false);  
             }                      
         } else {
-            // Pas d'accès au beep par défaut de l'OS dans JavaFX
-            // on est obligé de passer par awt
+            // No beep with JavaFX, awt is necessary            
             Toolkit.getDefaultToolkit().beep();
         }
     }
     
     /**
-     * Changement du dossier de travail
+     * Working folder is modified
      */
     @FXML
     private void changePathW() {
@@ -397,8 +392,8 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Changement du dossier d'import
-     * Le dossier d'import est le dossier contenant les traces GPS à importer dans le carnet de vol
+     * Import folder is modified
+     * Import folder is the usaul folder to import GPS tracks
      */
     @FXML
     private void changePathImport() {
@@ -410,6 +405,9 @@ public class ConfigViewController implements Initializable {
         }        
     }  
     
+    /**
+     * Path for online contest is modified 
+     */
     @FXML
     private void changePathContest() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -421,9 +419,8 @@ public class ConfigViewController implements Initializable {
     }  
     
     /**
-     * Changement de dossier pour le(s) carnet(s)
-     * Après le choix d'un nouveau répertoire
-     * Tous les fichiers SQLite .db sont déplacés
+     * Db folder is modified
+     * all SQLire files .db are moved in the new folder
      * @throws InterruptedException 
      */
     @FXML
@@ -441,7 +438,7 @@ public class ConfigViewController implements Initializable {
                 };
                 File[] files = new File(myConfig.getPathDb()).listFiles(filter);
                 String newPath = selectedDirectory.getAbsolutePath()+myConfig.getOsSeparator();                                       
-                filesmove transDb = new filesmove(files, newPath);
+                filesmove transDb = new filesmove(files, newPath, myConfig.getLocale());
                 if (transDb.isTaskOK())  {
                     // On change getpathdb
                     myConfig.setPathDb(newPath);
@@ -455,8 +452,8 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Un nouveau répertoire de carnets est choisi
-     * Ce choix est validé si le dossier contient des fichiers .db
+     * User choose a new db folder
+     * this choice is validated if db files exist in this folder
      * @throws InterruptedException 
      */
     @FXML
@@ -482,7 +479,7 @@ public class ConfigViewController implements Initializable {
                     myConfig.setFullPathDb(selectedDirectory.getAbsolutePath()+myConfig.getOsSeparator()+myConfig.getDbName());
                     iniChbCarnet(files);
                 } else {
-                    alertbox aError = new alertbox();
+                    alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertError(i18n.tr("Pas de carnets dans le dossier choisi..."));  
                 }
             }
@@ -490,32 +487,30 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Remplissage de la choicebox avec tous les fichiers .db trouvés dans le répertoire 
-     * @param files Array des fichiers .db recensés
+     * Choicebox is filled with all db files of the db folder
+     * @param files (Array of db files)
      */
     private void iniChbCarnet(File[] files)  { 
         ObservableList <String> listDb;
         int idxDb = -1;
         
         listDb = FXCollections.observableArrayList();
-        
-        // Récupération du nom de tous les fichiers .db figurant dans le dossier
+                
         int idx = -1;
         for (File f : files) {
             listDb.add(f.getName());
             idx++;
             if (myConfig.getDbName().equals(f.getName())) 
                 idxDb = idx;                    
-        }
-        // Initialisation de la choicebox permettant de choisir le carnet
+        }        
         chbCarnet.getItems().clear();
         chbCarnet.setItems(listDb);
         if (idxDb > -1)  {
-            // On se positionne sur le fichier enregistré comme db en cours
+            // Current db is selected in the choicebox
             chbCarnet.getSelectionModel().select(idxDb);   
         } else {
-            // Pas de fichier correspondant à la db en cours mémorisée
-            // On ouvre la choicebox pour sélection
+            // No db file that match the db stored in settings
+            // Choicebox is opened
             chbCarnet.show();
         }
         chbCarnet.setOnAction((event) -> {
@@ -527,12 +522,11 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Initialisation de la choicebox permettant de choisir le GPS couramment utilisé
-     * parmi les GPS supportés par Logfly
+     * Choicebox is filled with supported GPS     
      */
     private void iniChbGPS()  { 
         
-        listGPS supportedGPS = new listGPS();
+        listGPS supportedGPS = new listGPS(myConfig.getLocale());
         ObservableList <String> allGPS = listGPS.fill();        
         
         chbGPS.getItems().clear();
@@ -542,8 +536,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Remplissage de la choicebox permettant de choisir la league du contest
-     * parmi les différentes leagues supportées par le module hspoints
+     * Choicebox is fille with online contest supported by scoring module     
      */
     private void iniChbLeague()  { 
         
@@ -557,11 +550,11 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Remplissage de la choicebox permettant de choisir la langue à utiliser
+     * Choicebox is filled with supported languages
      */
     private void iniChbLang()  { 
         
-        listLangues suppLangues = new listLangues();
+        listLangues suppLangues = new listLangues(myConfig.getLocale());
         ObservableList <String> allLangues = suppLangues.fill(i18n);        
         chbLang.getItems().clear();
         chbLang.setItems(allLangues);
@@ -570,8 +563,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Remplissage de la choicebox permettant de choisir la carte par défaut
-     * parmi les différents formats de carte supportés par Logfly
+     * Choicebox is filled by supported maps     
      */
     private void iniChbCarte()  { 
         
@@ -584,18 +576,17 @@ public class ConfigViewController implements Initializable {
     }
         
     /**
-     * Vérification et mise à la norme du nom de fichier
-     * lors de création d'un nouveau carnet
+     * For a newlogbook file, name is checked
      * @param checkName
      * @return 
      */
     private String checkNewDbName(String checkName) {
         String res = null;
         
-        // remplacemlent des espaces par des _ et passage en minuscules
+        // Spaces are replaced by underscore and letters are written in lower case 
         checkName = checkName.replaceAll(" ", "_").toLowerCase(); 
         int dotIndex = checkName.lastIndexOf('.');
-        if(dotIndex>=0) {   // pour prévenir l'exception s'il n'y a pas de point
+        if(dotIndex>=0) {   // to prevent exception if no point
             res = checkName.substring(0,dotIndex);
         } else {
             res = checkName;
@@ -605,7 +596,7 @@ public class ConfigViewController implements Initializable {
     }
     
     /**
-     * Appellée pour obtenir un pont de communication avec RootLayoutController 
+     * Initialize communication brdige with RootLayoutController 
      * @param rootlayout 
      */
     public void setRootBridge(RootLayoutController rootlayout) {
@@ -613,7 +604,7 @@ public class ConfigViewController implements Initializable {
     }
 
     /**
-     * Changement de carnet géré par la classe ConfigProg
+     * ConfigProg manage a change of logbook
      * @param selectedDb 
      */
     private void changeDb(String selectedDb) {
@@ -621,6 +612,9 @@ public class ConfigViewController implements Initializable {
         rootController.changeCarnetView();
     }
     
+    /**
+     * Translate labels of the window
+     */
     private void winTraduction() {
         tabCarnet.setText(i18n.tr("Carnet"));        
         tabCarte.setText(i18n.tr("Carte"));

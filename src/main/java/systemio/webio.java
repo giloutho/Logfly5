@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package systemio;
 
@@ -18,13 +18,15 @@ import java.time.format.DateTimeFormatter;
 /**
  *
  * @author gil
+ * internet utilities
+ * 
  */
 public class webio {
     
     /**
-     * Test de validité d'une url. 
-     * Le code renvoyé est le status HTTP_OK = 200
-     * tous les codes -> http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html
+     * url checking 
+     * return code is : status HTTP_OK = 200
+     * all codes -> http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html
      * @param strUrl
      * @return
      * @throws Exception 
@@ -46,8 +48,8 @@ public class webio {
     }
     
     /**
-     * Pour la trace a télécharger, on compose un nom de la forme :
-     *      YYYYMMDDHHMMSS_Aleatoire  [Aléatoire = nombre entre 1 et 1000]
+     * Give a special random name for track upload.
+     *      YYYYMMDDHHMMSS_Randomnumber  [between 1 and 1000]
      * @return 
      */
     public String aleaNomfichier()  {
@@ -55,9 +57,9 @@ public class webio {
         
         LocalDateTime ldt = LocalDateTime.now();
         String sLdt = ldt.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss_"));    
-        // On veut un nombre aleatoire entre 1 et 1000
-        // Min + (int)(Math.random() * ((Max - Min) + 1))
-        // glané sur http://stackoverflow.com/questions/363681/generating-random-integers-in-a-specific-range
+        // we want a number between 1 and 1000
+        // xLogfly -> Min + (int)(Math.random() * ((Max - Min) + 1))  
+        // found in http://stackoverflow.com/questions/363681/generating-random-integers-in-a-specific-range
         int aleaNumber = 1 + (int)(Math.random() * ((1000 - 1) + 1));
         StringBuilder suggName = new StringBuilder();
         suggName.append(sLdt).append(String.format("%d",aleaNumber)).append(".igc");
@@ -66,6 +68,12 @@ public class webio {
         return res;
     }
     
+    /**
+     * Upload track (text file) to the specified url
+     * @param txtData
+     * @param sUrl
+     * @return 
+     */
     public String httpUploadIgc(byte[] txtData, String sUrl)  {
         
         String res = null;
@@ -88,7 +96,7 @@ public class webio {
             msg1.append("Content-Type: text/plain").append(CrLf);
             msg1.append(CrLf);
             String message1 = msg1.toString();
-            // le fichier est envoyé entre les messages dans le multipart
+            // file is sent between messages in the multipart
             StringBuilder msg2 = new StringBuilder();
             msg2.append(CrLf).append("-----------------------------4664151417711--").append(CrLf);
             String message2 = msg2.toString();
@@ -126,7 +134,7 @@ public class webio {
             
         } catch (Exception e) {
             //e.printStackTrace();
-            System.out.println("C'est la mémé...");
+            System.out.println("C'est la mémé...");  // It's all crap...
         } finally {
             System.out.println("Close connection");
             try {

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
@@ -19,10 +19,9 @@ import trackgps.traceGPS;
 
 /**
  *
- * @author Man's costumes Gil
- * Les procédures de cette classe peuvent paraitre étranges...
- * elles ont été traduites d' xLogfly
- * où elles avaient été traduites du PHP (moulinette Man's)
+ * @author Gil with great help of Emmanuel Chabani aka Man's
+ * Translated in xLogfly from Man's php script 
+ * Draw thermals of the flight
  * 
  */
 public class trackThermals {
@@ -37,28 +36,26 @@ public class trackThermals {
     
     // Localization
     private I18n i18n; 
-    
-    // Paramètres de configuration
-    configProg myConfig;
-    
+        
     public String getKmlString() {
         return kmlString;
     } 
     
-    public trackThermals(traceGPS pTrace, makingKml pMakingKml) {    
+    public trackThermals(traceGPS pTrace, makingKml pMakingKml, Locale currLocale) {    
         thermalOK = false;
         KmlTrace = pTrace;
         currMakingKml = pMakingKml;
-        // **** i18n = I18nFactory.getI18n(logfly.Logfly.class.getClass(),myConfig.getLocale());
-        // pour debug
-        i18n = I18nFactory.getI18n(getClass());       
+        i18n = I18nFactory.getI18n("","lang/Messages",trackThermals.class.getClass().getClassLoader(),currLocale,0);
         totalPoints = KmlTrace.Tb_Good_Points.size()-1;
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        // Imperatif -> forcer le point comme séparateur
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
     }
     
+    /**
+     * Manage generation
+     * @return 
+     */
     public boolean genThermals() {
         StringBuilder res = new StringBuilder();
         boolean resGeneration = false;
@@ -82,6 +79,7 @@ public class trackThermals {
     }
     
     /**
+     * Place thermals along the track
      * in xLogfly -> kml_J_Ana_Therm
      * @return 
      */
@@ -94,13 +92,13 @@ public class trackThermals {
         thermique currTh;               
               
         if (TotalPoints > 0) {
-            minGain = (int) (KmlTrace.getBestGain() * 0.10);     // On fixe un gain mini à 10% du meilleur gain
+            minGain = (int) (KmlTrace.getBestGain() * 0.10);     // Mini gain is 10% of best gain
             res.append("              <Folder>").append(RC); 
             res.append("                     <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
             res.append("                     <name>").append(i18n.tr("Thermiques")).append("</name>").append(RC); 
             res.append("                     <visibility>0</visibility>").append(RC); 
             for (int i = 0; i <= TotalPoints; i++) {
-                // Pour l'instant on ne marque le positif
+                // For instance only positive values
                 currTh = KmlTrace.Tb_Thermique.get(i);
                 if (currTh.DeltaAlt > 0 && currTh.DeltaAlt > minGain) {
                     idxPtB = currTh.NumPoint;
@@ -127,6 +125,7 @@ public class trackThermals {
     }
     
     /**
+     * Special for the best gain of the flight
      * in xLogfly -> kml_J_Ana_B_Gain
      * @return 
      */
@@ -185,6 +184,7 @@ public class trackThermals {
     }
     
     /**
+     * Place transitions along the track
      * in xLogfly -> kml_J_Ana_Trans
      * @return 
      */
@@ -198,7 +198,7 @@ public class trackThermals {
         thermique currTh;
   
         int TotalPoints = KmlTrace.Tb_Thermique.size() - 1;        
-        MinDist = (KmlTrace.getBestTransDist()/1000) * 0.10;     // On fixe une distance mini de transition à 10% de la meilleure transition (en km)
+        MinDist = (KmlTrace.getBestTransDist()/1000) * 0.10;     // Mini distance is 10% of the best distance
         if (TotalPoints > 0) {
             res.append("              <Folder>").append(RC); 
             res.append("                     <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
@@ -223,7 +223,7 @@ public class trackThermals {
                             sAltiB = String.valueOf(pointB.AltiGPS);
                             sAltiA = String.valueOf(pointA.AltiGPS);    
                         }
-                        // locale.ROOT -> impose le point comme séparateur décimal sinon en config FR, on aura la virgule
+                        // Mandatory : point as decimal separator
                         sDist = String.format(Locale.ROOT,"%5.2f",dDist);
                         if (currTh.DeltaAlt != 0)
                             Finesse = -dDist / currTh.DeltaAlt;
@@ -268,6 +268,7 @@ public class trackThermals {
     
     
     /**
+     * Special for the best transition of the flight
      * in xLogfly -> kml_J_Ana_B_Trans
      * @return 
      */
@@ -291,7 +292,7 @@ public class trackThermals {
             sAltiB = String.valueOf(bestPointB.AltiGPS);
             sAltiA = String.valueOf(bestPointA.AltiGPS);     
         }
-        // locale.ROOT -> impose le point comme séparateur décimal sinon en config FR, on aura la virgule
+        // Mandatory : point as decimal separator
         sDist = String.format(Locale.ROOT,"%5.2f",(KmlTrace.getBestTransDist()/1000));
         res.append("                     <Placemark>").append(RC); 
         res.append("                           <Point>").append(RC); 

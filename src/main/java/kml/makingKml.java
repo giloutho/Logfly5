@@ -1,21 +1,24 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
+import java.util.Locale;
 import org.xnap.commons.i18n.I18n;
 import trackgps.traceGPS;
 
 /**
  *
  * @author gil
+ * Manage kml file generation
  */
 public class makingKml {
     
     private I18n i18n;
+    private Locale currLocale;
     
     private static final String RC = "\n";    
     private boolean kmlOK;
@@ -207,61 +210,17 @@ public class makingKml {
     public void setExportPath(String exportPath) {
         this.exportPath = exportPath;
     }
-    
-    
-    
-    
-           
-    
-    public makingKml()  {
+                               
+    public makingKml(Locale myLocale)  {
         kmlOK = false;
+        currLocale = myLocale;
     }
                 
-    public makingKml(traceGPS traceKml)
-    {
-//        kmlOK = false;
-//        // Réduction de la trace
-//        int intervalle = (int) traceKml.getDuree_Vol()/traceKml.Tb_Good_Points.size();
-//        if (intervalle < 2)
-//            kmlReduc = 5;
-//        else if (intervalle < 3)
-//            kmlReduc = 4;
-//        else if (intervalle < 4)
-//            kmlReduc = 3;
-//        else if (intervalle < 5)
-//            kmlReduc = 2;
-//        else
-//            kmlReduc = 1;
-//        
-//        // Paramètres appliqués par défaut en attendant le lancement par fenêtre
-//        GraphAltiBaro = false;
-//        useReduc = true;
-//        withModel = false;
-//        colorByVario = false;
-//        colorBySpeed = false;
-//        colorByAlti = false;
-//        drawThermal = false;
-//        replay = false;
-//        drawScore = true;
-//        
-//        camDessus = 50;    
-//        camTimer = 5;
-//        camRecul = 150;
-//        camIncli = 80;
-//        camStep = 20;
-//        replay = false;
-//        
-//        
-//        
-//        genKml(traceKml);
-        
-    }
-    
     public void genKml(traceGPS traceKml)  {
          StringBuilder sbKml = new StringBuilder();
         
         try {
-            // Réduction de la trace
+            // reducing track points if necessary
             if (useReduc) {
             int intervalle = (int) traceKml.getDuree_Vol()/traceKml.Tb_Good_Points.size();
             if (intervalle < 2)
@@ -279,15 +238,15 @@ public class makingKml {
             }
         
             errorCode = 0;
-            headersKml genHeader = new headersKml(traceKml,this);
+            headersKml genHeader = new headersKml(traceKml,this, currLocale);
             if (genHeader.isHeaderOK())  {
                 sbKml.append(genHeader.getKmlString());
                 sbKml.append(stylesKml.getStyle());
-                trackSimple genTrack = new trackSimple(traceKml, this);
+                trackSimple genTrack = new trackSimple(traceKml, this, currLocale);
                 if (genTrack.isTrackOK()) {
                     sbKml.append(genTrack.getKmlString());                    
                     if (colorByVario || colorBySpeed || colorByAlti)  {
-                        trackColor genColored = new trackColor(traceKml,this);
+                        trackColor genColored = new trackColor(traceKml,this,currLocale);
                         sbKml.append(genColored.genDebFolder());
                         if (colorByVario) {
                             if (genColored.genColorVario()) 
@@ -311,27 +270,27 @@ public class makingKml {
                     }
                     if (drawScore) {
                         
-                        trackScore genScore = new trackScore(traceKml,this);
+                        trackScore genScore = new trackScore(traceKml,this, currLocale);
                         if (genScore.genScore())
                             sbKml.append(genScore.getKmlString());
                         else
                             errorCode = 1020;
                     }
                     if (drawThermal) {
-                        trackThermals genThermal = new trackThermals(traceKml,this);
+                        trackThermals genThermal = new trackThermals(traceKml,this, currLocale);
                         if (genThermal.genThermals())
                             sbKml.append(genThermal.getKmlString());
                         else
                             errorCode = 1022;
                     }
                     if (replay) {
-                        trackReplay genReplay = new trackReplay(traceKml,this);
+                        trackReplay genReplay = new trackReplay(traceKml,this, currLocale);
                         if (genReplay.genKmlReplay())
                             sbKml.append(genReplay.getKmlString());
                         else
                             errorCode = 1024;
                     }
-                    // Instructions de clôture du kml  in xLogfly -> kml_Z_Header_Fin
+                    // Kml closing instructions in xLogfly -> kml_Z_Header_Fin
                     sbKml.append("</Document>").append("\n");
                     sbKml.append("</kml>").append("\n");
   
@@ -343,8 +302,6 @@ public class makingKml {
             }            
         } catch (Exception e) {
             kmlOK = false;
-        } 
-        
-    }
-    
+        }         
+    }    
 }

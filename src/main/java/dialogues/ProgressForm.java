@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package dialogues;
 
@@ -21,9 +21,9 @@ import javafx.stage.StageStyle;
  *
  * @author James_D / stackoverflow
  * http://stackoverflow.com/questions/29625170/display-popup-with-progressbar-in-javafx
- * Implantation d'une progressbar qui se ferme quand le process est terminé
+ * Unlimited progress bar
  * 
- * En cas de besion un autre exemple excellent
+ * If needed an other contribution
  * http://stackoverflow.com/questions/30980138/javafx-indeterminate-progress-bar-while-doing-a-process
  * 
  */

@@ -1,8 +1,8 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package systemio;
 
@@ -11,19 +11,19 @@ import java.io.File;
 /**
  *
  * @author Gil Thomas logfly.org
+ * Temporary files utility
+ * 
  */
 public class tempacess {
     
-    /* Dans les versions précédentes de Logfly, il y a eu des problèmes de chemin 
-    *  ou de droit d'accès pour l'écriture de fichiers temporaires.
-    *  Dans un post, il était expliqué que les folders utilisés ci dessous ne posaient pas de problèmes
-    *  A voir à l'épreuve du feu...
+    /* in xLogfly there was some problems with writing temp files path or access rights
+    *  We found a post where some folders should not be a problem    
     */
     
     /**
-     * avec fPref = tmp et fExt = txt, on obtient un nom de fichier temporaire avec l'extension demandée
+     * with fPref = tmp and fExt = txt, we will have a file with required extension
      *      f.getAbsolutePath() -> File path: C:\Users\TP\AppData\Local\Temp\tmp2447618135336474361.txt
-     * avec f = File.createTempFile(fPref, null), on obtient un nom de fichier temporaire avec l'extension tmp
+     * with f = File.createTempFile(fPref, null), we will have a file with tmp extension
      *      f.getAbsolutePath() -> File path: C:\Users\TP\AppData\Local\Temp\tmp1783337266599428081.tmp         
      * @param fPref
      * @param fExt
@@ -44,12 +44,12 @@ public class tempacess {
     }
        
     /**
-     *  Destiné à des fichiers temporaires non destinés à l'utilisateur final
-     *  Demande un fichier assigné pour le dossier et le nom passés en paramètre
-     *  Sur Mac on obtiendra /Users/Gil/Library/Application Support/dName/fName
-     *  Sur Windows Utilisateurs\Users\Appdata\Local\dName\fName
-     *  Pas de problèmes de droits parait il ...
-     *  La finalité est de récupérer un path, le fichier n'est pas créé
+     *  for internal temporary files
+     *  Ask for a file in folder parameter an name parameter
+     *  On Mac we will have /Users/Gil/Library/Application Support/dName/fName
+     *  On Windows Windows Utilisateurs\Users\Appdata\Local\dName\fName
+     *  Apparently, no right access... 
+     *  Goal is a path, file is not created
      * @param dName
      * @param fName
      * @return 
@@ -57,10 +57,10 @@ public class tempacess {
     public static File getAppFile(String dName, String fName)  { return new File(getAppDir(dName), fName); }
 
 
-    // Demande un chemin complet pour le fichier en paramètre
+    // Ask for an absolute path with file parameter
     public static File getAppDir(String dName)  { return getAppDataDir(dName, true); }
 
-    // Assigne un chemin complet au fichier
+    // Assign an absolute path
     public static File getAppDataDir(String dName, boolean doCreate)
     {
         // Get user home + AppDataDir (platform specific) + name (if provided)

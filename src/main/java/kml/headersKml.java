@@ -1,14 +1,14 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package kml;
 
 import igc.pointIGC;
 import java.time.format.DateTimeFormatter;
-import javax.management.StringValueExp;
+import java.util.Locale;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -18,7 +18,8 @@ import trackgps.traceGPS;
  *
  * @author gil
  * 
- * Nom des variables héritées d'xLogfly pour faciliter la récupération du code
+ * Header generation of kml file
+ * Variables names herited from xLogfly for easy translation of the code
  * 
  */
 public class headersKml {
@@ -30,9 +31,6 @@ public class headersKml {
     // Localization
     private I18n i18n; 
     
-    // Paramètres de configuration
-    configProg myConfig;
-    
     public boolean isHeaderOK() {
         return headerOK;
     }  
@@ -41,11 +39,9 @@ public class headersKml {
         return kmlString;
     }        
     
-    public headersKml(traceGPS pTrace, makingKml pMakingKml) {    
+    public headersKml(traceGPS pTrace, makingKml pMakingKml,Locale currLocale) {    
         headerOK = false;
-        // **** i18n = I18nFactory.getI18n(logfly.Logfly.class.getClass(),myConfig.getLocale());
-        // pour debug
-        i18n = I18nFactory.getI18n(getClass());
+        i18n = I18nFactory.getI18n("","lang/Messages",headersKml.class.getClass().getClassLoader(),currLocale,0);
         genHeader(pTrace,pMakingKml);
     }    
           
@@ -54,20 +50,20 @@ public class headersKml {
         StringBuilder res = new StringBuilder();
         
         try {
-            // Ecriture de l'en tête XML
+            // XML header
             res.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append(RC);
             res.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\"").append(RC);
             // This namespace URI must be added to the <kml> element in any KML file using gx-prefixed elements:
             res.append(" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">").append(RC);  
             res.append("<Document>").append(RC);
             res.append("     <open>1</open>").append(RC);
-            // On génère le nom global du document
+            // global name
             if (KmlTrace.getsPilote() != "") 
                 res.append("     <name>").append(KmlTrace.getsPilote()).append("</name>").append(RC);
             else
                 res.append("     <name>Pilot X</name>").append(RC);
 
-            // Génération du panneau descriptif
+            // Descriptive Panel
             res.append("     <description><![CDATA[<table cellpadding=\"1\" cellspacing=\"1\">").append(RC);
             res.append("        <tr bgcolor=\"#dddddd\\\"><th align=\"right\">").append(i18n.tr("Nom Pilote")).append("</th><td>").append(KmlTrace.getsPilote()).append("</td></tr>").append(RC);
             res.append("        <tr bgcolor=\"#ffffff\"><th align=\"right\">").append("Voile").append("</th><td>").append(KmlTrace.getsVoile()).append("</td></tr>").append(RC);
@@ -93,18 +89,18 @@ public class headersKml {
                 res.append("        <tr bgcolor=\"#ffffff\"><th align=\"right\">").append(i18n.tr("Alt Attero GPS")).append("</th><td>").append(String.valueOf(KmlTrace.getAlt_Attero_GPS())).append(" m</td></tr>").append(RC);
             }
 
-            // Pour les valeurs qui suivent, On élimine les vérifications faites dans xLogfly
-            // avec des chaines comme -NAN(000).00, -INF.00 ou -1.#J qui faisaient planter l'affichage du kml
-            // en principe, nous ne devrions pas avoir le problème avec String.format
-            // Gain max         
+            // in xLogfly, we must check values to avoid some strings like -NAN(000).00, -INF.00 ou -1.#J 
+            // They crashed kml display
+            // Normally with String.format, we don't need to check
+            // Max gain          
             res.append("        <tr bgcolor=\"#ffffff\"><th align=\"right\">").append(i18n.tr("Gain max")).append("</th><td>").append(String.valueOf(KmlTrace.getBestGain())).append("m</td></tr>").append(RC);
-            // Vario Max
+            // Max vario 
             pointIGC ptVarioMax = KmlTrace.getVario_Max();                    
             res.append("        <tr bgcolor=\"#dddddd\"><th align=\"right\">").append(i18n.tr("Vario max")).append("</th><td>").append(String.format("%2.2f",ptVarioMax.Vario)).append(" m/s</td>").append(RC);
-            // Vario Mini
+            // Mini vario
             pointIGC ptVarioMini = KmlTrace.getVario_Mini();
             res.append("        <tr bgcolor=\"#ffffff\"><th align=\"right\">").append(i18n.tr("Vario mini")).append("</th><td>").append(String.format("%2.2f",ptVarioMini.Vario)).append(" m/s</td></tr>").append(RC);
-            // Vitesse Max
+            // Max speed
             pointIGC ptVitMax = KmlTrace.getVit_Max();        
             res.append("        <tr bgcolor=\"#dddddd\"><th align=\"right\">").append(i18n.tr("Vitesse max")).append("</th><td>").append(String.format("%3.2f",ptVitMax.Vitesse)).append(" km/h</td></tr></table>").append(RC);
 

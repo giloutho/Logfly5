@@ -1,11 +1,12 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package dialogues;
 
+import java.util.Locale;
 import javafx.scene.control.Alert;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -13,14 +14,21 @@ import org.xnap.commons.i18n.I18nFactory;
 /**
  *
  * @author Gil Thomas logfly.org
- *  Toutes les explications sur http://code.makery.ch/blog/javafx-dialogs-official/
+ * from http://code.makery.ch/blog/javafx-dialogs-official/
  */
 public class alertbox {
     
-    private I18n i18n = I18nFactory.getI18n(alertbox.class.getClass());
+    private I18n i18n;
     
+    public alertbox(Locale currLocale)  {
+        i18n = I18nFactory.getI18n("","lang/Messages",alertbox.class.getClass().getClassLoader(),currLocale,0);
+    }
+    
+    /**
+     * Display an error message in a dialog box
+     * @param msg 
+     */
     public void alertError (String msg)  {
-        // On extraiera la langue à employer d'un fichier de config
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(i18n.tr("Erreur programme"));
         alert.setHeaderText(null);
@@ -29,14 +37,12 @@ public class alertbox {
     }
     
     /**
-     * Renvoie le libellé d'une erreur après recherche dans une table
-     * On garde des nombres inférieurs pour des erreurs système génériques
-     * A partir de 1000 ce sont des codes Logfly précis
-     * Grâce à cette procédure, la procédure qui renvoie l'erreur n'est pas obligé d'embarquer i18n
+     * Display text error from a table 
+     * lower numbers reserved for system errors
+     * from 1000, this is special Logfly error codes
      * @param noError 
      */
     public void alertNumError (int noError)  {
-        // On extraiera la langue à employer d'un fichier de config
         
         String msg;
         Alert.AlertType typeAlert = Alert.AlertType.ERROR;
@@ -69,6 +75,9 @@ public class alertbox {
             case 8:    
                 msg = i18n.tr("Problème de chargement de la ressource");                          
                 break;
+            case 9:    
+                msg = i18n.tr("Impossible de créer le ficher temporaire");                          
+                break;
             case 102:    
                 msg = i18n.tr("Problème de lecture sur le carnet de vol");                          
                 break;
@@ -79,31 +88,31 @@ public class alertbox {
                 msg = i18n.tr("JSON Score incorrect...");                          
                 break;
             case 1012:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace simple");                          
                 break;
             case 1014:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace colorée par vario");                          
                 break;
             case 1016:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace colorée par altitude");                          
                 break;
             case 1018:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace colorée par vitesse");                          
                 break;
             case 1020:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace du score");                          
                 break;
             case 1022:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace des thermiques");                          
                 break;
             case 1024:
-                // Generation Kml
+                // Kml generation
                 msg = i18n.tr("Erreur pendant la génération de la trace du replay");                          
                 break;
             case 1030:                
@@ -122,9 +131,11 @@ public class alertbox {
         alert.showAndWait();
     }
     
-    public void alertInfo (String msg)  {
-        // On extraiera la langue à employer d'un fichier de config
-        i18n = I18nFactory.getI18n(alertbox.class.getClass());
+    /**
+     * Display an information message in a dialog box
+     * @param msg 
+     */
+    public void alertInfo (String msg)  {       
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(i18n.tr("Information importante"));
         alert.setHeaderText(null);

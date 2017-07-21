@@ -1,12 +1,18 @@
-/*
+/* 
  * Copyright Gil THOMAS
- * Ce fichier fait partie intégrante du projet Logfly
- * Pour tous les détails sur la licence du projet Logfly
- * Consulter le fichier LICENSE distribué avec le code source
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
  */
 package igc;
 
 import java.time.LocalDateTime;
+
+/**
+ *
+ * @author gil
+ * Properties of an IGC point and utilities
+ */
 
 public class pointIGC {
     public int AltiBaro;
@@ -102,16 +108,16 @@ public class pointIGC {
     public void setLatitudeDMS(int pDeg, double pMin, double pSec, String pHem)
     {
         Latitude = pDeg+(((pMin*60)+(pSec))/3600);
-        // Si hémisphère Sud on passe en négatif
+        // if south hemisphere -> negative
         if (pHem.equals("S")) Latitude = Latitude * - 1;
     }
     
      public void setLatitudeSec(int pDeg, int pMin, String pHem)
      {
         Lat_Sec = 60000*pDeg+pMin;
-        // Si hémisphère Sud on passe en négatif
+        // if south hemisphere -> negative
         if (pHem.equals("S")) Lat_Sec = Lat_Sec * - 1;;
-        // On profite de la manip pour calculer les sinus et cosinus (ligne 409 dans olc)
+        // At the same time, sinus and cosine are computed
         double _Lat;
         _Lat = Math.PI * Lat_Sec /(180 * 60000);
         Sin_Lat_Rad = Math.sin(_Lat);
@@ -121,14 +127,14 @@ public class pointIGC {
       public void setLongitudeDMS(int pDeg, double pMin, double pSec, String pMer)
       {
         Longitude = pDeg+(((pMin*60)+(pSec))/3600);
-        // Si on est en Ouest on passe en négatif
+        // if West -> negative
         if (pMer.equals("W")) Longitude = Longitude * - 1;
       }
       
       public void setLongitudeSec(int pDeg, int pMin, String pMer)
       {
             Long_Sec = 60000*pDeg+pMin;
-            // Si on est en Ouest on passe en négatif
+            // if West -> negative
             if (pMer.equals("W")) Long_Sec = Long_Sec * - 1;
             Long_Rad = Math.PI * Long_Sec /(180 * 60000);
       }
