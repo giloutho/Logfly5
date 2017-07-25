@@ -45,7 +45,7 @@
                         <Insets right="10.0" top="10.0" />
                      </HBox.margin>
                   </ChoiceBox>
-                  <Button fx:id="btnGo" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#LectureGPS" prefHeight="30.0" prefWidth="30.0" text="fStart" visible="false">
+                  <Button fx:id="btnGo" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#lectureGPS" prefHeight="30.0" prefWidth="30.0" text="fStart" visible="false">
                      <HBox.margin>
                         <Insets right="5.0" top="10.0" />
                      </HBox.margin>
@@ -77,7 +77,7 @@
                               <Insets right="10.0" top="10.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="btnVisu" mnemonicParsing="false" onAction="#showTrack" text="fVisualisation simple">
+                        <Button fx:id="btnVisu" mnemonicParsing="false" onAction="#askOneTrack" text="fVisualisation simple">
                            <HBox.margin>
                               <Insets right="10.0" top="10.0" />
                            </HBox.margin>

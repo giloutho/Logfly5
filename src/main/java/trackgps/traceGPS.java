@@ -35,12 +35,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.TimeZone;
+import settings.configProg;
 import systemio.textio;
 
 public class traceGPS {
     // variables names from xLogfly
-    private static final int APP_INTEGRATION = 15;
-    
+    private int APP_INTEGRATION;    
     private String pathFichier;
     private String FicIGC;
     private String FicGPX;
@@ -106,6 +106,9 @@ public class traceGPS {
     public List<thermique> Tb_Thermique = new ArrayList<thermique>();
     public ArrayList<Integer> Score_Tb_Balises = new ArrayList<Integer>();
     
+    // Needed for personal integration value and probably others parameters in the future
+    configProg myConfig;
+    
     /**
      * Track is a file
      * @param pFile 
@@ -113,10 +116,15 @@ public class traceGPS {
      * @param pPath
      * @param totalPoints 
      */
-    public traceGPS(File pFile, String pType, Boolean totalPoints)
+    public traceGPS(File pFile, String pType, Boolean totalPoints, configProg pConfig)
     {
         Decodage = false;
         Scored = false;
+        if (myConfig.getIntegration() > 0) {
+            APP_INTEGRATION = myConfig.getIntegration();
+        } else {
+            APP_INTEGRATION = 15;
+        }
         avecPoints = totalPoints;
         textio fread = new textio();                                    
         String pFichier = fread.readTxt(pFile);
@@ -143,10 +151,15 @@ public class traceGPS {
      * @param pPath
      * @param totalPoints 
      */
-    public traceGPS(String pFichier, String pType, String pPath, Boolean totalPoints)
+    public traceGPS(String pFichier, String pType, String pPath, Boolean totalPoints, configProg pConfig)
     {
         Decodage = false;
         Scored = false;
+        if (myConfig.getIntegration() > 0) {
+            APP_INTEGRATION = myConfig.getIntegration();
+        } else {
+            APP_INTEGRATION = 15;
+        }
         avecPoints = totalPoints;
         switch (pType) {
             case "IGC":
@@ -587,10 +600,12 @@ public class traceGPS {
         if ( !Valid_Trace){
             // crash or no G record
             for (int k = 0; k < Lg_sLine; k++) {
-                DebChar = sLine[k].substring(0,1);
-                if (DebChar.equals("B") && sLine[k].length() > 23 ) {
-                    Valid_Trace = true;
-                    break;
+                if (sLine[k].length() > 1) {
+                    DebChar = sLine[k].substring(0,1);
+                    if (DebChar.equals("B") && sLine[k].length() > 23 ) {
+                        Valid_Trace = true;
+                        break;
+                    }
                 }
             }
       
@@ -737,7 +752,9 @@ public class traceGPS {
                             Point1.setComment("");
                             Point1.setAltiBaro(Alti_Baro);
                             Point1.setAltiGPS(Alti_GPS);
-                            if (Point1.AltiGPS <= 0) Point1.setComment("ZERO");
+                            // With Flytec problems, remove points with null GPS alt is not a good solution
+                            // the next line is temporarily escaped
+                            //if (Point1.AltiGPS <= 0) Point1.setComment("ZERO");
                             // make a comparison of GPS lat and baro alt
                             if (Point1.AltiBaro > 0 && Point1.AltiGPS > 0 && Math.abs(Point1.AltiGPS -  Point1.AltiBaro) > 500) Point1.setComment("BAD");
                             // Cf. track 02/08/11 where GPS alt = 46500...
@@ -850,7 +867,9 @@ public class traceGPS {
                             } 
                            if (!"DOUBLON".equals(Point1.Comment))   {
                                 // outliers management            
-                                if (Point1.Comment == "ZERO" || Point1.Comment == "DIST" || Point1.Comment == "BAD" || Point1.Comment == "PEV")
+                                // A Zero point [non valid GPS alt] is not necessarily an outlier 
+                                //if (Point1.Comment == "ZERO" || Point1.Comment == "DIST" || Point1.Comment == "BAD" || Point1.Comment == "PEV")
+                                if (Point1.Comment == "DIST" || Point1.Comment == "BAD" || Point1.Comment == "PEV")
                                     NbPointsAberr++;
                                 Tb_Tot_Points.add(Point1);              
                                 TotPoint++;

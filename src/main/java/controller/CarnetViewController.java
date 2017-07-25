@@ -354,7 +354,7 @@ public class CarnetViewController  {
             ResultSet rs =  myConfig.getDbConn().createStatement().executeQuery(sReq);
             if (rs != null)  { 
                 if (rs.getString("V_IGC") != null && !rs.getString("V_IGC").equals(""))  {                        
-                    currTrace = new traceGPS(rs.getString("V_IGC"), "IGC","",true);   // String pFichier, String pType, String pPath
+                    currTrace = new traceGPS(rs.getString("V_IGC"), "IGC","",true, myConfig);   // String pFichier, String pType, String pPath
                     if (currTrace.isDecodage()) {
                         // Like in xLogfly we put glider and site
                         if (!rs.getString("V_Engin").equals(currTrace.getsVoile()))
@@ -434,7 +434,7 @@ public class CarnetViewController  {
     private void displayNoIGC(ResultSet rs) throws SQLException {
         Image dbImage = null;
                 
-        currTrace = new traceGPS(null, "NIL","",true);  
+        currTrace = new traceGPS(null, "NIL","",true, myConfig);  
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");       
         currTrace.setDate_Vol(LocalDateTime.parse(rs.getString("V_Date"), formatter)); 
         currTrace.setDT_Deco(LocalDateTime.parse(rs.getString("V_Date"), formatter));          

@@ -101,7 +101,7 @@ public class TraceViewController {
         fileChooser.getExtensionFilters().add(extFilter);
         File selectedFile = fileChooser.showOpenDialog(dialogStage);        
         if(selectedFile != null){
-            extTrace = new traceGPS(selectedFile, "IGC",true);
+            extTrace = new traceGPS(selectedFile, "IGC",true, myConfig);
             if (extTrace.isDecodage()) {                 
                 map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
                 if (visuMap.isMap_OK()) {
@@ -114,10 +114,16 @@ public class TraceViewController {
                     @Override public void handle(MouseEvent e) {                        
                         clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
                     }
-            });  
+                });  
             }  else {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertError(i18n.tr("Problème de décodage du fichier"));
+                String errMsg;
+                if (extTrace.Tb_Tot_Points.size() > 0)  {             
+                    errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
+                } else {                            
+                    errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+                }
+                aError.alertError(errMsg);
             }             
         }
         
@@ -157,11 +163,18 @@ public class TraceViewController {
                 subStage.setMaximized(true);
                 subStage.show();
             }  else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);                       
-                alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
-                alert.showAndWait();   
+                alertbox aErrMap = new alertbox(myConfig.getLocale()); 
+                aErrMap.alertError(i18n.tr("Une erreur est survenue pendant la génération de la carte"));                
+            }            
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            String errMsg;
+            if (extTrace.Tb_Tot_Points.size() > 0)  { 
+                errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
+            } else {                            
+                errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
             }
-            
+            aError.alertError(errMsg);
         }
     }
     

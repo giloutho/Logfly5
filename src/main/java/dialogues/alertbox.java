@@ -120,7 +120,19 @@ public class alertbox {
                 break;
             case 1042:                
                 msg = i18n.tr("Problème sur le décodage de la photo");                          
-                break;            
+                break;    
+            case 1052:                
+                msg = i18n.tr("Pas de réponse du GPS");                          
+                break;  
+            case 1054:                
+                msg = i18n.tr("Le fichier IGC est vide");                          
+                break;  
+            case 1102:                
+                msg = i18n.tr("Problème de lecture sur le fichier des vols");                          
+                break; 
+            case 1104:                
+                msg = i18n.tr("Problème d'insertion dans le fichier des vols");                          
+                break; 
             default:
                 msg = i18n.tr("Erreur indéterminée");
         }        

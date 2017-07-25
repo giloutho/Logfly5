@@ -42,7 +42,7 @@ import model.Gpsmodel;
  */
 public class flymaster {
     
-    private final SerialComManager scm;
+    private SerialComManager scm;
     private long handle;
     private String serialPortName;
     private String deviceType;
@@ -63,7 +63,7 @@ public class flymaster {
     
     public flymaster() throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
-        scm = new SerialComManager();       
+        scm = null;     
     }
 
     public String getDeviceType() {
@@ -97,12 +97,14 @@ public class flymaster {
             listPFM = new ArrayList<String>();
             // open and configure serial port
             serialPortName = namePort;
+            scm = new SerialComManager();
             handle = scm.openComPort(serialPortName, true, true, true);
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
 
             // Prepare serial port for burst style data read of 500 milli-seconds timeout
             scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            // ID GPS request + raw flight list (true)
             if (getDeviceInfo(true)) {
                 res = true;
             }   
@@ -124,6 +126,7 @@ public class flymaster {
         try {
             // open and configure serial port
             serialPortName = namePort;
+            scm = new SerialComManager();
             handle = scm.openComPort(serialPortName, true, true, true);            
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
@@ -154,17 +157,12 @@ public class flymaster {
     private boolean getDeviceInfo(boolean listPFM) throws Exception {
         boolean res = false;
 
-        byte[] buffer = new byte[4096];
-        int offset = 0;
-        int totalNumOfBytesReadTillNow = 0;
-        int numOfBytesRead = 0;
-        int numOfBytesRequested = 0;
-
         scm.writeString(handle, "$PFMSNP,\n", 0);
 
         // give some time to GPS to send data to computer. We do not depend upon 100 because we also used 
         Thread.sleep(100);
 
+        res = false;
         // Answer must be something like : $PFMSNP,GpsSD,,02988,1.06j, 872.20,*3C
         String data = scm.readString(handle);
         if (data != null && !data.isEmpty()) {
@@ -183,8 +181,6 @@ public class flymaster {
         
         return res;
     }
-    
-   
     
     /**
      * raw flight list decoding  [$PFMLST,025,025,28.06.16,12:33:05,01:15:10*35]

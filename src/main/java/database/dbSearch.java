@@ -30,6 +30,7 @@ public class dbSearch {
     
     // Localization
     private I18n i18n;
+    private String errSearch;
 
     // settings
     configProg myConfig;
@@ -38,6 +39,11 @@ public class dbSearch {
         myConfig = pConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",dbSearch.class.getClass().getClassLoader(),myConfig.getLocale(),0);
     }
+
+    public String getErrSearch() {
+        return errSearch;
+    }
+    
     
     /**
      * Search if a flight exist in current database
@@ -128,15 +134,15 @@ public class dbSearch {
                         }
                         int dbDuree = rs.getInt("V_Duree");        
                         if (Math.abs(totSec - dbDuree) < 60 && diffMin) {
-                          res = true;
-                          break;
+                            errSearch = null;
+                            res = true;
+                            break;
                         }
                     }
                 }                
             }
         } catch (Exception e) {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(e.getClass().getName() + ": " + e.getMessage()); 
+            errSearch = e.getClass().getName() + ": " + e.getMessage();          
         }
         
         return res;        

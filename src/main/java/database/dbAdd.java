@@ -39,8 +39,8 @@ public class dbAdd {
      * @param pTrace
      * @return 
      */
-    public boolean addVolCarnet(traceGPS pTrace) {
-        boolean res = false;
+    public int addVolCarnet(traceGPS pTrace) {
+        int res = -1;
         String sReq;
         String sQuote ="'";
         String sQuoteVirg ="',";
@@ -83,23 +83,16 @@ public class dbAdd {
                     sReqInsert.append(sQuote).append(String.format("%d",(long)pTrace.getUtcOffset()*60)).append(sQuoteVirg);
                     sReqInsert.append(sQuote).append(pTrace.getsVoile()).append(sQuote).append(")");   
                     try {
-                        myConfig.getDbConn().createStatement().executeUpdate(sReqInsert.toString());                
-                        res = true;
+                        myConfig.getDbConn().createStatement().executeUpdate(sReqInsert.toString());        
+                        System.out.println("Insertion OK");
+                        res = 0;
                     } catch ( Exception e ) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle(i18n.tr("Problème d'insertion dans la base de données"));            
-                        String s = e.getClass().getName() + ": " + e.getMessage();
-                        alert.setContentText(s);
-                        alert.showAndWait();                              
+                        res = 1104;   // Insertion error in flights file                                           
                     }    
                 }
             }            
         } catch ( Exception e ) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture sur le fichier des vols"));            
-            String s = e.getClass().getName() + ": " + e.getMessage();
-            alert.setContentText(s);
-            alert.showAndWait();                              
+            res = 1102;    // I/O access error in flights file           
         }
         return res;
     }
