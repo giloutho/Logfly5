@@ -20,9 +20,17 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import java.util.logging.Level;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import littlewins.winLog;
+import littlewins.winPoints;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 
 /**
  *
@@ -86,7 +94,13 @@ public class RootLayoutController {
         mnTrace.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(4);
             mainApp.showTraceview();
-        });               
+        });  
+        btnSupport.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override public void handle(MouseEvent e) {                        
+                            clicTop_Menu().show(btnSupport, e.getScreenX(), e.getScreenY());
+                    }
+            });  
     }
            
     /**
@@ -139,10 +153,10 @@ public class RootLayoutController {
     /**
      * Show support window
      */
-    @FXML 
-    public void showSupport() {
-        winTrackFile myTrace = new winTrackFile("Ceci est une trace ");                                    
-    }
+//    @FXML 
+//    public void showSupport() {
+//        winTrackFile myTrace = new winTrackFile("Ceci est une trace ");                                    
+//    }
     
     /**
      * Show tools window
@@ -150,7 +164,18 @@ public class RootLayoutController {
     @FXML 
     public void showOutils() {
         alertbox myInfo = new alertbox(myConfig.getLocale());
-        myInfo.alertInfo("Module en construction");
+        myInfo.alertInfo("On est en version 5.0 release 2");
+        // debug
+        int a = 2;
+        int b = 0;
+        try {
+            int c = a/b;
+        } catch (Exception e) {
+            StringBuilder sbError = new StringBuilder();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
     }
     
     /**
@@ -210,6 +235,53 @@ public class RootLayoutController {
         }        
     }
     
+    /**
+     * Adding Context Menus, last paragraph
+    *     http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm    
+    */
+    private ContextMenu clicTop_Menu()   {
+        final ContextMenu cm = new ContextMenu();
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Envoyer un mail"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                sendMailSupport();
+            }            
+        });
+        cm.getItems().add(cmItem0);
+        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Fichier log"));
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               displayLog();
+            }
+        });
+        cm.getItems().add(cmItem1);
+        
+        MenuItem cmItemSup = new MenuItem(i18n.tr("Base données"));        
+        cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                dbRepair();
+            }
+        });
+        cm.getItems().add(cmItemSup);                     
+        
+        return cm;
+    }
+    
+    private void displayLog() {
+        winLog myLog = new winLog(myConfig);        
+    }
+    
+    private void sendMailSupport() {
+        alertbox aError = new alertbox(myConfig.getLocale());
+        aError.alertInfo(i18n.tr("Non implémenté..."));                      
+    }
+    
+    private void dbRepair() {
+         alertbox aError = new alertbox(myConfig.getLocale());
+        aError.alertInfo(i18n.tr("Non implémenté..."));     
+    }
     
     public void changeCarnetView()  {  
         switchMenu(1);

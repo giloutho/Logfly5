@@ -105,7 +105,7 @@ public class dbSearch {
         StringBuilder sReq = new StringBuilder();
         int iDepMin = Integer.parseInt((strDepMin));
         boolean diffMin;
-        
+                
         sReq.append("SELECT V_Date,V_Duree FROM Vol WHERE V_Date >= '").append(strDate);
         sReq.append(" 00:00:00' and V_Date <= '").append(strDate).append(" 23:59:59'");
         
@@ -120,9 +120,10 @@ public class dbSearch {
                     if (tbDate.length > 4) {
                         int iMin = Integer.parseInt(tbDate[4]);
                         int iDiffMin = Math.abs(iMin - iDepMin);
-                        // Cas où on a un changement d'heure -> on compare 01:59 à 02:01
-                        // A cause du 6015, où contrairement au 6020 les références de date et d'heure ne correspondent pas
-                        // à la première ligne de l'IGC, on prend 5 mn de marge
+                        // We can't compare LocalDateTime : in db this local time, in GPS depend of user settings -> unreliable 
+                        // We compute only with minute component. If hour change -> we compare 01:59 to 02:01
+                        // In Flytec 6015 and 6030, GPS start time displayed and track start point are not the same values. (few minutes)
+                        // We consider an offset of 5 mn
                         if (iDiffMin > 5) {
                             iDiffMin = 60 - iDiffMin;
                             if (iDiffMin < 6)
@@ -132,7 +133,9 @@ public class dbSearch {
                         } else {
                             diffMin = true;
                         }
-                        int dbDuree = rs.getInt("V_Duree");        
+                        int dbDuree = rs.getInt("V_Duree");
+                        // if it's a 6015 or a flytec we must correct the gps duration displayed and the logbook duration recorded
+                        totSec += iDiffMin * 60;
                         if (Math.abs(totSec - dbDuree) < 60 && diffMin) {
                             errSearch = null;
                             res = true;

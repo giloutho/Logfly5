@@ -58,6 +58,7 @@ public class dbAdd {
                     // No lauching site found, a new site must be created with takeoff coordinates
                     siteDeco = addBlankSite(pTrace.getLatDeco(),pTrace.getLongDeco(),pTrace.getAlt_Deco_GPS());
                 }
+                System.out.println("Site deco : "+siteDeco);
                 if (siteDeco != null && !siteDeco.isEmpty())  {
                     // Warning java split founded on regular expressions
                     // * is part of 12 characters must be escaped
@@ -82,6 +83,9 @@ public class dbAdd {
                     // Cast in long type is for eliminate decimals
                     sReqInsert.append(sQuote).append(String.format("%d",(long)pTrace.getUtcOffset()*60)).append(sQuoteVirg);
                     sReqInsert.append(sQuote).append(pTrace.getsVoile()).append(sQuote).append(")");   
+                    //System.out.println("*******************************************************************");
+                    //System.out.println(sReqInsert);
+                    //System.out.println("*******************************************************************");
                     try {
                         myConfig.getDbConn().createStatement().executeUpdate(sReqInsert.toString());        
                         System.out.println("Insertion OK");
@@ -92,7 +96,7 @@ public class dbAdd {
                 }
             }            
         } catch ( Exception e ) {
-            res = 1102;    // I/O access error in flights file           
+            res = 1102;    // I/O access error in flights file                     
         }
         return res;
     }

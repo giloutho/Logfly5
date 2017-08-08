@@ -6,20 +6,14 @@
  */
 package controller;
 
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.awt.Toolkit;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -27,7 +21,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -132,7 +125,7 @@ public class ConfigViewController implements Initializable {
     @FXML
     private TextField txUrlIcones;    
     @FXML
-    private TextField txVisuUpload;    
+    private TextField txVisuUpload;      
     @FXML
     private TextField txVisuGPS;    
     @FXML
@@ -168,7 +161,11 @@ public class ConfigViewController implements Initializable {
     @FXML
     private Label lbPhotoAuto;
     @FXML
-    private CheckBox checkPhoto;    
+    private CheckBox checkPhoto;
+    @FXML
+    private Label lbUpdateAuto;  
+    @FXML
+    private CheckBox checkUpdate;
     @FXML
     private Button btDiversAnnuler;
     @FXML
@@ -271,6 +268,11 @@ public class ConfigViewController implements Initializable {
         } else {
             checkPhoto.setSelected(false);
         }
+        if (myConfig.isUpdateAuto())  {
+            checkUpdate.setSelected(true);
+        } else {
+            checkUpdate.setSelected(false);
+        }
         
         // Internet Tab
         txUrlSite.setText(myConfig.getUrlLogfly());
@@ -316,6 +318,7 @@ public class ConfigViewController implements Initializable {
         myConfig.setLocale(chbLang.getSelectionModel().getSelectedIndex());
         myConfig.setPathImport(lbImpFolder.getText());
         myConfig.setPhotoAuto(checkPhoto.isSelected());
+        myConfig.setUpdateAuto(checkUpdate.isSelected());
         // Onglet Internet
         myConfig.setUrlLogfly(txUrlSite.getText());
         myConfig.setUrlIcones(txUrlIcones.getText());
@@ -640,6 +643,7 @@ public class ConfigViewController implements Initializable {
         btPilotOK.setText(i18n.tr("Valider"));
         lbNavigateur.setText(i18n.tr("VisuGPS dans le navigateur"));
         lbDefaultMap.setText(i18n.tr("Carte par défaut"));
+        lbLatitude.setText(i18n.tr("Latitude"));
         lbLongitude.setText(i18n.tr("Longitude"));
         lbAberrants.setText(i18n.tr("Seuil points aberrants"));
         btMapOK.setText(i18n.tr("Valider"));
@@ -647,6 +651,7 @@ public class ConfigViewController implements Initializable {
         lbLanguage.setText(i18n.tr("Langue"));
         lbImport.setText(i18n.tr("Dossier d'import"));
         lbPhotoAuto.setText(i18n.tr("Affichage automatique des photos"));
+        lbUpdateAuto.setText(i18n.tr("Mise à jour automatique"));
         btDiversAnnuler.setText(i18n.tr("Annuler"));
         btDiversOk.setText(i18n.tr("Valider"));
         lbLogfly.setText(i18n.tr("Url Site Logfly"));

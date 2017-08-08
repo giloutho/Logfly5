@@ -45,7 +45,7 @@
                         <Insets right="10.0" top="10.0" />
                      </HBox.margin>
                   </ChoiceBox>
-                  <Button fx:id="btnGo" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#lectureGPS" prefHeight="30.0" prefWidth="30.0" text="fStart" visible="false">
+                  <Button fx:id="btnGo" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#readGPS" prefHeight="30.0" prefWidth="30.0" text="fStart" visible="false">
                      <HBox.margin>
                         <Insets right="5.0" top="10.0" />
                      </HBox.margin>
@@ -67,7 +67,7 @@
                   </ImageView>
                   <HBox fx:id="buttonBar" alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" visible="false" HBox.hgrow="ALWAYS">
                      <children>
-                        <Button fx:id="btnMaj" mnemonicParsing="false" onAction="#insertionCarnet" text="fMise à jour carnet">
+                        <Button fx:id="btnMaj" mnemonicParsing="false" onAction="#insertLog" text="fMise à jour carnet">
                            <HBox.margin>
                               <Insets right="10.0" top="10.0" />
                            </HBox.margin>

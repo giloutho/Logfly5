@@ -22,15 +22,14 @@ public class trigo {
     }
     
     /**
-    * Code inspiré de cette page où il y a un paquet de trucs... http://www.movable-type.co.uk/scripts/latlong.html
-    * Erich Lerch (Flytec) calculait avec un rayon de la terre à 6360 alors que la plupart des formules sont à 6371
-    * Dans son document sur les calculs de distance, il renvoie à une page du même site http://www.movable-type.co.uk/scripts/latlong-vincenty.html
-    * qui présente une formule de calcul beaucoup plus précise
+    * Inspired by this very useful page :  http://www.movable-type.co.uk/scripts/latlong.html
+    * Erich Lerch (Flytec) computed awith an earth radius of 6360 whilst most of the other formulas use 6371
+    * In his document, he referred to  http://www.movable-type.co.uk/scripts/latlong-vincenty.html with a more accurate formula    
     * @param pLat1
     * @param pLong1
     * @param pLat2
     * @param pLong2
-    * @return Distance en mètres
+    * @return Distance in meters
     */
     public static double CoordDistance(double pLat1, double pLong1, double pLat2, double pLong2)   
     {
@@ -48,8 +47,8 @@ public class trigo {
     }
     
     /**
-     *   Adaptation de la fonction trouvée dans le source de Man's gps2ge.php
-     *   Cela donne l'azimuth du point1 vers le point 2
+     *   Adapted from Man's code in gps2ge.php
+     *   azimuth from point1 to point 2
      * @param pLat1
      * @param pLong1
      * @param pLat2

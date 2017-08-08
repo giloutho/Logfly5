@@ -6,6 +6,10 @@
  */
 package model;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -35,6 +39,8 @@ public class Carnet {
     public SimpleBooleanProperty Photo = new SimpleBooleanProperty();  
     public SimpleStringProperty camera = new SimpleStringProperty();    
     
+    private SimpleDateFormat sdfSql = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    
     public String getIdVol() {
         return idVol.get();
     }
@@ -47,9 +53,12 @@ public class Carnet {
         return date.get();
     }
     
-    public void setDate(String dateStr) {    
-        // in database, date is YYYY-MM-DD HH:MM:SS
-        date.set(dateStr.substring(0,10));
+    public void setDate(String dateStr) throws ParseException {            
+        // in database, date is YYYY-MM-DD HH:MM:SS        
+        java.util.Date dDate = sdfSql.parse(dateStr);
+        Locale osLocale = Locale.getDefault();
+        DateFormat dtloc = DateFormat.getDateInstance(DateFormat.SHORT,osLocale);
+        date.set(dtloc.format(dDate));
     }
 
     public String getHeure() {

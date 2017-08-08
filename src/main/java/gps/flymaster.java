@@ -10,6 +10,7 @@ import com.serialpundit.core.util.SerialComUtil;
 import com.serialpundit.serial.SerialComManager;
 import static geoutils.convigc.Lat_Dd_IGC;
 import static geoutils.convigc.Long_Dd_IGC;
+import static gps.gpsutils.bytesToHex;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,16 +22,20 @@ import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
+import sun.util.logging.PlatformLogger;
+import systemio.mylogging;
 
 /**
  *
- * @author Rishi Gupta https://github.com/RishiGupta12/SerialPundit
+ * Communication with Flymaster SD series
+ * @author Gil and Rishi Gupta https://github.com/RishiGupta12/SerialPundit
  * without Rishi help, this class doesn't exist
  * 
  * Init           : call GPS id and raw flight list. True if GPS answers
- *                  serial port must be closed
+ *                  serial port is closed
  * IniForFlights  : serial port closing in Init requires to open again the serial port (without flight list request)
  * getListPFMLST  : raw flight list stored in a ArrayList
  * getListFlights : called by GPSViewController for extracted flight list 
@@ -60,6 +65,7 @@ public class flymaster {
     private StringBuilder txtIGC;
     private boolean genIGC;
     private String finalIGC;
+    private StringBuilder sbError;
     
     public flymaster() throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
@@ -111,7 +117,9 @@ public class flymaster {
             // Closing port mandatory
             scm.closeComPort(handle);
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
         return res;        
     }
@@ -137,7 +145,9 @@ public class flymaster {
                 res = true;
             }   
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
         return res;        
     }
@@ -146,7 +156,9 @@ public class flymaster {
         try {
             scm.closeComPort(handle);
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }        
     }
     
@@ -196,7 +208,7 @@ public class flymaster {
                 Gpsmodel oneFlight = new Gpsmodel();                                             
                 oneFlight.setChecked(false);
                 oneFlight.setDate(idVol[3]);
-                // Specific download instruction of this flight is builded
+                // Building specific download instruction of this flight
                 StringBuilder sbVol = new StringBuilder();
                 sbVol.append("$PFMDNL,");
                 String[] tbDate = idVol[3].split("\\.");
@@ -248,16 +260,15 @@ public class flymaster {
         }
 
         if(totalNumOfBytesReadTillNow > 0) {
-                while(b < totalNumOfBytesReadTillNow) {
-                        if((buffer[b] == (byte)'\r') && (buffer[b + 1] == (byte)'\n')) {
-                            listPFM.add(new String(buffer, a, (b - a)));
-                            a = b + 2;
-                        }
-                        b++;
-                }
-        }else {
-                System.out.println("No flights available in device memory !");
-                return;
+            while(b < totalNumOfBytesReadTillNow) {
+                    if((buffer[b] == (byte)'\r') && (buffer[b + 1] == (byte)'\n')) {
+                        listPFM.add(new String(buffer, a, (b - a)));
+                        a = b + 2;
+                    }
+                    b++;
+            }
+        } else {
+            return;
         }
     }
     
@@ -281,7 +292,9 @@ public class flymaster {
                 res = genIGC;
             }
         } catch (Exception e) {
-            
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
         }                
         return res;
     }
@@ -368,8 +381,10 @@ public class flymaster {
         raw = rawData.get(rawData.size() - 1);
         for(int x=0; x < 8; x++) {
                 if(verify[x] != raw[x]) {
-                        System.out.println("Checksum failed !");
-                        System.out.println("Calculated checksum : " + SerialComUtil.byteArrayToHexString(verify, ":"));
+                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                        sbError.append("\r\n").append("Checksum failed !").append("\r\n");
+                        sbError.append("Calculated checksum : " + SerialComUtil.byteArrayToHexString(verify, ":"));
+                        mylogging.log(Level.WARNING, sbError.toString());                       
                         return;
                 }
         }
@@ -433,7 +448,7 @@ public class flymaster {
                                 break;
 
                         case SIZE_DECLARE_STORED:
-                                System.out.println("TSK," + (raw[index + 1] & 0xFF));
+                                //System.out.println("TSK," + (raw[index + 1] & 0xFF));
                                 break;
 
                         default:
@@ -590,25 +605,7 @@ public class flymaster {
         
         return res;
     }
-    
-    /**
-     * digital signature generation
-     * @param b
-     * @return 
-     */
-    private static String bytesToHex(byte[] b) {
-        // Initialy letters were in upperercase
-        // for xLogfly compatibility, they are converted in lowercase
-        char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-        StringBuffer buf = new StringBuffer();
-        for (int j=0; j<b.length; j++) {
-           buf.append(hexDigit[(b[j] >> 4) & 0x0f]);
-           buf.append(hexDigit[b[j] & 0x0f]);
-        }
-        return buf.toString();
-    }
-    
+            
     /**
      * called by makeIGC POSitions arraylist decoding
      */
@@ -646,7 +643,7 @@ public class flymaster {
         try {
             // En tête IGC
             if (deviceType != null) {
-                txtIGC.append("AXLF ").append(deviceType).append(" S/N ").append(deviceSerial).append(RC);
+                txtIGC.append("AXLF ").append(deviceType).append(" S/N ").append(deviceSerial).append(" ").append(deviceFirm).append(RC);
             } else {
                 txtIGC.append("AXLF FLYMASTER").append(RC);
             }
@@ -667,14 +664,16 @@ public class flymaster {
             byte[] output = md.digest();
             // Ajout des records type L (Enregistrements finaux de la trace IGC)    
             // Numéro de version a ajouter plus tard
-            txtIGC.append("LXLF Logfly version 5.0").append(RC);          
+            txtIGC.append("LXLF Logfly 5").append(RC);     // To do Current version number     
             txtIGC.append("LXLF Downloaded ").append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))).append(RC);
             // Insertion du G Record
             txtIGC.append("G").append(bytesToHex(output)).append(RC);
             genIGC = true;
             finalIGC = txtIGC.toString();            
         } catch (Exception e) {
-            
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
         }                
     }        
     
@@ -713,15 +712,16 @@ public class flymaster {
                     oneFlight.setCol4(idVol[5]);
                     oneFlight.setCol5(sbVol.toString());
                     listFlights.add(oneFlight);
-                    System.out.println(idVol[3]+" "+idVol[4]+" "+idVol[5]+" "+sbVol.toString());
-                }     
-                
+                }                     
             }            
-            System.out.println("listFlights size : "+listFlights.size());
 	} catch (FileNotFoundException ex) {
-		System.out.println(ex.getMessage());
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(ex.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
 	} catch (IOException ex) {
-		System.out.println(ex.getMessage());
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(ex.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
 	}   
         
     }    

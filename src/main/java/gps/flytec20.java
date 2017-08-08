@@ -7,6 +7,7 @@
 package gps;
 
 import com.serialpundit.serial.SerialComManager;
+import static gps.gpsutils.ajouteChecksum;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javafx.collections.ObservableList;
@@ -16,6 +17,13 @@ import model.Gpsmodel;
  *
  * @author Rishi Gupta https://github.com/RishiGupta12/SerialPundit
  * without Rishi help, this class doesn't exist
+ *  
+ * Init           : call GPS id and raw flight list. True if GPS answers
+ *                  serial port is closed
+ * IniForFlights  : requires to open again the serial port (without flight list request)
+ * getListPBRTL   : raw flight list stored in a ArrayList
+ * getListFlights : called by GPSViewController for extracted flight list 
+ * getIGC         : called by GPSViewController for extracted flight track in IGC format
  * 
  */
 public class flytec20 {
@@ -27,6 +35,7 @@ public class flytec20 {
     private String deviceSerial;
     private String deviceFirm;
     private ArrayList<String> listPBR;
+    private StringBuilder sbError;
 
     public String getDeviceType() {
         return deviceType;
@@ -43,7 +52,7 @@ public class flytec20 {
     
     
     public flytec20() throws Exception {
-        // Create and initialize serialpundit. Note 'private final' word before variable name.
+        // Create and initialize serialpundit
         scm = null;
     }
     
@@ -74,7 +83,6 @@ public class flytec20 {
                 res = false;
             }
         }    
-        System.out.println("GetdeviceInfo : "+deviceType+" "+deviceSerial+"\r\n");
         if (res && listPFM) getListPBRTL();                           
         
         return res;
@@ -98,7 +106,7 @@ public class flytec20 {
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.XON_XOFF, (char) 0x11, (char)0x13, false, false);                      
 
             // Prepare serial port for burst style data read of 500 milli-seconds timeout
-            //   scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            //scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
             // ID GPS request + raw flight list (true)
             if (getDeviceInfo(true)) {
                 res = true;
@@ -182,18 +190,16 @@ public class flytec20 {
     public String getIGC(String req)  {
         String res = null;
         try {            
-            System.out.println("Requête : "+req);
             scm.writeString(handle, req, 0);
              // give some time to GPS to send data to computer. We do not depend upon 100 because we also used 
             Thread.sleep(100);
-            String repGPS = flAnswer(scm, handle);             
+            String repGPS = flAnswer(scm, handle);
             if (repGPS.length() > 24)  {   
             // First character (XOFF) must be removed 
                 if (repGPS.charAt(0) == (char)19)  {            
                     repGPS = repGPS.substring(1);                
                 }            
-                res = repGPS;
-                System.out.println(res.substring(0, 23));                
+                res = repGPS;               
             }                        
         } catch (Exception e) {
             res = null;
@@ -203,26 +209,30 @@ public class flytec20 {
     }
     
     static String flAnswer(SerialComManager scm, long handle)  {
-        // We put a counter
+        // We put a counter to avoid a dead loop if user isn't on flight list
+        // is it a suitable solution ?
         boolean exit = false;
         byte[] data = null;
-        int index = 0;
-        String sData = "";
-        
+        int nbTrials=0;
+        String sData = "";      
         try {
             while(exit == false) {
-                data = scm.readBytes(handle);                
-                if(data != null) {
-                    for(int x=0; x < data.length; x++) {                       
-                        
+                data = scm.readBytes(handle);   
+                nbTrials++;
+                if(data != null) {   
+                    nbTrials = 0;
+                    for(int x=0; x < data.length; x++) {                                               
                         if (data[x] != 17) {
                             sData += (char)data[x];
-                            index++;
                         }else {
                             exit = true;
                             break;
                         }
                     }                        
+                } else {                    
+                    if (nbTrials > 10) {
+                        exit = true;
+                    }
                 }
             }
             
@@ -231,29 +241,7 @@ public class flytec20 {
         }
         return sData;
     }
-    
-    /**
-     * calculates checksum in the parameter string and adds this to the output 
-     * @param s
-     * @return 
-     */
-    private static String ajouteChecksum(String s) {
-        String res = null;
-        int chksum = 0;
-        char[] charArray = s.toCharArray();
-        for (int i=0; i<charArray.length; i++) {
-            switch (charArray[i]) {
-                case '$': break;
-                case '*': break;
-                default:  chksum = chksum ^ (int)charArray[i];
-            }
-            
-        }
-        res = s+Integer.toHexString(chksum);
-               
-        return res.toUpperCase();     
-    }
-    
+           
     public void closePort() {
         try {
             scm.closeComPort(handle);

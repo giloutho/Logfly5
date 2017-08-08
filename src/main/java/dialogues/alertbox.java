@@ -78,8 +78,15 @@ public class alertbox {
             case 9:    
                 msg = i18n.tr("Impossible de créer le ficher temporaire");                          
                 break;
+            case 10:    
+                msg = i18n.tr("Pas de connection internet");                          
+                break;
             case 102:    
                 msg = i18n.tr("Problème de lecture sur le carnet de vol");                          
+                break;
+            case 1000:
+                // Error in reading the parameters
+                msg = i18n.tr("Problème de lecture sur le fichier des paramètres");                          
                 break;
             case 1001:
                 msg = i18n.tr("Module Points non trouvé...");                          

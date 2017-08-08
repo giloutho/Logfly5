@@ -19,9 +19,13 @@ import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.RootLayoutController;
 import controller.TraceViewController;
+import java.util.logging.Level;
+import liveUpdate.checkUpdate;
+import liveUpdate.objects.Release;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 
 public class Main extends Application {
     private Stage primaryStage;
@@ -38,17 +42,31 @@ public class Main extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Logfly");
-             
+        this.primaryStage = primaryStage;        
+        
+        // Current version
+        Release release = new Release();
+        release.setpkgver("5.0");
+        release.setPkgrel("4");
+        
+        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel();
+        this.primaryStage.setTitle(currVersion);
+        
         // Reading settings
         myConfig = new configProg();
         myConfig.readSettings();         
                                   
         if (myConfig.isValidConfig()) {
+            myConfig.setVersion(currVersion);
             i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+            
             initRootLayout();        
-            showCarnetOverview();           
+            showCarnetOverview();    
+            try {
+                checkUpdate checkUpgrade = new checkUpdate(release, myConfig);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }            
         } else  {            
             alertbox aError = new alertbox(java.util.Locale.ENGLISH);            
             StringBuilder errMsg = new StringBuilder();
@@ -59,11 +77,13 @@ public class Main extends Application {
                 errMsg.append("Logfly.properties not read\n");
             }
             if (myConfig.isConfigDefault())  {
-                errMsg.append("CDefault settings\n");
+                errMsg.append("Default settings\n");
             } else {
                 errMsg.append("custom settings\n");
             }
-            errMsg.append("Logbook path : "+myConfig.getFullPathDb());                
+            errMsg.append("Logbook path : "+myConfig.getFullPathDb());               
+            mylogging.log(Level.SEVERE, errMsg.toString());
+            aError.alertNumError(1000);   // Error in reading the parameters
             aError.alertError(errMsg.toString());  
             System.exit(0);                            
         }

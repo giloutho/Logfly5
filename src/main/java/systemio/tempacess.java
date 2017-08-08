@@ -59,15 +59,11 @@ public class tempacess {
 
     // Ask for an absolute path with file parameter
     public static File getAppDir(String dName)  { return getAppDataDir(dName, true); }
-
+              
     // Assign an absolute path
     public static File getAppDataDir(String dName, boolean doCreate)
     {
-        // Get user home + AppDataDir (platform specific) + name (if provided)
-        String dir = System.getProperty("user.home");
-        if(isWindows) dir += File.separator + "AppData" + File.separator + "Local";
-        else if(isMac) dir += File.separator + "Library" + File.separator + "Application Support";
-        if(dName!=null) dir += File.separator + dName;
+        String dir = getTemPath(dName);       
 
         // Create file, actual directory (if requested) and return
         File dfile = new File(dir);
@@ -75,6 +71,18 @@ public class tempacess {
         return dfile;
     }
     
+    public static String getTemPath(String dName)  {
+    
+        // Get user home + AppDataDir (platform specific) + name (if provided)
+        String dir = System.getProperty("user.home");
+        if(isWindows) dir += File.separator + "AppData" + File.separator + "Local";
+        else if(isMac) dir += File.separator + "Library" + File.separator + "Application Support";
+        if(dName!=null) dir += File.separator + dName;
+        
+        return dir;
+    }
+    
+        
      // Whether Windows/Mac
     static boolean isWindows = (System.getProperty("os.name").indexOf("Windows") >= 0);
     static boolean isMac = (System.getProperty("os.name").indexOf("Mac OS X") >= 0);

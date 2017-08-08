@@ -15,7 +15,7 @@
          <children>
             <ImageView fx:id="icoLogo" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@images/Logo_Duke.png" />
+                  <Image url="@images/LogoV5.png" />
                </image>
                <VBox.margin>
                   <Insets bottom="20.0" left="30.0" top="10.0" />
@@ -139,7 +139,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button fx:id="btnSupport" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#showSupport" style="-fx-background-color: transparent;" text="Button">
+            <Button fx:id="btnSupport" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Button">
                <graphic>
                   <ImageView fx:id="icoSupport" fitHeight="16.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                      <image>

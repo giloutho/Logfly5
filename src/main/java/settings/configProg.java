@@ -46,7 +46,7 @@ public class configProg {
     private static String urlLogflyIGC;     // App.ServerURL
     private static String urlVisu;          // App.VisuURL
     private static String urlLogfly;        // App.urlSite  url du site de base de Logfly
-    private static String urlIcones;        // App.urlIcones Recup url des icônes utilisées dans les cartes Google
+    private static String urlIcones;        // App.urlIcones Recup url des icônes utilisées dans les cartes Google    
     private static String mailPass;         // App.MailPass     
     private static String lastNotif;        // App.LastNotif
     private static int idxLeague;           // App.NumLeague 
@@ -66,7 +66,8 @@ public class configProg {
     private static String lastTrace;        // App.LastTrace 
     private static String lastOpenAir;      // App.LastOpenAir    
     private static final int distDeco = 300;// distance for take off research
-    
+    private static boolean updateAuto;      // new in V5
+    private static String version;
     private static Connection dbConn;
     
     public void whichOS()  {
@@ -377,6 +378,25 @@ public class configProg {
     public static void setPhotoAuto(boolean photoAuto) {
         configProg.photoAuto = photoAuto;
     }
+   
+    public static boolean isUpdateAuto() {
+        return updateAuto;
+    }
+
+    public static void setUpdateAuto(boolean UpdateAuto) {
+        configProg.updateAuto = UpdateAuto;
+    }
+
+    public static String getVersion() {
+        return version;
+    }
+
+    public static void setVersion(String version) {
+        configProg.version = version;
+    }
+    
+    
+    
         
     /**
      * Check db connection
@@ -801,7 +821,7 @@ public class configProg {
                 urlLogflyIGC = "http://www.logfly.org/Visu/";     
                 urlVisu = "http://www.victorb.fr/visugps/visugps.html?track=";          
                 urlLogfly = "http://www.logfly.org";       
-                urlIcones = "http://www.logfly.org/download/gmap/";        
+                urlIcones = "http://www.logfly.org/download/gmap/"; 
                 mailPass = "";
                 lastNotif = "";    
                 idxLeague = 0;  // Fr
@@ -820,6 +840,7 @@ public class configProg {
                 pilotePass = "";
                 lastTrace = ""; 
                 lastOpenAir = "";
+                updateAuto = true;
                 configDefault = dbCreation(fullPathDb);            
             } else {
                 configDefault = false;
@@ -827,6 +848,9 @@ public class configProg {
         } else {
             // old settings of xLogfly read and validated
             configDefault = true; 
+            // default values for new parameters of V5 
+            updateAuto = true;
+            photoAuto = true;
         }
     }
     
@@ -859,8 +883,13 @@ public class configProg {
             // From http://stackoverflow.com/questions/1816673/how-do-i-check-if-a-file-exists-in-java
             File f = new File(searchPath);
             if(f.exists() && f.isFile()) {
-               pathConfig = searchPath;
-               res = true;
+               // Is this file empty ?  We had a case where user properties file became empty             
+               if (f.length() > 800) {
+                    pathConfig = searchPath;
+                    res = true;
+               } else {
+                  pathConfig = null; 
+               }
             }  else  {
                 pathConfig = null;
             }                                        
@@ -878,7 +907,8 @@ public class configProg {
 	FileInputStream input = null;
 
 	try {
-            input = new FileInputStream(pathConfig);           
+            input = new FileInputStream(pathConfig);       
+
             prop.load(input);           
             getAllProperties(prop);
 
@@ -953,6 +983,7 @@ public class configProg {
         prop.setProperty("pilotepass",pilotePass);
         prop.setProperty("lasttrace",lastTrace);
         prop.setProperty("lastopenair",lastOpenAir);
+        prop.setProperty("updateauto",String.valueOf(updateAuto));
     }
     
     /**
@@ -1026,7 +1057,11 @@ public class configProg {
         piloteID = prop.getProperty("piloteid");
         pilotePass = prop.getProperty("pilotepass");
         lastTrace = prop.getProperty("lasttrace");
-        lastOpenAir = prop.getProperty("lastopenair");
+        lastOpenAir = prop.getProperty("lastopenair");        
+        if (prop.getProperty("updateauto") != null)
+            updateAuto = Boolean.parseBoolean(prop.getProperty("updateauto"));
+        else
+            updateAuto = false;
     }
     
     /**

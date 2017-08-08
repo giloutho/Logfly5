@@ -47,6 +47,6 @@ jfx {
     mainClass = 'Logfly.Main'
     jfxMainAppJarName = "Logfly.jar"
     vendor = 'Gil THOMAS'
-    appName = 'Logfly'
+    appName = 'Logfly5'
     additionalAppResources = 'src/main/runlib'
 }

@@ -105,7 +105,7 @@
                         <TableView fx:id="tableVols" minWidth="-Infinity" prefHeight="530.0" prefWidth="350.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-25.0" AnchorPane.topAnchor="0.0">
                            <columns>
                               <TableColumn fx:id="imgCol" editable="false" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" sortable="false" />
-                              <TableColumn fx:id="dateCol" maxWidth="90.0" minWidth="90.0" prefWidth="90.0" text="fDate" />
+                              <TableColumn fx:id="dateCol" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" text="fDate" />
                               <TableColumn fx:id="heureCol" editable="false" maxWidth="55.0" minWidth="55.0" prefWidth="55.0" sortable="false" text="fHeure" />
                               <TableColumn fx:id="dureeCol" maxWidth="62.0" minWidth="62.0" prefWidth="62.0" text="fDurée" />
                               <TableColumn fx:id="siteCol" maxWidth="160.0" minWidth="160.0" prefWidth="160.0" text="fSite" />
