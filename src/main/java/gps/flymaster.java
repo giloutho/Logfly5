@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
-import sun.util.logging.PlatformLogger;
 import systemio.mylogging;
 
 /**
