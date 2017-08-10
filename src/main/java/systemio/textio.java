@@ -16,8 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import Logfly.Main;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  *
@@ -27,37 +28,24 @@ import Logfly.Main;
  */
 public class textio {
     
+    StringBuilder sbError;
+    
     /**
-     * Old method unused
+     * Fastest method read in http://javarevisited.blogspot.fr/2016/07/10-examples-to-read-text-file-in-java.html
      * @param fichier
      * @return 
      */
     public String readTxt(File fichier){
         String res = null;
         
-        long topDebut = System.currentTimeMillis();
-        BufferedReader br = null;
-        StringBuilder sbTexte = new StringBuilder();              
         try {
-                InputStream ips=new FileInputStream(fichier); 
-                InputStreamReader ipsr=new InputStreamReader(ips);
-                br=new BufferedReader(ipsr);
-                String ligne;
-                while ((ligne=br.readLine())!=null){
-                        sbTexte.append(ligne+"\n");
-                }       
-                res = sbTexte.toString();
-                try {
-                    br.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } 
-        
+            res = new String(Files.readAllBytes(Paths.get(fichier.getAbsolutePath())));     
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }    
+                                
         return res;
     }
     
