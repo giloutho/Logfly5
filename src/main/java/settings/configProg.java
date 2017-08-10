@@ -25,7 +25,7 @@ public class configProg {
     private static boolean readConfig;      // Settings file read
     private static boolean validConfig;     // Configuration validated (db path)
     private static boolean configDefault;
-    private static int currOS;              // OS type    : 1/Windows  2/Mac  3/Linux    
+    private static osType currOS;              // OS type    : 1/Windows  2/Mac  3/Linux    
     private static String osSeparator;
                                             // App refers to xLogfly parameters
     private static String pathW;            // App.Wpath
@@ -73,16 +73,16 @@ public class configProg {
     public void whichOS()  {
         String OS = System.getProperty("os.name").toLowerCase();
         if (OS.indexOf("win") >= 0) {
-            currOS = 1;      
+            currOS = osType.WINDOWS;      
             osSeparator = "\\";
         } else if (OS.indexOf("mac")>= 0) {
-            currOS = 2;
+            currOS = osType.MACOS;
             osSeparator = "/";
         } else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 ) {
-            currOS = 3;       
+            currOS = osType.LINUX;       
             osSeparator = "/";
         } else {
-            currOS = 0;
+            currOS = osType.UNDEFINED;
             osSeparator = null;
         } 
         
@@ -125,7 +125,7 @@ public class configProg {
         return osSeparator;
     }
 
-    public static int getCurrOS() {
+    public static osType getOS() {
         return currOS;
     }
             
@@ -706,10 +706,10 @@ public class configProg {
             // is recorded database operational ? 
             String oldDbPath;
             switch (currOS) {
-                case 1 :
+                case WINDOWS :
                     oldDbPath = pathDb+dbName; 
                     break;
-                case 2 :
+                case MACOS :
                     oldDbPath = pathDb+dbName;                     
                     break;
                 default :
@@ -745,12 +745,12 @@ public class configProg {
         boolean res = false;        
         
         switch (currOS) {
-            case 1 :
+            case WINDOWS :
                 File fWin = new File(System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.prf");
                 if (fWin.exists() && fWin.isFile()) {
                     res = litOldPrf(fWin);
                 }  
-            case 2 :
+            case MACOS :
                 File fMac = new File(System.getProperty("user.home")+"/Library/Preferences/logfly.prf");
                 if(fMac.exists() && fMac.isFile()) {
                 res = litOldPrf(fMac);
@@ -772,17 +772,17 @@ public class configProg {
         
         if (!setOldConfig())  {
             switch (currOS) {
-                case 1 :
+                case WINDOWS :
                     targetPath = System.getProperty("user.home")+"\\Documents\\Logfly";  
                     fullPathDb = System.getProperty("user.home")+"\\Documents\\Logfly\\Logfly.db"; 
                     importPath = System.getProperty("user.home")+"\\Documents\\Logfly\\Import";
                     break;
-                case 2 :
+                case MACOS :
                     targetPath = System.getProperty("user.home")+"/Documents/Logfly";   
                     fullPathDb = System.getProperty("user.home")+"/Documents/Logfly/Logfly.db";  
                     importPath = System.getProperty("user.home")+"/Documents/Logfly/Import";
                     break;
-                case 3 :
+                case LINUX :
                     targetPath = System.getProperty("user.home")+"/Documents/Logfly";
                     fullPathDb = System.getProperty("user.home")+"/Documents/Logfly/Logfly.db";  
                     importPath = System.getProperty("user.home")+"/Documents/Logfly/Import";
@@ -865,14 +865,14 @@ public class configProg {
         String searchPath;
         
         switch (currOS) {
-            case 1 :
+            case WINDOWS :
                 // It's ok from Windows 7, before it was C:\Documents and Settings\<username>\Application Data
                 searchPath = System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.properties"; 
                 break;
-            case 2 :
+            case MACOS :
                 searchPath = System.getProperty("user.home")+"/Library/Preferences/logfly.properties";
             break;
-            case 3 :
+            case LINUX :
                 searchPath = System.getProperty("user.home")+"/logfly.properties";
                 break;
             default: 
@@ -1076,14 +1076,14 @@ public class configProg {
 
 	try {
             switch (currOS) {
-                case 1 :
+                case WINDOWS :
                     // Valid path from Windows 7, before it was C:\Documents and Settings\<username>\Application Data
                     output = new FileOutputStream(System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.properties"); 
                     break;
-                case 2 :
+                case MACOS :
                     output = new FileOutputStream(System.getProperty("user.home")+"/Library/Preferences/logfly.properties");
                 break;
-                case 3 :
+                case LINUX :
                     output = new FileOutputStream(System.getProperty("user.home")+"/logfly.properties");
                     break;                
             }		
