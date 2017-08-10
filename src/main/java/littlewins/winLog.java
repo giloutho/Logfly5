@@ -117,14 +117,14 @@ public class winLog {
         String sup_nom = myConfig.getDefaultPilote();
         String sup_adresse = mailAd;
         String sup_os = "";
-        switch (myConfig.getCurrOS()) {
-            case 1 :
+        switch (myConfig.getOS()) {
+            case WINDOWS :
                 sup_os = "Windows";
                 break;
-            case 2 :
+            case MACOS :
                 sup_os = "Mac Os";
                 break;
-            case 3 :
+            case LINUX :
                 sup_os = "Linux";
                 break;
         }
