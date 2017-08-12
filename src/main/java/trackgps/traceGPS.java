@@ -59,7 +59,7 @@ public class traceGPS {
     private double TrackLen;
     private Boolean Decodage;
     private Boolean avecPoints;
-    private LocalDateTime DT_Deco;
+    private LocalDateTime DT_Deco;   
     private LocalDateTime DT_Attero;
     private double LatDeco;
     private double LongDeco;
@@ -77,6 +77,7 @@ public class traceGPS {
     private int Alt_Attero_GPS;
     private long Duree_Vol;
     private String sDuree_Vol;
+    private String colDureeVol;   // Duration with colon HH:MM:SS
     private int NbPoints;
     private int NbPointsAberr;
     private boolean Decodage_En_Tete;
@@ -242,7 +243,11 @@ public class traceGPS {
     public void setsDuree_Vol(String sDuree_Vol) {
         this.sDuree_Vol = sDuree_Vol;
     }
-               
+
+    public String getColDureeVol() {
+        return colDureeVol;
+    }
+                       
     public int getBestGain() {
         return bestGain;
     }
@@ -782,7 +787,8 @@ public class traceGPS {
                             Point1.setPeriode(checkParseInt(sLine[i].substring(1,3),0)*3600+checkParseInt(sLine[i].substring(3,5),0)*60+checkParseInt(sLine[i].substring(5,7),0));                            
                             // date coding
                             if (Decodage_HFDTE) {
-                                Point1.setdHeure(Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));            
+                                Point1.setdHeure(Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));    
+                                System.out.println(Date_Vol);
                             }
                             
                             if (i-LignesNonB == 0) {   
@@ -800,6 +806,7 @@ public class traceGPS {
                                 }
                                 // Decoding without points, we want only header with global informations :date, pilot name, etc...
                                 if (!avecPoints) {
+                                    LocalDateTime iniDate_Vol = Date_Vol;
                                     // timezone computing
                                     tzVol = tzCalcul(Point1);
                                     if (tzVol.getID() != null)  {
@@ -817,13 +824,22 @@ public class traceGPS {
                                     Date_Vol = DT_Deco;
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                         
-                                    // take okk paremeters update
+                                    // take off  paremeters update
                                     LatDeco = Point1.Latitude;
                                     LongDeco = Point1.Longitude;
                                     Alt_Deco_Baro = Point1.AltiBaro;
                                     Alt_Deco_GPS = Point1.AltiGPS;
                                     Decodage = true;
-                                    // process end
+                                    // compute duration with end point
+                                    int ideb = i;
+                                    int j = Lg_sLine -1;   // for (int i = 0; i < Lg_sLine; i++) {                                                                        
+                                    DebChar = sLine[j].substring(0,1);                    
+                                    while (!DebChar.equals("B") || j == ideb ) {
+                                        j--;
+                                        DebChar = sLine[j].substring(0,1);
+                                    }
+                                    calcLastPoint(sLine[j],iniDate_Vol);
+                                    
                                     return;
                                 }                                                                        
                             }
@@ -913,6 +929,7 @@ public class traceGPS {
                     if (AvgPeriode < 1) AvgPeriode = 1;
                     LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
                     sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
+                    colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
                     NbPoints = TotPoint;
                     // in xLogfly we recalculated an average speed
                     // it seems unnecessary an average is computed in Verif_Tb_Tot_Points with an integration parameter
@@ -935,6 +952,76 @@ public class traceGPS {
         // System.out.println("Date vol SQL : "+Date_Vol_SQL);
         // System.out.println("Signature : "+Signature);
         // System.out.println(TotPoint+" points ajoutés");                              
+    }
+    
+    private void calcLastPoint(String lastB, LocalDateTime iniDateVol ) {
+        String DebMot;
+        int Deg;
+        double Min,Sec;
+        int Alti_Baro;
+        int Alti_GPS;
+        
+        if (lastB.length() > 34) {
+            if (lastB.length() > 24)
+                DebMot = lastB.substring(24,25);
+            else
+                DebMot = "";
+            Alti_Baro = 0;
+            Alti_GPS = 0;
+            if (DebMot.equals("V"))  {
+                if (lastB.length() > 30)                                    
+                    Alti_Baro = checkParseInt(lastB.substring(25,30),0);
+                else
+                    Alti_Baro = 0;              
+            }
+            if (DebMot.equals("A"))  {
+                if (lastB.length() > 30)                                    
+                    Alti_Baro = checkParseInt(lastB.substring(25,30),0);
+                else
+                    Alti_Baro = 0;    
+                if (lastB.length() > 34)                                    
+                    Alti_GPS = checkParseInt(lastB.substring(30,35),0);
+                else
+                    Alti_GPS = 0;  
+            }
+            pointIGC Point1 = new pointIGC();
+            Point1.setComment("");
+            Point1.setAltiBaro(Alti_Baro);
+            Point1.setAltiGPS(Alti_GPS);            
+            // latitude decoding
+            Deg = checkParseInt(lastB.substring(7,9),0);
+            Min = checkParseDouble(lastB.substring(9,11),0);
+            Sec = (checkParseDouble(lastB.substring(11,14),0)/1000) * 60;                           
+            Point1.setLatitudeDMS(Deg, Min, Sec, lastB.substring(14,15));
+            // recorded in seconds for scoring
+            Min = checkParseDouble(lastB.substring(9,14),0);
+            Point1.setLatitudeSec(Deg,(int)Min,lastB.substring(14,15)); 
+
+            // longitude decoding
+            Deg = checkParseInt(lastB.substring(15,18),0);
+            Min = checkParseDouble(lastB.substring(18,20),0);
+            Sec = (checkParseDouble(lastB.substring(20,23),0)/1000) * 60;
+            Point1.setLongitudeDMS(Deg, Min, Sec, lastB.substring(23,24));
+            // recorded in seconds for scoring
+            Min = checkParseDouble(lastB.substring(18,23),0);
+            Point1.setLongitudeSec(Deg,(int)Min,lastB.substring(23,24));                       
+            // date coding Decodage_HFDTE is necessarily OK
+            Point1.setdHeure(iniDateVol,checkParseInt(lastB.substring(1,3),0), checkParseInt(lastB.substring(3,5),0), checkParseInt(lastB.substring(5,7),0));                
+            // Update final flight parameters
+            long decUTC = (long) (utcOffset*3600);
+            DT_Attero = Point1.dHeure.plusSeconds(decUTC);
+            // altitude landing recorded            
+            // it's possible to compute flight duration
+            Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
+            // compute average period between two points            
+            LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
+            sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
+            colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
+            
+            Alt_Attero_Baro = Point1.AltiBaro;
+            Alt_Attero_GPS = Point1.AltiGPS;
+            
+        }                
     }
     
     /**
