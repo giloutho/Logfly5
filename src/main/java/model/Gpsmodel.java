@@ -77,4 +77,13 @@ public class Gpsmodel {
     public void setCol6(String col6Str) {    
         col6.set(col6Str);
     }
+    
+    public String getCol7() {
+        return col7.get();
+    }
+    
+    public void setCol7(String col7Str) {    
+        col7.set(col7Str);
+    }       
+    
 }
