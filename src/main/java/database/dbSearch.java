@@ -94,20 +94,21 @@ public class dbSearch {
     
     /**
      * From xLogfly V4 and new offset computation, it's not possible to compare takeoff hours
-     * on GPS flight list (Flymaster) and flights stored in db
-     * now based only on flight duration... not very safe !
+     * on GPS flight list, it's UTC time for Flymaster and local time in Flytec. Flights are stored in db in local time
+     * Seach is now based on minutes of take off and flight duration... a bit far-fetched !
      * @param strDate must be formated : YYYY-MM-DD
      * @param totSec
      * @return 
      */
-    public boolean Rech_Vol_by_Duree(String strDate, String strDepMin, int totSec) {
+    public boolean Rech_Vol_by_Duree(String gpsDate, String gpsDepMin, String gpsDepSec, int gpsTotalSec) {
         boolean res = false;
         StringBuilder sReq = new StringBuilder();
-        int iDepMin = Integer.parseInt((strDepMin));
-        boolean diffMin;
+        int iGpsDepSec = Integer.parseInt((gpsDepMin))*60+Integer.parseInt((gpsDepSec));
+        boolean diffSecOK;
+        int totalSec;
                 
-        sReq.append("SELECT V_Date,V_Duree FROM Vol WHERE V_Date >= '").append(strDate);
-        sReq.append(" 00:00:00' and V_Date <= '").append(strDate).append(" 23:59:59'");
+        sReq.append("SELECT V_Date,V_Duree FROM Vol WHERE V_Date >= '").append(gpsDate);
+        sReq.append(" 00:00:00' and V_Date <= '").append(gpsDate).append(" 23:59:59'");
         
         try {
             ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq.toString());
@@ -118,25 +119,25 @@ public class dbSearch {
                     String sDate = noTiret.replaceAll(" ",":");
                     String[] tbDate = sDate.split(":");
                     if (tbDate.length > 4) {
-                        int iMin = Integer.parseInt(tbDate[4]);
-                        int iDiffMin = Math.abs(iMin - iDepMin);
-                        // We can't compare LocalDateTime : in db this local time, in GPS depend of user settings -> unreliable 
+                        int dbSec = Integer.parseInt(tbDate[4])*60+Integer.parseInt(tbDate[5]);
+                        int iDiffSec = dbSec - iGpsDepSec;
+                        // We can't compare LocalDateTime : in db this is local time, in GPS, this is depending of user settings -> unreliable 
                         // We compute only with minute component. If hour change -> we compare 01:59 to 02:01
                         // In Flytec 6015 and 6030, GPS start time displayed and track start point are not the same values. (few minutes)
-                        // We consider an offset of 5 mn
-                        if (iDiffMin > 5) {
-                            iDiffMin = 60 - iDiffMin;
-                            if (iDiffMin < 6)
-                                diffMin = true;
+                        // We consider an offset of 5 mn (300 s)
+                        if (iDiffSec > 300) {
+                            iDiffSec = 3600 - iDiffSec;
+                            if (iDiffSec < 360)
+                                diffSecOK = true;
                             else
-                                diffMin = false;
+                                diffSecOK = false;
                         } else {
-                            diffMin = true;
+                            diffSecOK = true;
                         }
                         int dbDuree = rs.getInt("V_Duree");
-                        // if it's a 6015 or a flytec we must correct the gps duration displayed and the logbook duration recorded
-                        totSec += iDiffMin * 60;
-                        if (Math.abs(totSec - dbDuree) < 60 && diffMin) {
+                        // if it's a 6015 or a flytec we must correct the gps duration displayed and the logbook duration recorded!
+                        totalSec = gpsTotalSec - iDiffSec;
+                        if (Math.abs(totalSec - dbDuree) < 60 && diffSecOK) {
                             errSearch = null;
                             res = true;
                             break;
