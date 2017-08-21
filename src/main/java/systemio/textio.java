@@ -65,11 +65,16 @@ public class textio {
     
     public static String getFileExtension(File file) {
         String name = file.getName();
-        try {
-            return name.substring(name.lastIndexOf(".") + 1);
-        } catch (Exception e) {
-            return "";
+        // If fileName do not contain "." or starts with "." then it is not a valid file
+        if (name.contains(".") && name.lastIndexOf(".")!= 0) {
+            try {
+                return name.substring(name.lastIndexOf(".") + 1);
+            } catch (Exception e) {
+                return "";
+            }
+        } else {
+           return ""; 
         }
-    }
+    }        
     
 }
