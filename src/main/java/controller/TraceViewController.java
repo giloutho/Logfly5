@@ -11,7 +11,6 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -97,36 +96,39 @@ public class TraceViewController {
     @FXML
     private void selectTrackFolder() throws Exception {
         FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.igc)"), "*.igc");
-        fileChooser.getExtensionFilters().add(extFilter);
+        FileChooser.ExtensionFilter igcFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.igc)"), "*.igc");
+        FileChooser.ExtensionFilter gpxFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.gpx)"), "*.gpx");
+        fileChooser.getExtensionFilters().addAll(igcFilter,gpxFilter);
         File selectedFile = fileChooser.showOpenDialog(dialogStage);        
         if(selectedFile != null){
-            extTrace = new traceGPS(selectedFile, "IGC",true, myConfig);
-            if (extTrace.isDecodage()) {                 
-                map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
-                if (visuMap.isMap_OK()) {
-                    mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
-                }
-                webAnchor.setVisible(true);
-                buttonBar.setVisible(true);   
-                top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                new EventHandler<MouseEvent>() {
-                    @Override public void handle(MouseEvent e) {                        
-                        clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+            String fileExt = textio.getFileExtension(selectedFile);
+            if (fileExt != "") {
+                extTrace = new traceGPS(selectedFile, fileExt,true, myConfig);
+                if (extTrace.isDecodage()) {                 
+                    map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
+                    if (visuMap.isMap_OK()) {
+                        mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
                     }
-                });  
-            }  else {
-                alertbox aError = new alertbox(myConfig.getLocale());
-                String errMsg;
-                if (extTrace.Tb_Tot_Points.size() > 0)  {             
-                    errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
-                } else {                            
-                    errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
-                }
-                aError.alertError(errMsg);
-            }             
+                    webAnchor.setVisible(true);
+                    buttonBar.setVisible(true);   
+                    top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                    new EventHandler<MouseEvent>() {
+                        @Override public void handle(MouseEvent e) {                        
+                            clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+                        }
+                    });  
+                }  else {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    String errMsg;
+                    if (extTrace.Tb_Tot_Points.size() > 0)  {             
+                        errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
+                    } else {                            
+                        errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+                    }
+                    aError.alertError(errMsg);
+                }             
+            }   
         }
-        
     }
     
     /**
