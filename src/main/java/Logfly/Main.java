@@ -19,6 +19,7 @@ import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.RootLayoutController;
 import controller.TraceViewController;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import liveUpdate.checkUpdate;
 import liveUpdate.objects.Release;
@@ -46,8 +47,10 @@ public class Main extends Application {
         
         // Current version
         Release release = new Release();
-        release.setpkgver("5.0");
-        release.setPkgrel("4");
+        release.setpkgver("5.0");        
+        release.setPkgrel("7");
+        // last bundle
+        release.setseverity("5.06");
         
         String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel();
         this.primaryStage.setTitle(currVersion);
@@ -216,9 +219,10 @@ public class Main extends Application {
     }       
     
     @Override
-    public void stop(){
+    public void stop() throws SQLException{
         if (myConfig.isValidConfig())  {
             myConfig.writeProperties();
+            myConfig.getDbConn().close();
         }
     }
     
