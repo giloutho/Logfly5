@@ -132,8 +132,15 @@ public class alertbox {
                 msg = i18n.tr("Pas de réponse du GPS");                          
                 break;  
             case 1054:                
-                msg = i18n.tr("Le fichier IGC est vide");                          
+                msg = i18n.tr("Le fichier trace est vide");                          
                 break;  
+            case 1056:                
+                msg = i18n.tr("Pas de traces dans le GPS");                          
+                break; 
+            // Trace GPS decoding    
+            case 1060 :
+                 msg = i18n.tr("Extension de fichier non reconnue");                          
+                break; 
             case 1102:                
                 msg = i18n.tr("Problème de lecture sur le fichier des vols");                          
                 break; 
