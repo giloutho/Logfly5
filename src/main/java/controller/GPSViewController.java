@@ -18,14 +18,21 @@ import gps.flymaster;
 import gps.flymasterold;
 import gps.flytec15;
 import gps.flytec20;
+import gps.reversale;
+import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -55,6 +62,7 @@ import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.listGPS;
 import systemio.mylogging;
+import systemio.textio;
 import trackgps.traceGPS;
 
 /**
@@ -76,7 +84,8 @@ import trackgps.traceGPS;
  * listSerialPort : 
  *          if at least one port is detected, start button become visible
  * btnGo : 
- *          run readGPS to download GPS flight list (FXML command)
+ *          run readGPS to download GPS flight list (FXML command) only for serial GPS
+ *          for usb GPS, readGPS is started automatically
  * readGPS : at clic on btnGo, run flightListWithProgress();
  * 
  *              this method run the reading method of each supported GPS
@@ -90,6 +99,8 @@ import trackgps.traceGPS;
  * afficheFlyList :   
  *         - Logbook update : insertLog   
  *         - selected track is displayed : AskOneTrack 
+ * btnMaj :
+ *          run insertLog
  * insertLog :
  *          Count flights to insert and call insertWithProgress
  * insertWithProgress :
@@ -185,15 +196,18 @@ public class GPSViewController {
                 
     private RootLayoutController rootController;
     
+    private enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot}
+    
     // current GPS
-    private String currGPS;
+    private gpsType currGPS;
     private String currNamePort;  
     private int resCom;   // 0 initial state  1 : successfull communication   2 : unsuccess communication
-    private String resIGC;
     private int nbToInsert = 0;
     private int nbInserted = 0;
     private String errInsertion;
     private StringBuilder sbError;
+    private reversale usbRever;
+    private String strTrack;
     
     
     @FXML
@@ -222,7 +236,7 @@ public class GPSViewController {
     }
    
     /**
-     * Count flights to insert in the logbook
+     * Count flights to insert in the logbook, triggered by btnMaj
      */
    public void insertLog()  {
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
@@ -258,62 +272,67 @@ public class GPSViewController {
                 break;
             case 1:
                 // 6020/6030
-                currGPS = "Flytec20";
+                currGPS = gpsType.Flytec20;
                 listSerialPort();
                 break;
             case 2:
                 // 6015
-                currGPS = "Flytec15";
+                currGPS = gpsType.Flytec15;
                 listSerialPort();
                 break;
             case 3:
-                // Flynet
-                //AskGPS(3)
+                currGPS = gpsType.Flynet;                
                 break;
             case 4:    
                 // Flymaster old series
-                currGPS = "FlymOld";
+                currGPS = gpsType.FlymOld;
                 listSerialPort();                
                 break;
             case 5:
                 // Reversale
-                // AskGPS(5)
+                currGPS = gpsType.Rever;   
+                usbRever = new reversale(myConfig.getOS());
+                if (usbRever.isConnected()) {
+                    goodListDrives(usbRever.getDriveList(),usbRever.getIdxDrive());
+                } else {
+                    badListDrives(usbRever.getDriveList(), usbRever.getIdxDrive());
+                }
                 break;
             case 6:
-                // Skytraax
+                currGPS = gpsType.Sky;
                 // AskGPS(6)
                 break;
             case 7:
-                // Oudie
+                currGPS = gpsType.Oudie;
                 // AskGPS(7)
                 break;
             case 8:
-                // Element
+                currGPS = gpsType.Element;
                 //AskGPS(8)
                 break;
             case 9:
-                // Sensbox
+                currGPS = gpsType.Sensbox;
                 //AskGPS(9)
                 break;
             case 10:
-                // Syride
+                currGPS = gpsType.Syride;
                 // AskGPS(10)
                 break;
             case 11:
                 // Flymaster SD 
-                currGPS = "FlymSD";
+                currGPS = currGPS = gpsType.FlymSD;
                 listSerialPort();
                 break;
             case 12:
-                // Connect
+                currGPS = gpsType.Connect;
                 // AskGPS(12)
                 break;
             case 13:
-                // Skytraax 3
+                currGPS = gpsType.Sky3;
                 // AskGPS(13)
                 break;
             case 14:
-                // C Pilot Evo
+                currGPS = gpsType.CPilot;
                 // AskGPS(14)
                 break;
         }
@@ -333,12 +352,13 @@ public class GPSViewController {
         chbGPS.getSelectionModel().selectedIndexProperty()
         .addListener(new ChangeListener<Number>() {
           public void changed(ObservableValue ov, Number value, Number new_value) {
-            choixGPS(new_value.intValue());
+              winReset();
+              choixGPS(new_value.intValue());
           }
         });        
         choixGPS(idxGPS);
     }
-    
+            
     /**
      * Refresh flights table
      */
@@ -359,7 +379,7 @@ public class GPSViewController {
     public void readGPS() {
                                        
         switch (currGPS) {
-            case "Flytec20" :
+            case Flytec20 :
                 imgLed.setVisible(false);
                 switch (resCom) {
                     case 0 :     
@@ -377,7 +397,7 @@ public class GPSViewController {
                         break; 
                 }   
                 break;
-            case "Flytec15" :
+            case Flytec15 :
                 imgLed.setVisible(false);
                 switch (resCom) {
                     case 0 :     
@@ -395,7 +415,7 @@ public class GPSViewController {
                         break; 
                 }   
                 break;
-            case "FlymSD" :
+            case FlymSD :
                 imgLed.setVisible(false);
                 switch (resCom) {
                     case 0 :     
@@ -412,8 +432,8 @@ public class GPSViewController {
                         listSerialPort();
                         break;                        
                 }               
-            break;     
-            case "FlymOld" :
+                break;     
+            case FlymOld :
                 imgLed.setVisible(false);
                 switch (resCom) {
                     case 0 :     
@@ -430,10 +450,90 @@ public class GPSViewController {
                         // unsuccess communication, listSerialPort() is called for a new attempt
                         listSerialPort();
                         break;                        
-                }               
-            break;
+                }             
+                break;
+            case Rever :
+                // Rever not connected, new attempt
+                if (usbRever.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbRever.getDriveList(),usbRever.getIdxDrive());
+                } else {
+                    badListDrives(usbRever.getDriveList(), usbRever.getIdxDrive());
+                }
+                break;
         }
         
+    }
+    
+    private void goodListDrives(ObservableList <String> driveList, int idxList) {
+        if (driveList.size() > 0) {
+            chbSerial.getItems().clear();
+            chbSerial.setItems(driveList);  
+            chbSerial.setVisible(true);     
+            chbSerial.getSelectionModel().select(idxList);       
+            chbSerial.setVisible(true);     
+            resCom = 5;
+            actuLed();   
+            flightListWithProgress();            
+        }            
+        
+    }
+    
+    private void badListDrives(ObservableList <String> driveList, int idxList) {
+        
+        if (driveList.size() > 0) {
+            chbSerial.getItems().clear();
+            chbSerial.setItems(driveList);  
+            chbSerial.setVisible(true);     
+            chbSerial.getSelectionModel().select(idxList);       
+            chbSerial.setVisible(true);     
+            resCom = 4;
+            actuLed();   
+        }              
+    }
+    
+    private void listDrives() {
+        switch (currGPS) {
+            case Rever:
+                
+                break;
+            default:
+                throw new AssertionError();
+        }
+        File[] drives = null;
+        int idxListDrv = 0;
+        ObservableList <String> portList;
+        portList = FXCollections.observableArrayList();
+        
+        switch (myConfig.getOS()) {
+            case WINDOWS:
+                // to do
+                break;
+            case MACOS :
+                drives = new File("/Volumes").listFiles();
+                break;
+            default:
+                throw new AssertionError();
+        }
+        if (drives != null && drives.length > 0) {
+            for (File aDrive : drives) {                                            
+                portList.add(aDrive.getName());                
+            }
+            if (portList.size() > 0) {
+                chbSerial.getItems().clear();
+                chbSerial.setItems(portList);  
+                chbSerial.setVisible(true);     
+                chbSerial.getSelectionModel().select(0); 
+                switch (currGPS) {
+                    case Rever :
+                        if (usbRever.isConnected()) {
+                            
+                        }
+                        break;
+                    default:
+                        throw new AssertionError();
+                }                                
+            } 
+        }
     }
     
     /**
@@ -680,6 +780,9 @@ public class GPSViewController {
         if (resCom == 2)  {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertNumError(1052);  // No GPS response            
+        } else if (resCom == 6) {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(1056);  // No valid tracks in GPS    
         } else {
             if (dataImport.size() > 0) {
                 // Under the GPS, columns are customized 
@@ -716,6 +819,82 @@ public class GPSViewController {
         }
     }
     
+    private void readUSBGps() {
+        ArrayList<String> trackPathList = new ArrayList<>(); 
+      //  ObservableList <Gpsmodel> importBrut = FXCollections.observableArrayList();  
+        configProg otherConfig = new configProg();        
+        ArrayList <Gpsmodel> importBrut = new ArrayList<>();
+        dbSearch rechDeco = new dbSearch(myConfig); 
+        try {
+            switch (currGPS) {
+            case Rever:                
+                usbRever.listTracksFiles(trackPathList);
+                break;           
+            }
+            // each gps track header must be decoded
+            if (trackPathList.size() > 0) {
+                for (String trackPath : trackPathList) {  
+                    File fTrack = new File(trackPath);                    
+                   // traceGPS tempTrack = new traceGPS(fTrack, false, myConfig);
+                    traceGPS tempTrack = new traceGPS(fTrack, false, otherConfig);
+                    if (tempTrack.isDecodage()) {                                                                                                
+                        SimpleDateFormat sdfSql = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");                        
+                        java.util.Date igcDate = sdfSql.parse(tempTrack.getDate_Vol_SQL());     
+                        // For uniform format in AfficheFlyList, we want date like DD.MM.YY and time HH:MM:SS this is German display format.
+                        DateFormat dfDge = DateFormat.getDateInstance(DateFormat.SHORT,java.util.Locale.GERMAN);
+                        DateFormat dfTge = DateFormat.getTimeInstance(DateFormat.MEDIUM, java.util.Locale.GERMAN);                             
+                        Gpsmodel oneFlight = new Gpsmodel();                                             
+                        oneFlight.setDate(dfDge.format(igcDate));                
+                        oneFlight.setHeure(dfTge.format(igcDate));                         
+                        oneFlight.setCol4(tempTrack.getColDureeVol());
+                        oneFlight.setCol5(trackPath);                            
+                        // Is this flight already in logbook ?
+                        boolean resDeco = rechDeco.searchVolByDeco(tempTrack.getDT_Deco(),tempTrack.getLatDeco(),tempTrack.getLongDeco());                        
+                        if (!resDeco) {
+                            oneFlight.setChecked(Boolean.TRUE);
+                            oneFlight.setCol6("NON");
+                        } else {
+                            oneFlight.setCol6("OUI");
+                        }
+                        // for sorting the list we keep SQL date
+                        oneFlight.setCol7(tempTrack.getDate_Vol_SQL());
+                        dataImport.add(oneFlight);    
+                    }                    
+                }
+                Comparator<? super Gpsmodel> comparatorDate = new Comparator<Gpsmodel>() {
+                    @Override
+                    public int compare(Gpsmodel o1, Gpsmodel o2) {
+                        // order asc -> o1.getCol7().compareTo(o2.getCol7());
+                        // order desc
+                        return o2.getCol7().compareTo(o1.getCol7());
+                    }
+                };                
+                FXCollections.sort(dataImport, comparatorDate);                
+                resCom = 5;
+                // GPS model is stored in settings
+                switch (currGPS) {
+                    case Rever:                                            
+                     //   myConfig.setIdxGPS(5);
+                        break;                    
+                }
+            } else {
+                // No alert box possible in this thread
+                resCom = 6;  
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+        
+    }
+    
+    
+    private void flightListSimple() {
+        System.out.println("Liste simple");
+        readUSBGps();
+        afficheFlyList();
+    }
     
     /**
      * download flights list from GPS in a different thread with a progressbar
@@ -727,17 +906,20 @@ public class GPSViewController {
             @Override
             public Void call() throws InterruptedException { 
                 switch (currGPS) {
-                    case "Flytec20" :
+                    case Flytec20 :
                         readFlytec20();
                         break;
-                    case "Flytec15" :
+                    case Flytec15 :
                         readFlytec15();
                         break;
-                    case "FlymSD" :
+                    case FlymSD :
                         readFlymaster();
                         break;
-                    case "FlymOld" :
+                    case FlymOld :
                         readFlymOld();
+                        break;
+                    case Rever :
+                        readUSBGps();
                         break;
                 }       
                 return null ;                
@@ -750,7 +932,7 @@ public class GPSViewController {
         // we update the UI based on result of the task
         task.setOnSucceeded(event -> {
             pForm.getDialogStage().close();
-            afficheFlyList();
+            afficheFlyList();                       
         });
 
         pForm.getDialogStage().show();
@@ -789,14 +971,32 @@ public class GPSViewController {
                 imgLed.setImage(imgImgLed);
                 imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
                 btnGo.setGraphic(new ImageView(imgGo));                
-                goToolTip.setText(i18n.tr("Actualiser la liste des ports"));
+                goToolTip.setText(i18n.tr("Actualiser la liste"));
                 btnGo.setTooltip(goToolTip);
                 imgLed.setVisible(true);
                 break;
             case 3 :
-                // pas de port série détecté
+                // No serial port
                 btnGo.setVisible(false);
                 imgLed.setVisible(false);
+                break;
+            case 4 :
+                // USB Gps no connected
+                btnGo.setVisible(false);
+                imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_red.png"));
+                imgLed.setImage(imgImgLed);                
+                imgLed.setVisible(true);
+                imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
+                btnGo.setGraphic(new ImageView(imgGo));                
+                goToolTip.setText(i18n.tr("Actualiser la liste"));
+                btnGo.setVisible(true);
+                break;
+            case 5 :
+                // USB Gps connected
+                btnGo.setVisible(false);
+                imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_Green.png"));
+                imgLed.setImage(imgImgLed);                
+                imgLed.setVisible(true);
                 break;
         }
     }
@@ -810,22 +1010,10 @@ public class GPSViewController {
         Task<Void> task = new Task<Void>() {
             @Override
             public Void call() throws InterruptedException { 
-                switch (currGPS) {
-                    case "Flytec20" :
-                        insertFromGPS();
-                        break;
-                    case "Flytec15" :
-                        insertFromGPS();
-                        break;    
-                    case "FlymSD":
-                        insertFromGPS();
-                        break;
-                    case "FlymOld":
-                        insertFromGPS();
-                        break;
-                    default:
-                        throw new AssertionError();
-                }
+                // actually we can use a common method
+                // if necessary, we put a switch (currGPS) here
+                insertFromGPS();
+                
                 return null ;                
             }
         
@@ -861,8 +1049,7 @@ public class GPSViewController {
     private void insertFromGPS() {                        
         int nbFlightIn = 0;
         boolean gpsOK = false;
-        StringBuilder errMsg = new StringBuilder();
-        String strIGC = "";        
+        StringBuilder errMsg = new StringBuilder();         
         
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         try {
@@ -871,56 +1058,62 @@ public class GPSViewController {
             flymaster fms = new flymaster();
             flymasterold fmold = new flymasterold();
             switch (currGPS) {
-                    case "Flytec20" :
+                    case Flytec20 :
                         if (fls.iniForFlights(currNamePort)) gpsOK = true;  
                         break;
-                    case "Flytec15" :
+                    case Flytec15 :
                         if (fliq.iniForFlights(currNamePort)) gpsOK = true;  
                         break;    
-                    case "FlymSD":
+                    case FlymSD :
                         if (fms.iniForFlights(currNamePort)) gpsOK = true;  
                         break;
-                    case "FlymOld":
+                    case FlymOld :
                         if (fmold.iniForFlights(currNamePort)) gpsOK = true;
+                        break;  
+                    case Rever :
+                        gpsOK = usbRever.isConnected();
                         break;
             }            
             if (gpsOK){      
                 for (Gpsmodel item : checkedData){
+                    strTrack = null;   
                     if (item.getChecked())  {     
                         try {
                             // Download instruction of the flight is stored in column 5
                             switch (currGPS) {
-                            case "Flytec20" :
-                                strIGC = fls.getIGC(item.getCol5());
+                            case Flytec20 :
+                                strTrack = fls.getIGC(item.getCol5());
                                 break;
-                            case "Flytec15" :
-                                strIGC = fliq.getIGC(item.getCol5());
+                            case Flytec15 :
+                                strTrack = fliq.getIGC(item.getCol5());
                                 break;    
-                            case "FlymSD":
+                            case FlymSD :
                                 // Download instruction of the flight is stored in column 5
                                 // IGC date is compsed with column 1
                                 // Col 1 [26.04.17] -> [260417]
                                 String sDate = item.getDate().replaceAll("\\.", "");
                                 if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                    strIGC = fms.getFinalIGC();
+                                    strTrack = fms.getFinalIGC();
                                 } else {
-                                    strIGC = null;
+                                    strTrack = null;
                                 }
                                 break;
-                            case "FlymOld":
+                            case FlymOld :
                                 if (fmold.getIGC(item.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {                            
-                                    strIGC = fmold.getFinalIGC();
+                                    strTrack = fmold.getFinalIGC();
                                 } else {
-                                    strIGC = null;
+                                    strTrack = null;
                                 }
+                                break;
+                            case Rever :
+                                strTrack = usbRever.getTrackFile(item.getCol5());
                                 break;
                             }                                  
-                            System.out.println("IGC header : "+strIGC.substring(0, 23)); 
-                            if (strIGC != null ) {                                
-                                traceGPS downIGC = new traceGPS(strIGC,"IGC", "", true, myConfig);
-                                if (downIGC.isDecodage()) { 
+                            if (strTrack != null ) {                                
+                                traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
+                                if (downTrack.isDecodage()) { 
                                     dbAdd myDbAdd = new dbAdd(myConfig);
-                                    int resAdd = myDbAdd.addVolCarnet(downIGC);
+                                    int resAdd = myDbAdd.addVolCarnet(downTrack);
                                     if (resAdd == 0) nbFlightIn++;
                                 } else {
                                     errMsg.append(item.getDate()+" "+item.getHeure()+"\r\n");
@@ -934,16 +1127,16 @@ public class GPSViewController {
                     }
                 }
                 switch (currGPS) {
-                    case "Flytec20" :
+                    case Flytec20 :
                         fls.closePort();
                         break;
-                    case "Flytec15" :
+                    case Flytec15 :
                         fliq.closePort();
                         break;    
-                    case "FlymSD":
+                    case FlymSD :
                         fms.closePort();
                         break;
-                    case "FlymOld":
+                    case FlymOld :
                         fmold.closePort();
                         break;
                 }                              
@@ -987,7 +1180,7 @@ public class GPSViewController {
                     // dans une string avec un getter pour afficher l'erreur au retour du traitement
                     // qd ce sera résolu on gèrera l'affichage
                     dbSearch rech = new dbSearch(myConfig);
-                    res = rech.Rech_Vol_by_Duree(sbDate.toString(),tbHeure[1],totSec);
+                    res = rech.Rech_Vol_by_Duree(sbDate.toString(),tbHeure[1],tbHeure[2],totSec);
                 }
             }
         }    
@@ -1055,7 +1248,8 @@ public class GPSViewController {
      * reqGPS is the dedicated download instruction 
      */
     private void oneFlightWithProgress(Gpsmodel selLineTable) {        
-        resIGC = null;
+        strTrack = null;     
+        
         ProgressForm pForm = new ProgressForm();
            
         Task<Void> task = new Task<Void>() {
@@ -1063,29 +1257,29 @@ public class GPSViewController {
             public Void call() throws InterruptedException { 
                 try {
                     switch (currGPS) {
-                    case "Flytec20" :
+                    case Flytec20 :
                         flytec20 fls = new flytec20();
                         if (fls.iniForFlights(currNamePort)) { 
                             // Download instruction of the flight is stored in column 5
-                            resIGC = fls.getIGC(selLineTable.getCol5());
+                            strTrack = fls.getIGC(selLineTable.getCol5());
                             fls.closePort(); 
                             resCom = 0;
                         } else {
                             resCom = 2;   // No GPS answer
                         }
                         break;
-                    case "Flytec15" :
+                    case Flytec15 :
                         flytec15 fliq = new flytec15();
                         if (fliq.iniForFlights(currNamePort)) { 
                             // Download instruction of the flight is stored in column 5
-                            resIGC = fliq.getIGC(selLineTable.getCol5());
+                            strTrack = fliq.getIGC(selLineTable.getCol5());
                             fliq.closePort(); 
                             resCom = 0;
                         } else {
                             resCom = 2;   // No GPS answer
                         }
                         break;
-                    case "FlymSD":
+                    case FlymSD :
                         flymaster fms = new flymaster();
                         if (fms.iniForFlights(currNamePort)) {
                             // Download instruction of the flight is stored in column 5
@@ -1093,7 +1287,7 @@ public class GPSViewController {
                             // Col 1 [26.04.17] -> [260417]
                             String sDate = selLineTable.getDate().replaceAll("\\.", "");
                             if (fms.getIGC(selLineTable.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                resIGC = fms.getFinalIGC();
+                                strTrack = fms.getFinalIGC();
                                 fms.closePort(); 
                                 resCom = 0;
                             } else {
@@ -1101,11 +1295,11 @@ public class GPSViewController {
                             }
                         }
                         break;
-                    case "FlymOld":
+                    case FlymOld :
                         flymasterold fmold = new flymasterold();
                         if (fmold.iniForFlights(currNamePort)) {          
                             if (fmold.getIGC(selLineTable.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                resIGC = fmold.getFinalIGC();
+                                strTrack = fmold.getFinalIGC();
                                 fmold.closePort(); 
                                 resCom = 0;
                             } else {
@@ -1113,9 +1307,16 @@ public class GPSViewController {
                             }
                         }
                         break;
+                    case Rever :
+                        strTrack = usbRever.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }
                     default:
                         throw new AssertionError();
-                    } 
+                    }                    
                 } catch (Exception e) {
                     resCom = 2;   // No GPS answer
                     sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -1134,8 +1335,8 @@ public class GPSViewController {
         // we update the UI based on result of the task
         task.setOnSucceeded(event -> {
             pForm.getDialogStage().close();
-            if (resCom == 0 && resIGC != null ) {                       
-                traceGPS reqIGC = new traceGPS(resIGC,"IGC", "", true, myConfig);
+            if (resCom == 0 && strTrack != null && !strTrack.isEmpty()) {                       
+                traceGPS reqIGC = new traceGPS(strTrack, "", true, myConfig);
                 if (reqIGC.isDecodage()) { 
                     showOneTrack(reqIGC);
                 } else {
@@ -1145,9 +1346,9 @@ public class GPSViewController {
                 if (resCom == 2)  {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertNumError(1052);  // No GPS answer                       
-                } else if (resIGC.equals(null)) {
+                } else if (strTrack.equals(null)) {
                     alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertNumError(1054);  // IGC file is empty     
+                    aError.alertNumError(1054);  // track file is empty     
                 } else {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertNumError(-1);  // Undefined error
@@ -1165,22 +1366,13 @@ public class GPSViewController {
      * Clic on button "Track display" (FXML triggered)
      */
     public void askOneTrack() {
-        Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem();  
-        switch (currGPS) {
-            case "Flytec20" :                
-                oneFlightWithProgress(currLineSelection);
-                break;
-            case "Flytec15" :                
-                oneFlightWithProgress(currLineSelection);
-                break;                    
-            case "FlymSD" :
-                oneFlightWithProgress(currLineSelection);
-                break;
-            case "FlymOld" :
-                oneFlightWithProgress(currLineSelection);
-                //oneFlymOldWithProgress(currLineSelection);
-                break;
-         }           
+        if(tableImp.getSelectionModel().getSelectedItem() != null)  {
+            Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem();  
+            oneFlightWithProgress(currLineSelection);              
+        } else {
+            alertbox aInfo = new alertbox(myConfig.getLocale());
+            aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
+        }
     }
     
     
@@ -1202,6 +1394,20 @@ public class GPSViewController {
         i18n = I18nFactory.getI18n("","lang/Messages",GPSViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         iniChbGPS();
+    }
+    
+    /**
+     * New GPS -> window is cleaned
+     */
+    private void winReset() {
+        
+        buttonBar.setVisible(false);
+        hbTable.setVisible(false);    
+        lbPort.setVisible(false);
+        chbSerial.setVisible(false);
+        btnGo.setVisible(false); 
+        imgLed.setVisible(false);                
+        tableImp.getItems().clear();        
     }
     
     /**
