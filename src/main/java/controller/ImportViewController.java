@@ -158,7 +158,7 @@ public class ImportViewController {
         for (String sTracePath : trackPathList) {
             File fMyTrace = new File(sTracePath);
             if(fMyTrace.exists() && fMyTrace.isFile()) {           
-                myTrace = new traceGPS(fMyTrace, "IGC",false, myConfig);
+                myTrace = new traceGPS(fMyTrace,false, myConfig);
                 if (myTrace.isDecodage()) { 
                     Import imp = new Import();
                     dbSearch rechDeco = new dbSearch(myConfig); 
@@ -235,7 +235,7 @@ public class ImportViewController {
                 if (item.getChecked())  {     
                     File fMyTrace = new File(item.getFilePath());
                     if(fMyTrace.exists() && fMyTrace.isFile()) {           
-                        traceGPS myTrace = new traceGPS(fMyTrace, "IGC",true, myConfig);
+                        traceGPS myTrace = new traceGPS(fMyTrace,true, myConfig);
                         if (myTrace.isDecodage()) { 
                             dbAdd myDbAdd = new dbAdd(myConfig);
                             myDbAdd.addVolCarnet(myTrace);
