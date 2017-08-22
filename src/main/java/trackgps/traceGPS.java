@@ -35,24 +35,22 @@ import java.util.List;
 import igc.pointIGC;
 import geoutils.trigo;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import static java.lang.String.format;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.Locale;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.TimeZone;
+import java.util.logging.Level;
 import settings.configProg;
+import systemio.mylogging;
 import systemio.textio;
 
 public class traceGPS {
@@ -75,6 +73,7 @@ public class traceGPS {
     private String sFirmware;
     private double TrackLen;
     private Boolean Decodage;
+    private int numErrDecodage;
     private Boolean avecPoints;
     private LocalDateTime DT_Deco;   
     private LocalDateTime DT_Attero;
@@ -125,6 +124,7 @@ public class traceGPS {
     public ArrayList<Integer> Score_Tb_Balises = new ArrayList<Integer>();
     
     private final String CrLf = "\r\n";
+    private StringBuilder sbError;
     
     // Needed for personal integration value and probably others parameters in the future
     configProg myConfig;
@@ -136,33 +136,42 @@ public class traceGPS {
      * @param pPath
      * @param totalPoints 
      */
-    public traceGPS(File pFile, String pType, Boolean totalPoints, configProg pConfig)
+    public traceGPS(File pFile, Boolean totalPoints, configProg pConfig)
     {
         Decodage = false;
-        Scored = false;
+        Scored = false;        
+        sSite = "";
+        sVoile = "";
+        sPilote = "";
+        
         myConfig = pConfig;
         if (myConfig.getIntegration() > 0) {
             APP_INTEGRATION = myConfig.getIntegration();
         } else {
             APP_INTEGRATION = 15;
         }
-        avecPoints = totalPoints;
+
+        avecPoints = totalPoints;                       
         textio fread = new textio();                                    
         String pFichier = fread.readTxt(pFile);
         if (pFichier != null && !pFichier.isEmpty())  {
-            if(pType == "IGC")
+            pathFichier = pFile.getAbsolutePath();
+            String fileExt = textio.getFileExtension(pFile).toUpperCase();     
+            if (fileExt.equals("IGC"))
             {
                 FicIGC = pFichier;
                 Origine = "IGC";
                 Decode_IGC();
             }
-            else
+            else if (fileExt.equals("GPX"))
             {
                 FicGPX = pFichier;
                 Origine = "GPX";
-                DecodeGPX(pFile.getAbsolutePath(), false);
-            }     
-            pathFichier = pFile.getAbsolutePath();
+                InputStream stream = new ByteArrayInputStream(pFichier.getBytes(StandardCharsets.UTF_8));
+                DecodeGPX(stream);
+            } else {
+                numErrDecodage = 1060;    // unknown file extension 
+            }                 
         }
     } 
     
@@ -173,32 +182,37 @@ public class traceGPS {
      * @param pPath
      * @param totalPoints 
      */
-    public traceGPS(String pFichier, String pType, String pPath, Boolean totalPoints, configProg pConfig)
+    public traceGPS(String pFichier, String pPath, Boolean totalPoints, configProg pConfig)
     {
         Decodage = false;
         Scored = false;
         myConfig = pConfig;
+        sSite = "";
+        sVoile = "";
+        sPilote = "";
         if (myConfig.getIntegration() > 0) {
             APP_INTEGRATION = myConfig.getIntegration();
         } else {
             APP_INTEGRATION = 15;
         }
         avecPoints = totalPoints;
-        switch (pType) {
-            case "IGC":
+        pathFichier = pPath;
+        // For IGC, it is expected that extension file is checked before calling traceGPS
+        // IGC format is too imprecise... no specific mandatory record. Any one could be missing in the file.   
+        if (pFichier == null) {
+            Origine = "NIL"; 
+        } else {
+            if (pFichier.indexOf("topografix.com") > 0 ) {
+                FicGPX = pFichier;
+                Origine = "GPX";
+                InputStream stream = new ByteArrayInputStream(pFichier.getBytes(StandardCharsets.UTF_8));
+                DecodeGPX(stream);
+            } else {
                 FicIGC = pFichier;
                 Origine = "IGC";
                 Decode_IGC();
-                break;
-            case "GPX":
-                FicGPX = pFichier;
-                Origine = "GPX";
-                break;
-            case "NIL":
-                Origine = "NIL";    
-                break;                    
-        }       
-        pathFichier = pPath; 
+            }
+        }        
     }         
     
     public int getAlt_Deco_Baro() {
@@ -412,6 +426,10 @@ public class traceGPS {
     public Boolean isDecodage() {
         return Decodage;
     }
+
+    public int getNumErrDecodage() {
+        return numErrDecodage;
+    }    
     
     public Boolean isScored() {
         return Scored;
@@ -573,9 +591,6 @@ public class traceGPS {
         BadAlti = 9000;
         TotPoint = 0;
         NbPointsAberr = 0;
-        sSite = "";
-        sVoile = "";
-        sPilote = "";
         
         // For PEV details see FAI documentation p44
         // In a nutshell
@@ -1317,7 +1332,10 @@ public class traceGPS {
                 i++;              
             }            
         }catch(Exception ex){
-            System.out.println("ERROR -> Index : "+i);
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(ex.toString());
+            sbError.append("\r\n").append("Index loop :").append(String.valueOf(i));
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
         /*  
             We stopped two points before the end of the track, we must include them            
@@ -1352,7 +1370,7 @@ public class traceGPS {
      * @param pathFile
      * @param withThermals 
      */
-    private void DecodeGPX(String pathFile, boolean withThermals) {
+    private void DecodeGPX(InputStream in) {
         
         int nbPoint = 0;   
         int nbWp;
@@ -1365,8 +1383,7 @@ public class traceGPS {
         DateTimeFormatter dtfDate = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         GPXParser p = new GPXParser();
         
-        try {
-            FileInputStream in = new FileInputStream(pathFile);            
+        try {           
             GPX gpx = p.parseGPX(in);
             HashSet<Track> lTracks = new HashSet<Track>();
             lTracks = gpx.getTracks();
@@ -1399,13 +1416,13 @@ public class traceGPS {
                                     DT_Deco = ldt;
                                 } else {
                                     // Time field can be null (BaseCamp GPX generation)
-                                    DT_Deco = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
-                                    sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                                    DT_Deco = LocalDateTime.of(2000, 1, 1, 0, 0, 0);                                   
                                     // For SQLIte
                                     Date_Vol_SQL = "2000-01-01 ";
                                 }
                                 // flight date                      
                                 Date_Vol = DT_Deco;
+                                sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                 if (!avecPoints) {
                                     LocalDateTime iniDate_Vol = Date_Vol;
                                     // timezone computing
@@ -1516,21 +1533,27 @@ public class traceGPS {
                         sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
                         colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
                         NbPoints = TotPoint;
+                        Signature = "";
                         // in xLogfly we recalculated an average speed
                         // it seems unnecessary an average is computed in Verif_Tb_Tot_Points with an integration parameter
 
                         // Reduce number of points for scoring
                         fillTb_Calcul();
 
-                        // compoute thermals points
+                        // compute thermals points
                         calc_Thermiques();
+                        
+                        encodeIGC();
 
                         Decodage = true;
                     }                
                 } 
             }
         } catch (Exception e) {
-            System.out.println("Erreur..."+e.getMessage());            
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("Path : ").append(pathFichier);
+            mylogging.log(Level.SEVERE, sbError.toString());        
         }     
     }
     
@@ -1686,7 +1709,9 @@ public class traceGPS {
         // Header
         sbIGC.append("AXLF").append(CrLf);
         DateTimeFormatter fHDTE = DateTimeFormatter.ofPattern("YYMMdd");
-        sbIGC.append("HFDTE").append(Date_Vol.format(fHDTE)).append(CrLf);                         
+        sbIGC.append("HFDTE").append(Date_Vol.format(fHDTE)).append(CrLf);  
+        // By default, we put the pilot name and glider name stored in settings
+        // for external tracks we overhide it...
         sbIGC.append("HFPLTPILOT:").append(sPilote).append(CrLf);        
         sbIGC.append("HFGTYGLIDERTYPE:").append(sVoile).append(CrLf); 
         sbIGC.append("HFGIDGLIDERID:").append(CrLf); 
@@ -1699,12 +1724,11 @@ public class traceGPS {
         majParamUTC(Tb_Good_Points.get(0).dHeure);
         long decUTC = (long) (utcOffset*3600);
         DateTimeFormatter dtfTime = DateTimeFormatter.ofPattern("HHmmss");
-        
-        // faire pour chaque point monpoint = Point1.dHeure.moinsSeconds(decUTC);   (moins enlève le plus et inversement)
+                
         for (int i = 0; i < Tb_Good_Points.size(); i++) {
             igc_Lat = Lat_Dd_IGC(Tb_Good_Points.get(i).Latitude);
             igc_Long = Long_Dd_IGC(Tb_Good_Points.get(i).Longitude);
-            igc_Time = Tb_Good_Points.get(i).dHeure.minusSeconds(decUTC).format(dtfTime);
+            igc_Time = Tb_Good_Points.get(i).dHeure.minusSeconds(decUTC).format(dtfTime);   // UTC offset is removed
             sbIGC.append("B").append(igc_Time).append(igc_Lat).append(igc_Long);
             sbIGC.append("A00000").append(String.format("%05d",Tb_Good_Points.get(i).AltiGPS)).append(CrLf);            
         }
@@ -1748,9 +1772,9 @@ public class traceGPS {
             System.out.println(res);
 
     	}catch(IOException e){
-
-    	    e.printStackTrace();
-
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            mylogging.log(Level.SEVERE, sbError.toString());    	    
     	}
         
         return res;
