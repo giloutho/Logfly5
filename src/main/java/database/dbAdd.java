@@ -7,12 +7,15 @@
 package database;
 
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
 import javafx.scene.control.Alert;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 import trackgps.traceGPS;
 
 /**
@@ -24,9 +27,12 @@ public class dbAdd {
     
     // Localization
     private I18n i18n;
+    
 
     // Settings
-    configProg myConfig;
+    private configProg myConfig;
+    
+    private StringBuilder sbError;
     
     public dbAdd(configProg pConfig)  {
         myConfig = pConfig;
@@ -46,11 +52,14 @@ public class dbAdd {
         String sQuoteVirg ="',";
         String siteNom = null;
         String sitePays = null;
+        Statement stmt = null;
+        ResultSet rs = null;
         
         // last checking for flight existence in the logbook
         sReq = "SELECT * FROM Vol WHERE V_Date = '"+pTrace.getDate_Vol_SQL()+"'";
         try {
-            ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq);           
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sReq);           
             if (!rs.next())  { 
                 dbSearch myRech = new dbSearch(myConfig);
                 String siteDeco = myRech.rechSiteCorrect(pTrace.getLatDeco(),pTrace.getLongDeco(),true);   
@@ -58,14 +67,17 @@ public class dbAdd {
                     // No lauching site found, a new site must be created with takeoff coordinates
                     siteDeco = addBlankSite(pTrace.getLatDeco(),pTrace.getLongDeco(),pTrace.getAlt_Deco_GPS());
                 }
-                System.out.println("Site deco : "+siteDeco);
                 if (siteDeco != null && !siteDeco.isEmpty())  {
                     // Warning java split founded on regular expressions
                     // * is part of 12 characters must be escaped
                     String[] siteComplet = siteDeco.split("\\*");
                     if (siteComplet.length > 0) {
                         siteNom = siteComplet[0];
-                        sitePays = siteComplet[1];
+                        if (siteComplet.length > 1) {
+                            sitePays = siteComplet[1];
+                        } else {
+                           sitePays = "..."; 
+                        }
                     }
                     StringBuilder sReqInsert = new StringBuilder();
                     sReqInsert.append("INSERT INTO Vol (V_Date,V_Duree,V_sDuree,V_LatDeco,V_LongDeco,V_AltDeco,V_Site,V_Pays,V_IGC,UTC,V_Engin) VALUES (");
@@ -83,21 +95,36 @@ public class dbAdd {
                     // Cast in long type is for eliminate decimals
                     sReqInsert.append(sQuote).append(String.format("%d",(long)pTrace.getUtcOffset()*60)).append(sQuoteVirg);
                     sReqInsert.append(sQuote).append(pTrace.getsVoile()).append(sQuote).append(")");   
-                    //System.out.println("*******************************************************************");
-                    //System.out.println(sReqInsert);
-                    //System.out.println("*******************************************************************");
+                    Statement stmtIns = null;
                     try {
-                        myConfig.getDbConn().createStatement().executeUpdate(sReqInsert.toString());        
+                      //  stmt = myConfig.getDbConn().createStatement();
+                        //stmt.executeUpdate(sReqInsert.toString());     
                         System.out.println("Insertion OK");
+                        stmtIns = myConfig.getDbConn().createStatement();
+                        stmtIns.executeUpdate(sReqInsert.toString());   
                         res = 0;
                     } catch ( Exception e ) {
                         res = 1104;   // Insertion error in flights file                                           
+                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                        sbError.append("\r\n").append(e.getMessage());
+                        sbError.append("\r\n").append("Date vol : ").append(pTrace.getDate_Vol_SQL());
+                        mylogging.log(Level.SEVERE, sbError.toString());
+                    } finally {
+                        try{                            
+                            stmtIns.close();
+                        } catch(Exception e) { } 
                     }    
                 }
             }            
         } catch ( Exception e ) {
             res = 1102;    // I/O access error in flights file                     
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
+        
         return res;
     }
     
@@ -108,19 +135,23 @@ public class dbAdd {
      * @return 
      */   
     public String addBlankSite(double pLat,double pLong,int pAlt)  {
-        String res = null;
+        String res = null;        
         StringBuilder sReq = new StringBuilder();
         LocalDateTime ldtNow = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String sQuote ="'";
+        Statement stmt = null;
+        ResultSet rs = null;
         
         sReq.append("Select Count(S_ID) from Site where S_Nom LIKE 'Site No%'");
         try {
-            ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq.toString());
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sReq.toString());
             if (rs != null)  {
                 // Mandatory ->  Initially, the cursor is positioned before the first row.
                 rs.next();
-                int totSiteNo = rs.getInt(1);                
+                int totSiteNo = rs.getInt(1);  
+                rs.close();
                 String sNom = "Site No "+String.valueOf(totSiteNo + 1)+"  ("+i18n.tr("A renommer")+")";
                 // Big post about StringBuilder
                 // http://stackoverflow.com/questions/8725739/correct-way-to-use-stringbuilder
@@ -130,24 +161,33 @@ public class dbAdd {
                 sReq.append(", ").append(sQuote).append("D").append(sQuote).append(",").append(sQuote).append(String.valueOf(pAlt)).append(sQuote).append(",");
                 sReq.append(sQuote).append(String.valueOf(pLat)).append(sQuote).append(",").append(sQuote).append(String.valueOf(pLong)).append(sQuote).append(",");
                 sReq.append(sQuote).append(ldtNow.format(formatter)).append(sQuote).append(")");
+                Statement stmtIns = null;
                 try {
-                    myConfig.getDbConn().createStatement().executeUpdate(sReq.toString());                
-                    res = sNom+"* ";  // Depuis la xLogfly 3, on colle le pays
+                    stmtIns = myConfig.getDbConn().createStatement();
+                    stmtIns.executeUpdate(sReq.toString());                
+                    res = sNom+"*...";  // Depuis la xLogfly 3, on colle le pays
                 } catch ( Exception e ) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(i18n.tr("Problème d'insertion le fichier des sites"));            
-                    String s = e.getClass().getName() + ": " + e.getMessage();
-                    alert.setContentText(s);
-                    alert.showAndWait();                              
-                }                                  
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.getMessage());
+                    sbError.append("\r\n").append("requête : ").append(sReq);
+                    mylogging.log(Level.SEVERE, sbError.toString());                                   
+                } finally {
+                    try {
+                        stmtIns.close();
+                    } catch(Exception e) { } 
+                }                                 
             }            
         } catch ( Exception e ) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture sur le fichier des sites"));            
-            String s = e.getClass().getName() + ": " + e.getMessage();
-            alert.setContentText(s);
-            alert.showAndWait();                              
-        }      
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("Problème de lecture sur le fichier des sites");
+            mylogging.log(Level.SEVERE, sbError.toString());                                      
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
+        }     
         
         return res;
     }
