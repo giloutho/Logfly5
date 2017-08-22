@@ -18,19 +18,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import littlewins.winTrackFile;
 import Logfly.Main;
-import java.util.logging.Level;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import littlewins.winLog;
-import littlewins.winPoints;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
-import systemio.mylogging;
 
 /**
  *
@@ -163,19 +159,8 @@ public class RootLayoutController {
      */
     @FXML 
     public void showOutils() {
-        alertbox myInfo = new alertbox(myConfig.getLocale());
-        myInfo.alertInfo("On est en version 5.0 release 2");
-        // debug
-        int a = 2;
-        int b = 0;
-        try {
-            int c = a/b;
-        } catch (Exception e) {
-            StringBuilder sbError = new StringBuilder();
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-        }
+        alertbox myInfo = new alertbox(myConfig.getLocale());           
+        myInfo.alertInfo("On est bien en 5.06");       
     }
     
     /**
