@@ -8,16 +8,21 @@ package database;
 
 import dialogues.alertbox;
 import geoutils.trigo;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
 import javafx.scene.control.Alert;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 
 /**
  *
@@ -34,6 +39,8 @@ public class dbSearch {
 
     // settings
     configProg myConfig;
+    
+    StringBuilder sbError;
     
     public dbSearch(configProg pConfig)  {
         myConfig = pConfig;
@@ -58,6 +65,10 @@ public class dbSearch {
         long delaiMaxi = 120;
         boolean res = false;
         
+        
+        Statement stmt = null;
+        ResultSet rs = null;
+        
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");        
         StringBuilder sReq = new StringBuilder();
         sReq.append("SELECT V_date,V_Duree,V_LatDeco,V_LongDeco FROM Vol WHERE V_Date >= '");
@@ -65,7 +76,8 @@ public class dbSearch {
         sReq.append("' and V_Date <= '");
         sReq.append(pDate.format(dateFormatter)+" 23:59:59'");
         try {
-            ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq.toString());
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sReq.toString());
             if (rs != null)  { 
                 while (rs.next()) {
                     double carnetLat = rs.getDouble("V_LatDeco");
@@ -83,10 +95,17 @@ public class dbSearch {
                         }
                     }
                 }
-            }            
+            } 
+
         } catch ( Exception e ) {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(e.getClass().getName() + ": " + e.getMessage());                         
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());          
+            mylogging.log(Level.SEVERE, sbError.toString());                            
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
         
         return res;
@@ -106,12 +125,16 @@ public class dbSearch {
         int iGpsDepSec = Integer.parseInt((gpsDepMin))*60+Integer.parseInt((gpsDepSec));
         boolean diffSecOK;
         int totalSec;
+        
+        Statement stmt = null;
+        ResultSet rs = null;
                 
         sReq.append("SELECT V_Date,V_Duree FROM Vol WHERE V_Date >= '").append(gpsDate);
         sReq.append(" 00:00:00' and V_Date <= '").append(gpsDate).append(" 23:59:59'");
         
         try {
-            ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq.toString());
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sReq.toString());
             if (rs != null)  { 
                 while (rs.next()) {
                     String sqlDate = rs.getString("V_Date");  // SQLDatetime ->"2011-09-03 08:13:32"
@@ -146,7 +169,15 @@ public class dbSearch {
                 }                
             }
         } catch (Exception e) {
-            errSearch = e.getClass().getName() + ": " + e.getMessage();          
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("Problème de lecture sur le fichier des sites");
+            mylogging.log(Level.SEVERE, sbError.toString());                           
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
         
         return res;        
@@ -164,6 +195,10 @@ public class dbSearch {
      */
     public String rechSiteCorrect(double pLat,double pLong,boolean exAtterro) {
         String res=null;
+        
+        Statement stmt = null;
+        ResultSet rs = null;
+        
         // Pour recherche de sites au plus près...
         String sLat = String.valueOf(pLat);
         String sLong = String.valueOf(pLong);
@@ -190,7 +225,8 @@ public class dbSearch {
             sReq.append(" AND S_Type <> 'A'");
         }               
         try {
-            ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq.toString());
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sReq.toString());
             if (rs != null)  { 
                 while (rs.next()) {
                     double carnetLat = rs.getDouble("S_Latitude");
@@ -203,11 +239,15 @@ public class dbSearch {
                 }                
             }        
         } catch ( Exception e ) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture sur le carnet de vol"));            
-            String s = e.getClass().getName() + ": " + e.getMessage();
-            alert.setContentText(s);
-            alert.showAndWait();                              
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("Problème de lecture sur le carnet de vol");
+            mylogging.log(Level.SEVERE, sbError.toString());                                                         
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
         
         return res;
