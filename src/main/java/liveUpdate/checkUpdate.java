@@ -8,6 +8,7 @@ package liveUpdate;
 
 import dialogues.alertbox;
 import dialogues.dialogbox;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.logging.Level;
 import liveUpdate.objects.Modes;
 import liveUpdate.objects.Release;
 import liveUpdate.parsers.ReleaseXMLParser;
+import liveUpdate.parsers.bundleXMLParser;
 import org.xml.sax.SAXException;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -23,6 +25,7 @@ import settings.configProg;
 import settings.privateData;
 import systemio.mylogging;
 import systemio.tempacess;
+import systemio.webdown;
 import systemio.webio;
 
 
@@ -61,27 +64,65 @@ public class checkUpdate {
         
         ReleaseXMLParser parser = new ReleaseXMLParser();
         
-        try {
-           Release current = parser.parse(updateURL+"/latest.inf", Modes.URL);
-            if (current.compareTo(release) > 0) {
-                if (!myConfig.isUpdateAuto())  {
-                    dialogbox dInfo = new dialogbox();
-                    String dHeader = i18n.tr("Une nouvelle version {0}.{1} est disponible",current.getpkgver(),current.getPkgrel());
-                    String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
-                    answer = dInfo.YesNo(dHeader,dText); 
-                } else {
-                    answer = true;
-                }
+        try {            
+            Release current = parser.parse(updateURL+"/latest.inf", Modes.URL);
+            // With current updates, compare result < 1000
+            if (current.compareTo(release) < 1000) {
+                if (current.compareTo(release) > 0) {
+                    if (!myConfig.isUpdateAuto())  {
+                        dialogbox dInfo = new dialogbox();
+                        String dHeader = i18n.tr("Une nouvelle version {0}.{1} est disponible",current.getpkgver(),current.getPkgrel());
+                        String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
+                        answer = dInfo.YesNo(dHeader,dText); 
+                    } else {
+                        answer = true;
+                    }
+                    if (answer == true) {
+                        // Ask for a temp path
+                        tmpUpdateFiles = tempacess.getTemPath(null);
+                        // Download needed files                 
+                        Downloader dl = new Downloader();
+                        dl.download(updateURL+"/files.inf", tmpUpdateFiles, Modes.URL);                        
+                    }
+                } 
+            } else {
+                // major update ->  bundle download required 
+                dialogbox dInfo = new dialogbox();
+                String dHeader = i18n.tr("Une mise à jour majeure est disponible [version {0}]",current.getseverity());
+                String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
+                answer = dInfo.YesNo(dHeader,dText); 
                 if (answer == true) {
-                    // Ask for a temp path
                     tmpUpdateFiles = tempacess.getTemPath(null);
-                    //tmpUpdateFiles = "/Users/gil/Documents/Bidou";
-                    System.out.println("rep tmp : "+tmpUpdateFiles);
-                    // Download needed files                 
-                    Downloader dl = new Downloader();
-                    dl.download(updateURL+"/files.inf", tmpUpdateFiles, Modes.URL);                        
-                }
-            } 
+                    String msg = i18n.tr("Vous devez redémarrer Logfly...");
+                    String sUrl=null;
+                    // Get bundle.xml with download url
+                    bundleXMLParser bParser = new bundleXMLParser();
+                    bParser.parse(updateURL+"/bundle.inf");                                        
+                    switch (myConfig.getOS()) {
+                        case WINDOWS:
+                            sUrl = bParser.getWinUrl();
+                            break;
+                        case MACOS :
+                            sUrl = bParser.getMacUrl();
+                            break;
+                        case LINUX :
+                            sUrl = bParser.getLinuxUrl();
+                            break;
+                    }
+                    if (sUrl != null) {
+                        webdown myLoad = new webdown(sUrl,tmpUpdateFiles, i18n, msg);
+                        if (myLoad.isDownSuccess()) {
+                            File downFile = new File(myLoad.getDownPath());
+                            try {
+                                Desktop desktop = Desktop.getDesktop();
+                                desktop.open(downFile);
+                                System.exit(0);
+                            } catch (Exception e) {
+                            }                    
+                        }
+                    }
+                }                            
+            }
             
         } catch (SAXException ex) {
             alertbox aError = new alertbox(myConfig.getLocale());
