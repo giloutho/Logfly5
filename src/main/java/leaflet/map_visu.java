@@ -446,7 +446,7 @@ public class map_visu {
      * @param traceVisu 
      */
     public void genLegende(traceGPS traceVisu)  {
-        
+                
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsDate_Vol()).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsPilote()).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsVoile()).append("<br>';").append(RC);
