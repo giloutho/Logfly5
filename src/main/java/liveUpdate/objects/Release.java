@@ -65,16 +65,20 @@ public class Release implements Comparable {
     @Override
     public int compareTo(Object release) {
 
-        if (this.pkgver.equals(((Release) release).pkgver)) {
-            return Integer.parseInt(this.pkgrel) - Integer.parseInt(((Release) release).getPkgrel());
-        } else {
-            if ((Float.parseFloat(this.pkgver) - Float.parseFloat(((Release) release).getpkgver())) > 0) {
-                return 1;
-            } else if ((Float.parseFloat(this.pkgver) - Float.parseFloat(((Release) release).getpkgver())) < 0) {
-                return -1;
+        if (this.severity.equals(((Release) release).severity)) {    
+            if (this.pkgver.equals(((Release) release).pkgver)) {
+                return Integer.parseInt(this.pkgrel) - Integer.parseInt(((Release) release).getPkgrel());
             } else {
-                return 0;
+                if ((Float.parseFloat(this.pkgver) - Float.parseFloat(((Release) release).getpkgver())) > 0) {
+                    return 1;
+                } else if ((Float.parseFloat(this.pkgver) - Float.parseFloat(((Release) release).getpkgver())) < 0) {
+                    return -1;
+                } else {
+                    return 0;
+                }
             }
+        } else {
+            return 1000;
         }
 
     }
