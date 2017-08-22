@@ -67,6 +67,8 @@ import littlewins.winPhoto;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import photo.imgmanip;
 import systemio.textio;
 import systemio.webio;
@@ -209,11 +211,12 @@ public class CarnetViewController  {
             return cell ;
         });
         
-                
+        Statement stmt = null;
+        ResultSet rsYear = null;                
         try {
-                                    
+            stmt = myConfig.getDbConn().createStatement();                        
             // We search years in the logbook
-            ResultSet rsYear = myConfig.getDbConn().createStatement().executeQuery("SELECT strftime('%Y',V_date) FROM Vol GROUP BY strftime('%Y',V_date) ORDER BY strftime('%Y',V_date) DESC");
+            rsYear = stmt.executeQuery("SELECT strftime('%Y',V_date) FROM Vol GROUP BY strftime('%Y',V_date) ORDER BY strftime('%Y',V_date) DESC");
             if (rsYear != null)  {             
                 while (rsYear.next()) {
                     dataYear.add(rsYear.getString(1));
@@ -233,7 +236,7 @@ public class CarnetViewController  {
                 (observable, oldValue, newValue) -> showCarnetDetails((Carnet) newValue));   
                 
                 newVolsContent(yearFiltre);
-                                              
+                                                                                             
             }
 
         } catch ( Exception e ) {
@@ -243,15 +246,23 @@ public class CarnetViewController  {
             alert.setContentText(s);
             alert.showAndWait();                      
             System.exit(0);          
+        }  finally {
+            try{
+                rsYear.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
         
     }
     
     private void newVolsContent(String yearFiltre)  {
         boolean isCamera;
+        Statement stmt = null;
+        ResultSet rs = null;
         String sReq = "SELECT * from Vol WHERE V_Date >= '"+yearFiltre+"-01-01 00:01' AND V_Date <= '"+yearFiltre+"-12-31 23:59' ORDER BY V_Date DESC";
         try {
-            ResultSet rs = myConfig.getDbConn().createStatement().executeQuery(sReq);
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sReq);
             if (rs != null)  { 
                 tableVols.getItems().clear();
                 while (rs.next()) {
@@ -295,6 +306,11 @@ public class CarnetViewController  {
             alert.setContentText(s);
             alert.showAndWait();                      
             System.exit(0);          
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
         
     }
@@ -316,6 +332,8 @@ public class CarnetViewController  {
      * Delete a flight in the logbook
      */
     private void supprimeVol() {
+        PreparedStatement pstmt = null;
+        
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
@@ -325,13 +343,14 @@ public class CarnetViewController  {
             if (dConfirm.YesNo(i18n.tr("Suppression du vol"), sbMsg.toString()))   {                
                 String sReq = "DELETE FROM Vol WHERE V_ID = ?";
                 try {
-                    PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                    pstmt = myConfig.getDbConn().prepareStatement(sReq);
                     pstmt.setInt(1, Integer.valueOf(selectedVol.getIdVol()));
                     pstmt.executeUpdate();    
                     tableVols.getItems().remove(selectedIndex);
+                    pstmt.close();
                 } catch (Exception e) {
                     alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertError(e.getMessage()); 
+                    aError.alertError(e.getMessage());                                                           
                 }                                                
             }                                 
         } else {
@@ -348,13 +367,16 @@ public class CarnetViewController  {
     private void decodeVolCarnet(String idVol)  {
         
         Image dbImage = null;
+        Statement stmt = null;
+        ResultSet rs = null;
         
         String sReq = "SELECT V_IGC,UTC,V_Date,V_Duree,V_sDuree,V_AltDeco,V_LatDeco,V_LongDeco,V_Site,V_Engin,V_Pays,V_Commentaire,V_Photos,V_League,V_Score FROM Vol WHERE V_ID = "+idVol;
         try {
-            ResultSet rs =  myConfig.getDbConn().createStatement().executeQuery(sReq);
+            stmt = myConfig.getDbConn().createStatement();
+            rs =  stmt.executeQuery(sReq);
             if (rs != null)  { 
                 if (rs.getString("V_IGC") != null && !rs.getString("V_IGC").equals(""))  {                        
-                    currTrace = new traceGPS(rs.getString("V_IGC"), "IGC","",true, myConfig);   // String pFichier, String pType, String pPath
+                    currTrace = new traceGPS(rs.getString("V_IGC"),"",true, myConfig);   // String pFichier, String pType, String pPath
                     if (currTrace.isDecodage()) {
                         // Like in xLogfly we put glider and site
                         if (!rs.getString("V_Engin").equals(currTrace.getsVoile()))
@@ -421,6 +443,11 @@ public class CarnetViewController  {
         } catch ( Exception e ) {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(e.getClass().getName() + ": " + e.getMessage());                          
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
         }
         
         
@@ -434,7 +461,7 @@ public class CarnetViewController  {
     private void displayNoIGC(ResultSet rs) throws SQLException {
         Image dbImage = null;
                 
-        currTrace = new traceGPS(null, "NIL","",true, myConfig);  
+        currTrace = new traceGPS(null,"",true, myConfig);  
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");       
         currTrace.setDate_Vol(LocalDateTime.parse(rs.getString("V_Date"), formatter)); 
         currTrace.setDT_Deco(LocalDateTime.parse(rs.getString("V_Date"), formatter));          
@@ -792,12 +819,13 @@ public class CarnetViewController  {
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             Carnet currCarnet = tableVols.getSelectionModel().getSelectedItem();
-            String sReq = "UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?";                    
+            String sReq = "UPDATE Vol SET V_Commentaire= ? WHERE V_ID = ?";   
             try {
                 PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
                 pstmt.setString(1,null); 
                 pstmt.setInt(2, Integer.valueOf(currCarnet.getIdVol()));
                 pstmt.executeUpdate();    
+                pstmt.close();
                 // Pour rafrachir la carte
                 decodeVolCarnet(currCarnet.getIdVol());
             } catch (Exception e) {
@@ -816,7 +844,7 @@ public class CarnetViewController  {
     private void majComment() {
         String commentStr = tableVols.getSelectionModel().getSelectedItem().comTexte.getValue();
         winComment myComment = new winComment(commentStr,i18n);                
-            alertbox myInfo = new alertbox(myConfig.getLocale());
+        alertbox myInfo = new alertbox(myConfig.getLocale());
         if (myComment.isModif())  {                        
             // l'échappement des apostrophes est fait automatiquement
             String strComment = myComment.getCommentTxt();
@@ -827,6 +855,7 @@ public class CarnetViewController  {
                 pstmt.setString(1,strComment); 
                 pstmt.setInt(2, Integer.valueOf(currCarnet.getIdVol()));
                 pstmt.executeUpdate();  
+                pstmt.close();
                 // Pour rafrachir la carte
                 decodeVolCarnet(currCarnet.getIdVol());
             } catch (Exception e) {
@@ -874,7 +903,8 @@ public class CarnetViewController  {
                 PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
                 pstmt.setString(1,null); 
                 pstmt.setInt(2, Integer.valueOf(currCarnet.getIdVol()));
-                pstmt.executeUpdate();    
+                pstmt.executeUpdate(); 
+                pstmt.close();
             } catch (Exception e) {
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(e.getMessage()); 
@@ -913,7 +943,8 @@ public class CarnetViewController  {
                             PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
                             pstmt.setString(1,strImage); 
                             pstmt.setInt(2, Integer.valueOf(currCarnet.getIdVol()));
-                            pstmt.executeUpdate();    
+                            pstmt.executeUpdate();   
+                            pstmt.close();
                         } catch (Exception e) {
                             alertbox aError = new alertbox(myConfig.getLocale());
                             aError.alertError(e.getMessage()); 
@@ -950,6 +981,7 @@ public class CarnetViewController  {
                 PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq.toString());
                 pstmt.setInt(1, Integer.valueOf(selectedVol.getIdVol()));
                 pstmt.executeUpdate(); 
+                pstmt.close();
                 switch (pRetour) {
                     case 1:
                         showFullMap();
