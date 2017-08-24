@@ -67,6 +67,8 @@ public class ConfigViewController implements Initializable {
     @FXML
     private Label lbIntegration;
     @FXML
+    private Label lbLimite;
+    @FXML
     private Label lbMail;
     @FXML
     private Label lbLeague;
@@ -98,6 +100,8 @@ public class ConfigViewController implements Initializable {
     private ChoiceBox chbGPS;    
     @FXML
     private TextField txIntegration;    
+    @FXML
+    private TextField txLimite;    
     @FXML
     private TextField txMailPilote;    
     @FXML
@@ -244,6 +248,7 @@ public class ConfigViewController implements Initializable {
         txVoile.setText(myConfig.getDefaultVoile());
         iniChbGPS();
         txIntegration.setText(String.valueOf(myConfig.getIntegration()));
+        txLimite.setText(String.valueOf(myConfig.getGpsLimit()));
         txMailPilote.setText(myConfig.getPiloteMail());
         iniChbLeague();
         txIdentif.setText(myConfig.getPiloteID());
@@ -303,6 +308,7 @@ public class ConfigViewController implements Initializable {
         myConfig.setDefaultVoile(txVoile.getText());
         myConfig.setIdxGPS(chbGPS.getSelectionModel().getSelectedIndex()); 
         myConfig.setIntegration(Integer.parseInt(txIntegration.getText()));
+        myConfig.setGpsLimit(Integer.parseInt(txLimite.getText()));
         myConfig.setPiloteMail(txMailPilote.getText());
         myConfig.setIdxLeague(chbLeague.getSelectionModel().getSelectedIndex());
         myConfig.setPiloteID(txIdentif.getText());
@@ -635,6 +641,7 @@ public class ConfigViewController implements Initializable {
         lbVoile.setText(i18n.tr("Voile"));
         lbGPS.setText(i18n.tr("GPS habituel"));
         lbIntegration.setText(i18n.tr("Intégration"));
+        lbLimite.setText(i18n.tr("Limite USB"));
         lbMail.setText(i18n.tr("Mail pilote"));
         lbLeague.setText(i18n.tr("League"));
         lbIdentif.setText(i18n.tr("Identifiant"));
