@@ -7,14 +7,13 @@
 package gps;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import model.Gpsmodel;
 import settings.osType;
 import systemio.textio;
-import trackgps.traceGPS;
 
 /**
  *
@@ -28,6 +27,7 @@ public class reversale {
     private File fDrive;
     private int idxDrive;
     private ObservableList <String> driveList;
+    private String closingDate;
     
     public boolean isConnected() {
         return connected;
@@ -59,16 +59,27 @@ public class reversale {
     
     
     
-    public reversale(osType currOs) {
+    public reversale(osType currOs, int gpsLimit) {
         boolean conn = false;
         fLog = null;
         fCompet = null;
         fDrive = null;   
         
+        setDateLevel(gpsLimit);
+        
         conn = testConnection(currOs);
         
-        setConnected(conn);
+        setConnected(conn);                
         
+    }
+    
+    private void setDateLevel(int gpsLimit) {
+        
+        Calendar myCalendar = Calendar.getInstance();
+        myCalendar.add(Calendar.MONTH, -(gpsLimit));
+        SimpleDateFormat sdf = new SimpleDateFormat("YYMMdd");
+        closingDate = sdf.format(myCalendar.getTime());
+                
     }
     
     public boolean testConnection(osType currOs) {
@@ -139,7 +150,9 @@ public class reversale {
           //  if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {
             if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                    
                 if (files[i].isFile()) {
-                    trackPathList.add(files[i].getPath());  
+                    if (files[i].getName().substring(0,7).compareTo(closingDate) > 0) {
+                        trackPathList.add(files[i].getPath());
+                    }
                 }
             }
             if (files[i].isDirectory()) {
