@@ -67,9 +67,21 @@ import littlewins.winPhoto;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import igc.mergingIGC;
+import java.sql.Connection;
+import static java.time.LocalDateTime.now;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import javafx.collections.transformation.SortedList;
+import javafx.scene.control.SelectionMode;
+import littlewins.winGlider;
+import model.Gpsmodel;
 import photo.imgmanip;
+import systemio.mylogging;
 import systemio.textio;
 import systemio.webio;
 import trackgps.scoring;
@@ -94,7 +106,9 @@ public class CarnetViewController  {
     @FXML
     private TableColumn<Carnet, String> dureeCol;
     @FXML
-    private TableColumn<Carnet, String> siteCol;                    
+    private TableColumn<Carnet, String> siteCol;        
+    @FXML
+    private TableColumn<Carnet, String> voileCol;      
     @FXML
     private Button btnStat;        
     @FXML
@@ -127,6 +141,8 @@ public class CarnetViewController  {
     //END | SQLITE
     
     traceGPS currTrace=null;    
+    
+    private StringBuilder sbError;
 
     private ObservableList <Carnet> dataCarnet; 
     private ObservableList <String> dataYear; 
@@ -142,12 +158,15 @@ public class CarnetViewController  {
     private void iniTable() {
         dataCarnet = FXCollections.observableArrayList();
         dataYear = FXCollections.observableArrayList();
+        
+        tableVols.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                        
         imgCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("camera"));
         dateCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("date"));
         heureCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("heure"));
         dureeCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("duree"));
         siteCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("site"));     
+        voileCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("engin"));     
         
         // Try to change look with value of Site column
         dateCol.setCellFactory(column -> {
@@ -635,9 +654,24 @@ public class CarnetViewController  {
             }
         });
         cm.getItems().add(cmItemFic);
+        
+        MenuItem cmItemGlider = new MenuItem(i18n.tr("Modifier la voile"));
+        cmItemGlider.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                changeGlider();
+            }
+        });
+        cm.getItems().add(cmItemGlider);
+        
+        MenuItem cmItemMerging = new MenuItem(i18n.tr("Fusionner les vols"));
+        cmItemMerging.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                askMergingIGC();
+            }
+        });
+        cm.getItems().add(cmItemMerging);
         /**
          * Missing items :
-         * Modifier la voile
          * Fusionne les vols
          * Modifier le décalage UTC        ? pertinent ou alors pour vieille compatibilitité
          * Fiche site
@@ -650,6 +684,226 @@ public class CarnetViewController  {
         return cm;
     }
     
+    private ObservableList<String> listGliders() {
+        ObservableList<String> lsGliders = FXCollections.observableArrayList();       
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        try {
+            stmt = myConfig.getDbConn().createStatement();                       
+            rs = stmt.executeQuery("SELECT V_Engin,Count(V_ID) FROM Vol GROUP BY upper(V_Engin)");
+            if (rs != null)  {             
+                while (rs.next()) {
+                    String gl = rs.getString(1);
+                    if (gl != null && !gl.isEmpty() && !gl.equals("null")) {
+                        lsGliders.add(gl);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertError(e.getMessage());                 
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
+        }
+        
+        return lsGliders;
+    } 
+    
+    // pop combo https://stackoverflow.com/questions/27608380/populate-a-combobox-from-an-array-list-populated-from-an-sql-statment
+    
+    private void changeGlider() {
+        ObservableList<String> lsGliders = listGliders();
+                
+        winGlider chgeGlider = new winGlider(lsGliders, myConfig.getDefaultPilote(), i18n); 
+        if (chgeGlider.isModif()) {
+            System.out.println(chgeGlider.getwPilot()+" "+chgeGlider.getwGlider());
+            String strPilot = chgeGlider.getwPilot();
+            String strGlider = chgeGlider.getwGlider();
+            ObservableList<Carnet> selFlights = tableVols.getSelectionModel().getSelectedItems();         
+            PreparedStatement pstmt = null;
+            for(Carnet flight : selFlights){               
+                try {           
+                    String sReq = "UPDATE Vol SET V_Engin= ? WHERE V_ID = ?";   
+                    pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                    pstmt.setString(1,strGlider); 
+                    pstmt.setInt(2, Integer.valueOf(flight.getIdVol()));
+                    pstmt.executeUpdate();                      
+                    flight.setEngin(strGlider);
+                } catch (Exception e) {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(e.getMessage()); 
+                } finally {
+                    try{                    
+                        pstmt.close();
+                    } catch(Exception e) { } 
+                }        
+            }
+            tableVols.refresh();
+        }        
+    }
+    
+    private void askMergingIGC() {
+        dialogbox dConfirm = new dialogbox();                        
+        if (dConfirm.YesNo("",i18n.tr("Fusionner les traces IGC ?")))   {    
+            mergeIGC();
+        }
+    }
+    
+    private void mergeIGC()  {
+        int nbVol = 0;
+        String sImage = null;
+        long totTime = 0;
+        int idRest = -1;
+        LocalDateTime ldtRef = null;
+        int sameDay = -1;
+        LocalDateTime ldtFirst = now();
+        DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); 
+        
+        mergingIGC mgIGC = new mergingIGC();
+        
+        ObservableList<Carnet> selFlights = tableVols.getSelectionModel().getSelectedItems();    
+        /*
+        * We must use a buffer because selFlights is NOT modifiable
+        * When we tried a sort with the comparator the code throws
+        * an exception ...java.lang.UnsupportedOperationException... Unmodifiable...
+        * we create a modifiable list before sorting
+        * https://stackoverflow.com/questions/21854353/why-does-collections-sort-throw-unsupported-operation-exception-while-sorting-by
+        */
+        List<Carnet> selBuffer = new ArrayList<Carnet>(selFlights);
+
+        Comparator<? super Carnet> comparatorDate = new Comparator<Carnet>() {
+            @Override
+            public int compare(Carnet c1, Carnet c2) {
+                return c1.getHeure().compareTo(c2.getHeure());
+            }
+        };                   
+        Collections.sort(selBuffer, comparatorDate);
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        Statement stmt = null;
+        for(Carnet flight : selBuffer){                 
+            try { 
+                String sReq = "SELECT * FROM Vol WHERE V_ID = "+flight.getIdVol();                
+                stmt = myConfig.getDbConn().createStatement();
+                rs = stmt.executeQuery(sReq);                
+                if (rs.next()) {
+                    LocalDateTime ldtFromDb = LocalDateTime.parse(rs.getString("V_Date"), formatterSQL); 
+                    if (ldtRef == null) {
+                        ldtRef = ldtFromDb;
+                        sameDay = 0;
+                    } else {
+                        Period diffDays = Period.between(ldtRef.toLocalDate(), ldtFromDb.toLocalDate()); 
+                        sameDay = diffDays.getYears()+diffDays.getMonths()+diffDays.getDays();
+                    }
+                    if (sameDay == 0) {
+                        nbVol++;
+                        totTime = totTime+rs.getLong("V_Duree");
+                        mgIGC.extractBRec(rs.getString("V_IGC"));
+                        String dbImage =rs.getString("V_Photos");
+                        if (dbImage != null && !dbImage.isEmpty() && !dbImage.equals("null")) {
+                            sImage = dbImage;
+                        } else {
+                            sImage = "";
+                        }
+
+                        if (ldtFromDb.isBefore(ldtFirst)) {
+                            ldtFirst = ldtFromDb;
+                            idRest = rs.getInt("V_ID");
+                        }
+                    } else {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertNumError(1110);   // Flights are not of on the same day 
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getMessage()); 
+            } finally {
+                try{     
+                    rs.close();
+                    pstmt.close();
+                } catch(Exception e) { } 
+            }        
+        }        
+        if (nbVol > 1) {
+            String totIGC = mgIGC.getTotIGC();
+            Connection conn = null;
+            PreparedStatement pstmtDel = null;
+            PreparedStatement pstmtUpd = null;
+            try {
+                conn = myConfig.getDbConn();
+                if(conn == null)
+                    return;
+                conn.setAutoCommit(false);   
+                // delete flights
+                for(Carnet flight : selBuffer){  
+                    if (idRest != Integer.valueOf(flight.getIdVol())) {
+                        String sReq = "DELETE FROM Vol WHERE V_ID = ?";                        
+                        pstmtDel = conn.prepareStatement(sReq);
+                        pstmtDel.setInt(1, Integer.valueOf(flight.getIdVol()));
+                        pstmtDel.executeUpdate();                                    
+                    }
+                }
+                // We update the flight kept in logbook
+                int h,mn;                
+                String sQuote ="'";
+                StringBuilder sbReq = new StringBuilder();
+                h = (int) totTime/3600;
+                mn = (int) (totTime - (h*3600))/60;
+                //  V_Duree, V_sDuree,V_Commentaire must be updated                
+                sbReq.append("UPDATE Vol SET V_Duree=").append(sQuote).append(String.valueOf(totTime)).append(sQuote+",");
+                sbReq.append(" V_sDuree=").append(sQuote+String.valueOf(h)).append("h").append(String.valueOf(mn)).append("mn").append(sQuote).append(",");
+                sbReq.append(" V_Commentaire=").append(sQuote).append(String.valueOf(nbVol)).append(" ").append(i18n.tr("vols fusionnés")).append(sQuote).append(",");
+                if (sImage != null && !sImage.isEmpty()) {
+                    sbReq.append(" V_Photos=").append(sQuote).append(sImage).append(sQuote).append(",");
+                } 
+                sbReq.append(" V_IGC =").append(sQuote).append(totIGC).append(sQuote).append(" WHERE V_ID = ?");
+                pstmtUpd = conn.prepareStatement(sbReq.toString());
+                pstmtUpd.setInt(1, idRest);
+                pstmtUpd.executeUpdate();
+                
+                // commit work
+                conn.commit();
+            } catch (SQLException e1) {
+                try {
+                    if (conn != null) {
+                        conn.rollback();
+                    }
+                } catch (SQLException e2) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e2.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e1.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());
+            } finally {
+                try {                   
+                    if (pstmtDel != null) {
+                        pstmtDel.close();
+                    }
+                    if (pstmtUpd != null) {
+                        pstmtUpd.close();
+                    }
+                    conn.setAutoCommit(true); 
+                    String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
+                    newVolsContent(selectedYear);
+                } catch (SQLException e3) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e3.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }
+            }                                    
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(1112);   // Only one flight selected
+        }
+    }
     
     /*
     * Run simple logbook statistics 
@@ -746,7 +1000,6 @@ public class CarnetViewController  {
                 if (myUpload.testURL(uploadUrl) == 200)  {
                     byte[] igcBytes = currTrace.exportBytes();
                     if (igcBytes.length > 100)  {
-                        System.out.println("Lg avant transfert : "+igcBytes.length);
                         String webFicIGC = myUpload.httpUploadIgc(igcBytes, uploadUrl);
                         if (webFicIGC != null) {
                             showVisuGPS(webFicIGC);
@@ -1100,7 +1353,8 @@ public class CarnetViewController  {
         dateCol.setText(i18n.tr("Date"));
         heureCol.setText(i18n.tr("Heure"));
         dureeCol.setText(i18n.tr("Durée"));
-        siteCol.setText(i18n.tr("Site"));    
+        siteCol.setText(i18n.tr("Site"));
+        voileCol.setText(i18n.tr("Voile"));
         btnMap.setStyle("-fx-background-color: transparent;");
         Tooltip mapToolTip = new Tooltip();
         mapToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
