@@ -48,22 +48,16 @@ public class traceGPSTest {
                                   
         if (myConfig.isValidConfig()) {        
             //File fIGC = new File("/Users/gil/Documents/Logflya/Clem_Turq1.IGC");   // OK
-            File fIGC = new File("/Users/gil/Documents/Logfly/flytec/vol2.igc");   // unvalid
+            File fIGC = new File("/Users/gil/Documents/Logfly/17060201.IGC");   // unvalid
             //File fIGC = new File("/Users/gil/Documents/Logfly/flytec/unvalid.igc");  
-            traceGPS instance = new traceGPS(fIGC, "IGC",true, myConfig);   
-            assertFalse(instance.isDecodage());                      
+            traceGPS instance = new traceGPS(fIGC, true, myConfig);                       
             if (instance.isDecodage())  {            
-                System.out.println("Valid track - Gross points : "+instance.Tb_Tot_Points.size()+" valid points : "+instance.Tb_Good_Points.size());
-            } else {
-                try {
-                    if (instance.Tb_Tot_Points.size() > 0)  {
-                        System.out.println("Unvalid track - Gross points : "+instance.Tb_Tot_Points.size()+" valid points : "+instance.Tb_Good_Points.size());
-                    } else {
-                        System.out.println("Unvalid track - No points in this file ");
-                    }
-                } catch (Exception e) {
-                }
-            }                
+                System.out.println("H Deco : "+instance.getDT_Deco()+" h Att : "+instance.getDT_Attero()+" durée : "+instance.getDuree_Vol()+" "+instance.getColDureeVol());
+            }            
+            traceGPS instance2 = new traceGPS(fIGC,false, myConfig);           
+            if (instance2.isDecodage())  {            
+                System.out.println("H Deco : "+instance2.getDT_Deco()+" h Att : "+instance2.getDT_Attero()+" durée : "+instance2.getDuree_Vol()+" "+instance2.getColDureeVol());
+            }            
         }
     }
     
