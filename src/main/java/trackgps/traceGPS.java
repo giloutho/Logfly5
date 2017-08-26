@@ -695,7 +695,9 @@ public class traceGPS {
                                     Decodage_HFDTE = true;                                                                          
                                 }                                                                 
                                 break;   
-                              case "HFPLT":
+                              case "HFPLT": 
+                              case "HPPLT": 
+                              case "HOPLT" :   // in GPSDump we have HOPLTPILOT: G. Legras instead of HFPLTPILOT:G. Legras
                                   // pilot name decoding, 17 characters or less
                                   String[] LineHFPLT = sLine[i].split(":");
                                   if (LineHFPLT.length > 1) sPilote = LineHFPLT[1];
@@ -707,19 +709,10 @@ public class traceGPS {
                                         if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sPilote.substring(kk,kk+1));
                                   }
                                   sPilote = GoodName;
-                                break;
-                                case "HOPLT":
-                                  // in GPSDump we have HOPLTPILOT: G. Legras instead of HFPLTPILOT:G. Legras
-                                  String[] LineHOPLT = sLine[i].split(":");
-                                  if (LineHOPLT .length > 1) sPilote = LineHOPLT[1];
-                                  GoodName = "";
-                                  for (int kk = 0 ; kk < sPilote.length() ; kk++) {
-                                        char aChar = sPilote.charAt(kk);                                      
-                                        if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sPilote.substring(kk,kk+1));
-                                  }
-                                  sPilote = GoodName;
-                                break;
-                                case "HFGTY":
+                                break;                                
+                                case "HFGTY":  // glider name decoding
+                                case "HPGTY":                                    
+                                case "HOGTY":                                    
                                   // glider name decoding
                                   String[] LineHFGTY = sLine[i].split(":");
                                   if (LineHFGTY.length > 1) sVoile = LineHFGTY[1];  
@@ -730,20 +723,7 @@ public class traceGPS {
                                         if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
                                   }
                                   sVoile = GoodName;
-                                break;
-                                case "HOGTY":
-                                  // ' In GPSDump -> HOGTYGLIDERTYPE: None
-                                  // glider name decoding
-                                  String[] LineHOGTY = sLine[i].split(":");
-                                  if (LineHOGTY.length > 1) sVoile = LineHOGTY[1];
-                                  GoodName = "";
-                                  // always a possible CR in the string
-                                  for (int kk = 0 ; kk < sVoile.length() ; kk++) {
-                                        char aChar = sVoile.charAt(kk);                                      
-                                        if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
-                                  }
-                                  sVoile = GoodName;                                  
-                                break;
+                                break;                               
                                 case "HFRFW":
                                   // Other case for glider name
                                   String[] LineHFRFW = sLine[i].split(":");
