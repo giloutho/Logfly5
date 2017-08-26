@@ -147,6 +147,12 @@ public class alertbox {
             case 1104:                
                 msg = i18n.tr("Problème d'insertion dans le fichier des vols");                          
                 break; 
+            case 1110 :                
+                msg = i18n.tr("Les vols doivent être du même jour");                          
+                break;
+            case 1112 :                
+                msg = i18n.tr("Un seul vol sélectionné");                          
+                break;
             default:
                 msg = i18n.tr("Erreur indéterminée");
         }        
