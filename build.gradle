@@ -49,4 +49,5 @@ jfx {
     vendor = 'Gil THOMAS'
     appName = 'Logfly5'
     additionalAppResources = 'src/main/runlib'
+    nativeReleaseVersion = "08"
 }

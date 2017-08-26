@@ -160,7 +160,7 @@ public class RootLayoutController {
     @FXML 
     public void showOutils() {
         alertbox myInfo = new alertbox(myConfig.getLocale());           
-        myInfo.alertInfo("On est bien en 5.06");       
+        myInfo.alertInfo("On est bien en 5.08");       
     }
     
     /**
