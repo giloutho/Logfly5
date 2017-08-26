@@ -67,6 +67,7 @@ public class configProg {
     private static String lastOpenAir;      // App.LastOpenAir    
     private static final int distDeco = 300;// distance for take off research
     private static boolean updateAuto;      // new in V5
+    private static int gpsLimit;            // new in V5 date track search depth for usb GPS
     private static String version;
     private static Connection dbConn;
     
@@ -267,8 +268,16 @@ public class configProg {
         }
        
     }
-    
 
+    public static int getGpsLimit() {
+        return gpsLimit;
+    }
+
+    public static void setGpsLimit(int gpsLimit) {
+        configProg.gpsLimit = gpsLimit;
+    }
+        
+    
     public static String getPathImport() {
         return pathImport;
     }
@@ -488,7 +497,8 @@ public class configProg {
                     StringBuilder req1 = new StringBuilder();
                     req1.append("CREATE TABLE Vol (V_ID integer NOT NULL PRIMARY KEY, V_Date TimeStamp, V_Duree integer, ");
                     req1.append("V_sDuree varchar(20), V_LatDeco double, V_LongDeco double, V_AltDeco integer, ");
-                    req1.append("V_Site varchar(100), V_Pays varchar(50), V_Commentaire Long Text, V_IGC Long Text, V_Photos Long Text,UTC integer, V_CFD integer,V_Engin Varchar(10))");
+                    req1.append("V_Site varchar(100), V_Pays varchar(50), V_Commentaire Long Text, V_IGC Long Text, V_Photos Long Text,UTC integer, V_CFD integer,V_Engin Varchar(10), ");
+                    req1.append("V_League integer, V_Score Long Text)");
                     Statement stmt = con.createStatement();
                     stmt.execute(req1.toString());
                     // a debate about stringbuilder creation 
@@ -851,6 +861,7 @@ public class configProg {
             // default values for new parameters of V5 
             updateAuto = true;
             photoAuto = true;
+            gpsLimit = 6;
         }
     }
     
@@ -984,6 +995,7 @@ public class configProg {
         prop.setProperty("lasttrace",lastTrace);
         prop.setProperty("lastopenair",lastOpenAir);
         prop.setProperty("updateauto",String.valueOf(updateAuto));
+        prop.setProperty("gpslimit",String.valueOf(gpsLimit));
     }
     
     /**
@@ -1062,6 +1074,10 @@ public class configProg {
             updateAuto = Boolean.parseBoolean(prop.getProperty("updateauto"));
         else
             updateAuto = false;
+        if (prop.getProperty("gpslimit") != null)
+            gpsLimit = Integer.parseInt(prop.getProperty("gpslimit"));
+        else
+            gpsLimit = 6;
     }
     
     /**
