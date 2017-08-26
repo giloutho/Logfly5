@@ -291,7 +291,7 @@ public class GPSViewController {
             case 5:
                 // Reversale
                 currGPS = gpsType.Rever;   
-                usbRever = new reversale(myConfig.getOS());
+                usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
                 if (usbRever.isConnected()) {
                     goodListDrives(usbRever.getDriveList(),usbRever.getIdxDrive());
                 } else {
@@ -823,7 +823,6 @@ public class GPSViewController {
         ArrayList<String> trackPathList = new ArrayList<>(); 
       //  ObservableList <Gpsmodel> importBrut = FXCollections.observableArrayList();  
         configProg otherConfig = new configProg();        
-        ArrayList <Gpsmodel> importBrut = new ArrayList<>();
         dbSearch rechDeco = new dbSearch(myConfig); 
         try {
             switch (currGPS) {
@@ -874,7 +873,7 @@ public class GPSViewController {
                 // GPS model is stored in settings
                 switch (currGPS) {
                     case Rever:                                            
-                     //   myConfig.setIdxGPS(5);
+                        myConfig.setIdxGPS(5);
                         break;                    
                 }
             } else {
