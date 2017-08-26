@@ -147,6 +147,11 @@ public class pointIGC {
         dHeure = pDateVol;
       }
       
+      public void setLdtHeure(LocalDateTime pDateVol)
+      {        
+        dHeure = pDateVol;
+      }
+      
       public void setDistPtPcdt(double pDistance)
       {
           DistPtPcdt = pDistance;
