@@ -67,6 +67,7 @@ public class checkUpdate {
         try {            
             Release current = parser.parse(updateURL+"/latest.inf", Modes.URL);
             // With current updates, compare result < 1000
+            // if severity is longer than current version CompareTo return 1000
             if (current.compareTo(release) < 1000) {
                 if (current.compareTo(release) > 0) {
                     if (!myConfig.isUpdateAuto())  {
