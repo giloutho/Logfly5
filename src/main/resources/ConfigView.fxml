@@ -56,24 +56,27 @@
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
                            <children>
                               <Label fx:id="lbVoile" text="fVoile" GridPane.rowIndex="1" />
                               <Label fx:id="lbPilote" text="fNom pilote" />
                               <Label fx:id="lbGPS" text="fGPS habituel" GridPane.rowIndex="2" />
                               <Label fx:id="lbIntegration" text="fIntegration" GridPane.rowIndex="3" />
-                              <Label fx:id="lbMail" text="fMail pilote" GridPane.rowIndex="4" />
-                              <Label fx:id="lbLeague" text="fLeague" GridPane.rowIndex="5" />
-                              <Label fx:id="lbIdentif" text="fIdentifiant" GridPane.rowIndex="6" />
-                              <Label fx:id="lbPass" text="fPass" GridPane.rowIndex="7" />
+                              <Label fx:id="lbMail" text="fMail pilote" GridPane.rowIndex="5" />
+                              <Label fx:id="lbLeague" text="fLeague" GridPane.rowIndex="6" />
+                              <Label fx:id="lbIdentif" text="fIdentifiant" GridPane.rowIndex="7" />
+                              <Label fx:id="lbPass" text="fPass" GridPane.rowIndex="8" />
                               <TextField fx:id="txPilote" prefHeight="27.0" prefWidth="143.0" GridPane.columnIndex="1" />
                               <TextField fx:id="txVoile" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                               <ChoiceBox fx:id="chbGPS" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                               <TextField fx:id="txIntegration" maxWidth="50.0" minHeight="27.0" minWidth="50.0" prefHeight="27.0" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                              <TextField fx:id="txMailPilote" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                              <TextField fx:id="txIdentif" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                              <ChoiceBox fx:id="chbLeague" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                              <PasswordField fx:id="txPass" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                              <TextField fx:id="txMailPilote" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                              <TextField fx:id="txIdentif" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                              <ChoiceBox fx:id="chbLeague" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                              <PasswordField fx:id="txPass" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                              <Label fx:id="lbLimite" prefHeight="17.0" prefWidth="90.0" text="fLimite USB" GridPane.rowIndex="4" />
+                              <TextField fx:id="txLimite" maxWidth="50.0" minHeight="27.0" minWidth="36.0" prefHeight="27.0" prefWidth="36.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                            </children>
                         </GridPane>
                         <Button fx:id="btPilotOK" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
