@@ -10,12 +10,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.image.Image;
 
 /**
  *
@@ -149,5 +145,5 @@ public class Carnet {
 
     public void setCamera(String cameraStr) {
         camera.set(cameraStr); 
-    }                    
+    }              
 }
