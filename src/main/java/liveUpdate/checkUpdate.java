@@ -44,9 +44,8 @@ public class checkUpdate {
     private StringBuilder sbError;
     
     configProg myConfig = new configProg();
-    
-    // TO DO put this parameter in settings
-    private String updateURL;  // "http://www.logfly.org/download/logfly5";
+       
+    private String updateURL;  
     
     private String tmpUpdateFiles;
     
