@@ -108,10 +108,10 @@ public class scoring {
                 switch (myConfig.getOS()) {
                     case WINDOWS :
                         // to do windows path testing
-                        pathModPoints = executionPath+"\\logfly_lib\\points.exe";    // Windows
+                        pathModPoints = executionPath+File.separator+"points.exe";    // Windows
                         break;
                     case MACOS :
-                        pathModPoints = executionPath+"/points";
+                        pathModPoints = executionPath+File.separator+"points";
                         File fPoints = new File(pathModPoints);
                         if(fPoints.exists()) pointsOK = true;                        
                         break;
