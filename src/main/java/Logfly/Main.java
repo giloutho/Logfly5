@@ -35,6 +35,7 @@ public class Main extends Application {
     private CarnetViewController controlCarnet;
     private TraceViewController controlTrace;
     private GPSViewController controlGPS;
+    private StringBuilder sbError;
     
     
     public configProg myConfig;
@@ -62,13 +63,15 @@ public class Main extends Application {
         if (myConfig.isValidConfig()) {
             myConfig.setVersion(currVersion);
             i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
-            
+                                    
             initRootLayout();        
             showCarnetOverview();    
             try {
                 checkUpdate checkUpgrade = new checkUpdate(release, myConfig);
             } catch (Exception e) {
-                e.printStackTrace();
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());
             }            
         } else  {            
             alertbox aError = new alertbox(java.util.Locale.ENGLISH);            
