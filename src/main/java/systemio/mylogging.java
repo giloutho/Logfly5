@@ -6,6 +6,7 @@
  */
 package systemio;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -32,7 +33,7 @@ public class mylogging {
         configProg myConfig = new configProg();
         myConfig.readSettings();   
         if (myConfig.isValidConfig()) {
-            fileHandler = new FileHandler(myConfig.getPathW()+"logfly.log",true);    
+            fileHandler = new FileHandler(myConfig.getPathW()+ File.separator +"logfly.log",true);    
         } else {
             fileHandler = new FileHandler("logfly.log",true);
         }
