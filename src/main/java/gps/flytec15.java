@@ -20,6 +20,8 @@ package gps;
  * getIGC         : called by GPSViewController for extracted flight track in IGC format
  */
 
+import com.serialpundit.core.SerialComPlatform;
+import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.serial.SerialComManager;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +33,7 @@ import systemio.mylogging;
 public class flytec15 {
     
     private SerialComManager scm;
+    private int osType;
     private long handle;   
     private String serialPortName;    
     private String lstVols;
@@ -38,7 +41,9 @@ public class flytec15 {
     
     public flytec15() throws Exception {
         // Create and initialize serialpundit
-        scm = null;        
+        scm = null;    
+        SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
+        osType = scp.getOSType();
     }
     
     /**
@@ -85,7 +90,12 @@ public class flytec15 {
             // open and configure serial port
             serialPortName = namePort;
             scm = new SerialComManager();   
-            handle = scm.openComPort(serialPortName, true, true, false);
+            if(osType == SerialComPlatform.OS_WINDOWS) {
+                // For Windows the exclusiveOwnerShip must be true as it does not allow sharing COM ports
+                handle = scm.openComPort(serialPortName, true, true, true);
+            } else {
+                handle = scm.openComPort(serialPortName, true, true, false);
+            }
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.XON_XOFF, (char) 0x11, (char)0x13, false, false);                      
@@ -117,7 +127,12 @@ public class flytec15 {
             // open and configure serial port
             serialPortName = namePort;
             scm = new SerialComManager();   
-            handle = scm.openComPort(serialPortName, true, true, false);            
+            if(osType == SerialComPlatform.OS_WINDOWS) {
+                // For Windows the exclusiveOwnerShip must be true as it does not allow sharing COM ports
+                handle = scm.openComPort(serialPortName, true, true, true);
+            } else {
+                handle = scm.openComPort(serialPortName, true, true, false);
+            }          
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);            
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.XON_XOFF, (char) 0x11, (char)0x13, false, false);            
             if (getDeviceInfo(false)) {

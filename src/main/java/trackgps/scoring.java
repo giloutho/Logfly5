@@ -109,6 +109,8 @@ public class scoring {
                     case WINDOWS :
                         // to do windows path testing
                         pathModPoints = executionPath+File.separator+"points.exe";    // Windows
+                        File fwPoints = new File(pathModPoints);
+                        if(fwPoints.exists()) pointsOK = true;          
                         break;
                     case MACOS :
                         pathModPoints = executionPath+File.separator+"points";

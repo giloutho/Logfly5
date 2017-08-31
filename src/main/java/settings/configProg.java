@@ -851,6 +851,8 @@ public class configProg {
                 lastTrace = ""; 
                 lastOpenAir = "";
                 updateAuto = true;
+                photoAuto = true;
+                gpsLimit = 6;
                 configDefault = dbCreation(fullPathDb);            
             } else {
                 configDefault = false;

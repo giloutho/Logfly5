@@ -92,7 +92,7 @@ public class reversale {
             
         switch (currOs) {
             case WINDOWS:
-                // to do
+                drives = File.listRoots();
                 break;
             case MACOS :
                 drives = new File("/Volumes").listFiles();
@@ -113,8 +113,9 @@ public class reversale {
                 if (size < 63999999999L) {
                     File listFile[] = aDrive.listFiles();
                     if (listFile != null) {
-                        for (int i=0; i<listFile.length; i++)                                 
+                        for (int i=0; i<listFile.length; i++)         
                         {
+                                                        System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].isDirectory());
                             if (listFile[i].getName().equals("COMPET") && listFile[i].isDirectory()) {
                                 fCompet = listFile[i];
                             }

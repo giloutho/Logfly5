@@ -46,7 +46,7 @@ apply plugin: 'javafx-gradle-plugin'
 jfx {
     mainClass = 'Logfly.Main'
     jfxMainAppJarName = "Logfly.jar"
-    vendor = 'Gil THOMAS'
+    vendor = 'Logfly'
     appName = 'Logfly5'
     additionalAppResources = 'src/main/runlib'
     nativeReleaseVersion = "08"

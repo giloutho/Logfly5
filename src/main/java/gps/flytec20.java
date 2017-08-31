@@ -6,6 +6,8 @@
  */
 package gps;
 
+import com.serialpundit.core.SerialComPlatform;
+import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.serial.SerialComManager;
 import static gps.gpsutils.ajouteChecksum;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import model.Gpsmodel;
 public class flytec20 {
     
     private SerialComManager scm;
+    private int osType;
     private long handle;   
     private String serialPortName;
     private String deviceType;
@@ -54,6 +57,8 @@ public class flytec20 {
     public flytec20() throws Exception {
         // Create and initialize serialpundit
         scm = null;
+        SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
+        osType = scp.getOSType();        
     }
     
     /**
@@ -100,7 +105,7 @@ public class flytec20 {
             // open and configure serial port
             serialPortName = namePort;
             scm = new SerialComManager();   
-            handle = scm.openComPort(serialPortName, true, true, false);
+            handle = scm.openComPort(serialPortName, true, true, true);
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.XON_XOFF, (char) 0x11, (char)0x13, false, false);                      
@@ -130,7 +135,7 @@ public class flytec20 {
             // open and configure serial port
             serialPortName = namePort;
             scm = new SerialComManager();   
-            handle = scm.openComPort(serialPortName, true, true, false);            
+            handle = scm.openComPort(serialPortName, true, true, true);            
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);            
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.XON_XOFF, (char) 0x11, (char)0x13, false, false);            
             if (getDeviceInfo(false)) {
