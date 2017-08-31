@@ -6,6 +6,8 @@
  */
 package gps;
 
+import com.serialpundit.core.SerialComPlatform;
+import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.core.util.SerialComUtil;
 import com.serialpundit.serial.SerialComManager;
 import static geoutils.convigc.Lat_Dd_IGC;
@@ -47,6 +49,7 @@ import systemio.mylogging;
 public class flymaster {
     
     private SerialComManager scm;
+    private int osType;
     private long handle;
     private String serialPortName;
     private String deviceType;
@@ -69,6 +72,8 @@ public class flymaster {
     public flymaster() throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
         scm = null;     
+        SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
+        osType = scp.getOSType();
     }
 
     public String getDeviceType() {
@@ -107,8 +112,11 @@ public class flymaster {
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
 
-            // Prepare serial port for burst style data read of 500 milli-seconds timeout
-            scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            if(osType != SerialComPlatform.OS_WINDOWS) {
+                // Prepare serial port for burst style data read of 500 milli-seconds timeout
+                // This line is a problem with Windows
+                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            }
             // ID GPS request + raw flight list (true)
             if (getDeviceInfo(true)) {
                 res = true;
@@ -137,9 +145,11 @@ public class flymaster {
             handle = scm.openComPort(serialPortName, true, true, true);            
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-
-            // Prepare serial port for burst style data read of 500 milli-seconds timeout
-            scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            if(osType != SerialComPlatform.OS_WINDOWS) {
+                // Prepare serial port for burst style data read of 500 milli-seconds timeout
+                // This line is a problem with Windows
+                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            }
             if (getDeviceInfo(false)) {
                 res = true;
             }   
