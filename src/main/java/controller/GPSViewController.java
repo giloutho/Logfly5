@@ -579,6 +579,10 @@ public class GPSViewController {
                             if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
                             idxListPort++;
                         }   
+                    } else {
+                        portList.add(port);
+                        if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
+                        idxListPort++;
                     }
                     idx ++; 
                 }    
