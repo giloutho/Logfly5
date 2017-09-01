@@ -49,7 +49,7 @@ public class Main extends Application {
         // Current version
         Release release = new Release();
         release.setpkgver("5.0");        
-        release.setPkgrel("8");
+        release.setPkgrel("9");
         // last bundle
         release.setseverity("5.08");
         
