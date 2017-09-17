@@ -117,6 +117,11 @@ public class scoring {
                         File fPoints = new File(pathModPoints);
                         if(fPoints.exists()) pointsOK = true;                        
                         break;
+                    case LINUX :
+                        pathModPoints = executionPath+File.separator+"points";
+                        File flPoints = new File(pathModPoints);
+                        if(flPoints.exists()) pointsOK = true;                        
+                        break;
                 }
                 if (pointsOK)  {
                     // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
