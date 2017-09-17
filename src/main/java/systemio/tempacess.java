@@ -72,19 +72,20 @@ public class tempacess {
     }
     
     public static String getTemPath(String dName)  {
-    
+        
+        String OS = System.getProperty("os.name").toLowerCase();
         // Get user home + AppDataDir (platform specific) + name (if provided)
         String dir = System.getProperty("user.home");
-        if(isWindows) dir += File.separator + "AppData" + File.separator + "Local";
-        else if(isMac) dir += File.separator + "Library" + File.separator + "Application Support";
+        if (OS.indexOf("win") >= 0) {
+            dir += File.separator + "AppData" + File.separator + "Local";
+        } else if (OS.indexOf("mac")>= 0) {
+            dir += File.separator + "Library" + File.separator + "Application Support";
+        } else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 ) {
+            dir = "/tmp";
+        } 
         if(dName!=null) dir += File.separator + dName;
         
         return dir;
-    }
-    
-        
-     // Whether Windows/Mac
-    static boolean isWindows = (System.getProperty("os.name").indexOf("Windows") >= 0);
-    static boolean isMac = (System.getProperty("os.name").indexOf("Mac OS X") >= 0);
+    }           
     
 }
