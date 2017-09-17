@@ -25,7 +25,7 @@ public class configProg {
     private static boolean readConfig;      // Settings file read
     private static boolean validConfig;     // Configuration validated (db path)
     private static boolean configDefault;
-    private static osType currOS;              // OS type    : 1/Windows  2/Mac  3/Linux    
+    private static osType currOS;                
     private static String osSeparator;
                                             // App refers to xLogfly parameters
     private static String pathW;            // App.Wpath
@@ -793,9 +793,9 @@ public class configProg {
                     importPath = System.getProperty("user.home")+"/Documents/Logfly/Import";
                     break;
                 case LINUX :
-                    targetPath = System.getProperty("user.home")+"/Documents/Logfly";
-                    fullPathDb = System.getProperty("user.home")+"/Documents/Logfly/Logfly.db";  
-                    importPath = System.getProperty("user.home")+"/Documents/Logfly/Import";
+                    targetPath = System.getProperty("user.home")+"/.logfly";
+                    fullPathDb = System.getProperty("user.home")+"/.logfly/Logfly.db";  
+                    importPath = System.getProperty("user.home")+"/.logfly/Import";
                     break;
                 default: 
                     targetPath = null;
@@ -850,7 +850,7 @@ public class configProg {
                 pilotePass = "";
                 lastTrace = ""; 
                 lastOpenAir = "";
-                updateAuto = true;
+                updateAuto = false;
                 photoAuto = true;
                 gpsLimit = 6;
                 configDefault = dbCreation(fullPathDb);            
@@ -871,7 +871,7 @@ public class configProg {
     * Settings file checking
     *   - Windows :  - > \Users\UserName\AppData\Roaming\
     *   - Mac :  -> /Users/UserName/Library/Preferences
-    *   - Linux : Home Folder 
+    *   - Linux : /.logfly 
     */
     private boolean existConfFile()  {
         boolean res = false;
@@ -886,7 +886,7 @@ public class configProg {
                 searchPath = System.getProperty("user.home")+"/Library/Preferences/logfly.properties";
             break;
             case LINUX :
-                searchPath = System.getProperty("user.home")+"/logfly.properties";
+                searchPath = System.getProperty("user.home")+"/.logfly/logfly.properties";
                 break;
             default: 
                 searchPath = null;
@@ -897,7 +897,8 @@ public class configProg {
             File f = new File(searchPath);
             if(f.exists() && f.isFile()) {
                // Is this file empty ?  We had a case where user properties file became empty             
-               if (f.length() > 800) {
+               // initially we put 800 but in Linux the default file lenght is 746 !
+               if (f.length() > 500) {
                     pathConfig = searchPath;
                     res = true;
                } else {
@@ -1102,7 +1103,7 @@ public class configProg {
                     output = new FileOutputStream(System.getProperty("user.home")+"/Library/Preferences/logfly.properties");
                 break;
                 case LINUX :
-                    output = new FileOutputStream(System.getProperty("user.home")+"/logfly.properties");
+                    output = new FileOutputStream(System.getProperty("user.home")+"/.logfly/logfly.properties");
                     break;                
             }		
             setAllProperties(prop);		
