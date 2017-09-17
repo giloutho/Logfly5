@@ -36,7 +36,11 @@ public class Updater {
             instruction = (Instruction) iterator.next();
             switch (instruction.getAction()) {
                 case MOVE:
-                    copy(tmp + File.separator + instruction.getFilename(), instruction.getDestination());
+                    // code initial
+                    //copy(tmp + File.separator + instruction.getFilename(), instruction.getDestination());
+                    // Pour Linux on précise le chemin d'éxécution
+                    String executionPath = System.getProperty("user.dir");
+                    copy(tmp + File.separator + instruction.getFilename(), executionPath);
                     break;
                 case DELETE:
                     delete(instruction.getDestination());
