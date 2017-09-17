@@ -77,7 +77,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javafx.collections.transformation.SortedList;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.SelectionMode;
+import javafx.stage.Screen;
 import littlewins.winGlider;
 import model.Gpsmodel;
 import photo.imgmanip;
@@ -940,11 +942,16 @@ public class CarnetViewController  {
                 viewMap.getEngine().loadContent(sHTML,"text/html");
                 StackPane subRoot = new StackPane();
                 subRoot.getChildren().add(anchorPane);
-                Scene secondScene = new Scene(subRoot, 500, 400);
+                // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
+               // Scene secondScene = new Scene(subRoot, 500, 400);
+               // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
                 Stage subStage = new Stage();
                 // We want modal window
                 subStage.initModality(Modality.APPLICATION_MODAL);
                 subStage.setScene(secondScene); 
+                // Ne fonctionnait pas sous Linux...
                 subStage.setMaximized(true);
                 subStage.show();
             }  else {
