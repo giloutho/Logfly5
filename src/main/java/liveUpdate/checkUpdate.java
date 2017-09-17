@@ -147,7 +147,7 @@ public class checkUpdate {
          */
         if (answer == true) {
             try {
-                Updater update = new Updater();
+                Updater update = new Updater();               
                 update.update("update.inf", tmpUpdateFiles, Modes.FILE);
                 StringBuilder sbMsg = new StringBuilder();              
                 sbMsg.append(i18n.tr("Logfly a été mis à jour correctement.\n"));  //"The update was completed successfuly.\n"
@@ -171,6 +171,10 @@ public class checkUpdate {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                 sbError.append("\r\n").append(ex.toString());
                 mylogging.log(Level.SEVERE, sbError.toString());                
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());     
             }
             /**
             * Delete tmp directory
