@@ -49,7 +49,7 @@ public class Main extends Application {
         // Current version
         Release release = new Release();
         release.setpkgver("5.0");        
-        release.setPkgrel("9");
+        release.setPkgrel("12");
         // last bundle
         release.setseverity("5.08");
         
@@ -61,7 +61,7 @@ public class Main extends Application {
         myConfig.readSettings();         
                                   
         if (myConfig.isValidConfig()) {
-            myConfig.setVersion(currVersion);
+            myConfig.setVersion(currVersion);           
             i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
                                     
             initRootLayout();        
