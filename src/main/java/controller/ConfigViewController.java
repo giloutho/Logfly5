@@ -467,7 +467,6 @@ public class ConfigViewController implements Initializable {
      */
     @FXML
     private void selectNewFolderDb() throws InterruptedException {
-        i18n = I18nFactory.getI18n(Logfly.Main.class.getClass());
         
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File selectedDirectory = directoryChooser.showDialog(dialogStage);
