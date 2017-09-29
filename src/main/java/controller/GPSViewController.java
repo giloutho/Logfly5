@@ -35,6 +35,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
@@ -54,6 +55,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import leaflet.map_visu;
 import model.Gpsmodel;
@@ -1217,7 +1219,11 @@ public class GPSViewController {
             viewMap.getEngine().loadContent(sHTML,"text/html");
             StackPane subRoot = new StackPane();
             subRoot.getChildren().add(anchorPane);
-            Scene secondScene = new Scene(subRoot, 500, 400);
+            // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
+            // Scene secondScene = new Scene(subRoot, 500, 400);
+            // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
             Stage subStage = new Stage();
             // On veut que cette fenêtre soit modale
             subStage.initModality(Modality.APPLICATION_MODAL);
