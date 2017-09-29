@@ -159,8 +159,11 @@ public class RootLayoutController {
      */
     @FXML 
     public void showOutils() {
-        alertbox myInfo = new alertbox(myConfig.getLocale());           
-        myInfo.alertInfo("5.10 test Linux for Jérémy");       
+        alertbox myInfo = new alertbox(myConfig.getLocale()); 
+        StringBuilder sb = new StringBuilder();
+        sb.append("Largeur : ").append(String.valueOf(mainApp.getPrimaryStage().getWidth()));
+        sb.append(" Hauteur : ").append(String.valueOf(mainApp.getPrimaryStage().getHeight()));
+        myInfo.alertInfo(sb.toString());       
     }
     
     /**
