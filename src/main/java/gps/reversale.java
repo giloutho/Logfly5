@@ -97,6 +97,13 @@ public class reversale {
             case MACOS :
                 drives = new File("/Volumes").listFiles();
                 break;
+            case LINUX :
+                File fmedia = new File("/media");
+                for(File fls : fmedia.listFiles()){
+                    // first pass : /media/user
+                    drives = fls.listFiles();                    
+                }
+                break;
             default:
                 throw new AssertionError();
         }
@@ -115,11 +122,12 @@ public class reversale {
                     if (listFile != null) {
                         for (int i=0; i<listFile.length; i++)         
                         {
-                                                        System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].isDirectory());
+                            //System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].isDirectory());
                             if (listFile[i].getName().equals("COMPET") && listFile[i].isDirectory()) {
                                 fCompet = listFile[i];
                             }
                             if (listFile[i].getName().equals("LOG") && listFile[i].isDirectory()) {
+                                //System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].getAbsolutePath());
                                 fLog = listFile[i];
                                 cond1 = true;
                             }
@@ -148,9 +156,9 @@ public class reversale {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
-          //  if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {
             if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                    
-                if (files[i].isFile()) {
+                // Problem of dot files writed by MacOS 
+                if (files[i].isFile() && !fileName.startsWith("._")) {
                     if (files[i].getName().substring(0,7).compareTo(closingDate) > 0) {
                         trackPathList.add(files[i].getPath());
                     }
