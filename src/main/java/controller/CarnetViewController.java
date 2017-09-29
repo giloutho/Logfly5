@@ -68,6 +68,8 @@ import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
 import igc.mergingIGC;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import static java.time.LocalDateTime.now;
 import java.time.Period;
@@ -114,9 +116,7 @@ public class CarnetViewController  {
     @FXML
     private Button btnStat;        
     @FXML
-    private Button btnMap;
-    @FXML
-    private Button btnVisuGPS;  
+    private Button btnMap; 
     @FXML
     private Button btnScore;      
     @FXML
@@ -125,6 +125,8 @@ public class CarnetViewController  {
     private ChoiceBox top_chbYear;    
     @FXML
     private ImageView top_Menu;    
+    @FXML
+    private ImageView top_Visu_Menu;
     @FXML
     private WebView mapViewer;
     
@@ -594,7 +596,17 @@ public class CarnetViewController  {
                     @Override public void handle(MouseEvent e) {                        
                             clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
                     }
-            });                       
+            });    
+            top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override public void handle(MouseEvent e) { 
+                        if (myConfig.isVisuGPSinNav()) {
+                            runVisuGPS(true);
+                        } else {
+                            clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
+                        }
+                    }
+            }); 
         } else {
             // todo
            
@@ -685,6 +697,29 @@ public class CarnetViewController  {
         
         return cm;
     }
+    
+    private ContextMenu clicTop_VisuMenu()   {
+        final ContextMenu cm = new ContextMenu();
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Visu GPS interne"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                runVisuGPS(false);
+            }            
+        });
+        cm.getItems().add(cmItem0);
+        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("VisuGPS navigateur"));
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               runVisuGPS(true);
+            }
+        });
+        cm.getItems().add(cmItem1);
+        
+        return cm;
+    }
+        
     
     private ObservableList<String> listGliders() {
         ObservableList<String> lsGliders = FXCollections.observableArrayList();       
@@ -943,8 +978,8 @@ public class CarnetViewController  {
                 StackPane subRoot = new StackPane();
                 subRoot.getChildren().add(anchorPane);
                 // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
-               // Scene secondScene = new Scene(subRoot, 500, 400);
-               // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                // Scene secondScene = new Scene(subRoot, 500, 400);
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
                 Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
                 Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
                 Stage subStage = new Stage();
@@ -963,43 +998,15 @@ public class CarnetViewController  {
         }
     }
     
-    /**
-     * track uploaded in a server with a name like
-     * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
-     * @param webFicIGC 
-     */   
-    private void showVisuGPS(String webFicIGC)  {
-        StringBuilder visuUrl = new StringBuilder();
-        visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
-        visuUrl.append(webFicIGC);
-        System.out.println(visuUrl.toString());
-        AnchorPane anchorPane = new AnchorPane();                
-        WebView viewMap = new WebView();   
-        // WebEngine webEngine = viewMap.getEngine();
-        AnchorPane.setTopAnchor(viewMap, 10.0);
-        AnchorPane.setLeftAnchor(viewMap, 10.0);
-        AnchorPane.setRightAnchor(viewMap, 10.0);
-        AnchorPane.setBottomAnchor(viewMap, 10.0);
-        anchorPane.getChildren().add(viewMap);                         
-        viewMap.getEngine().load(visuUrl.toString());
-        StackPane subRoot = new StackPane();
-        subRoot.getChildren().add(anchorPane);
-        Scene secondScene = new Scene(subRoot, 500, 400);
-        Stage subStage = new Stage();
-        // On veut que cette fenêtre soit modale
-        subStage.initModality(Modality.APPLICATION_MODAL);
-        subStage.setScene(secondScene); 
-        subStage.setMaximized(true);
-        subStage.show();       
-    }
-
-    /**
-     * VisuGPS need a track with http url
+     /**
+     * VisuGPS is a powerful webservice for gps track display
+     * the track must be an http url
      * runVisuGPS upload the track with a special php script in a server
-     * This script upload the track and delete old tracks      
+     * This script upload the track and delete old tracks     
+     * VisuGPS has webGL functions. They cannot operate in the java webviewer
+     * User can choose between javawbeview or default browser
      */
-    @FXML
-    private void runVisuGPS() {
+    private void runVisuGPS(boolean inBrowser) {
         if (currTrace.isDecodage()) { 
             webio myUpload = new webio();
             try {
@@ -1009,7 +1016,10 @@ public class CarnetViewController  {
                     if (igcBytes.length > 100)  {
                         String webFicIGC = myUpload.httpUploadIgc(igcBytes, uploadUrl);
                         if (webFicIGC != null) {
-                            showVisuGPS(webFicIGC);
+                            if (inBrowser) 
+                                showVisuInBrowser(webFicIGC);
+                            else
+                                showVisuDirect(webFicIGC);
                         } else {
                             Alert alert = new Alert(Alert.AlertType.ERROR);           
                             alert.setContentText(i18n.tr("Echec du téléchargement de la trace"));
@@ -1030,7 +1040,88 @@ public class CarnetViewController  {
             }       
         }
     }
-
+    
+    /**
+     * track uploaded in a server with a name like
+     * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
+     * @param webFicIGC 
+     */ 
+    private void showVisuInBrowser(String webFicIGC)  {
+        StringBuilder visuUrl = new StringBuilder();
+        
+        visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
+        visuUrl.append(webFicIGC);
+        // https://stackoverflow.com/questions/5226212/how-to-open-the-default-webbrowser-using-java
+        // http://www.java2s.com/Code/Java/JDK-6/UsingtheDesktopclasstolaunchaURLwithdefaultbrowser.htm
+        switch (myConfig.getOS()) {
+            case WINDOWS :
+                if(Desktop.isDesktopSupported()){
+                    Desktop desktop = Desktop.getDesktop();
+                    try {
+                        desktop.browse(new URI(visuUrl.toString()));
+                    } catch (IOException | URISyntaxException e) {
+                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                        sbError.append("\r\n").append(e.toString());
+                        mylogging.log(Level.SEVERE, sbError.toString());
+                    }
+                }
+                break;
+            case MACOS :
+                try {
+                    Runtime rt = Runtime.getRuntime();
+                    rt.exec("open " + visuUrl.toString());
+                } catch (Exception e) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }
+            case LINUX :
+                Runtime runtime = Runtime.getRuntime();
+                try {
+                    runtime.exec("xdg-open " + visuUrl.toString());
+                } catch (IOException e) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }
+                break;
+        }
+    }
+    
+    /**
+     * track uploaded in a server with a name like
+     * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
+     * @param webFicIGC 
+     */   
+    private void showVisuDirect(String webFicIGC)  {
+        StringBuilder visuUrl = new StringBuilder();
+        
+        visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
+        visuUrl.append(webFicIGC);
+        AnchorPane anchorPane = new AnchorPane();                
+        WebView viewMap = new WebView();   
+        // WebEngine webEngine = viewMap.getEngine();
+        AnchorPane.setTopAnchor(viewMap, 10.0);
+        AnchorPane.setLeftAnchor(viewMap, 10.0);
+        AnchorPane.setRightAnchor(viewMap, 10.0);
+        AnchorPane.setBottomAnchor(viewMap, 10.0);
+        anchorPane.getChildren().add(viewMap);                         
+        viewMap.getEngine().load(visuUrl.toString());
+        StackPane subRoot = new StackPane();
+        subRoot.getChildren().add(anchorPane);
+        // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
+        // Scene secondScene = new Scene(subRoot, 500, 400);
+        // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+        Stage subStage = new Stage();
+        // On veut que cette fenêtre soit modale
+        subStage.initModality(Modality.APPLICATION_MODAL);
+        subStage.setScene(secondScene); 
+        subStage.setMaximized(true);
+        subStage.show();            
+    }
+   
     /**
      * if needed, call the scoring class
      */
@@ -1373,13 +1464,7 @@ public class CarnetViewController  {
         statToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
         statToolTip.setText(i18n.tr("Statistiques de vol"));
         btnStat.setTooltip(statToolTip);
-        
-        btnVisuGPS.setStyle("-fx-background-color: transparent;"); 
-        Tooltip visuToolTip = new Tooltip();
-        visuToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
-        visuToolTip.setText(i18n.tr("Affichage VisuGPS"));
-        btnVisuGPS.setTooltip(visuToolTip);
-        
+                
         btnScore.setStyle("-fx-background-color: transparent;");      
         Tooltip scoreToolTip = new Tooltip();
         scoreToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
