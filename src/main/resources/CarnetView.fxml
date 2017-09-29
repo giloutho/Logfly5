@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
    <children>
       <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -50,18 +50,14 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="btnVisuGPS" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#runVisuGPS" prefHeight="23.0" prefWidth="32.0" text="Button">
+                        <ImageView fx:id="top_Visu_Menu" fitHeight="25.0" fitWidth="32.0" layoutX="694.0" layoutY="39.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/Visu_GPS_5.png" />
+                           </image>
                            <HBox.margin>
-                              <Insets right="2.0" top="10.0" />
+                              <Insets left="2.0" right="2.0" top="12.0" />
                            </HBox.margin>
-                           <graphic>
-                              <ImageView fx:id="top_Visugps" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/Visu_GPS_5.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
+                        </ImageView>
                         <Button fx:id="btnScore" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#showScore" prefHeight="23.0" prefWidth="32.0">
                            <graphic>
                               <ImageView fx:id="top_Score" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
