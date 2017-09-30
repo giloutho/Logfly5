@@ -224,6 +224,8 @@ public class Main extends Application {
     @Override
     public void stop() throws SQLException{
         if (myConfig.isValidConfig())  {
+            myConfig.setMainWidth((int)primaryStage.getWidth());
+            myConfig.setMainHeight((int)primaryStage.getHeight());
             myConfig.writeProperties();
             myConfig.getDbConn().close();
         }
