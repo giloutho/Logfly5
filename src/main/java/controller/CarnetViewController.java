@@ -85,6 +85,7 @@ import javafx.stage.Screen;
 import littlewins.winGlider;
 import model.Gpsmodel;
 import photo.imgmanip;
+import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
 import systemio.webio;
@@ -977,11 +978,16 @@ public class CarnetViewController  {
                 viewMap.getEngine().loadContent(sHTML,"text/html");
                 StackPane subRoot = new StackPane();
                 subRoot.getChildren().add(anchorPane);
-                // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
-                // Scene secondScene = new Scene(subRoot, 500, 400);
-                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
-                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-                Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+                Scene secondScene = null;
+                if (myConfig.getOS() == osType.LINUX) {
+                    // With this code for Linux, this is not OK with Win and Mac 
+                    // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                    Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                    secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+                } else {
+                    // With this code, subStage.setMaximized(true) don't run under Linux
+                    secondScene = new Scene(subRoot, 500, 400);
+                }
                 Stage subStage = new Stage();
                 // We want modal window
                 subStage.initModality(Modality.APPLICATION_MODAL);
@@ -1109,11 +1115,16 @@ public class CarnetViewController  {
         viewMap.getEngine().load(visuUrl.toString());
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(anchorPane);
-        // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
-        // Scene secondScene = new Scene(subRoot, 500, 400);
-        // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+        Scene secondScene = null;
+        if (myConfig.getOS() == osType.LINUX) {
+            // With this code for Linux, this is not OK with Win and Mac 
+            // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+        } else {
+            // With this code, subStage.setMaximized(true) don't run under Linux
+            secondScene = new Scene(subRoot, 500, 400);
+        }
         Stage subStage = new Stage();
         // On veut que cette fenêtre soit modale
         subStage.initModality(Modality.APPLICATION_MODAL);
