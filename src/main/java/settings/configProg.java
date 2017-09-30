@@ -341,8 +341,22 @@ public class configProg {
     public static void setPathContest(String pathContest) {
         configProg.pathContest = pathContest;
     }
-    
-    
+
+    public static int getMainWidth() {
+        return mainWidth;
+    }
+
+    public static void setMainWidth(int mainWidth) {
+        configProg.mainWidth = mainWidth;
+    }
+
+    public static int getMainHeight() {
+        return mainHeight;
+    }
+
+    public static void setMainHeight(int mainHeight) {
+        configProg.mainHeight = mainHeight;
+    }
     
     public static int getIntegration() {
         return integration;
@@ -826,8 +840,8 @@ public class configProg {
                 defaultVoile = "";
                 decGMT = 0;
                 gmtCEST = false;
-                mainWidth = 900;  // Old values need to be adjusted
-                mainHeight = 681;   // Old values need to be adjusted          
+                mainWidth = 1102;  
+                mainHeight = 625;          
                 urlLogflyIGC = "http://www.logfly.org/Visu/";     
                 urlVisu = "http://www.victorb.fr/visugps/visugps.html?track=";          
                 urlLogfly = "http://www.logfly.org";       
@@ -861,6 +875,8 @@ public class configProg {
             // old settings of xLogfly read and validated
             configDefault = true; 
             // default values for new parameters of V5 
+            mainWidth = 1102;  
+            mainHeight = 625;  
             updateAuto = true;
             photoAuto = true;
             gpsLimit = 6;
@@ -974,7 +990,8 @@ public class configProg {
         prop.setProperty("defaultvoile",defaultVoile);
         prop.setProperty("decgmt",String.valueOf(decGMT));
         prop.setProperty("gmtcest",String.valueOf(gmtCEST));
-        //prop.setProperty("mainWidth = 900;  mainHeight = 681;   // Anciennes valeurs à préciser            
+        prop.setProperty("width", String.valueOf(mainWidth)); 
+        prop.setProperty("height",String.valueOf(mainHeight));           
         prop.setProperty("urllogflyigc",urlLogflyIGC);
         prop.setProperty("urlvisu",urlVisu);
         prop.setProperty("urllogfly",urlLogfly);
@@ -1029,7 +1046,14 @@ public class configProg {
             gmtCEST = Boolean.parseBoolean(prop.getProperty("gmtcest"));
         else
             gmtCEST = false;
-        //prop.setProperty("mainWidth = 900;  mainHeight = 681;   // Anciennes valeurs à préciser            
+        if (prop.getProperty("width") != null)
+            mainWidth = Integer.parseInt(prop.getProperty("width"));
+        else
+            mainWidth = 1102;
+        if (prop.getProperty("height") != null)
+            mainHeight = Integer.parseInt(prop.getProperty("height"));
+        else
+            mainHeight = 625;           
         urlLogflyIGC = prop.getProperty("urllogflyigc");
         urlVisu = prop.getProperty("urlvisu");
         urlLogfly = prop.getProperty("urllogfly");
