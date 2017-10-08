@@ -123,7 +123,6 @@ public class RootLayoutController {
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getResource("/ConfigView.fxml")); 
-            configProg myConfig = new configProg();   
             AnchorPane page = (AnchorPane) loader.load();
 
             Stage dialogStage = new Stage();
