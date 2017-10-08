@@ -490,7 +490,10 @@ public class GPSViewController {
             chbSerial.setVisible(true);     
             resCom = 4;
             actuLed();   
-        }              
+        }
+        // Window must be intilaized/refreshed
+        buttonBar.setVisible(true);
+        hbTable.setVisible(false);          
     }
     
     private void listDrives() {
