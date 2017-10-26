@@ -63,6 +63,7 @@ import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.listGPS;
+import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
 import trackgps.traceGPS;
@@ -1222,11 +1223,16 @@ public class GPSViewController {
             viewMap.getEngine().loadContent(sHTML,"text/html");
             StackPane subRoot = new StackPane();
             subRoot.getChildren().add(anchorPane);
-            // With this code + subStage.setMaximized(true) OK for Win and Mac but bad for Linux
-            // Scene secondScene = new Scene(subRoot, 500, 400);
-            // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
-            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-            Scene secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+            Scene secondScene = null;
+            if (myConfig.getOS() == osType.LINUX) {
+                // With this code for Linux, this is not OK with Win and Mac 
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+            } else {
+                // With this code, subStage.setMaximized(true) don't run under Linux
+                secondScene = new Scene(subRoot, 500, 400);
+            }
             Stage subStage = new Stage();
             // On veut que cette fenêtre soit modale
             subStage.initModality(Modality.APPLICATION_MODAL);
@@ -1346,7 +1352,7 @@ public class GPSViewController {
 
         // we update the UI based on result of the task
         task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
+            pForm.getDialogStage().close();         
             if (resCom == 0 && strTrack != null && !strTrack.isEmpty()) {                       
                 traceGPS reqIGC = new traceGPS(strTrack, "", true, myConfig);
                 if (reqIGC.isDecodage()) { 
@@ -1358,7 +1364,7 @@ public class GPSViewController {
                 if (resCom == 2)  {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertNumError(1052);  // No GPS answer                       
-                } else if (strTrack.equals(null)) {
+                } else if (strTrack == null) {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertNumError(1054);  // track file is empty     
                 } else {
