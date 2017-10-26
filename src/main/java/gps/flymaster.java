@@ -24,10 +24,15 @@ import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
 import systemio.mylogging;
+import gps.gpsutils;
+import static gps.gpsutils.fourBytesToInt;
+import static gps.gpsutils.oneByteToInt;
+import static gps.gpsutils.twoBytesToInt;
 
 /**
  *
@@ -57,6 +62,13 @@ public class flymaster {
     private String deviceFirm;
     private ArrayList<String> listPFM;
     private ArrayList<String> listPOS;
+    private final int IS_GEO   = 0x01;
+    private final int IS_HEART = 0x02;
+    private final int IS_TAS   = 0x03;
+    private final int REQUESTING_POSITION = 0x0001;
+    private final int REQUESTING_PULSE    = 0x0002;
+    private final int REQUESTING_GFORCE   = 0x0004;
+    private final int REQUESTING_TAS      = 0x0008;
     private int year = 0;
     private int month = 0;
     private int day = 0;
@@ -152,7 +164,9 @@ public class flymaster {
             }
             if (getDeviceInfo(false)) {
                 res = true;
-            }   
+            } else {
+                scm.closeComPort(handle);
+            } 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
@@ -187,8 +201,10 @@ public class flymaster {
         // Answer must be something like : $PFMSNP,GpsSD,,02988,1.06j, 872.20,*3C
         String data = scm.readString(handle);
         if (data != null && !data.isEmpty()) {
-            String[] tbdata = data.split(",");
-            if (tbdata.length > 0 && tbdata[0].equals("$PFMSNP")) {  
+            int posPFMSNP = data.indexOf("$PFMSNP");
+            String cleanData = data.substring(posPFMSNP,data.length());
+            String[] tbdata = cleanData.split(",");
+            if (tbdata.length > 0 && tbdata[0].contains("$PFMSNP")) {  
                 deviceType = tbdata[1];
                 deviceSerial = tbdata[3];
                 deviceFirm = tbdata[4];   
@@ -293,9 +309,14 @@ public class flymaster {
      */
     public boolean getIGC(String gpsCommand, String strDate, String strPilote, String strVoile)  {
         boolean res = false;
+        finalIGC = null;
                 
         try {
-            getFlightPOS(gpsCommand);
+            // Rishi code with checksum failed
+            //getFlightPOS(gpsCommand);
+            // first version
+            System.out.println("Appel FlightData avec "+gpsCommand);
+            getFlightData(gpsCommand);
             if (listPOS.size() > 0) {
                 makeIGC(strDate,strPilote, strVoile);
                 res = genIGC;
@@ -308,27 +329,202 @@ public class flymaster {
         return res;
     }
     
+    private void getFlightData(String gpsCommand) {
+        
+        final int GPSRMC_LONG = 19;
+        final int GPSRECORD_LONG = 8;
+        final int HEARTDATA_STORED = 4;
+        final int TAS_STORED = 2;
+        final int TP_STORED = 30;
+        final int DECLARE_STORED = 7;
+        int dwScan = 0;
+        int wOffset;
+        int wLenght;
+        String hexLenght;
+        int byteLength;
+        int nbPoints = 0;
+        int dataType = 0;
+        int index = 0;
+        int latitude = 0;
+        int longitude = 0;
+        int altitude = 0;
+        int pressure = 0;
+        int time = 0;
+        int heading = 0;
+        int speed = 0;
+        int uDecimalCoords = 1;
+        int dataRequested = REQUESTING_POSITION;
+        
+        listPOS = new ArrayList<String>();
+        
+        try {
+            byte[] BufferRead = new byte[1048576];
+            int lenBuffer = 0;
+            byte[] trackdata = null;                
+            int lenTrackdata = 0;
+            boolean exit = false;
+            System.out.println("Envoi : "+gpsCommand);
+            scm.writeString(handle, gpsCommand, 0);  // // gpsCommand like -> $PFMDNL,160709110637,2\n
+            while(exit == false) {
+                trackdata = scm.readBytes(handle,128);
+                if(trackdata != null) {
+                    System.arraycopy(trackdata, 0, BufferRead,lenBuffer , trackdata.length);
+                    lenBuffer += trackdata.length;                                                   
+                }
+                else {
+                    exit = true;
+                    break;
+                }
+            }
+            if (lenBuffer > 0) {
+                byte[] FlyRaw = Arrays.copyOfRange(BufferRead, 0, lenBuffer); 
+                int FlyRawLimite = FlyRaw.length - (FlyRaw.length % 4096);
+                for(dwScan = 0; dwScan < FlyRawLimite; dwScan+= 4096)  {
+                    wOffset = 12;
+                    if (dwScan == 0)  {
+                        // On est dans le premeir secteur, on récupère les infos générales du vol [Flight_Info]
+                        hexLenght = Integer.toHexString(0xFF & FlyRaw[wOffset]);
+                        if (hexLenght.equals("1e"))
+                        {
+                            wLenght = Integer.parseInt(hexLenght, 16);
+                            byte [] FlightInfo = Arrays.copyOfRange(FlyRaw, wOffset, wOffset+wLenght);
+                            wOffset = wOffset + wLenght;
+
+                           // byte [] bConvert = Arrays.copyOfRange(FlightInfo, 2, 2); 
+                            // Récupère durée du vol en secondes
+                            int Duration = twoBytesToInt(Arrays.copyOfRange(FlightInfo, 2, 4));
+                            // récupère décalage UTC en secondes
+                            int OffsetUTC = twoBytesToInt(Arrays.copyOfRange(FlightInfo, 4, 6));
+
+                            wOffset = 49;
+                        }            
+                    }
+                    while(wOffset <4096)  {
+                        byteLength = FlyRaw[wOffset+dwScan]& 0x7F;
+                        switch (byteLength) {
+                            case GPSRMC_LONG :   
+                                nbPoints++;  
+                                latitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+2, wOffset+dwScan+6));
+                                longitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+6, wOffset+dwScan+10));
+                                altitude = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+10, wOffset+dwScan+12)); 
+                                pressure = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+12, wOffset+dwScan+14));
+                                time  = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+14, wOffset+dwScan+18));
+                                dataType = IS_GEO;
+                                wOffset += GPSRMC_LONG;                           
+                                break;
+                            case GPSRECORD_LONG :   
+                                nbPoints++;     
+                                latitude += FlyRaw[wOffset+dwScan+1];
+                                longitude += FlyRaw[wOffset+dwScan+2];
+                                altitude += FlyRaw[wOffset+dwScan+3];
+                                pressure += FlyRaw[wOffset+dwScan+4];
+                                time += oneByteToInt(FlyRaw[wOffset+dwScan+5]);
+                                dataType = IS_GEO;                                                                                      
+                                wOffset += GPSRECORD_LONG;  
+                                break;
+                            case (0x20 | HEARTDATA_STORED) :   
+                                wOffset += HEARTDATA_STORED;
+                                dataType = IS_HEART;
+                                break;
+                            case (0x20 | TAS_STORED) :   
+                                wOffset += TAS_STORED;                               
+                                dataType = IS_TAS;
+                                break;
+                            case (0x00 | TP_STORED) :   
+                                wOffset += TP_STORED;                               
+                                break;
+                            case (0x00 | DECLARE_STORED) :  
+                                wOffset += DECLARE_STORED;                               
+                                break;
+                            case 0x7f :   
+                                wOffset = 4096;  // FF -> on est à la fin d'un secteur  [FF est décalé à 7F dans la boucle]
+                                break;
+                        }   
+                        long2Time(time);
+                        switch (dataType) {
+                            case IS_TAS:
+                                if((dataRequested & REQUESTING_TAS) == REQUESTING_TAS) {
+                                    System.out.println("TAS ");
+                                }
+                                break;
+                            case IS_GEO:
+                                if((dataRequested & REQUESTING_POSITION) == REQUESTING_POSITION) {
+                                    int la1 = 0;
+                                    int lo2 = 0;
+                                    double fLatitude = 0;
+                                    double fLongitude = 0;
+                                    char chNS = 'a';
+                                    char chEW = 'a';
+
+                                    la1 = latitude;
+                                    lo2 = longitude;
+                                    fLatitude = latitude;
+                                    fLongitude = -longitude;
+                                    fLatitude /= 60000.0;
+                                    fLongitude /= 60000.0;
+                                    if (la1 < 0) {
+                                            chNS = 'S';
+                                            la1 *= -1;
+                                    } else {
+                                            chNS = 'N';
+                                    }
+                                    if (lo2 < 0) {
+                                            chEW = 'E';
+                                            lo2 *= -1;
+                                    } else {
+                                            chEW = 'W';
+                                    }
+
+                                    switch (uDecimalCoords) {
+                                        case 1:
+                                            listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + fLatitude + "," + fLongitude + 
+                                                        "," + altitude + "," + (pressure / 10.0));// + "," + (speed & 0x7f) + "," + heading * 2);
+                                            break;
+                                        default:
+                                            listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + (la1 / 60000) + "," 
+                                                                + (la1 % 60000) + "," + chNS + ","+ (lo2 / 60000) + "," + (lo2 % 60000) + "," + chEW + "," + altitude + "," + (pressure / 10.0));
+                                                                //+ "," + (speed & 0x7f) + "," + heading * 2);
+                                            break;
+                                        }
+                                }
+                                break;
+                            case IS_HEART:
+                                if((dataRequested & REQUESTING_PULSE) == REQUESTING_PULSE) {
+                                }
+                                break;
+                            default:
+                                System.out.println("default !");
+                        }                
+                    }       
+                }
+                System.out.println("Nombre de points : "+nbPoints);
+            } 
+        
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        } 
+        
+    }
+    
     /**
+     * Original code of Rishi Gupta.
+     * in an incomprehensible way, after good test during monthes
+     * we got many errors of checksum failed
+     * meanwhile a solution from Rishi, we use an old version getFlightData
      * called by getIGC  for raw flight track download from GPS memory 
      * result is an Arraylist of POSition
      * @param gpsCommand
      * @throws Exception 
      */
     public void getFlightPOS(String gpsCommand) throws Exception {
-
-        final int IS_GEO   = 0x01;
-        final int IS_HEART = 0x02;
-        final int IS_TAS   = 0x03;
         final int SIZE_GPSRMC_LONG      = 19;
         final int SIZE_GPSRECORD_LONG   = 8;
         final int SIZE_HEARTDATA_STORED = 36;
         final int SIZE_TAS_STORED       = 34;
         final int SIZE_TP_STORED        = 30;
         final int SIZE_DECLARE_STORED   = 7;
-        final int REQUESTING_POSITION = 0x0001;
-        final int REQUESTING_PULSE    = 0x0002;
-        final int REQUESTING_GFORCE   = 0x0004;
-        final int REQUESTING_TAS      = 0x0008;
         int dataRequested = REQUESTING_POSITION;
 
         int offset = 0;
@@ -528,6 +724,8 @@ public class flymaster {
         }
     }
     
+    
+    
     /**
      * Extract day and hour from a long integer
      * @param itime 
@@ -678,7 +876,7 @@ public class flymaster {
             // Insertion du G Record
             txtIGC.append("G").append(bytesToHex(output)).append(RC);
             genIGC = true;
-            finalIGC = txtIGC.toString();            
+            finalIGC = txtIGC.toString(); 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
