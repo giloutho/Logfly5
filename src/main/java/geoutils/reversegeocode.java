@@ -48,12 +48,8 @@ public class reversegeocode {
             }
             conn.disconnect();
             res = out;
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Pas de connection au service Google");  
         }
         
         return res;
@@ -68,9 +64,9 @@ public class reversegeocode {
      *         -> 06460 Saint-Vallier-de-Thiey FR
      */
     public String googleGeocode(String sCoord, boolean retourCP)  {
-        String res = null;        
+        String res = "";        
         
-        String resJson = connectGoogle(sCoord);
+        String resJson = connectGoogle(sCoord);       
         if (resJson != null)  {
             try {
                 JSONParser jsonParser = new JSONParser();
@@ -83,11 +79,10 @@ public class reversegeocode {
                 // 20190 Pamukkale/Denizli, Turkey
                 // 06460 Saint-Vallier-de-Thiey, France
                 JSONObject jsonRes = (JSONObject) resultat.get(1);                
-                res = (String) jsonRes.get("formatted_address");                                       
-            } catch (ParseException ex) {
-                ex.printStackTrace();
-            } catch (NullPointerException ex) {
-                ex.printStackTrace();
+                res = (String) jsonRes.get("formatted_address"); 
+                System.out.println(res);
+            } catch (Exception e) {
+                System.out.println("Erreur retour service Google");  
             }
         }
         
