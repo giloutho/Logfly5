@@ -841,7 +841,7 @@ public class configProg {
                 decGMT = 0;
                 gmtCEST = false;
                 mainWidth = 1102;  
-                mainHeight = 625;          
+                mainHeight = 650;          
                 urlLogflyIGC = "http://www.logfly.org/Visu/";     
                 urlVisu = "http://www.victorb.fr/visugps/visugps.html?track=";          
                 urlLogfly = "http://www.logfly.org";       
@@ -876,7 +876,7 @@ public class configProg {
             configDefault = true; 
             // default values for new parameters of V5 
             mainWidth = 1102;  
-            mainHeight = 625;  
+            mainHeight = 650;  
             updateAuto = true;
             photoAuto = true;
             gpsLimit = 6;
@@ -1053,7 +1053,7 @@ public class configProg {
         if (prop.getProperty("height") != null)
             mainHeight = Integer.parseInt(prop.getProperty("height"));
         else
-            mainHeight = 625;           
+            mainHeight = 650;           
         urlLogflyIGC = prop.getProperty("urllogflyigc");
         urlVisu = prop.getProperty("urlvisu");
         urlLogfly = prop.getProperty("urllogfly");
