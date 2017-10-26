@@ -451,7 +451,6 @@ public class map_visu {
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsPilote()).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsVoile()).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Durée")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
-        
         jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
         // Launching time
         String hDeco = traceVisu.getDT_Deco().format(DateTimeFormatter.ofPattern("HH:mm"));                
@@ -488,9 +487,8 @@ public class map_visu {
         String goodSiteDeco = finalSiteDeco.replace("'", "\\'");     
         //String goodSiteDeco = "Plan de L\\'AIGOUILLER"; 
         jsLegende.append("this._div.innerHTML += '").append(goodSiteDeco).append("<br>';").append(RC);         
-        
         // Search for landing site with last point coordinates
-        pointIGC lastPoint = traceVisu.Tb_Good_Points.get(traceVisu.Tb_Good_Points.size()-1);      
+        pointIGC lastPoint = traceVisu.Tb_Good_Points.get(traceVisu.Tb_Good_Points.size()-1);  
         String finalSiteAtterro = null;
         String siteAtterro = myRech.rechSiteCorrect(lastPoint.Latitude,lastPoint.Longitude,false);         
         if (siteAtterro != null)  {
@@ -521,7 +519,6 @@ public class map_visu {
         jsLegende.append("this._div.innerHTML += '").append(" GPS : ").append(String.valueOf(traceVisu.getAlt_Attero_GPS())).append("m<br>';").append(RC);        
         jsLegende.append("this._div.innerHTML += '").append(goodSiteAterro).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
-       
         pointIGC ptAltMax = traceVisu.getAlt_Maxi_GPS();
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Alt max GPS")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
         pointIGC ptAltMini = traceVisu.getAlt_Mini_GPS();
@@ -538,7 +535,6 @@ public class map_visu {
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Points")).append(" : ").append(String.valueOf(traceVisu.getNbPoints())).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Aberrants")).append(" : ").append(String.valueOf(traceVisu.getNbPointsAberr())).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Signature")).append(" : ").append(traceVisu.getSignature()).append("<br>';").append(RC);        
-        
     }
     
     /**
@@ -648,7 +644,7 @@ public class map_visu {
                 }
                 br.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Erreur skl "+e.getMessage());                               
             }
             if (sbHTML.length() > 1000 && genData(traceVisu))  {
                 String beginHTML = sbHTML.toString();
@@ -657,7 +653,7 @@ public class map_visu {
                 String altiValHTML = altiLgHTML.replace("%altiVal%", jsaltiVal.toString());
                 String varioHTML =  altiValHTML.replace("%Vario%", jsVario.toString());
                 String speedHTML = varioHTML.replace("%Speed%", jsSpeed.toString());
-                String heureHTML = speedHTML.replace("%Heure%", jsHeure.toString());                   
+                String heureHTML = speedHTML.replace("%Heure%", jsHeure.toString());   
                 genDefaultLayer();
                 String layerHTML = heureHTML.replace("%layer%", jsLayer); 
                 String thermiqHTML;
@@ -696,6 +692,7 @@ public class map_visu {
                 map_OK = true;
             }
         } catch (Exception e) {
+            System.out.println("Erreur carte "+e.getMessage());  
             map_OK = false;
         }                               
     } 
