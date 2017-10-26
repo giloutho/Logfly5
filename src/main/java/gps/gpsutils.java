@@ -45,6 +45,10 @@ public class gpsutils {
             return false;            
     }
     
+    public static int oneByteToInt(byte value) {
+        return (int)value & 0xFF;
+    }
+    
     public static int twoBytesToInt(byte[] b) {
         // http://www.java2s.com/Code/Android/Date-Type/Integer.htm
         // On a inversé les bytes par rapport au code d'origine
