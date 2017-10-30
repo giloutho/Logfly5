@@ -69,6 +69,8 @@ public class flymaster {
     private final int REQUESTING_PULSE    = 0x0002;
     private final int REQUESTING_GFORCE   = 0x0004;
     private final int REQUESTING_TAS      = 0x0008;
+    private final int iBufLen = 4096;
+    private StringBuilder sbRead;    
     private int year = 0;
     private int month = 0;
     private int day = 0;
@@ -140,9 +142,10 @@ public class flymaster {
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());
         }
+        
         return res;        
     }
-    
+
     /**
      * Initialize the serial port for flight downloading operation
      * @param namePort
@@ -191,33 +194,46 @@ public class flymaster {
      */
     private boolean getDeviceInfo(boolean listPFM) throws Exception {
         boolean res = false;
-
-        scm.writeString(handle, "$PFMSNP,\n", 0);
+        String data;
+        
+        write_line("$PFMSNP,");       
 
         // give some time to GPS to send data to computer. We do not depend upon 100 because we also used 
         Thread.sleep(100);
-
-        res = false;
+    
         // Answer must be something like : $PFMSNP,GpsSD,,02988,1.06j, 872.20,*3C
-        String data = scm.readString(handle);
+
+        int iLenData = read_line();
+        if (iLenData > 0) {
+            data = sbRead.toString();
+        } else {
+            data = null;
+        }
         if (data != null && !data.isEmpty()) {
-            int posPFMSNP = data.indexOf("$PFMSNP");
-            String cleanData = data.substring(posPFMSNP,data.length());
-            String[] tbdata = cleanData.split(",");
-            if (tbdata.length > 0 && tbdata[0].contains("$PFMSNP")) {  
-                deviceType = tbdata[1];
-                deviceSerial = tbdata[3];
-                deviceFirm = tbdata[4];   
-                res = true;
+            System.out.println("Device info "+listPFM+" "+data);
+            if (listPFM) {
+                int posPFMSNP = data.indexOf("$PFMSNP");
+                String cleanData = data.substring(posPFMSNP,data.length());
+                System.out.println(cleanData);
+                String[] tbdata = cleanData.split(",");
+                if (tbdata.length > 0 && tbdata[0].contains("$PFMSNP")) {  
+                    deviceType = tbdata[1];
+                    deviceSerial = tbdata[3];
+                    deviceFirm = tbdata[4];   
+                    res = true;
+                } else {
+                    res = false;
+                }
             } else {
-                res = false;
+                res = true;
             }
         }    
         
-        if (res && listPFM) getListPFMLST();                           
+        if (res && listPFM) getListPFMLST();   
         
+         
         return res;
-    }
+    } 
     
     /**
      * raw flight list decoding  [$PFMLST,025,025,28.06.16,12:33:05,01:15:10*35]
@@ -256,47 +272,15 @@ public class flymaster {
      * @throws Exception 
      */
     private void getListPFMLST() throws Exception {
-
-        int a = 0;
-        int b = 0;
-        int offset = 0;
-        int totalNumOfBytesReadTillNow = 0;
-        int numOfBytesRead = 0;
-        int numOfBytesRequested = 4096;
-        byte[] buffer = new byte[4096];
-
-        scm.writeString(handle, "$PFMDNL,LST\n", 0);
-        Thread.sleep(100);
-
-        numOfBytesRequested = 2048;
-        for(int i=0; i < 1500; i++) {
-                numOfBytesRead = 0;
-                numOfBytesRead = scm.readBytes(handle, buffer, offset, numOfBytesRequested, -1, null);
-                if(numOfBytesRead > 0) {
-                        offset = offset + numOfBytesRead;
-                        totalNumOfBytesReadTillNow = totalNumOfBytesReadTillNow + numOfBytesRead;
-                        numOfBytesRequested = 2048 - totalNumOfBytesReadTillNow;
-                }else {
-                        if(totalNumOfBytesReadTillNow <= 0) {
-                                continue;
-                        }
-                        break;
-                }
-        }
-
-        if(totalNumOfBytesReadTillNow > 0) {
-            while(b < totalNumOfBytesReadTillNow) {
-                    if((buffer[b] == (byte)'\r') && (buffer[b + 1] == (byte)'\n')) {
-                        listPFM.add(new String(buffer, a, (b - a)));
-                        a = b + 2;
-                    }
-                    b++;
-            }
-        } else {
-            return;
+        
+        write_line("$PFMDNL,LST");
+        while(read_line()>0)
+        {
+            listPFM.add(sbRead.toString());
+            System.out.println(sbRead.toString());
         }
     }
-    
+        
     /**
      * IGC file request with two steps 
      *   - getFlightPOS
@@ -312,10 +296,6 @@ public class flymaster {
         finalIGC = null;
                 
         try {
-            // Rishi code with checksum failed
-            //getFlightPOS(gpsCommand);
-            // first version
-            System.out.println("Appel FlightData avec "+gpsCommand);
             getFlightData(gpsCommand);
             if (listPOS.size() > 0) {
                 makeIGC(strDate,strPilote, strVoile);
@@ -329,14 +309,45 @@ public class flymaster {
         return res;
     }
     
-    private void getFlightData(String gpsCommand) {
+   private void getFlightData(String gpsCommand) {
         
+        try {
+            byte[] BufferRead = new byte[1048576];
+            int lenBuffer = 0;
+            byte[] trackdata = null;                
+            int lenTrackdata = 0;
+            boolean exit = false;
+            System.out.println("Envoi : "+gpsCommand);
+            write_line(gpsCommand);   // gpsCommand like -> $PFMDNL,160709110637,2\n
+            Thread.sleep(100);
+            while(exit == false) {
+                trackdata = scm.readBytes(handle,128);
+                if(trackdata != null) {
+                    System.arraycopy(trackdata, 0, BufferRead,lenBuffer , trackdata.length);
+                    lenBuffer += trackdata.length;                                                   
+                }
+                else {
+                    exit = true;
+                    break;
+                }
+            }
+            if (lenBuffer > 0) {
+                decodeFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer));  
+            }
+        } catch (Exception e) {
+//            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+//            sbError.append("\r\n").append(e.toString());
+//            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+    }    
+    
+    private void decodeFlightData(byte[] FlyRaw){  
         final int GPSRMC_LONG = 19;
         final int GPSRECORD_LONG = 8;
         final int HEARTDATA_STORED = 4;
         final int TAS_STORED = 2;
         final int TP_STORED = 30;
-        final int DECLARE_STORED = 7;
+        final int DECLARE_STORED = 7;   
         int dwScan = 0;
         int wOffset;
         int wLenght;
@@ -354,378 +365,141 @@ public class flymaster {
         int speed = 0;
         int uDecimalCoords = 1;
         int dataRequested = REQUESTING_POSITION;
-        
+
         listPOS = new ArrayList<String>();
         
-        try {
-            byte[] BufferRead = new byte[1048576];
-            int lenBuffer = 0;
-            byte[] trackdata = null;                
-            int lenTrackdata = 0;
-            boolean exit = false;
-            System.out.println("Envoi : "+gpsCommand);
-            scm.writeString(handle, gpsCommand, 0);  // // gpsCommand like -> $PFMDNL,160709110637,2\n
-            while(exit == false) {
-                trackdata = scm.readBytes(handle,128);
-                if(trackdata != null) {
-                    System.arraycopy(trackdata, 0, BufferRead,lenBuffer , trackdata.length);
-                    lenBuffer += trackdata.length;                                                   
-                }
-                else {
-                    exit = true;
-                    break;
-                }
+        int debugRec = 0;
+        
+        // Combien de secteurs de 4096 octets ? (le fichier fait toujours un peu plus)
+        int FlyRawLimite = FlyRaw.length - (FlyRaw.length % 4096);
+        
+        for(dwScan = 0; dwScan < FlyRawLimite; dwScan+= 4096)  {
+            wOffset = 12;
+            if (dwScan == 0)  {
+                // On est dans le premeir secteur, on récupère les infos générales du vol [Flight_Info]
+                hexLenght = Integer.toHexString(0xFF & FlyRaw[wOffset]);
+                if (hexLenght.equals("1e"))
+                {
+                    wLenght = Integer.parseInt(hexLenght, 16);
+                    byte [] FlightInfo = Arrays.copyOfRange(FlyRaw, wOffset, wOffset+wLenght);
+                    wOffset = wOffset + wLenght;
+
+                   // byte [] bConvert = Arrays.copyOfRange(FlightInfo, 2, 2); 
+                    // Récupère durée du vol en secondes
+                    int Duration = twoBytesToInt(Arrays.copyOfRange(FlightInfo, 2, 4));
+                    // récupère décalage UTC en secondes
+                    int OffsetUTC = twoBytesToInt(Arrays.copyOfRange(FlightInfo, 4, 6));
+                   
+                    wOffset = 49;     
+                }            
             }
-            if (lenBuffer > 0) {
-                byte[] FlyRaw = Arrays.copyOfRange(BufferRead, 0, lenBuffer); 
-                int FlyRawLimite = FlyRaw.length - (FlyRaw.length % 4096);
-                for(dwScan = 0; dwScan < FlyRawLimite; dwScan+= 4096)  {
-                    wOffset = 12;
-                    if (dwScan == 0)  {
-                        // On est dans le premeir secteur, on récupère les infos générales du vol [Flight_Info]
-                        hexLenght = Integer.toHexString(0xFF & FlyRaw[wOffset]);
-                        if (hexLenght.equals("1e"))
-                        {
-                            wLenght = Integer.parseInt(hexLenght, 16);
-                            byte [] FlightInfo = Arrays.copyOfRange(FlyRaw, wOffset, wOffset+wLenght);
-                            wOffset = wOffset + wLenght;
+            while(wOffset <4096)  {
+                byteLength = FlyRaw[wOffset+dwScan]& 0x7F;
+                switch (byteLength) {
+                    case GPSRMC_LONG :   
+                        nbPoints++;  
+                        // Faire le traitement pour une position complète
+                        // Travail arrêté ici... Les valeurs ci dessous ont été vérifiées.
+                        latitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+2, wOffset+dwScan+6));
+                        longitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+6, wOffset+dwScan+10));
+                        altitude = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+10, wOffset+dwScan+12)); 
+                        pressure = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+12, wOffset+dwScan+14));
+                        time  = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+14, wOffset+dwScan+18));
+                        dataType = IS_GEO;
+                        wOffset += GPSRMC_LONG;   
+                        debugRec = 1;
+                        break;
+                    case GPSRECORD_LONG :   
+                        nbPoints++;     
+                        latitude += FlyRaw[wOffset+dwScan+1];
+                        longitude += FlyRaw[wOffset+dwScan+2];
+                        altitude += FlyRaw[wOffset+dwScan+3];
+                        pressure += FlyRaw[wOffset+dwScan+4];
+                        time += oneByteToInt(FlyRaw[wOffset+dwScan+5]);
+                        dataType = IS_GEO;                                                                                      
+                        wOffset += GPSRECORD_LONG;  
+                        debugRec = 2;
+                        break;
+                    case (0x20 | HEARTDATA_STORED) :   
+                        wOffset += HEARTDATA_STORED;
+                        dataType = IS_HEART;
+                        break;
+                    case (0x20 | TAS_STORED) :   
+                        wOffset += TAS_STORED;                               
+                        dataType = IS_TAS;
+                        break;
+                    case (0x00 | TP_STORED) :   
+                        wOffset += TP_STORED;                               
+                        break;
+                    case (0x00 | DECLARE_STORED) :  
+                        wOffset += DECLARE_STORED;                               
+                        break;
+                    case 0x7f :   
+                        wOffset = 4096;  // FF -> on est à la fin d'un secteur  [FF est décalé à 7F dans la boucle]
+                        break;
+                    default :
+                        wOffset += 3;
+                        break;
+                }   
+                long2Time(time);
+                switch (dataType) {
+                    case IS_TAS:
+                        if((dataRequested & REQUESTING_TAS) == REQUESTING_TAS) {
+                            System.out.println("TAS ");
+                        }
+                        break;
 
-                           // byte [] bConvert = Arrays.copyOfRange(FlightInfo, 2, 2); 
-                            // Récupère durée du vol en secondes
-                            int Duration = twoBytesToInt(Arrays.copyOfRange(FlightInfo, 2, 4));
-                            // récupère décalage UTC en secondes
-                            int OffsetUTC = twoBytesToInt(Arrays.copyOfRange(FlightInfo, 4, 6));
+                    case IS_GEO:
+                        if((dataRequested & REQUESTING_POSITION) == REQUESTING_POSITION) {
+                            int la1 = 0;
+                            int lo2 = 0;
+                            double fLatitude = 0;
+                            double fLongitude = 0;
+                            char chNS = 'a';
+                            char chEW = 'a';
 
-                            wOffset = 49;
-                        }            
-                    }
-                    while(wOffset <4096)  {
-                        byteLength = FlyRaw[wOffset+dwScan]& 0x7F;
-                        switch (byteLength) {
-                            case GPSRMC_LONG :   
-                                nbPoints++;  
-                                latitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+2, wOffset+dwScan+6));
-                                longitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+6, wOffset+dwScan+10));
-                                altitude = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+10, wOffset+dwScan+12)); 
-                                pressure = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+12, wOffset+dwScan+14));
-                                time  = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+14, wOffset+dwScan+18));
-                                dataType = IS_GEO;
-                                wOffset += GPSRMC_LONG;                           
-                                break;
-                            case GPSRECORD_LONG :   
-                                nbPoints++;     
-                                latitude += FlyRaw[wOffset+dwScan+1];
-                                longitude += FlyRaw[wOffset+dwScan+2];
-                                altitude += FlyRaw[wOffset+dwScan+3];
-                                pressure += FlyRaw[wOffset+dwScan+4];
-                                time += oneByteToInt(FlyRaw[wOffset+dwScan+5]);
-                                dataType = IS_GEO;                                                                                      
-                                wOffset += GPSRECORD_LONG;  
-                                break;
-                            case (0x20 | HEARTDATA_STORED) :   
-                                wOffset += HEARTDATA_STORED;
-                                dataType = IS_HEART;
-                                break;
-                            case (0x20 | TAS_STORED) :   
-                                wOffset += TAS_STORED;                               
-                                dataType = IS_TAS;
-                                break;
-                            case (0x00 | TP_STORED) :   
-                                wOffset += TP_STORED;                               
-                                break;
-                            case (0x00 | DECLARE_STORED) :  
-                                wOffset += DECLARE_STORED;                               
-                                break;
-                            case 0x7f :   
-                                wOffset = 4096;  // FF -> on est à la fin d'un secteur  [FF est décalé à 7F dans la boucle]
-                                break;
-                        }   
-                        long2Time(time);
-                        switch (dataType) {
-                            case IS_TAS:
-                                if((dataRequested & REQUESTING_TAS) == REQUESTING_TAS) {
-                                    System.out.println("TAS ");
-                                }
-                                break;
-                            case IS_GEO:
-                                if((dataRequested & REQUESTING_POSITION) == REQUESTING_POSITION) {
-                                    int la1 = 0;
-                                    int lo2 = 0;
-                                    double fLatitude = 0;
-                                    double fLongitude = 0;
-                                    char chNS = 'a';
-                                    char chEW = 'a';
-
-                                    la1 = latitude;
-                                    lo2 = longitude;
-                                    fLatitude = latitude;
-                                    fLongitude = -longitude;
-                                    fLatitude /= 60000.0;
-                                    fLongitude /= 60000.0;
-                                    if (la1 < 0) {
-                                            chNS = 'S';
-                                            la1 *= -1;
-                                    } else {
-                                            chNS = 'N';
-                                    }
-                                    if (lo2 < 0) {
-                                            chEW = 'E';
-                                            lo2 *= -1;
-                                    } else {
-                                            chEW = 'W';
-                                    }
-
-                                    switch (uDecimalCoords) {
-                                        case 1:
-                                            listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + fLatitude + "," + fLongitude + 
-                                                        "," + altitude + "," + (pressure / 10.0));// + "," + (speed & 0x7f) + "," + heading * 2);
-                                            break;
-                                        default:
-                                            listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + (la1 / 60000) + "," 
-                                                                + (la1 % 60000) + "," + chNS + ","+ (lo2 / 60000) + "," + (lo2 % 60000) + "," + chEW + "," + altitude + "," + (pressure / 10.0));
-                                                                //+ "," + (speed & 0x7f) + "," + heading * 2);
-                                            break;
-                                        }
-                                }
-                                break;
-                            case IS_HEART:
-                                if((dataRequested & REQUESTING_PULSE) == REQUESTING_PULSE) {
-                                }
-                                break;
-                            default:
-                                System.out.println("default !");
-                        }                
-                    }       
-                }
-                System.out.println("Nombre de points : "+nbPoints);
-            } 
-        
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        } 
-        
-    }
-    
-    /**
-     * Original code of Rishi Gupta.
-     * in an incomprehensible way, after good test during monthes
-     * we got many errors of checksum failed
-     * meanwhile a solution from Rishi, we use an old version getFlightData
-     * called by getIGC  for raw flight track download from GPS memory 
-     * result is an Arraylist of POSition
-     * @param gpsCommand
-     * @throws Exception 
-     */
-    public void getFlightPOS(String gpsCommand) throws Exception {
-        final int SIZE_GPSRMC_LONG      = 19;
-        final int SIZE_GPSRECORD_LONG   = 8;
-        final int SIZE_HEARTDATA_STORED = 36;
-        final int SIZE_TAS_STORED       = 34;
-        final int SIZE_TP_STORED        = 30;
-        final int SIZE_DECLARE_STORED   = 7;
-        int dataRequested = REQUESTING_POSITION;
-
-        int offset = 0;
-        int totalNumOfBytesReadTillNow = 0;
-        int numOfBytesRead = 0;
-        int numOfBytesRequested = 4096;
-        byte[] raw = null;
-        ArrayList<byte[]> rawData = new ArrayList<byte[]>();
-        listPOS = new ArrayList<String>();
-       
-        scm.writeString(handle, gpsCommand, 0);  // // gpsCommand like -> $PFMDNL,160709110637,2\n
-
-        // Give some time to GPS firmware to prepare and start sending blocks.
-        Thread.sleep(100);
-
-        boolean allDatumReceived = false;
-
-        while(allDatumReceived == false) {
-
-            offset = 0;
-            raw = new byte[4096];
-
-            for(int x=0; x < 2; x++) {
-
-                totalNumOfBytesReadTillNow = 0;
-                numOfBytesRequested = 2048;
-
-                while(numOfBytesRequested > 0) {
-                    numOfBytesRead = 0;
-                    numOfBytesRead = scm.readBytes(handle, raw, offset, numOfBytesRequested, -1, null);
-                    if(numOfBytesRead > 0) {
-                            offset = offset + numOfBytesRead;
-                            totalNumOfBytesReadTillNow = totalNumOfBytesReadTillNow + numOfBytesRead;
-                            numOfBytesRequested = 2048 - totalNumOfBytesReadTillNow;
-                    }else {
-                            if(totalNumOfBytesReadTillNow <= 0) {
-                                    continue;
+                            la1 = latitude;
+                            lo2 = longitude;
+                            fLatitude = latitude;
+                            fLongitude = -longitude;
+                            fLatitude /= 60000.0;
+                            fLongitude /= 60000.0;
+                            if (la1 < 0) {
+                                    chNS = 'S';
+                                    la1 *= -1;
+                            } else {
+                                    chNS = 'N';
                             }
-                            // Reaching here means that there is no data at serial port and read operation timed-out.
-                            // All data has been received so proceed to extraction stage.
-                            numOfBytesRequested = -1;
-                            x = 5;
-                            allDatumReceived = true;
-                            break;
-                    }
-                }
+                            if (lo2 < 0) {
+                                    chEW = 'E';
+                                    lo2 *= -1;
+                            } else {
+                                    chEW = 'W';
+                            }
+
+                            switch (uDecimalCoords) {
+                                case 1:
+                                    listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + fLatitude + "," + fLongitude + 
+                                                "," + altitude + "," + (pressure / 10.0));// + "," + (speed & 0x7f) + "," + heading * 2);
+                                    break;
+                                default:
+                                    listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + (la1 / 60000) + "," 
+                                                        + (la1 % 60000) + "," + chNS + ","+ (lo2 / 60000) + "," + (lo2 % 60000) + "," + chEW + "," + altitude + "," + (pressure / 10.0));
+                                                        //+ "," + (speed & 0x7f) + "," + heading * 2);
+                                    break;
+                                }
+                        }
+                        break;
+                    case IS_HEART:
+                        if((dataRequested & REQUESTING_PULSE) == REQUESTING_PULSE) {
+                        }
+                        break;
+                }                
             }
-            rawData.add(raw);
-        }
-
-        // Checksum
-        byte[] verify = new byte[8];
-        for(int x = 0; x < (rawData.size() - 1); x++) {
-                raw = rawData.get(x);
-                for(int n = 0; n < 4096; n++) {
-                        verify[n & 7] ^= raw[n];
-                }
-        }
-        raw = rawData.get(rawData.size() - 1);
-        for(int x=0; x < 8; x++) {
-                if(verify[x] != raw[x]) {
-                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                        sbError.append("\r\n").append("Checksum failed !").append("\r\n");
-                        sbError.append("Calculated checksum : " + SerialComUtil.byteArrayToHexString(verify, ":"));
-                        mylogging.log(Level.WARNING, sbError.toString());                       
-                        return;
-                }
-        }
-
-        // Extract flight info from each block processing one 4k block at a time.
-        int dataType = 0;
-        int index = 0;
-        int latitude = 0;
-        int longitude = 0;
-        int altitude = 0;
-        int pressure = 0;
-        int time = 0;
-        int heading = 0;
-        int speed = 0;
-        int uDecimalCoords = 1;
-
-        for (int x = 0; x < (rawData.size() - 1); x++) {
-
-                raw = rawData.get(x);
-                index = 12;
-                if(x == 0) {
-                        index = index + (raw[12] & 0x1F);	
-                }
-
-                // 0x1f means the raw[index] is neither carrying control info nor gps data (0x1f is 5 bits uDataSize in gpshdr)
-                // data spanning more than 1 byte has to be converted from little to big endian
-                while ((index < 4096) && ((raw[index] & 0x1f) != 0x1f) && (raw[index] != 0x00)) {
-
-                        switch (raw[index] & 0x7f) {
-                        case SIZE_GPSRMC_LONG:
-                                speed = raw[index + 1] & 0xFF;
-                                latitude = (raw[index + 5] << 24 | (raw[index + 4] & 0xFF) << 16 | (raw[index + 3] & 0xFF) << 8 | (raw[index + 2] & 0xFF));
-                                longitude = (raw[index + 9] << 24 | (raw[index + 8] & 0xFF) << 16 | (raw[index + 7] & 0xFF) << 8 | (raw[index + 6] & 0xFF));
-                                altitude = (((raw[index + 11] & 0xFF) << 8) | (raw[index + 10] & 0xFF)) & 0xFFFF;
-                                pressure = (((raw[index + 13] & 0xFF) << 8) | (raw[index + 12] & 0xFF)) & 0xFFFF;
-                                time = (raw[index + 17] << 24 | (raw[index + 16] & 0xFF) << 16 | (raw[index + 15] & 0xFF) << 8 | (raw[index + 14] & 0xFF));
-                                heading = raw[index + 18] & 0xFF;
-                                dataType = IS_GEO;
-                                break;
-
-                        case SIZE_GPSRECORD_LONG:
-                                latitude += raw[index + 1];
-                                longitude += raw[index + 2];
-                                altitude += raw[index + 3];
-                                pressure += raw[index + 4];
-                                time += raw[index + 5];
-                                speed = raw[index + 6] & 0xFF;    // speed,heading is unsigned char therefore use MSB in arithmetic calculation instead of using it for sign
-                                heading = raw[index + 7] & 0xFF;
-                                dataType = IS_GEO;
-                                break;
-
-                        case SIZE_HEARTDATA_STORED:
-                                dataType = IS_HEART;
-                                break;
-
-                        case SIZE_TAS_STORED:
-                                dataType = IS_TAS;
-                                break;
-
-                        case SIZE_TP_STORED:
-                                break;
-
-                        case SIZE_DECLARE_STORED:
-                                //System.out.println("TSK," + (raw[index + 1] & 0xFF));
-                                break;
-
-                        default:
-                                break;
-                        }
-
-                        long2Time(time);
-
-                        switch (dataType) {
-                        case IS_TAS:
-                                if((dataRequested & REQUESTING_TAS) == REQUESTING_TAS) {
-                                        System.out.println("TAS ");
-                                }
-                                break;
-
-                        case IS_GEO:
-                                if((dataRequested & REQUESTING_POSITION) == REQUESTING_POSITION) {
-                                        int la1 = 0;
-                                        int lo2 = 0;
-                                        double fLatitude = 0;
-                                        double fLongitude = 0;
-                                        char chNS = 'a';
-                                        char chEW = 'a';
-
-                                        la1 = latitude;
-                                        lo2 = longitude;
-                                        fLatitude = latitude;
-                                        fLongitude = -longitude;
-                                        fLatitude /= 60000.0;
-                                        fLongitude /= 60000.0;
-                                        if (la1 < 0) {
-                                                chNS = 'S';
-                                                la1 *= -1;
-                                        } else {
-                                                chNS = 'N';
-                                        }
-                                        if (lo2 < 0) {
-                                                chEW = 'E';
-                                                lo2 *= -1;
-                                        } else {
-                                                chEW = 'W';
-                                        }
-
-                                        switch (uDecimalCoords) {
-                                        case 1:
-                                            listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + fLatitude + "," + fLongitude + 
-                                                        "," + altitude + "," + (pressure / 10.0) + "," + (speed & 0x7f) + "," + heading * 2);
-                                            break;
-                                        default:
-                                            listPOS.add("POS," + (year + 2000) + "/" + month + "/" + day + "," + hour + ":" + minute + ":" + second + "," + (la1 / 60000) + "," 
-                                                                + (la1 % 60000) + "," + chNS + ","+ (lo2 / 60000) + "," + (lo2 % 60000) + "," + chEW + "," + altitude + "," + (pressure / 10.0) + "," + 
-                                                                (speed & 0x7f) + "," + heading * 2);
-                                            break;
-                                        }
-                                }
-                                break;
-
-                        case IS_HEART:
-                                if((dataRequested & REQUESTING_PULSE) == REQUESTING_PULSE) {
-                                }
-                                break;
-                        default:
-                                System.out.println("default !");
-                        }
-
-                        index = index + (raw[index] & 0x1F);
-                }
-        }
-    }
-    
-    
-    
+        }               
+        System.out.println("Points : "+nbPoints);
+    }    
+     
     /**
      * Extract day and hour from a long integer
      * @param itime 
@@ -884,52 +658,43 @@ public class flymaster {
         }                
     }        
     
-    /**
-     * Debugging
-     * @param listFlights 
-     */
-    public void debugListFlights(ObservableList <Gpsmodel> listFlights) {
-        File fFlight = new File("flylist.txt");
-	listFlights.clear();
-	BufferedReader br = null;            
-	try {
-            InputStream ips=new FileInputStream(fFlight); 
-            InputStreamReader ipsr=new InputStreamReader(ips);
-            br=new BufferedReader(ipsr);
-            String ligne;
-            while ((ligne=br.readLine())!=null){
-                listPFM.add(ligne);                
-            }
-            br.close();  
-            for (int i = 0; i < listPFM.size(); i++) {
-                String ligPOS = listPFM.get(i);
-                String[] cleanVol = ligPOS.split("\\*");
-                String[] idVol = cleanVol[0].split(",");
-                if (idVol.length > 0 ) {
-                    Gpsmodel oneFlight = new Gpsmodel();                                             
-                    oneFlight.setChecked(true);
-                    oneFlight.setDate(idVol[3]);
-                    // On compose l'instruction qui permet de charger le vol
-                    StringBuilder sbVol = new StringBuilder();
-                    sbVol.append("$PFMDNL,");
-                    sbVol.append(idVol[3].replaceAll("\\.", ""));
-                    oneFlight.setHeure(idVol[4]);
-                    sbVol.append(idVol[4].replaceAll("\\.", ""));
-                    sbVol.append(",2\n");
-                    oneFlight.setCol4(idVol[5]);
-                    oneFlight.setCol5(sbVol.toString());
-                    listFlights.add(oneFlight);
-                }                     
-            }            
-	} catch (FileNotFoundException ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-	} catch (IOException ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-	}   
+        private int read_line() {
+        int iLen = 0;
+        byte[] iRes;
+        sbRead = new StringBuilder();
         
+        try {
+            while (iLen < iBufLen) {
+                iRes = scm.readBytes(handle, 1);                         
+                char cData = (char) (iRes[0] & 0xFF);
+//                if (iRes > 0) {
+//                    h++;
+//                }
+                if (iRes[0] > 0 && cData != '\n') {
+                    if (cData != '\r') {
+                        sbRead.append(cData);
+                        iLen++;
+                    }
+                } else {           
+                    //  timed out.
+                    break;
+                }
+            }
+        } catch (Exception e) {
+        }
+        
+        return iLen;
+    }
+    
+    private void write_line(String reqDevice) {
+        
+        try {
+            scm.writeString(handle, reqDevice, 0);  
+            scm.writeString(handle, "\n", 0);   
+        } catch (Exception e) {
+//            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+//            sbError.append("\r\n").append(e.toString());
+//            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
     }    
 }
