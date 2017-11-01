@@ -376,8 +376,9 @@ public class CarnetViewController  {
         myConfig = mainApp.myConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",CarnetViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
+        this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         iniTable();
-        iniEventBar();                       
+        iniEventBar();     
     }
     
     /**
