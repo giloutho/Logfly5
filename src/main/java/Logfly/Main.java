@@ -40,7 +40,7 @@ public class Main extends Application {
     
     public configProg myConfig;
     
-    private RootLayoutController rootLayoutController;
+    public RootLayoutController rootLayoutController;
     
     @Override
     public void start(Stage primaryStage) {
