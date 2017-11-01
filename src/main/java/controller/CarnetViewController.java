@@ -160,6 +160,10 @@ public class CarnetViewController  {
         
     }
     
+    /**
+     * Initialization of the TableView
+     * Fill the table with data from db
+     */
     private void iniTable() {
         dataCarnet = FXCollections.observableArrayList();
         dataYear = FXCollections.observableArrayList();
@@ -279,6 +283,29 @@ public class CarnetViewController  {
         
     }
     
+    /**
+     * Initailization of top barmenu
+     */
+    private void iniEventBar() {
+        
+        top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+            new EventHandler<MouseEvent>() {
+                @Override public void handle(MouseEvent e) {                        
+                        clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+                }
+        });    
+        top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+            new EventHandler<MouseEvent>() {
+                @Override public void handle(MouseEvent e) { 
+                    if (myConfig.isVisuGPSinNav()) {
+                        runVisuGPS(true);
+                    } else {
+                        clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
+                    }
+                }
+        });         
+    }
+    
     private void newVolsContent(String yearFiltre)  {
         boolean isCamera;
         Statement stmt = null;
@@ -350,6 +377,7 @@ public class CarnetViewController  {
         i18n = I18nFactory.getI18n("","lang/Messages",CarnetViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         iniTable();
+        iniEventBar();                       
     }
     
     /**
@@ -592,22 +620,22 @@ public class CarnetViewController  {
         if (currCarnet != null) {                                   
             decodeVolCarnet(currCarnet.getIdVol());
                         
-            top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                new EventHandler<MouseEvent>() {
-                    @Override public void handle(MouseEvent e) {                        
-                            clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
-                    }
-            });    
-            top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                new EventHandler<MouseEvent>() {
-                    @Override public void handle(MouseEvent e) { 
-                        if (myConfig.isVisuGPSinNav()) {
-                            runVisuGPS(true);
-                        } else {
-                            clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
-                        }
-                    }
-            }); 
+//            top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+//                new EventHandler<MouseEvent>() {
+//                    @Override public void handle(MouseEvent e) {                        
+//                            clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+//                    }
+//            });    
+//            top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+//                new EventHandler<MouseEvent>() {
+//                    @Override public void handle(MouseEvent e) { 
+//                        if (myConfig.isVisuGPSinNav()) {
+//                            runVisuGPS(true);
+//                        } else {
+//                            clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
+//                        }
+//                    }
+//            }); 
         } else {
             // todo
            
@@ -1081,6 +1109,7 @@ public class CarnetViewController  {
                     sbError.append("\r\n").append(e.toString());
                     mylogging.log(Level.SEVERE, sbError.toString());
                 }
+                break;
             case LINUX :
                 Runtime runtime = Runtime.getRuntime();
                 try {
