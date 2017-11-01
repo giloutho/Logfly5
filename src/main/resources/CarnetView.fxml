@@ -13,11 +13,11 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
+<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
    <children>
       <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox alignment="CENTER_LEFT" maxHeight="68.0" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="68.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" maxHeight="60.0" maxWidth="1.7976931348623157E308" minHeight="60.0" minWidth="-Infinity" prefHeight="60.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
                <children>
                   <ChoiceBox fx:id="top_chbYear" prefWidth="100.0">
                      <HBox.margin>
@@ -94,7 +94,7 @@
                   </HBox>
                </children>
             </HBox>
-            <SplitPane dividerPositions="0.5284738041002278" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="600.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+            <SplitPane dividerPositions="0.5284738041002278" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
                <items>
                   <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="460.0" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="457.0">
                      <children>
