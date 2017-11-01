@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import Logfly.Main;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import littlewins.winLog;
@@ -63,7 +64,8 @@ public class RootLayoutController {
     private Button btnTools;
     @FXML
     private Button btnSupport;
-    
+    @FXML
+    private Label LbMsg; 
     
     // Refer to the main application.
     private Main mainApp;
@@ -165,6 +167,13 @@ public class RootLayoutController {
         sb.append("Largeur : ").append(String.valueOf(mainApp.getPrimaryStage().getWidth()));
         sb.append(" Hauteur : ").append(String.valueOf(mainApp.getPrimaryStage().getHeight()));
         myInfo.alertInfo(sb.toString());       
+    }
+    
+    public void updateMsgBar(String sMessage, boolean visuBar, int iLeftPadding) { 
+        // default left padding is 50
+        LbMsg.setPadding(new Insets(4, 0, 0, iLeftPadding));
+        LbMsg.setText(sMessage);
+        LbMsg.setVisible(visuBar);
     }
     
     /**
