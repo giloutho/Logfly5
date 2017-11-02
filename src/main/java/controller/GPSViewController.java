@@ -210,7 +210,8 @@ public class GPSViewController {
     private StringBuilder sbError;
     private reversale usbRever;
     private String strTrack;
-    
+    private int nbTracks = 0;
+    private int nbNewTracks = 0;
     
     @FXML
     private void initialize() {               
@@ -228,13 +229,28 @@ public class GPSViewController {
     @FXML
     private void unCheckList() {
         ObservableList <Gpsmodel> checkData = tableImp.getItems();        
-        // Flight counting
         for (Gpsmodel nbItem : checkData){
             if (nbItem.getChecked())  {               
                 nbItem.setChecked(Boolean.FALSE);
             }
-        }
-        
+        }        
+    }
+    
+    private void actuMsgBar() {
+        ObservableList <Gpsmodel> tableData = tableImp.getItems();        
+        // Flight counting      
+        nbTracks = 0;
+        nbNewTracks = 0;
+        for (Gpsmodel item : tableData){
+            nbTracks++;
+            if (item.getCol6().equals("NON")) {
+                nbNewTracks++;
+            }       
+        } 
+        StringBuilder sbMsg = new StringBuilder();
+        sbMsg.append(i18n.tr("Traces dans le GPS : ")).append(String.valueOf(nbTracks));
+        sbMsg.append("   ").append(i18n.tr("Traces à incorporer : ")).append(String.valueOf(nbNewTracks));
+        rootController.updateMsgBar(sbMsg.toString(), true, 60);
     }
    
     /**
@@ -682,8 +698,7 @@ public class GPSViewController {
                             nbItem.setCol6("NON");
                         } else {
                             nbItem.setCol6("OUI");
-                        }
-                        
+                        }                        
                     }                                      
                     // Flymaster communication is OK
                     // GPS model and serial port are stored in settings
@@ -822,7 +837,8 @@ public class GPSViewController {
                 });
                 if (tableImp.getItems().size() > 0) {
                     buttonBar.setVisible(true);
-                    hbTable.setVisible(true);            
+                    hbTable.setVisible(true);   
+                    actuMsgBar();
                 }
             }
         }
