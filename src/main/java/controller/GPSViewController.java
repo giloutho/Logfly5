@@ -1063,9 +1063,7 @@ public class GPSViewController {
         thread.start();        
     }
         
-    
-    
-    
+
     /**
     * For each flight to insert, specific download GPS instruction is called
     * IGC file is inserted in database
