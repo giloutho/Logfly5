@@ -206,7 +206,7 @@ public class ImportViewController {
             StringBuilder sbMsg = new StringBuilder();
             sbMsg.append(i18n.tr("Traces dans le dossier : ")).append(String.valueOf(nbTracks));
             sbMsg.append("   ").append(i18n.tr("Traces à incorporer : ")).append(String.valueOf(nbNewTracks));
-            rootController.updateMsgBar(sbMsg.toString(), true, 300);
+            rootController.updateMsgBar(sbMsg.toString(), true, 60);
         }
         
         
