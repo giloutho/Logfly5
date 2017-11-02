@@ -16,12 +16,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import model.Gpsmodel;
 import model.Import;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -83,6 +85,7 @@ public class ImportViewController {
         this.myConfig = mainConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
+        rootController.updateMsgBar("", false,50);                
     }
         
     
@@ -126,7 +129,11 @@ public class ImportViewController {
      * @param dir
      * @throws Exception 
      */
-    private void listTracksFiles(File dir) throws Exception {        
+    private void listTracksFiles(File dir) throws Exception {      
+        
+        dataImport.clear();
+        tableImp.getItems().clear();
+        trackPathList.clear();
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
@@ -151,19 +158,20 @@ public class ImportViewController {
     private void InitialiseTableData() {
         
         traceGPS myTrace;
+        int nbTracks = 0;
+        int nbNewTracks = 0;
         
-        dataImport.clear();
-        tableImp.getItems().clear();
         // Loop on arraylist of track files with path 
         for (String sTracePath : trackPathList) {
+            nbTracks++;
             File fMyTrace = new File(sTracePath);
             if(fMyTrace.exists() && fMyTrace.isFile()) {           
                 myTrace = new traceGPS(fMyTrace,false, myConfig);
                 if (myTrace.isDecodage()) { 
                     Import imp = new Import();
                     dbSearch rechDeco = new dbSearch(myConfig); 
-                    // For debugging
                     boolean resDeco = rechDeco.searchVolByDeco(myTrace.getDT_Deco(),myTrace.getLatDeco(),myTrace.getLongDeco());
+                    if (!resDeco) nbNewTracks++;
                     imp.setChecked(!resDeco);
                     imp.setDate(myTrace.getDate_Vol_SQL());
                     imp.setHeure(myTrace.getDate_Vol_SQL());
@@ -171,22 +179,34 @@ public class ImportViewController {
                     imp.setPilotName(myTrace.getsPilote());
                     imp.setFilePath(sTracePath); 
                     dataImport.add(imp);
-                    // Pattern must be applied in decoding
-                    System.out.println("Carnet : "+resDeco+" Decodage : "+fMyTrace.getName()+" "+myTrace.isDecodage()+"  "+myTrace.getsPilote());
-                    // Arrêt boulot faire un sout des paramètres attendus pour la tableview
-                    // Si c'est bon on poussera dans l'ObservableList
-                
-                    // Decoding date checking
-                    //System.out.println("Decodage : "+myTrace.isDecodage()+"  "+myTrace.getDT_Deco().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                   // System.out.println("Carnet : "+resDeco+" Decodage : "+fMyTrace.getName()+" "+myTrace.isDecodage()+"  "+myTrace.getsPilote());
                 }
             
             }
         }        
-        System.out.println("DataImp size : "+dataImport.size());
         tableImp.setItems(dataImport); 
-        if (tableImp.getItems().size() > 0) {
+        if (tableImp.getItems().size() > 0) {                        
             buttonBar.setVisible(true);
-            hbTable.setVisible(true);            
+            hbTable.setVisible(true);  
+            
+            tableImp.setRowFactory(tbrow -> new TableRow<Import>() {
+                @Override
+                public void updateItem(Import item, boolean empty) {
+                    super.updateItem(item, empty) ;
+                    if (item == null) {
+                        setStyle("");
+                    } else if (item.getChecked()) {
+                        setStyle("-fx-background-color: lightsalmon;");
+                    } else {
+                        setStyle("-fx-background-color: cadetblue;");
+                    }
+                }
+            });
+            // Update status message
+            StringBuilder sbMsg = new StringBuilder();
+            sbMsg.append(i18n.tr("Traces dans le dossier : ")).append(String.valueOf(nbTracks));
+            sbMsg.append("   ").append(i18n.tr("Traces à incorporer : ")).append(String.valueOf(nbNewTracks));
+            rootController.updateMsgBar(sbMsg.toString(), true, 300);
         }
         
         
@@ -197,7 +217,6 @@ public class ImportViewController {
         //    list.add(new Book("The Thief", "Fuminori Nakamura"));
         //ObservableList data = FXCollections.observableList(list);
 
-       // return data;
     }
     
     /**
@@ -265,6 +284,18 @@ public class ImportViewController {
     public void setRootBridge(RootLayoutController rootlayout) {
         this.rootController = rootlayout; 
         
+    }
+    
+    /**
+     * Clear table view before folder exploration
+     */
+    private void clearData() {
+        
+        dataImport.clear();
+        trackPathList.clear();
+        tableImp.getItems().clear();
+        buttonBar.setVisible(false);
+        hbTable.setVisible(false);  
     }
     
     /**
