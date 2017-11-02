@@ -6,6 +6,7 @@
  */
 package database;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDateTime;
@@ -79,29 +80,28 @@ public class dbAdd {
                            sitePays = "..."; 
                         }
                     }
-                    StringBuilder sReqInsert = new StringBuilder();
-                    sReqInsert.append("INSERT INTO Vol (V_Date,V_Duree,V_sDuree,V_LatDeco,V_LongDeco,V_AltDeco,V_Site,V_Pays,V_IGC,UTC,V_Engin) VALUES (");
-                    sReqInsert.append(sQuote).append(pTrace.getDate_Vol_SQL()).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(String.valueOf(pTrace.getDuree_Vol())).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(pTrace.getsDuree_Vol()).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(String.valueOf(pTrace.getLatDeco())).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(String.valueOf(pTrace.getLongDeco())).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(String.valueOf(pTrace.getAlt_Deco_GPS())).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(siteNom).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(sitePays).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(pTrace.getFicIGC()).append(sQuoteVirg);
+                    
+                    StringBuilder insertTableSQL = new StringBuilder();
+                    insertTableSQL.append("INSERT INTO Vol (V_Date,V_Duree,V_sDuree,V_LatDeco,V_LongDeco,V_AltDeco,V_Site,V_Pays,V_IGC,UTC,V_Engin) VALUES");
+                    insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?)");
+                    PreparedStatement preparedStatement = myConfig.getDbConn().prepareStatement(insertTableSQL.toString());
+                    preparedStatement.setString(1, pTrace.getDate_Vol_SQL());
+                    preparedStatement.setLong(2, pTrace.getDuree_Vol());
+                    preparedStatement.setString(3,pTrace.getsDuree_Vol());
+                    preparedStatement.setDouble(4,pTrace.getLatDeco());
+                    preparedStatement.setDouble(5,pTrace.getLongDeco());
+                    preparedStatement.setInt(6,pTrace.getAlt_Deco_GPS());
+                    preparedStatement.setString(7,siteNom);
+                    preparedStatement.setString(8,sitePays);
+                    preparedStatement.setString(9,pTrace.getFicIGC());
                     // GMTOffset usage is only for compatibility with xLogfly, it was in minutes
                     // Track offset is stored in a double
                     // Cast in long type is for eliminate decimals
-                    sReqInsert.append(sQuote).append(String.format("%d",(long)pTrace.getUtcOffset()*60)).append(sQuoteVirg);
-                    sReqInsert.append(sQuote).append(pTrace.getsVoile()).append(sQuote).append(")");   
-                    Statement stmtIns = null;
+                    preparedStatement.setString(10,String.format("%d",(long)pTrace.getUtcOffset()*60));
+                    preparedStatement.setString(11,pTrace.getsVoile());
                     try {
-                      //  stmt = myConfig.getDbConn().createStatement();
-                        //stmt.executeUpdate(sReqInsert.toString());     
-                        System.out.println("Insertion OK");
-                        stmtIns = myConfig.getDbConn().createStatement();
-                        stmtIns.executeUpdate(sReqInsert.toString());   
+			preparedStatement.executeUpdate();  
+                        System.out.println("Insertion OK");  
                         res = 0;
                     } catch ( Exception e ) {
                         res = 1104;   // Insertion error in flights file                                           
@@ -111,7 +111,9 @@ public class dbAdd {
                         mylogging.log(Level.SEVERE, sbError.toString());
                     } finally {
                         try{                            
-                            stmtIns.close();
+                            if (preparedStatement != null) {
+				preparedStatement.close();
+                            }
                         } catch(Exception e) { } 
                     }    
                 }
@@ -153,18 +155,19 @@ public class dbAdd {
                 int totSiteNo = rs.getInt(1);  
                 rs.close();
                 String sNom = "Site No "+String.valueOf(totSiteNo + 1)+"  ("+i18n.tr("A renommer")+")";
-                // Big post about StringBuilder
-                // http://stackoverflow.com/questions/8725739/correct-way-to-use-stringbuilder
-                sReq.setLength(0);   // Stringbuilder is cleared            
-                sReq.append("INSERT INTO Site (S_Nom,S_CP,S_Type,S_Alti,S_Latitude,S_Longitude,S_Maj) VALUES(");
-                sReq.append(sQuote).append(sNom).append(sQuote).append(", ").append(sQuote).append("***").append(sQuote);
-                sReq.append(", ").append(sQuote).append("D").append(sQuote).append(",").append(sQuote).append(String.valueOf(pAlt)).append(sQuote).append(",");
-                sReq.append(sQuote).append(String.valueOf(pLat)).append(sQuote).append(",").append(sQuote).append(String.valueOf(pLong)).append(sQuote).append(",");
-                sReq.append(sQuote).append(ldtNow.format(formatter)).append(sQuote).append(")");
-                Statement stmtIns = null;
+                StringBuilder insertTableSQL = new StringBuilder();
+                insertTableSQL.append("INSERT INTO Site (S_Nom,S_CP,S_Type,S_Alti,S_Latitude,S_Longitude,S_Maj) VALUES");
+                insertTableSQL.append("(?,?,?,?,?,?,?)");
+                PreparedStatement preparedStatement = myConfig.getDbConn().prepareStatement(insertTableSQL.toString());
+                preparedStatement.setString(1, sNom);
+                preparedStatement.setString(2,"***");
+                preparedStatement.setString(3,"D");
+                preparedStatement.setInt(4,pAlt);
+                preparedStatement.setDouble(5, pLat);
+                preparedStatement.setDouble(6,pLong);
+                preparedStatement.setString(7,ldtNow.format(formatter));
                 try {
-                    stmtIns = myConfig.getDbConn().createStatement();
-                    stmtIns.executeUpdate(sReq.toString());                
+                    preparedStatement.executeUpdate();                
                     res = sNom+"*...";  // Depuis la xLogfly 3, on colle le pays
                 } catch ( Exception e ) {
                     sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -173,7 +176,9 @@ public class dbAdd {
                     mylogging.log(Level.SEVERE, sbError.toString());                                   
                 } finally {
                     try {
-                        stmtIns.close();
+                        if (preparedStatement != null) {
+                            preparedStatement.close();
+                         }
                     } catch(Exception e) { } 
                 }                                 
             }            
