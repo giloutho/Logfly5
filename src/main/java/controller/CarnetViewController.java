@@ -346,8 +346,10 @@ public class CarnetViewController  {
                 }            
                 tableVols.setItems(dataCarnet); 
                 // At least one record
-                if (tableVols.getItems().size() > 0)
+                if (tableVols.getItems().size() > 0) {
                     tableVols.getSelectionModel().select(0);
+                    updateStatusBar(yearFiltre);
+                }
             }
             
         } catch ( Exception e ) {
@@ -501,9 +503,41 @@ public class CarnetViewController  {
                 rs.close(); 
                 stmt.close();
             } catch(Exception e) { } 
-        }
-        
-        
+        }         
+    }
+    
+    
+    private void updateStatusBar(String yearFiltre) {
+        // calculate flight hours
+        Statement stmt = null;
+        ResultSet rs = null;
+        String sReq = "SELECT Count(V_ID),Sum(V_Duree) FROM Vol WHERE strftime('%Y',V_date) = '"+yearFiltre+"'";
+        try {
+            stmt = myConfig.getDbConn().createStatement();
+            rs =  stmt.executeQuery(sReq);
+            if (rs != null)  { 
+                int iDuree = rs.getInt("Sum(V_Duree)");
+                int nbHour = iDuree/3600;
+                int nbMn = (iDuree - (nbHour*3600))/60;
+                if (nbHour > 0 || nbMn > 0) {
+                    StringBuilder sbMsg = new StringBuilder();
+                    sbMsg.append(yearFiltre).append(" : ");
+                    sbMsg.append(String.valueOf(nbHour)+i18n.tr(" heures "));
+                    sbMsg.append(String.format("%02d", nbMn)+i18n.tr(" minutes"));
+                    mainApp.rootLayoutController.updateMsgBar(sbMsg.toString(), true, 60);
+                } else {
+                    mainApp.rootLayoutController.updateMsgBar("", false, 60);
+                }
+            }
+        } catch ( Exception e ) {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertError(e.getClass().getName() + ": " + e.getMessage());                          
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
+        } 
     }
     
     /**
