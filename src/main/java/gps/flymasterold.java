@@ -178,7 +178,7 @@ public class flymasterold {
                 deviceFirm = tbdata[4];   
                 res = true;
             } else {
-                sbError = new StringBuilder("GPS not splited : "+data);
+                sbError = new StringBuilder("GPS answser not splited : "+data);
                 res = false;
             }
         } else {
