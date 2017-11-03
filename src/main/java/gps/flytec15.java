@@ -37,13 +37,25 @@ public class flytec15 {
     private long handle;   
     private String serialPortName;    
     private String lstVols;
-    private StringBuilder sbError;
+    private StringBuilder sbError = null;
+    private String deviceId;
     
     public flytec15() throws Exception {
         // Create and initialize serialpundit
         scm = null;    
         SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
         osType = scp.getOSType();
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+    
+    public String getError() {
+        if (sbError != null)
+            return sbError.toString();
+        else
+            return "No Error message";
     }
     
     /**
@@ -66,10 +78,14 @@ public class flytec15 {
         if (data != null && !data.isEmpty()) {
              String[] tbdata = data.split(" ");
             if (tbdata.length > 0) {
-                if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {                
+                if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
+                    deviceId = data;
                     res = true;
+                } else {
+                    sbError = new StringBuilder("GPS answer not splited : "+data);
                 }
             } else {
+                sbError = new StringBuilder("No GPS answer (GetDeviceInfo)");
                 res = false;
             }
         }    
