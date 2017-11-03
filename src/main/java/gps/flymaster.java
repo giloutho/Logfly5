@@ -81,7 +81,7 @@ public class flymaster {
     private StringBuilder txtIGC;
     private boolean genIGC;
     private String finalIGC;
-    private StringBuilder sbError;
+    private StringBuilder sbError = null;
     
     public flymaster() throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
@@ -108,6 +108,13 @@ public class flymaster {
 
     public String getFinalIGC() {
         return finalIGC;
+    }
+    
+    public String getError() {
+        if (sbError != null)
+            return sbError.toString();
+        else
+            return "No Error message";
     }
     
     /**
@@ -297,7 +304,7 @@ public class flymaster {
                 
         try {
             getFlightData(gpsCommand);
-            if (listPOS.size() > 0) {
+            if (!listPOS.isEmpty()) {
                 makeIGC(strDate,strPilote, strVoile);
                 res = genIGC;
             }
@@ -310,9 +317,13 @@ public class flymaster {
     }
     
    private void getFlightData(String gpsCommand) {
+       
+        // initialization necessary
+        listPOS = new ArrayList<String>();
         
         try {
             byte[] BufferRead = new byte[1048576];
+            byte[] uChkSum = new byte[8];
             int lenBuffer = 0;
             byte[] trackdata = null;                
             int lenTrackdata = 0;
@@ -324,7 +335,10 @@ public class flymaster {
                 trackdata = scm.readBytes(handle,128);
                 if(trackdata != null) {
                     System.arraycopy(trackdata, 0, BufferRead,lenBuffer , trackdata.length);
-                    lenBuffer += trackdata.length;                                                   
+                    lenBuffer += trackdata.length;   
+                    if (trackdata.length == 8 ) {
+                        System.arraycopy(trackdata, 0, uChkSum, 0, trackdata.length);
+                    }
                 }
                 else {
                     exit = true;
@@ -332,14 +346,39 @@ public class flymaster {
                 }
             }
             if (lenBuffer > 0) {
-                decodeFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer));  
+                if (checkSumFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer), uChkSum)) {
+                    decodeFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer));  
+                }
+            } else {
+                sbError = new StringBuilder(gpsCommand+" -> no data [LenBuffer = 0]");
+                mylogging.log(Level.SEVERE, sbError.toString());
             }
         } catch (Exception e) {
-//            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//            sbError.append("\r\n").append(e.toString());
-//            mylogging.log(Level.SEVERE, sbError.toString());            
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
         }
     }    
+   
+    private boolean checkSumFlightData(byte[] flyRaw, byte[] uChkSum) {
+        
+        byte[] verify = new byte[8];
+        int flyRawLimit = flyRaw.length - (flyRaw.length % 4096);
+        for(int dwScan = 0; dwScan < flyRawLimit; dwScan+= 4096)  {
+            for(int n = 0; n < 4096; n++) {
+                verify[n & 7] ^= flyRaw[dwScan+n];
+            }                   
+        }
+        for(int x=0; x < 8; x++) {
+            if(verify[x] != uChkSum[x]) {
+                sbError = new StringBuilder("Checksum failed !").append("\r\n");
+                sbError.append("uChkSum : " + SerialComUtil.byteArrayToHexString(uChkSum, ":")).append("\r\n");
+                sbError.append("Calculated checksum : " + SerialComUtil.byteArrayToHexString(verify, ":"));
+                return false;
+            }
+        }                  
+        return true;
+    }   
     
     private void decodeFlightData(byte[] FlyRaw){  
         final int GPSRMC_LONG = 19;
@@ -365,8 +404,6 @@ public class flymaster {
         int speed = 0;
         int uDecimalCoords = 1;
         int dataRequested = REQUESTING_POSITION;
-
-        listPOS = new ArrayList<String>();
         
         int debugRec = 0;
         
