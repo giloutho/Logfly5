@@ -210,8 +210,10 @@ public class GPSViewController {
     private StringBuilder sbError;
     private reversale usbRever;
     private String strTrack;
+    private String errorComMsg;
     private int nbTracks = 0;
     private int nbNewTracks = 0;
+    private String idGPS = "";
     
     @FXML
     private void initialize() {               
@@ -248,7 +250,7 @@ public class GPSViewController {
             }       
         } 
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(i18n.tr("Traces dans le GPS : ")).append(String.valueOf(nbTracks));
+        sbMsg.append(idGPS).append(i18n.tr("   Traces dans le GPS : ")).append(String.valueOf(nbTracks));
         sbMsg.append("   ").append(i18n.tr("Traces à incorporer : ")).append(String.valueOf(nbNewTracks));
         rootController.updateMsgBar(sbMsg.toString(), true, 60);
     }
@@ -647,6 +649,7 @@ public class GPSViewController {
                 // flight list of GPS is dowloaded from fms.getDeviceInfo method
                 // fms fills the observable list 
                 // serial port is closed
+                idGPS = "Flymaster "+fmold.getDeviceType()+" "+fmold.getDeviceFirm();
                 fmold.getListFlights(dataImport);
                 if (dataImport.size() > 0) {
                     // Checking of already stored flights in logbook 
@@ -664,6 +667,9 @@ public class GPSViewController {
                     // GPS model and serial port are stored in settings
                     myConfig.setIdxGPS(4);
                     myConfig.setLastSerialCom(currNamePort);
+                } else {
+                    // Errror will be displayed in AfficheFlyList 
+                    resCom = 6;
                 }
             } else {
                 // Errror will be displayed in AfficheFlyList 
@@ -689,6 +695,7 @@ public class GPSViewController {
                 // flight list of GPS is dowloaded from fms.getDeviceInfo method
                 // fms fills the observable list 
                 // serial port is closed
+                idGPS = "Flymaster "+fms.getDeviceType()+" "+fms.getDeviceFirm();
                 fms.getListFlights(dataImport);
                 if (dataImport.size() > 0) {
                     // Checking of already stored flights in logbook 
@@ -704,7 +711,10 @@ public class GPSViewController {
                     // GPS model and serial port are stored in settings
                     myConfig.setIdxGPS(11);
                     myConfig.setLastSerialCom(currNamePort);
-                }
+                } else {
+                    // Errror will be displayed in AfficheFlyList 
+                    resCom = 6;                    
+                }                    
             } else {
                 // Errror will be displayed in AfficheFlyList 
                 resCom = 2;
@@ -728,6 +738,7 @@ public class GPSViewController {
                 // flight list of GPS is dowloaded from fls.getDeviceInfo method
                 // fls fills the observable list 
                 // serial port is closed
+                idGPS = fls.getDeviceType()+" "+fls.getDeviceFirm();
                 fls.getListFlights(dataImport);
                 if (dataImport.size() > 0) {
                      // Checking of already stored flights in logbook 
@@ -737,13 +748,15 @@ public class GPSViewController {
                             nbItem.setCol6("NON");
                         } else {
                             nbItem.setCol6("OUI");
-                        }
-                        
+                        }                        
                     }                                      
                     // Flyctec communication is OK
                     // GPS model and serial port are stored in settings
                     myConfig.setIdxGPS(1);
                     myConfig.setLastSerialCom(currNamePort);
+                } else {
+                    // Errror will be displayed in AfficheFlyList 
+                    resCom = 6;                             
                 }
             } else {
                 // Errror will be displayed in AfficheFlyList
@@ -768,6 +781,7 @@ public class GPSViewController {
                 // flight list of GPS is dowloaded from fls.getDeviceInfo method
                 // fls fills the observable list 
                 // serial port is closed
+                idGPS = fliq.getDeviceId();
                 fliq.getListFlights(dataImport);
                 if (dataImport.size() > 0) {
                      // Checking of already stored flights in logbook 
@@ -784,6 +798,9 @@ public class GPSViewController {
                     // GPS model and serial port are stored in settings
                     myConfig.setIdxGPS(2);
                     myConfig.setLastSerialCom(currNamePort);
+                } else {
+                    // Errror will be displayed in AfficheFlyList 
+                    resCom = 6;                       
                 }
             } else {
                 // Errror will be displayed in AfficheFlyList
@@ -852,6 +869,7 @@ public class GPSViewController {
         try {
             switch (currGPS) {
             case Rever:                
+                idGPS = "Reversale ";
                 usbRever.listTracksFiles(trackPathList);
                 break;           
             }
@@ -1279,7 +1297,8 @@ public class GPSViewController {
      * reqGPS is the dedicated download instruction 
      */
     private void oneFlightWithProgress(Gpsmodel selLineTable) {        
-        strTrack = null;     
+        strTrack = null;   
+        errorComMsg = null;
         
         ProgressForm pForm = new ProgressForm();
            
@@ -1296,7 +1315,7 @@ public class GPSViewController {
                             fls.closePort(); 
                             resCom = 0;
                         } else {
-                            resCom = 2;   // No GPS answer
+                            errorComMsg = fls.getError();
                         }
                         break;
                     case Flytec15 :
@@ -1307,7 +1326,7 @@ public class GPSViewController {
                             fliq.closePort(); 
                             resCom = 0;
                         } else {
-                            resCom = 2;   // No GPS answer
+                            errorComMsg = fliq.getError();
                         }
                         break;
                     case FlymSD :
@@ -1322,8 +1341,10 @@ public class GPSViewController {
                                 fms.closePort(); 
                                 resCom = 0;
                             } else {
-                                resCom = 2;   // No GPS answer
+                                errorComMsg = fms.getError();
                             }
+                        } else {
+                            errorComMsg = fms.getError();
                         }
                         break;
                     case FlymOld :
@@ -1374,12 +1395,16 @@ public class GPSViewController {
                     displayErrDwnl(reqIGC);
                 }
             } else {
-                if (resCom == 2)  {
+                if (errorComMsg != null)  {
+                    System.out.println("errorComMsg : "+errorComMsg);
                     alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertNumError(1052);  // No GPS answer                       
+                    aError.alertError(errorComMsg);
                 } else if (strTrack == null) {
                     alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertNumError(1054);  // track file is empty     
+                    aError.alertNumError(1054);  // track file is empty       
+                } else if (resCom == 2)  {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertNumError(1052);  // No GPS answer
                 } else {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertNumError(-1);  // Undefined error
@@ -1423,6 +1448,8 @@ public class GPSViewController {
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",GPSViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        // clear status bar
+        rootController.updateMsgBar("", false, 60);
         winTraduction();
         iniChbGPS();
     }
