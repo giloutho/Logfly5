@@ -48,7 +48,7 @@ public class flymasterold {
     private String lstVols;
     private ArrayList<byte[]> packetList;
     private StringBuilder recIGC;
-    private StringBuilder sbError;
+    private StringBuilder sbError = null;
                 
     public flymasterold() throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
@@ -67,6 +67,13 @@ public class flymasterold {
 
     public String getDeviceFirm() {
         return deviceFirm;
+    }
+    
+    public String getError() {
+        if (sbError != null)
+            return sbError.toString();
+        else
+            return "No Error message";
     }
     
     /**
@@ -149,7 +156,7 @@ public class flymasterold {
      * Get information id about device. Keep reading until timeout happens.
      * @throws Exception 
      */
-    private boolean getDeviceInfo(boolean listPFM) throws Exception {
+    private boolean getDeviceInfo(boolean callListPFM) throws Exception {
         boolean res = false;
         String req;
 
@@ -171,11 +178,14 @@ public class flymasterold {
                 deviceFirm = tbdata[4];   
                 res = true;
             } else {
+                sbError = new StringBuilder("GPS not splited : "+data);
                 res = false;
             }
-        }    
+        } else {
+            sbError = new StringBuilder("No GPS answer (GetDeviceInfo)");
+        }        
         
-        if (res && listPFM) getListPFMLST();           
+        if (res && callListPFM) getListPFMLST();           
         
         return res;
     }
