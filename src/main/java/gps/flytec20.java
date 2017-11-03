@@ -12,8 +12,10 @@ import com.serialpundit.serial.SerialComManager;
 import static gps.gpsutils.ajouteChecksum;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
+import systemio.mylogging;
 
 /**
  *
@@ -38,7 +40,7 @@ public class flytec20 {
     private String deviceSerial;
     private String deviceFirm;
     private ArrayList<String> listPBR;
-    private StringBuilder sbError;
+    private StringBuilder sbError = null;
 
     public String getDeviceType() {
         return deviceType;
@@ -52,7 +54,13 @@ public class flytec20 {
         return deviceFirm;
     }
     
-    
+    public String getError() {
+        if (sbError != null)
+            return sbError.toString();
+        else
+            return "No Error message";
+    }
+        
     
     public flytec20() throws Exception {
         // Create and initialize serialpundit
@@ -85,8 +93,12 @@ public class flytec20 {
                 deviceFirm = tbdata[4];   
                 res = true;
             } else {
+                sbError = new StringBuilder("GPS answer not splited : "+rep);
                 res = false;
             }
+        } else {
+            sbError = new StringBuilder("No GPS answer (GetDeviceInfo)");
+            res = false;
         }    
         if (res && listPFM) getListPBRTL();                           
         
@@ -119,7 +131,9 @@ public class flytec20 {
             // Closing port mandatory
             scm.closeComPort(handle);
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
         return res;        
     }
@@ -142,7 +156,9 @@ public class flytec20 {
                 res = true;
             }   
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
         return res;        
     }
@@ -207,13 +223,16 @@ public class flytec20 {
                 res = repGPS;               
             }                        
         } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
             res = null;
         }        
         
         return res;        
     }
     
-    static String flAnswer(SerialComManager scm, long handle)  {
+    private String flAnswer(SerialComManager scm, long handle)  {
         // We put a counter to avoid a dead loop if user isn't on flight list
         // is it a suitable solution ?
         boolean exit = false;
@@ -242,7 +261,9 @@ public class flytec20 {
             }
             
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
         return sData;
     }
@@ -251,7 +272,9 @@ public class flytec20 {
         try {
             scm.closeComPort(handle);
         } catch (Exception e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }        
     }
     
