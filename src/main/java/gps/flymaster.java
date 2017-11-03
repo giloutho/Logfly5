@@ -199,7 +199,7 @@ public class flymaster {
      * Get information id about device. Keep reading until timeout happens.
      * @throws Exception 
      */
-    private boolean getDeviceInfo(boolean listPFM) throws Exception {
+    private boolean getDeviceInfo(boolean callListPFM) throws Exception {
         boolean res = false;
         String data;
         
@@ -217,11 +217,9 @@ public class flymaster {
             data = null;
         }
         if (data != null && !data.isEmpty()) {
-            System.out.println("Device info "+listPFM+" "+data);
-            if (listPFM) {
+            if (callListPFM) {
                 int posPFMSNP = data.indexOf("$PFMSNP");
                 String cleanData = data.substring(posPFMSNP,data.length());
-                System.out.println(cleanData);
                 String[] tbdata = cleanData.split(",");
                 if (tbdata.length > 0 && tbdata[0].contains("$PFMSNP")) {  
                     deviceType = tbdata[1];
@@ -229,14 +227,17 @@ public class flymaster {
                     deviceFirm = tbdata[4];   
                     res = true;
                 } else {
+                    sbError = new StringBuilder("GPS not splited : "+data);
                     res = false;
                 }
             } else {
                 res = true;
             }
+        } else {
+            sbError = new StringBuilder("No GPS answer (GetDeviceInfo)");
         }    
         
-        if (res && listPFM) getListPFMLST();   
+        if (res && callListPFM) getListPFMLST();   
         
          
         return res;
