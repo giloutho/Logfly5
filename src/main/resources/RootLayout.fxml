@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" style="-fx-background-color: black;" stylesheets="@Menu.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.RootLayoutController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1100.0" style="-fx-background-color: black;" stylesheets="@Menu.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.RootLayoutController">
    <left>
       <VBox prefHeight="200.0" prefWidth="130.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
          <children>
@@ -153,12 +153,21 @@
             </Button>
             <Label fx:id="LbMsg" text="Espace de message" textFill="WHITE">
                <padding>
-                  <Insets left="50.0" top="4.0" />
+                  <Insets left="50.0" />
                </padding>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <HBox.margin>
+                  <Insets top="5.0" />
+               </HBox.margin>
             </Label>
          </children>
          <BorderPane.margin>
             <Insets top="8.0" />
-         </BorderPane.margin></HBox>
+         </BorderPane.margin>
+         <padding>
+            <Insets top="5.0" />
+         </padding></HBox>
    </bottom>
 </BorderPane>
