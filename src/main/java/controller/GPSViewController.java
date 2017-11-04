@@ -823,7 +823,10 @@ public class GPSViewController {
             aError.alertNumError(1052);  // No GPS response            
         } else if (resCom == 6) {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertNumError(1056);  // No valid tracks in GPS    
+            if (errorComMsg != null && !errorComMsg.isEmpty())
+                aError.alertError(errorComMsg);
+            else
+                aError.alertNumError(1056);  // No valid tracks in GPS    
         } else {
             if (dataImport.size() > 0) {
                 // Under the GPS, columns are customized 
@@ -866,11 +869,13 @@ public class GPSViewController {
       //  ObservableList <Gpsmodel> importBrut = FXCollections.observableArrayList();  
         configProg otherConfig = new configProg();        
         dbSearch rechDeco = new dbSearch(myConfig); 
+        String limitMsg = null;
         try {
             switch (currGPS) {
             case Rever:                
                 idGPS = "Reversale ";
                 usbRever.listTracksFiles(trackPathList);
+                limitMsg = usbRever.getMsgClosingDate();
                 break;           
             }
             // each gps track header must be decoded
@@ -921,6 +926,7 @@ public class GPSViewController {
                 }
             } else {
                 // No alert box possible in this thread
+                errorComMsg = i18n.tr("Pas de traces depuis le ")+limitMsg;
                 resCom = 6;  
             }
         } catch (Exception e) {
@@ -942,6 +948,9 @@ public class GPSViewController {
      * download flights list from GPS in a different thread with a progressbar
      */
     private void flightListWithProgress() {
+        
+        errorComMsg = null;
+        
         ProgressForm pForm = new ProgressForm();
            
         Task<Void> task = new Task<Void>() {
