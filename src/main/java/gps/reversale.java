@@ -28,6 +28,7 @@ public class reversale {
     private int idxDrive;
     private ObservableList <String> driveList;
     private String closingDate;
+    private String msgClosingDate;
     
     public boolean isConnected() {
         return connected;
@@ -53,6 +54,10 @@ public class reversale {
         return idxDrive;
     }
 
+    public String getMsgClosingDate() {
+        return msgClosingDate;
+    }
+    
     public ObservableList<String> getDriveList() {
         return driveList;
     }
@@ -78,8 +83,9 @@ public class reversale {
         Calendar myCalendar = Calendar.getInstance();
         myCalendar.add(Calendar.MONTH, -(gpsLimit));
         SimpleDateFormat sdf = new SimpleDateFormat("YYMMdd");
-        closingDate = sdf.format(myCalendar.getTime());
-                
+        closingDate = sdf.format(myCalendar.getTime());   
+        SimpleDateFormat sdfMsg = new SimpleDateFormat("dd/MM/YY");
+        msgClosingDate = sdfMsg.format(myCalendar.getTime());  
     }
     
     public boolean testConnection(osType currOs) {
