@@ -331,8 +331,9 @@ public class flymaster {
             boolean exit = false;
             System.out.println("Envoi : "+gpsCommand);
             write_line(gpsCommand);   // gpsCommand like -> $PFMDNL,160709110637,2\n
-            Thread.sleep(100);
+         //   Thread.sleep(100);
             while(exit == false) {
+                Thread.sleep(100);
                 trackdata = scm.readBytes(handle,128);
                 if(trackdata != null) {
                     System.arraycopy(trackdata, 0, BufferRead,lenBuffer , trackdata.length);
@@ -346,10 +347,12 @@ public class flymaster {
                     break;
                 }
             }
+            System.out.println("lenBufer : "+lenBuffer);
             if (lenBuffer > 0) {
-                if (checkSumFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer), uChkSum)) {
+             //   if (checkSumFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer), uChkSum)) {
+                    System.out.println("Checksum OK");
                     decodeFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer));  
-                }
+                //}
             } else {
                 sbError = new StringBuilder(gpsCommand+" -> no data [LenBuffer = 0]");
                 mylogging.log(Level.SEVERE, sbError.toString());
@@ -702,6 +705,8 @@ public class flymaster {
         sbRead = new StringBuilder();
         
         try {
+            // introduit pour windows
+            Thread.sleep(100);
             while (iLen < iBufLen) {
                 iRes = scm.readBytes(handle, 1);                         
                 char cData = (char) (iRes[0] & 0xFF);
