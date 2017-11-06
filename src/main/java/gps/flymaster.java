@@ -13,13 +13,6 @@ import com.serialpundit.serial.SerialComManager;
 import static geoutils.convigc.Lat_Dd_IGC;
 import static geoutils.convigc.Long_Dd_IGC;
 import static gps.gpsutils.bytesToHex;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +22,6 @@ import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
 import systemio.mylogging;
-import gps.gpsutils;
 import static gps.gpsutils.fourBytesToInt;
 import static gps.gpsutils.oneByteToInt;
 import static gps.gpsutils.twoBytesToInt;
@@ -331,8 +323,9 @@ public class flymaster {
             boolean exit = false;
             System.out.println("Envoi : "+gpsCommand);
             write_line(gpsCommand);   // gpsCommand like -> $PFMDNL,160709110637,2\n
-            Thread.sleep(100);
             while(exit == false) {
+                // Windows requested
+                Thread.sleep(100);      
                 trackdata = scm.readBytes(handle,128);
                 if(trackdata != null) {
                     System.arraycopy(trackdata, 0, BufferRead,lenBuffer , trackdata.length);
@@ -702,12 +695,11 @@ public class flymaster {
         sbRead = new StringBuilder();
         
         try {
+            // Windows requested
+            Thread.sleep(100);
             while (iLen < iBufLen) {
                 iRes = scm.readBytes(handle, 1);                         
                 char cData = (char) (iRes[0] & 0xFF);
-//                if (iRes > 0) {
-//                    h++;
-//                }
                 if (iRes[0] > 0 && cData != '\n') {
                     if (cData != '\r') {
                         sbRead.append(cData);
@@ -719,6 +711,9 @@ public class flymaster {
                 }
             }
         } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
         }
         
         return iLen;
@@ -730,9 +725,9 @@ public class flymaster {
             scm.writeString(handle, reqDevice, 0);  
             scm.writeString(handle, "\n", 0);   
         } catch (Exception e) {
-//            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//            sbError.append("\r\n").append(e.toString());
-//            mylogging.log(Level.SEVERE, sbError.toString());            
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
         }
     }    
 }
