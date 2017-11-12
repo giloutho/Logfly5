@@ -11,6 +11,7 @@ import database.dbSearch;
 import dialogues.dialogbox;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -178,16 +179,26 @@ public class ImportViewController {
                     imp.setFileName(fMyTrace.getName());
                     imp.setPilotName(myTrace.getsPilote());
                     imp.setFilePath(sTracePath); 
-                    dataImport.add(imp);
-                   // System.out.println("Carnet : "+resDeco+" Decodage : "+fMyTrace.getName()+" "+myTrace.isDecodage()+"  "+myTrace.getsPilote());
-                }
-            
+                    // for sorting the list we keep SQL date
+                    imp.setColSort(myTrace.getDate_Vol_SQL());                    
+                    dataImport.add(imp);                   
+                }            
             }
-        }        
+        }   
+        Comparator<? super Import> comparatorDate = new Comparator<Import>() {
+            @Override
+            public int compare(Import o1, Import o2) {
+                // order asc -> o1.getCol7().compareTo(o2.getCol7());
+                // order desc
+                return o2.getColSort().compareTo(o1.getColSort());
+            }
+        };          
         tableImp.setItems(dataImport); 
         if (tableImp.getItems().size() > 0) {                        
             buttonBar.setVisible(true);
             hbTable.setVisible(true);  
+            
+            FXCollections.sort(dataImport, comparatorDate);
             
             tableImp.setRowFactory(tbrow -> new TableRow<Import>() {
                 @Override
