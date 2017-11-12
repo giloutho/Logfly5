@@ -24,6 +24,7 @@ public class Import {
     public SimpleStringProperty fileName = new SimpleStringProperty();
     public SimpleStringProperty pilotName = new SimpleStringProperty();
     public SimpleStringProperty filePath = new SimpleStringProperty();
+    public SimpleStringProperty colSort = new SimpleStringProperty();
     
     public SimpleBooleanProperty checkedProperty() {
         return this.checkedFile;
@@ -78,5 +79,12 @@ public class Import {
     public void setFilePath(String filePathStr) {
         filePath.set(filePathStr);
     }
-    
+
+    public String getColSort() {
+        return colSort.get();
+    }
+
+    public void setColSort(String colSortStr) {
+        colSort.set(colSortStr);
+    }        
 }
