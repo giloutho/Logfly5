@@ -339,10 +339,12 @@ public class flymaster {
                     break;
                 }
             }
+            System.out.println("lenBufer : "+lenBuffer);
             if (lenBuffer > 0) {
-                if (checkSumFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer), uChkSum)) {
+             //   if (checkSumFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer), uChkSum)) {
+                    System.out.println("Checksum OK");
                     decodeFlightData(Arrays.copyOfRange(BufferRead, 0, lenBuffer));  
-                }
+                //}
             } else {
                 sbError = new StringBuilder(gpsCommand+" -> no data [LenBuffer = 0]");
                 mylogging.log(Level.SEVERE, sbError.toString());

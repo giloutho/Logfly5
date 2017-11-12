@@ -12,10 +12,10 @@ package settings;
  */
 public enum privateData {
     
-    phpSupport ("adress of php support script"),  // php script called for support request
-    updateUrl ("adress of live update"),  // url live update    
-    mailUrl  ("mail.serveur.com"),      // mailserver
-    mailUser ("mailuser@serveur.com");    // mailserver username
+    phpSupport ("http://alpidev.com/logfly_contact/support.php"),  // php script called for support request
+    updateUrl ("http://www.logfly.org/download/logfly5"),  // url live update    
+    mailUrl  ("mail.alpidev.com"),      // mailserver
+    mailUser ("logfly@alpidev.com");    // mailserver username
     
 
     private String name = "";
