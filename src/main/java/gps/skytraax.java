@@ -13,6 +13,7 @@ import java.util.Calendar;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import settings.osType;
+import systemio.textio;
 
 /**
  *
@@ -294,7 +295,7 @@ public class skytraax {
             String fileName = files[i].getName();
             if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {                                    
                 // Problem of dot files writed by MacOS 
-                if (files[i].isFile() && !fileName.startsWith("._")) {
+                if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {
                     if (files[i].getName().substring(0,3).compareTo(closingSky) > 0) {
                         trackPathList.add(files[i].getPath());
                         System.out.println(files[i].getPath());
@@ -314,10 +315,20 @@ public class skytraax {
         if (fFlights != null && fFlights.exists())  {        
            exploreFolder(fFlights, trackPathList);
         }
-        // In this case, sorting the list is easy, file name is YYMMDDNumber
-        // for other GPS, we must use lambdas exp -> https://www.leveluplunch.com/java/tutorials/007-sort-arraylist-stream-of-objects-in-java8/
-//        Collections.sort(trackPathList);
-//        Collections.reverse(trackPathList);
-    }     
+    }  
+    
+    public String getTrackFile(String igcPath) {
+        
+        String res = null;
+        
+        File fIGC = new File(igcPath);
+        textio fread = new textio();                                    
+        String pFichier = fread.readTxt(fIGC);
+        if (pFichier != null && !pFichier.isEmpty())  {
+            res = pFichier;
+        }
+        
+        return res;        
+    }        
     
 }
