@@ -18,6 +18,7 @@ import gps.flymaster;
 import gps.flymasterold;
 import gps.flytec15;
 import gps.flytec20;
+import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
 import java.io.File;
@@ -211,6 +212,7 @@ public class GPSViewController {
     private StringBuilder sbError;
     private reversale usbRever;
     private skytraax usbSky;
+    private oudie usbOudie;
     private String strTrack;
     private String errorComMsg;
     private int nbTracks = 0;
@@ -331,8 +333,13 @@ public class GPSViewController {
                 break;
             case 7:
                 currGPS = gpsType.Oudie;
-                // AskGPS(7)
-                break;
+                usbOudie = new oudie(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbOudie.isConnected()) {
+                    goodListDrives(usbOudie.getDriveList(),usbSky.getIdxDrive());
+                } else {
+                    badListDrives(usbOudie.getDriveList(), usbSky.getIdxDrive());
+                }
+                break;                
             case 8:
                 currGPS = gpsType.Element;
                 //AskGPS(8)
@@ -887,6 +894,9 @@ public class GPSViewController {
             case Sky :
                 idGPS = "Skytraax";
                 usbSky.listTracksFiles(trackPathList);
+            case Oudie :
+                idGPS = "Naviter Oudie";
+                usbOudie.listTracksFiles(trackPathList);                
             }
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
@@ -988,6 +998,9 @@ public class GPSViewController {
                     case Sky :
                         readUSBGps();
                         break;
+                    case Oudie :
+                        readUSBGps();
+                        break;                        
                 }       
                 return null ;                
             }
@@ -1391,6 +1404,20 @@ public class GPSViewController {
                         } else {
                             resCom = 2;   // No GPS answer
                         }
+                    case Sky :
+                        strTrack = usbSky.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }                        
+                    case Oudie :
+                        strTrack = usbOudie.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }                        
                     default:
                         throw new AssertionError();
                     }                    
