@@ -971,6 +971,12 @@ public class traceGPS {
     }
     
     
+    /**
+     * When track is not completely decoded
+     * this function is called to compute flight duration with last point
+     * @param lastB
+     * @param iniDateVol 
+     */
     private void calcLastPoint(String lastB, LocalDateTime iniDateVol ) {
         String DebMot;
         int Deg;
@@ -1030,11 +1036,16 @@ public class traceGPS {
             // altitude landing recorded            
             // it's possible to compute flight duration
             Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
-            // compute average period between two points            
-            LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
-            sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
-            colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
-            
+            if (Duree_Vol > 0) {
+                // compute average period between two points            
+                LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
+                sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
+                colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
+            } else {
+                sDuree_Vol = "not def";
+                colDureeVol = "not def";
+            }
+                        
             Alt_Attero_Baro = Point1.AltiBaro;
             Alt_Attero_GPS = Point1.AltiGPS;
             
