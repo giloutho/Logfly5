@@ -19,6 +19,7 @@ import gps.flymasterold;
 import gps.flytec15;
 import gps.flytec20;
 import gps.reversale;
+import gps.skytraax;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -209,6 +210,7 @@ public class GPSViewController {
     private String errInsertion;
     private StringBuilder sbError;
     private reversale usbRever;
+    private skytraax usbSky;
     private String strTrack;
     private String errorComMsg;
     private int nbTracks = 0;
@@ -320,7 +322,12 @@ public class GPSViewController {
                 break;
             case 6:
                 currGPS = gpsType.Sky;
-                // AskGPS(6)
+                usbSky = new skytraax(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbSky.isConnected()) {
+                    goodListDrives(usbSky.getDriveList(),usbSky.getIdxDrive());
+                } else {
+                    badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
+                }
                 break;
             case 7:
                 currGPS = gpsType.Oudie;
@@ -876,7 +883,10 @@ public class GPSViewController {
                 idGPS = "Reversale ";
                 usbRever.listTracksFiles(trackPathList);
                 limitMsg = usbRever.getMsgClosingDate();
-                break;           
+                break;   
+            case Sky :
+                idGPS = "Skytraax";
+                usbSky.listTracksFiles(trackPathList);
             }
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
@@ -922,7 +932,10 @@ public class GPSViewController {
                 switch (currGPS) {
                     case Rever:                                            
                         myConfig.setIdxGPS(5);
-                        break;                    
+                        break;      
+                    case Sky:                                            
+                        myConfig.setIdxGPS(6);
+                        break;                                                   
                 }
             } else {
                 // No alert box possible in this thread
@@ -970,6 +983,9 @@ public class GPSViewController {
                         readFlymOld();
                         break;
                     case Rever :
+                        readUSBGps();
+                        break;
+                    case Sky :
                         readUSBGps();
                         break;
                 }       
