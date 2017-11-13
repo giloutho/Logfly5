@@ -41,6 +41,10 @@ public class oudie {
         return driveList;
     }
     
+    public int getIdxDrive() {
+        return idxDrive;
+    }
+        
     public String getMsgClosingDate() {
         return msgClosingDate;
     }        
