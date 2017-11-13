@@ -7,9 +7,14 @@
 package gps;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Optional;
+import java.util.stream.Stream;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import settings.osType;
@@ -39,6 +44,7 @@ public class skytraax {
     private String closingSky;
     private String closingDate;
     private String msgClosingDate;    
+    private String verFirmware;
     private ArrayList<String> flightFolderList;
    
 
@@ -70,11 +76,16 @@ public class skytraax {
     public ObservableList<String> getDriveList() {
         return driveList;
     }
-    
+
+    public String getVerFirmware() {
+        return verFirmware;
+    }
+            
     public skytraax(osType currOs, int gpsLimit) {
         boolean conn = false;
         fFlights = null;        
         fDrive = null;   
+        verFirmware = null;
         
         setDateLevel(gpsLimit);
         
@@ -191,12 +202,10 @@ public class skytraax {
         closingDay = Integer.parseInt(ddf.format(myCalendar.getTime())) - 1;
         sDay = listDay.get(closingDay);
         closingSky = sYear+sMonth+sDay;
-        System.out.println("closingSky : "+closingSky);
         
         closingDate = sdf.format(myCalendar.getTime());   
         SimpleDateFormat sdfMsg = new SimpleDateFormat("dd/MM/YY");
         msgClosingDate = sdfMsg.format(myCalendar.getTime());  
-        System.out.println(msgClosingDate);
     }    
     
     public boolean testConnection(osType currOs) {
@@ -280,13 +289,34 @@ public class skytraax {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
-            if (fileName.equals("system.txt")) {                                    
+            if (fileName.equals("system.txt")) {     
+                readFirmware(files[i]);
                 return true;
             }
         } 
         
         return false;
     }   
+    
+    private void readFirmware(File fSystem) throws IOException {
+        
+        try {
+            Stream<String> lines = Files.lines(Paths.get(fSystem.getAbsolutePath()));
+            Optional<String> hasFirmware = lines.filter(s -> s.contains("Firmware:")).findFirst();
+            if(hasFirmware.isPresent()){
+                String[] sFirmware = hasFirmware.get().split(":");
+                if (sFirmware.length > 1) {
+                    verFirmware = sFirmware[1];
+                } else {
+                    verFirmware = "";
+                }
+                System.out.println(verFirmware);
+            }
+            lines.close();            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+    }
             
     private void exploreFolder(File dir, ArrayList<String> trackPathList) throws Exception {  
         // Recursivité à vérifier pour le skytraax        
@@ -329,6 +359,7 @@ public class skytraax {
         }
         
         return res;        
-    }        
+    }      
+    
     
 }
