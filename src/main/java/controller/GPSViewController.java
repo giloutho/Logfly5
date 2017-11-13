@@ -543,52 +543,7 @@ public class GPSViewController {
         buttonBar.setVisible(true);
         hbTable.setVisible(false);          
     }
-    
-    private void listDrives() {
-        switch (currGPS) {
-            case Rever:
-                
-                break;
-            default:
-                throw new AssertionError();
-        }
-        File[] drives = null;
-        int idxListDrv = 0;
-        ObservableList <String> portList;
-        portList = FXCollections.observableArrayList();
         
-        switch (myConfig.getOS()) {
-            case WINDOWS:
-                // to do
-                break;
-            case MACOS :
-                drives = new File("/Volumes").listFiles();
-                break;
-            default:
-                throw new AssertionError();
-        }
-        if (drives != null && drives.length > 0) {
-            for (File aDrive : drives) {                                            
-                portList.add(aDrive.getName());                
-            }
-            if (portList.size() > 0) {
-                chbSerial.getItems().clear();
-                chbSerial.setItems(portList);  
-                chbSerial.setVisible(true);     
-                chbSerial.getSelectionModel().select(0); 
-                switch (currGPS) {
-                    case Rever :
-                        if (usbRever.isConnected()) {
-                            
-                        }
-                        break;
-                    default:
-                        throw new AssertionError();
-                }                                
-            } 
-        }
-    }
-    
     /**
      * choicebox is filled with available ports
      * a filter is applied based on OS
@@ -916,7 +871,7 @@ public class GPSViewController {
                 limitMsg = usbRever.getMsgClosingDate();
                 break;   
             case Sky :
-                idGPS = "Skytraax";
+                idGPS = "Skytraxx "+usbSky.getVerFirmware();
                 usbSky.listTracksFiles(trackPathList);
                 break;
             case Oudie :
