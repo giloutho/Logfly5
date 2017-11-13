@@ -873,10 +873,12 @@ public class GPSViewController {
             case Sky :
                 idGPS = "Skytraxx "+usbSky.getVerFirmware();
                 usbSky.listTracksFiles(trackPathList);
+                limitMsg = usbSky.getMsgClosingDate();
                 break;
             case Oudie :
                 idGPS = "Naviter Oudie";
-                usbOudie.listTracksFiles(trackPathList);                
+                usbOudie.listTracksFiles(trackPathList);  
+                limitMsg = usbOudie.getMsgClosingDate();
                 break;
             }
             // each gps track header must be decoded
@@ -1050,7 +1052,7 @@ public class GPSViewController {
                 imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_red.png"));
                 imgLed.setImage(imgImgLed);                
                 imgLed.setVisible(true);
-                imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
+                imgGo = new Image(getClass().getResourceAsStream("/images/Refresh.png"));
                 btnGo.setGraphic(new ImageView(imgGo));                
                 goToolTip.setText(i18n.tr("Actualiser la liste"));
                 btnGo.setVisible(true);
