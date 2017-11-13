@@ -47,7 +47,7 @@
                   </ChoiceBox>
                   <Button fx:id="btnGo" contentDisplay="GRAPHIC_ONLY" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#readGPS" prefHeight="30.0" prefWidth="30.0" text="fStart" visible="false">
                      <HBox.margin>
-                        <Insets right="5.0" top="10.0" />
+                        <Insets right="6.0" top="10.0" />
                      </HBox.margin>
                      <graphic>
                         <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
