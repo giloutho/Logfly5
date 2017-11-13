@@ -249,9 +249,9 @@ public class GPSViewController {
         nbNewTracks = 0;
         for (Gpsmodel item : tableData){
             nbTracks++;
-            if (item.getCol6().equals("NON")) {
+            if (item.getChecked())  {               
                 nbNewTracks++;
-            }       
+            }
         } 
         StringBuilder sbMsg = new StringBuilder();
         sbMsg.append(idGPS).append(i18n.tr("   Traces dans le GPS : ")).append(String.valueOf(nbTracks));
