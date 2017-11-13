@@ -226,7 +226,7 @@ public class GPSViewController {
         dateCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("date"));
         heureCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("heure"));
         checkCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel,Boolean>("checked"));
-        checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );
+        checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );                    
     }
     
     /**
@@ -335,9 +335,9 @@ public class GPSViewController {
                 currGPS = gpsType.Oudie;
                 usbOudie = new oudie(myConfig.getOS(), myConfig.getGpsLimit());
                 if (usbOudie.isConnected()) {
-                    goodListDrives(usbOudie.getDriveList(),usbSky.getIdxDrive());
+                    goodListDrives(usbOudie.getDriveList(),usbOudie.getIdxDrive());
                 } else {
-                    badListDrives(usbOudie.getDriveList(), usbSky.getIdxDrive());
+                    badListDrives(usbOudie.getDriveList(), usbOudie.getIdxDrive());
                 }
                 break;                
             case 8:
@@ -494,6 +494,22 @@ public class GPSViewController {
                     badListDrives(usbRever.getDriveList(), usbRever.getIdxDrive());
                 }
                 break;
+            case Sky :
+                // Skytraxx 2 not connected, new attempt
+                if (usbSky.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbSky.getDriveList(),usbSky.getIdxDrive());
+                } else {
+                    badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
+                }
+                break;                
+            case Oudie :
+                // Oudie not connected, new attempt
+                if (usbOudie.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbOudie.getDriveList(),usbOudie.getIdxDrive());
+                } else {
+                    badListDrives(usbOudie.getDriveList(), usbOudie.getIdxDrive());
+                }
+                break;                
         }
         
     }
@@ -869,6 +885,14 @@ public class GPSViewController {
                         }
                     }
                 });
+                // Sum checked flights
+                for (Gpsmodel checkedData : dataImport) {
+                    checkedData.checkedProperty().addListener((obs, wasChecked, isNowChecked) -> {
+                        System.out.println("Touché");
+                        actuMsgBar();
+                    });
+                }    
+                
                 if (tableImp.getItems().size() > 0) {
                     buttonBar.setVisible(true);
                     hbTable.setVisible(true);   
@@ -894,9 +918,11 @@ public class GPSViewController {
             case Sky :
                 idGPS = "Skytraax";
                 usbSky.listTracksFiles(trackPathList);
+                break;
             case Oudie :
                 idGPS = "Naviter Oudie";
                 usbOudie.listTracksFiles(trackPathList);                
+                break;
             }
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
@@ -945,7 +971,10 @@ public class GPSViewController {
                         break;      
                     case Sky:                                            
                         myConfig.setIdxGPS(6);
-                        break;                                                   
+                        break;    
+                    case Oudie:                                            
+                        myConfig.setIdxGPS(7);
+                        break;                          
                 }
             } else {
                 // No alert box possible in this thread
@@ -1151,6 +1180,12 @@ public class GPSViewController {
                     case Rever :
                         gpsOK = usbRever.isConnected();
                         break;
+                    case Sky :
+                        gpsOK = usbSky.isConnected();
+                        break;        
+                    case Oudie :
+                        gpsOK = usbOudie.isConnected();
+                        break;                        
             }            
             if (gpsOK){      
                 for (Gpsmodel item : checkedData){
@@ -1186,6 +1221,12 @@ public class GPSViewController {
                             case Rever :
                                 strTrack = usbRever.getTrackFile(item.getCol5());
                                 break;
+                            case Sky :
+                                strTrack = usbSky.getTrackFile(item.getCol5());
+                                break;                                
+                            case Oudie :
+                                strTrack = usbOudie.getTrackFile(item.getCol5());
+                                break;                                
                             }                                  
                             if (strTrack != null ) {                                
                                 traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
@@ -1404,20 +1445,23 @@ public class GPSViewController {
                         } else {
                             resCom = 2;   // No GPS answer
                         }
+                        break;
                     case Sky :
                         strTrack = usbSky.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
                             resCom = 0;
                         } else {
                             resCom = 2;   // No GPS answer
-                        }                        
+                        }     
+                        break;
                     case Oudie :
                         strTrack = usbOudie.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
                             resCom = 0;
                         } else {
                             resCom = 2;   // No GPS answer
-                        }                        
+                        }     
+                        break;
                     default:
                         throw new AssertionError();
                     }                    
