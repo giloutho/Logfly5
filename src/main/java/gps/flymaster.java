@@ -61,7 +61,7 @@ public class flymaster {
     private final int REQUESTING_PULSE    = 0x0002;
     private final int REQUESTING_GFORCE   = 0x0004;
     private final int REQUESTING_TAS      = 0x0008;
-    private final int iBufLen = 4096;
+    private final int iBufLen = 6144;
     private StringBuilder sbRead;    
     private int year = 0;
     private int month = 0;
@@ -277,7 +277,7 @@ public class flymaster {
         while(read_line()>0)
         {
             listPFM.add(sbRead.toString());
-            System.out.println(sbRead.toString());
+            //System.out.println(sbRead.toString());
         }
     }
         
@@ -693,22 +693,28 @@ public class flymaster {
     
         private int read_line() {
         int iLen = 0;
-        byte[] iRes;
+        byte[] iRes = null;
         sbRead = new StringBuilder();
         
         try {
             // Windows requested
             Thread.sleep(100);
+            iLen = 0;
             while (iLen < iBufLen) {
-                iRes = scm.readBytes(handle, 1);                         
-                char cData = (char) (iRes[0] & 0xFF);
-                if (iRes[0] > 0 && cData != '\n') {
-                    if (cData != '\r') {
-                        sbRead.append(cData);
-                        iLen++;
-                    }
-                } else {           
-                    //  timed out.
+                iRes = scm.readBytes(handle, 1);   
+                if (iRes != null)  {
+                    char cData = (char) (iRes[0] & 0xFF);
+                        if (iRes[0] > 0 && cData != '\n') {
+                            if (cData != '\r') {
+                                sbRead.append(cData);
+                                iLen++;
+                            }
+                        } else {           
+                            //  timed out
+                            //System.out.println("ilen : "+iLen+" "+sbRead.toString());
+                            break;
+                        }
+                } else {
                     break;
                 }
             }
