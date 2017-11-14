@@ -451,7 +451,7 @@ public class map_visu {
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsPilote()).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(traceVisu.getsVoile()).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Durée")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
-        jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
+        jsLegende.append("this._div.innerHTML += '").append("<hr />';").append(RC);
         // Launching time
         String hDeco = traceVisu.getDT_Deco().format(DateTimeFormatter.ofPattern("HH:mm"));                
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Décollage")).append(" : ").append(hDeco).append("<br>';").append(RC);   
@@ -518,7 +518,7 @@ public class map_visu {
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Atterrissage")).append(" : ").append(hAttero).append("<br>';").append(RC);
         jsLegende.append("this._div.innerHTML += '").append(" GPS : ").append(String.valueOf(traceVisu.getAlt_Attero_GPS())).append("m<br>';").append(RC);        
         jsLegende.append("this._div.innerHTML += '").append(goodSiteAterro).append("<br>';").append(RC);
-        jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
+        jsLegende.append("this._div.innerHTML += '").append("<hr />';").append(RC);
         pointIGC ptAltMax = traceVisu.getAlt_Maxi_GPS();
         jsLegende.append("this._div.innerHTML += '").append(i18n.tr("Alt max GPS")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
         pointIGC ptAltMini = traceVisu.getAlt_Mini_GPS();
@@ -541,7 +541,7 @@ public class map_visu {
      * HTML generation of socre info panel
      */
     private void genScoreLegende() {
-        jsLegende.append("this._div.innerHTML += '").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------<br>';").append(RC);
+        jsLegende.append("this._div.innerHTML += '").append("<hr />';").append(RC);
         switch (legLeague) {
             case "FR" :
                 jsLegende.append("this._div.innerHTML += '<b>").append(i18n.tr("CFD")).append("</b><br>';").append(RC);    
