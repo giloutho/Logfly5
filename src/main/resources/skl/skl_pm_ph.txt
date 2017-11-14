@@ -43,7 +43,7 @@
             border-radius:5px;
             color:#000;
             display:none;
-            padding:20px;
+            padding:0px 30px 0px 20px;
             min-width:40px;
             min-height: 20px; }
         .b-close-c {
