@@ -111,30 +111,6 @@ public class skytraax {
         add("C");        
     }};    
     
-    ArrayList<String> listYear = new ArrayList<String>() {{
-        add("0");    // 2010
-        add("1");   
-        add("2");
-        add("3");
-        add("4");
-        add("5");
-        add("6");
-        add("7");
-        add("8");
-        add("9");        
-        add("A");
-        add("B");
-        add("C");
-        add("D");
-        add("E");
-        add("F");
-        add("G");
-        add("H");
-        add("I");
-        add("J");     
-        add("K");         // 2030  -:)
-    }};        
-    
     ArrayList<String> listDay = new ArrayList<String>() {{
         add("0");    
         add("1");   
@@ -196,7 +172,9 @@ public class skytraax {
         
         
         closingYear = Integer.parseInt(ydf.format(myCalendar.getTime()));
-        sYear = listYear.get(closingYear-2010);
+        int iYear = (closingYear-2000) %10;    // gived by Michael from Skytraxx
+        System.out.println("iYear : "+iYear);
+        sYear = String.valueOf(iYear);
         closingMonth = Integer.parseInt(mdf.format(myCalendar.getTime()));
         sMonth = listMonth.get(closingMonth);
         closingDay = Integer.parseInt(ddf.format(myCalendar.getTime())) - 1;
