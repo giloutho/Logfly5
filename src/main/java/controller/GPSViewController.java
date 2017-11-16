@@ -14,6 +14,7 @@ import database.dbSearch;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
+import gps.connect;
 import gps.flymaster;
 import gps.flymasterold;
 import gps.flytec15;
@@ -66,7 +67,6 @@ import settings.configProg;
 import settings.listGPS;
 import settings.osType;
 import systemio.mylogging;
-import systemio.textio;
 import trackgps.traceGPS;
 
 /**
@@ -142,12 +142,12 @@ import trackgps.traceGPS;
  *          askOneTrack starts dedicated GPS methods : oneGPSxxWithProgress
  *          oneGPSxxWithProgress download requested track and starts showOneTrack 
  * 
+ * For a new USB GPS, follow an existing like Oudie -> Ctrl F Oudie and Ctrl F usbOudie
+ * Don't forget to add a reference in flightListWithProgress() 
+ * and memorize last used GPS at the end of readUSBGps()
  * 
- *
  * 
  * 
- * 
- * a reprendre onetrack pour Flymaster et vérifier maj carnet
  *          
  * 
 */
@@ -213,6 +213,7 @@ public class GPSViewController {
     private reversale usbRever;
     private skytraax usbSky;
     private oudie usbOudie;
+    private connect usbConnect;
     private String strTrack;
     private String errorComMsg;
     private int nbTracks = 0;
@@ -359,7 +360,12 @@ public class GPSViewController {
                 break;
             case 12:
                 currGPS = gpsType.Connect;
-                // AskGPS(12)
+                usbConnect = new connect(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbConnect.isConnected()) {
+                    goodListDrives(usbConnect.getDriveList(),usbConnect.getIdxDrive());
+                } else {
+                    badListDrives(usbConnect.getDriveList(), usbConnect.getIdxDrive());
+                }
                 break;
             case 13:
                 currGPS = gpsType.Sky3;
@@ -509,7 +515,15 @@ public class GPSViewController {
                 } else {
                     badListDrives(usbOudie.getDriveList(), usbOudie.getIdxDrive());
                 }
-                break;                
+                break;    
+            case Connect :
+                // Connect not connected, new attempt
+                if (usbConnect.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbConnect.getDriveList(),usbConnect.getIdxDrive());
+                } else {
+                    badListDrives(usbConnect.getDriveList(), usbConnect.getIdxDrive());
+                }
+                break;                 
         }
         
     }
@@ -880,6 +894,11 @@ public class GPSViewController {
                 usbOudie.listTracksFiles(trackPathList);  
                 limitMsg = usbOudie.getMsgClosingDate();
                 break;
+            case Connect :
+                idGPS = "Connect/Volirium";
+                usbConnect.listTracksFiles(trackPathList);  
+                limitMsg = usbConnect.getMsgClosingDate();
+                break;                
             }
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
@@ -931,7 +950,10 @@ public class GPSViewController {
                         break;    
                     case Oudie:                                            
                         myConfig.setIdxGPS(7);
-                        break;                          
+                        break;     
+                    case Connect:                                            
+                        myConfig.setIdxGPS(12);
+                        break;                         
                 }
             } else {
                 // No alert box possible in this thread
@@ -987,6 +1009,9 @@ public class GPSViewController {
                     case Oudie :
                         readUSBGps();
                         break;                        
+                    case Connect :
+                        readUSBGps();
+                        break;                          
                 }       
                 return null ;                
             }
@@ -1142,7 +1167,10 @@ public class GPSViewController {
                         break;        
                     case Oudie :
                         gpsOK = usbOudie.isConnected();
-                        break;                        
+                        break;   
+                    case Connect :
+                        gpsOK = usbConnect.isConnected();
+                        break;                           
             }            
             if (gpsOK){      
                 for (Gpsmodel item : checkedData){
@@ -1183,7 +1211,10 @@ public class GPSViewController {
                                 break;                                
                             case Oudie :
                                 strTrack = usbOudie.getTrackFile(item.getCol5());
-                                break;                                
+                                break;         
+                            case Connect :
+                                strTrack = usbConnect.getTrackFile(item.getCol5());
+                                break;                                      
                             }                                  
                             if (strTrack != null ) {                                
                                 traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
@@ -1419,6 +1450,14 @@ public class GPSViewController {
                             resCom = 2;   // No GPS answer
                         }     
                         break;
+                    case Connect :
+                        strTrack = usbConnect.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                        
                     default:
                         throw new AssertionError();
                     }                    
