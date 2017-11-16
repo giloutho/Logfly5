@@ -845,17 +845,21 @@ public class traceGPS {
                                     LongDeco = Point1.Longitude;
                                     Alt_Deco_Baro = Point1.AltiBaro;
                                     Alt_Deco_GPS = Point1.AltiGPS;
-                                    Decodage = true;
                                     // compute duration with end point
                                     int ideb = i;
-                                    int j = Lg_sLine -1;   // for (int i = 0; i < Lg_sLine; i++) {                                                                        
-                                    DebChar = sLine[j].substring(0,1);                    
-                                    while (!DebChar.equals("B") || j == ideb ) {
-                                        j--;
-                                        DebChar = sLine[j].substring(0,1);
+                                    int j = Lg_sLine -1;   // for (int i = 0; i < Lg_sLine; i++) {  
+
+                                    DebChar = sLine[j].substring(0,1);    
+                                    // We must test j Sometimes, the GPS screwed
+                                    // we find tracks with only one B record
+                                    if (j > ideb)  {
+                                        while (!DebChar.equals("B") || j == ideb ) {
+                                            j--;
+                                            DebChar = sLine[j].substring(0,1);
+                                        }
                                     }
                                     calcLastPoint(sLine[j],iniDate_Vol);
-                                    
+                                    Decodage = true;
                                     return;
                                 }                                                                        
                             }
