@@ -22,6 +22,7 @@ import gps.flytec20;
 import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
+import gps.skytraxx3;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -212,6 +213,7 @@ public class GPSViewController {
     private StringBuilder sbError;
     private reversale usbRever;
     private skytraax usbSky;
+    private skytraxx3 usbSky3;
     private oudie usbOudie;
     private connect usbConnect;
     private String strTrack;
@@ -369,7 +371,12 @@ public class GPSViewController {
                 break;
             case 13:
                 currGPS = gpsType.Sky3;
-                // AskGPS(13)
+                usbSky3 = new skytraxx3(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbSky3.isConnected()) {
+                    goodListDrives(usbSky3.getDriveList(),usbSky3.getIdxDrive());
+                } else {
+                    badListDrives(usbSky3.getDriveList(), usbSky3.getIdxDrive());
+                }
                 break;
             case 14:
                 currGPS = gpsType.CPilot;
@@ -507,7 +514,15 @@ public class GPSViewController {
                 } else {
                     badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
                 }
-                break;                
+                break;     
+            case Sky3 :
+                // Skytraxx 3 not connected, new attempt
+                if (usbSky3.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbSky3.getDriveList(),usbSky3.getIdxDrive());
+                } else {
+                    badListDrives(usbSky3.getDriveList(), usbSky3.getIdxDrive());
+                }
+                break;                    
             case Oudie :
                 // Oudie not connected, new attempt
                 if (usbOudie.testConnection(myConfig.getOS())) {
@@ -885,10 +900,15 @@ public class GPSViewController {
                 limitMsg = usbRever.getMsgClosingDate();
                 break;   
             case Sky :
-                idGPS = "Skytraxx "+usbSky.getVerFirmware();
+                idGPS = "Skytraxx 2 "+usbSky.getVerFirmware();
                 usbSky.listTracksFiles(trackPathList);
                 limitMsg = usbSky.getMsgClosingDate();
                 break;
+            case Sky3 :
+                idGPS = "Skytraxx 3";
+                usbSky3.listTracksFiles(trackPathList);
+                limitMsg = usbSky3.getMsgClosingDate();
+                break;                
             case Oudie :
                 idGPS = "Naviter Oudie";
                 usbOudie.listTracksFiles(trackPathList);  
@@ -947,7 +967,10 @@ public class GPSViewController {
                         break;      
                     case Sky:                                            
                         myConfig.setIdxGPS(6);
-                        break;    
+                        break;   
+                    case Sky3:                                            
+                        myConfig.setIdxGPS(13);
+                        break;                        
                     case Oudie:                                            
                         myConfig.setIdxGPS(7);
                         break;     
@@ -1006,6 +1029,9 @@ public class GPSViewController {
                     case Sky :
                         readUSBGps();
                         break;
+                    case Sky3 :
+                        readUSBGps();
+                        break;                        
                     case Oudie :
                         readUSBGps();
                         break;                        
@@ -1165,6 +1191,9 @@ public class GPSViewController {
                     case Sky :
                         gpsOK = usbSky.isConnected();
                         break;        
+                    case Sky3 :
+                        gpsOK = usbSky3.isConnected();
+                        break;                         
                     case Oudie :
                         gpsOK = usbOudie.isConnected();
                         break;   
@@ -1208,7 +1237,10 @@ public class GPSViewController {
                                 break;
                             case Sky :
                                 strTrack = usbSky.getTrackFile(item.getCol5());
-                                break;                                
+                                break;  
+                            case Sky3 :
+                                strTrack = usbSky3.getTrackFile(item.getCol5());
+                                break;                                  
                             case Oudie :
                                 strTrack = usbOudie.getTrackFile(item.getCol5());
                                 break;         
@@ -1442,6 +1474,14 @@ public class GPSViewController {
                             resCom = 2;   // No GPS answer
                         }     
                         break;
+                    case Sky3 :
+                        strTrack = usbSky3.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                        
                     case Oudie :
                         strTrack = usbOudie.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
