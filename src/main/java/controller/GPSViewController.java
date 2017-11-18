@@ -164,7 +164,7 @@ public class GPSViewController {
     @FXML
     private Button btnGo;
     @FXML
-    private ChoiceBox chbGPS;   
+    private ChoiceBox<listGPS.idGPS> chbGPS;   
     @FXML
     private ChoiceBox chbSerial;
     @FXML
@@ -391,19 +391,27 @@ public class GPSViewController {
      */
     private void iniChbGPS()  {          
         listGPS suppGPS = new listGPS(myConfig.getLocale());
-        ObservableList <String> allGPS = suppGPS.fill();                
+        ObservableList <listGPS.idGPS> allGPS = suppGPS.newFill();  
         chbGPS.getItems().clear();
         chbGPS.setItems(allGPS);
-        int idxGPS = myConfig.getIdxGPS();
+        int idxGPS = 0;        
+        int i = 0;
+        for (listGPS.idGPS setModel : allGPS){            
+          if (setModel.getIdModel() == myConfig.getIdxGPS()){
+            idxGPS = i;            
+            break;
+          }
+          i++;
+        }           
         chbGPS.getSelectionModel().select(idxGPS);    
         chbGPS.getSelectionModel().selectedIndexProperty()
         .addListener(new ChangeListener<Number>() {
           public void changed(ObservableValue ov, Number value, Number new_value) {
               winReset();
-              choixGPS(new_value.intValue());
+              choixGPS(allGPS.get(new_value.intValue()).getIdModel());
           }
         });        
-        choixGPS(idxGPS);
+        choixGPS(myConfig.getIdxGPS());
     }
             
     /**
