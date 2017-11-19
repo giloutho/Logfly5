@@ -23,6 +23,7 @@ import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
 import gps.skytraxx3;
+import gps.syride;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -215,6 +216,7 @@ public class GPSViewController {
     private skytraax usbSky;
     private skytraxx3 usbSky3;
     private oudie usbOudie;
+    private syride diskSyr;
     private connect usbConnect;
     private String strTrack;
     private String errorComMsg;
@@ -353,7 +355,15 @@ public class GPSViewController {
                 break;
             case 10:
                 currGPS = gpsType.Syride;
-                // AskGPS(10)
+                diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit());
+                if (diskSyr.isConnected()) {
+                    resCom = 5;
+                    actuLed();   
+                    flightListWithProgress(); 
+                } else {
+                    alertbox noSyride = new alertbox(myConfig.getLocale()); 
+                    noSyride.alertError(i18n.tr("Sys-PC-Tool n'est pas installé"));
+                }
                 break;
             case 11:
                 // Flymaster SD 
@@ -538,7 +548,17 @@ public class GPSViewController {
                 } else {
                     badListDrives(usbOudie.getDriveList(), usbOudie.getIdxDrive());
                 }
-                break;    
+                break; 
+            case Syride :
+                if (diskSyr.testSysPCTools(myConfig.getOS())) {
+                    resCom = 5;
+                    actuLed();   
+                    flightListWithProgress(); 
+                } else {
+                    alertbox noSyride = new alertbox(myConfig.getLocale()); 
+                    noSyride.alertError(i18n.tr("Sys-PC-Tool n'est pas installé"));
+                }
+                break;                 
             case Connect :
                 // Connect not connected, new attempt
                 if (usbConnect.testConnection(myConfig.getOS())) {
@@ -922,6 +942,11 @@ public class GPSViewController {
                 usbOudie.listTracksFiles(trackPathList);  
                 limitMsg = usbOudie.getMsgClosingDate();
                 break;
+            case Syride :
+                idGPS = "Sys PC Tool";
+                diskSyr.listTracksFiles(trackPathList);  
+                limitMsg = "";
+                break;                
             case Connect :
                 idGPS = "Connect/Volirium";
                 usbConnect.listTracksFiles(trackPathList);  
@@ -981,14 +1006,21 @@ public class GPSViewController {
                         break;                        
                     case Oudie:                                            
                         myConfig.setIdxGPS(7);
-                        break;     
+                        break;   
+                    case Syride:                                            
+                        myConfig.setIdxGPS(10);
+                        break;                           
                     case Connect:                                            
                         myConfig.setIdxGPS(12);
                         break;                         
                 }
             } else {
                 // No alert box possible in this thread
-                errorComMsg = i18n.tr("Pas de traces depuis le ")+limitMsg;
+                if (currGPS == gpsType.Syride) {
+                    errorComMsg = i18n.tr("Pas de traces dans le dossier");
+                } else {
+                    errorComMsg = i18n.tr("Pas de traces depuis le ")+limitMsg;
+                }
                 resCom = 6;  
             }
         } catch (Exception e) {
@@ -1042,7 +1074,10 @@ public class GPSViewController {
                         break;                        
                     case Oudie :
                         readUSBGps();
-                        break;                        
+                        break;  
+                    case Syride :
+                        readUSBGps();
+                        break;                            
                     case Connect :
                         readUSBGps();
                         break;                          
@@ -1149,9 +1184,18 @@ public class GPSViewController {
         // when task ended, return to logbook view
         task.setOnSucceeded(event -> {
             pForm.getDialogStage().close();
-            // Display number of flights inserted
+            String resInsertion = nbInserted+" / "+nbToInsert+i18n.tr(" vol(s) inséré(s) dans le carnet");
             alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
-            aInsFlights.alertInfo(nbInserted+" / "+nbToInsert+i18n.tr(" vol(s) inséré(s) dans le carnet"));
+            if (currGPS != gpsType.Syride)  {
+                // Display number of flights inserted
+                aInsFlights.alertInfo(resInsertion);                
+            } else {
+                dialogbox dConfirm = new dialogbox(); 
+                // Display number of flights inserted and for moving tracks in archives folder
+                if (dConfirm.YesNo(resInsertion,i18n.tr("Procéder à l'archivage ?"))) {
+                    archiveSyride();
+                }
+            }
             if(errInsertion != null && !errInsertion.isEmpty())  {
                 aInsFlights.alertInfo(i18n.tr(" Traces non insérées dans le carnet")+"\r\n"+errInsertion);
             }
@@ -1205,6 +1249,9 @@ public class GPSViewController {
                     case Oudie :
                         gpsOK = usbOudie.isConnected();
                         break;   
+                    case Syride :
+                        gpsOK = diskSyr.isConnected();
+                        break;                           
                     case Connect :
                         gpsOK = usbConnect.isConnected();
                         break;                           
@@ -1251,7 +1298,10 @@ public class GPSViewController {
                                 break;                                  
                             case Oudie :
                                 strTrack = usbOudie.getTrackFile(item.getCol5());
-                                break;         
+                                break;     
+                            case Syride :
+                                strTrack = diskSyr.getTrackFile(item.getCol5());
+                                break;                                  
                             case Connect :
                                 strTrack = usbConnect.getTrackFile(item.getCol5());
                                 break;                                      
@@ -1295,6 +1345,18 @@ public class GPSViewController {
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
         } 
+    }
+    
+    private void archiveSyride() {
+        
+        ObservableList <Gpsmodel> checkedData = tableImp.getItems();
+
+        for (Gpsmodel item : checkedData){
+            if (item.getChecked())  {
+                diskSyr.archiveTracks(item.getCol5());
+            }
+        }
+
     }
             
     /**
@@ -1498,6 +1560,14 @@ public class GPSViewController {
                             resCom = 2;   // No GPS answer
                         }     
                         break;
+                    case Syride :
+                        strTrack = diskSyr.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                        
                     case Connect :
                         strTrack = usbConnect.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
