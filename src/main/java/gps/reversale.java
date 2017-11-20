@@ -72,9 +72,7 @@ public class reversale {
         
         setDateLevel(gpsLimit);
         
-        conn = testConnection(currOs);
-        
-        setConnected(conn);                
+        conn = testConnection(currOs);              
         
     }
     
@@ -145,6 +143,7 @@ public class reversale {
                             fDrive = aDrive;
                             idxDrive = nbDrive;
                             res = true;
+                            setConnected(res);                             
                             break;
                         } else {
                             idxDrive = 0;
