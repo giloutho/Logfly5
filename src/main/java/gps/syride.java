@@ -69,9 +69,7 @@ public class syride {
       //  setDateLevel(gpsLimit);
         
         conn = testSysPCTools(currOs);
-        
-        setConnected(conn);                
-        
+                     
     }
     
     public boolean testSysPCTools(osType currOs) {
@@ -89,6 +87,7 @@ public class syride {
                 fFlights = new File(System.getProperty("user.home")+"/syride/parapente");
                 if (fFlights.exists() && fFlights.isDirectory()) {
                     res = true;
+                    setConnected(res);                     
                     fArchives = new File(System.getProperty("user.home")+"/syride/archives");
                     if (!fArchives.exists()) {
                         try {
