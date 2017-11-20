@@ -66,12 +66,8 @@ public class compass {
         fFlights = null;        
         fDrive = null;   
         
-        setDateLevel(gpsLimit);
-        
-        conn = testConnection(currOs);
-        
-        setConnected(conn);                
-        
+        setDateLevel(gpsLimit);        
+        conn = testConnection(currOs);                               
     }    
     
     private void setDateLevel(int gpsLimit) { 
@@ -144,6 +140,7 @@ public class compass {
                             fDrive = aDrive;
                             idxDrive = nbDrive;
                             res = true;
+                            setConnected(res); 
                             break;
                         } else {
                             idxDrive = 0;
