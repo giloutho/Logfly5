@@ -68,9 +68,7 @@ public class connect {
         setDateLevel(gpsLimit);
         
         conn = testConnection(currOs);
-        
-        setConnected(conn);                
-        
+                              
     }
 
     private void setDateLevel(int gpsLimit) { 
@@ -143,6 +141,7 @@ public class connect {
                             fDrive = aDrive;
                             idxDrive = nbDrive;
                             res = true;
+                            setConnected(res); 
                             break;
                         } else {
                             idxDrive = 0;
