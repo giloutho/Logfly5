@@ -14,6 +14,7 @@ import database.dbSearch;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
+import gps.compass;
 import gps.connect;
 import gps.flymaster;
 import gps.flymasterold;
@@ -218,6 +219,7 @@ public class GPSViewController {
     private oudie usbOudie;
     private syride diskSyr;
     private connect usbConnect;
+    private compass usbCompass;
     private String strTrack;
     private String errorComMsg;
     private int nbTracks = 0;
@@ -390,7 +392,12 @@ public class GPSViewController {
                 break;
             case 14:
                 currGPS = gpsType.CPilot;
-                // AskGPS(14)
+                usbCompass = new compass(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbCompass.isConnected()) {
+                    goodListDrives(usbCompass.getDriveList(),usbCompass.getIdxDrive());
+                } else {
+                    badListDrives(usbCompass.getDriveList(), usbCompass.getIdxDrive());
+                }
                 break;
         }
         
@@ -566,7 +573,13 @@ public class GPSViewController {
                 } else {
                     badListDrives(usbConnect.getDriveList(), usbConnect.getIdxDrive());
                 }
-                break;                 
+                break;    
+            case CPilot :
+                if (usbCompass.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbCompass.getDriveList(),usbCompass.getIdxDrive());
+                } else {
+                    badListDrives(usbCompass.getDriveList(), usbCompass.getIdxDrive());
+                }                
         }
         
     }
@@ -951,8 +964,13 @@ public class GPSViewController {
                 idGPS = "Connect/Volirium";
                 usbConnect.listTracksFiles(trackPathList);  
                 limitMsg = usbConnect.getMsgClosingDate();
-                break;                
-            }
+                break;   
+            case CPilot :
+                idGPS = "C-Pilot Evo";
+                usbCompass.listTracksFiles(trackPathList);  
+                limitMsg = usbCompass.getMsgClosingDate();
+                break;                                               
+            }       
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
                 for (String trackPath : trackPathList) {  
@@ -1012,7 +1030,10 @@ public class GPSViewController {
                         break;                           
                     case Connect:                                            
                         myConfig.setIdxGPS(12);
-                        break;                         
+                        break;      
+                    case CPilot:                                            
+                        myConfig.setIdxGPS(14);
+                        break;                          
                 }
             } else {
                 // No alert box possible in this thread
@@ -1080,7 +1101,10 @@ public class GPSViewController {
                         break;                            
                     case Connect :
                         readUSBGps();
-                        break;                          
+                        break;   
+                    case CPilot :
+                        readUSBGps();
+                        break;                         
                 }       
                 return null ;                
             }
@@ -1254,6 +1278,9 @@ public class GPSViewController {
                         break;                           
                     case Connect :
                         gpsOK = usbConnect.isConnected();
+                        break;   
+                    case CPilot :
+                        gpsOK = usbCompass.isConnected();
                         break;                           
             }            
             if (gpsOK){      
@@ -1304,7 +1331,10 @@ public class GPSViewController {
                                 break;                                  
                             case Connect :
                                 strTrack = usbConnect.getTrackFile(item.getCol5());
-                                break;                                      
+                                break;    
+                            case CPilot :
+                                strTrack = usbCompass.getTrackFile(item.getCol5());
+                                break;                                  
                             }                                  
                             if (strTrack != null ) {                                
                                 traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
@@ -1575,7 +1605,15 @@ public class GPSViewController {
                         } else {
                             resCom = 2;   // No GPS answer
                         }     
-                        break;                        
+                        break;   
+                    case CPilot :
+                        strTrack = usbCompass.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                          
                     default:
                         throw new AssertionError();
                     }                    
