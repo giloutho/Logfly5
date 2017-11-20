@@ -67,8 +67,7 @@ public class connect {
         
         setDateLevel(gpsLimit);
         
-        conn = testConnection(currOs);
-                              
+        conn = testConnection(currOs);                              
     }
 
     private void setDateLevel(int gpsLimit) { 
