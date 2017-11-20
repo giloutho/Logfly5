@@ -16,6 +16,7 @@ import dialogues.alertbox;
 import dialogues.dialogbox;
 import gps.compass;
 import gps.connect;
+import gps.element;
 import gps.flymaster;
 import gps.flymasterold;
 import gps.flytec15;
@@ -220,6 +221,7 @@ public class GPSViewController {
     private syride diskSyr;
     private connect usbConnect;
     private compass usbCompass;
+    private element usbElem;
     private String strTrack;
     private String errorComMsg;
     private int nbTracks = 0;
@@ -349,7 +351,12 @@ public class GPSViewController {
                 break;                
             case 8:
                 currGPS = gpsType.Element;
-                //AskGPS(8)
+                usbElem = new element(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbElem.isConnected()) {
+                    goodListDrives(usbElem.getDriveList(),usbElem.getIdxDrive());
+                } else {
+                    badListDrives(usbElem.getDriveList(), usbElem.getIdxDrive());
+                }
                 break;
             case 9:
                 currGPS = gpsType.Sensbox;
@@ -574,6 +581,14 @@ public class GPSViewController {
                     badListDrives(usbConnect.getDriveList(), usbConnect.getIdxDrive());
                 }
                 break;    
+            case Element :
+                // Element not connected, new attempt
+                if (usbElem.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbElem.getDriveList(),usbElem.getIdxDrive());
+                } else {
+                    badListDrives(usbElem.getDriveList(), usbElem.getIdxDrive());
+                }
+                break;                    
             case CPilot :
                 if (usbCompass.testConnection(myConfig.getOS())) {
                     goodListDrives(usbCompass.getDriveList(),usbCompass.getIdxDrive());
@@ -965,6 +980,11 @@ public class GPSViewController {
                 usbConnect.listTracksFiles(trackPathList);  
                 limitMsg = usbConnect.getMsgClosingDate();
                 break;   
+            case Element :
+                idGPS = "Flytec Element";
+                usbElem.listTracksFiles(trackPathList);  
+                limitMsg = usbElem.getMsgClosingDate();
+                break;                   
             case CPilot :
                 idGPS = "C-Pilot Evo";
                 usbCompass.listTracksFiles(trackPathList);  
@@ -1030,7 +1050,10 @@ public class GPSViewController {
                         break;                           
                     case Connect:                                            
                         myConfig.setIdxGPS(12);
-                        break;      
+                        break;     
+                    case Element :                                            
+                        myConfig.setIdxGPS(8);
+                        break;                         
                     case CPilot:                                            
                         myConfig.setIdxGPS(14);
                         break;                          
@@ -1102,6 +1125,9 @@ public class GPSViewController {
                     case Connect :
                         readUSBGps();
                         break;   
+                    case Element :
+                        readUSBGps();
+                        break;                         
                     case CPilot :
                         readUSBGps();
                         break;                         
@@ -1279,6 +1305,9 @@ public class GPSViewController {
                     case Connect :
                         gpsOK = usbConnect.isConnected();
                         break;   
+                    case Element :
+                        gpsOK = usbElem.isConnected();
+                        break;                           
                     case CPilot :
                         gpsOK = usbCompass.isConnected();
                         break;                           
@@ -1332,6 +1361,9 @@ public class GPSViewController {
                             case Connect :
                                 strTrack = usbConnect.getTrackFile(item.getCol5());
                                 break;    
+                            case Element :
+                                strTrack = usbElem.getTrackFile(item.getCol5());
+                                break;                                   
                             case CPilot :
                                 strTrack = usbCompass.getTrackFile(item.getCol5());
                                 break;                                  
@@ -1606,6 +1638,14 @@ public class GPSViewController {
                             resCom = 2;   // No GPS answer
                         }     
                         break;   
+                    case Element :
+                        strTrack = usbElem.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                           
                     case CPilot :
                         strTrack = usbCompass.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
