@@ -77,9 +77,7 @@ public class skytraxx3 {
         
         setDateLevel(gpsLimit);
         
-        conn = testConnection(currOs);
-        
-        setConnected(conn);                
+        conn = testConnection(currOs);              
         
     }   
     
@@ -145,6 +143,7 @@ public class skytraxx3 {
                             fDrive = aDrive;
                             idxDrive = nbDrive;
                             res = true;
+                            setConnected(res);                             
                             break;
                         } else {
                             idxDrive = 0;
