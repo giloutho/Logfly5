@@ -89,9 +89,7 @@ public class skytraax {
         
         setDateLevel(gpsLimit);
         
-        conn = testConnection(currOs);
-        
-        setConnected(conn);                
+        conn = testConnection(currOs);               
         
     }
     
@@ -242,8 +240,9 @@ public class skytraax {
                         }
                         if (cond1 == true && cond2 == true) {
                             fDrive = aDrive;
-                            idxDrive = nbDrive;
+                            idxDrive = nbDrive;                            
                             res = true;
+                            setConnected(res);                             
                             break;
                         } else {
                             idxDrive = 0;
