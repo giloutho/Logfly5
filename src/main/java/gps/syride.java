@@ -78,9 +78,26 @@ public class syride {
         
         switch (currOs) {
             case WINDOWS:
-                fFlights = new File(System.getProperty("user.home")+"\\Syride\\parapente"); 
+                // https://stackoverflow.com/questions/9677692/getting-my-documents-path-in-java 
+                // System.getProperty("user.home")+File.separatorChar + "Documents"  
+                fFlights = new File(System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride\\Parapente");
                 if (fFlights.exists() && fFlights.isDirectory()) {
                     res = true;
+                    setConnected(res);
+                    fArchives = new File(System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride\\archives");
+                    if (!fArchives.exists()) {
+                        try {
+                            boolean okArchives = fArchives.mkdir();
+                            if (!okArchives) {
+                                fArchives = null;
+                            }
+                        } catch (Exception e) {
+                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                            sbError.append("\r\n").append(e.toString()).append("\r\n");
+                            sbError.append("Unable to create syride/archives");
+                            mylogging.log(Level.SEVERE, sbError.toString()); 
+                        }                             
+                    }                    
                 }
                 break;
             case MACOS :
@@ -164,9 +181,9 @@ public class syride {
                 String nameDay = fIGC.getName();
                 String sPathParapenteDay = fIGC.getParent();  
                 Path pathParapenteDay = Paths.get(sPathParapenteDay);
-                sPathArchivesDay = sPathParapenteDay.replaceAll("parapente", "archives");
+                sPathArchivesDay = sPathParapenteDay.replaceAll("Parapente", "archives");
                 Path pathArchivesDay = Paths.get(sPathArchivesDay);  
-                File fArchivesDay = new File(sPathArchivesDay); 
+                File fArchivesDay = new File(sPathArchivesDay);
                 if (!fArchivesDay.exists()) {
                     Files.move(pathParapenteDay, pathArchivesDay);
                 } 
