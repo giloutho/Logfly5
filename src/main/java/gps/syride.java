@@ -140,7 +140,6 @@ public class syride {
                 // Problem of dot files writed by MacOS 
                 if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 9) {
                     trackPathList.add(files[i].getPath());
-                    System.out.println("    add : "+files[i].getParentFile());
                 }
             }
             if (files[i].isDirectory()) {
