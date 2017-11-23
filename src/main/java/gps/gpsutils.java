@@ -16,7 +16,7 @@ public class gpsutils {
     
     
     /**
-     * IGC File naming convention
+     * IGC File naming convention [FAI specifications]
      * For a track dated :  2017 september 30th we got an IGC file called : 79Uxxxx.IGC
      * first digit : year value 0 to 9, cycling every 10 years
      * second digit : month  -> 1  to  C (12)
