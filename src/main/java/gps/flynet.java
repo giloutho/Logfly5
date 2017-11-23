@@ -109,7 +109,6 @@ public class flynet {
         closingDay = Integer.parseInt(ddf.format(myCalendar.getTime())) - 1;
         sDay = gpsutils.listDay.get(closingDay);
         closingFlynet = sYear+sMonth+sDay;
-        System.out.println("ClosingFlynet : "+closingFlynet); 
         SimpleDateFormat sdfMsg = new SimpleDateFormat("dd/MM/YY");
         msgClosingDate = sdfMsg.format(myCalendar.getTime()); 
         
@@ -210,11 +209,9 @@ public class flynet {
             String fileName = files[i].getName();
             if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {                                    
                 // Problem of dot files writed by MacOS 
-            //    System.out.println(files[i].getPath());
                 if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 9) {
                     if (files[i].getName().substring(0,3).compareTo(closingFlynet) > 0) {
                         trackPathList.add(files[i].getPath());
-                        System.out.println("    add : "+files[i].getPath());
                     }
                 }
             }
