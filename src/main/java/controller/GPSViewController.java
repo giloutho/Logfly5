@@ -19,6 +19,7 @@ import gps.connect;
 import gps.element;
 import gps.flymaster;
 import gps.flymasterold;
+import gps.flynet;
 import gps.flytec15;
 import gps.flytec20;
 import gps.oudie;
@@ -218,6 +219,7 @@ public class GPSViewController {
     private skytraax usbSky;
     private skytraxx3 usbSky3;
     private oudie usbOudie;
+    private flynet usbFlynet;
     private syride diskSyr;
     private connect usbConnect;
     private compass usbCompass;
@@ -314,7 +316,13 @@ public class GPSViewController {
                 listSerialPort();
                 break;
             case 3:
-                currGPS = gpsType.Flynet;                
+                currGPS = gpsType.Flynet; 
+                usbFlynet = new flynet(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbFlynet.isConnected()) {
+                    goodListDrives(usbFlynet.getDriveList(),usbFlynet.getIdxDrive());
+                } else {
+                    badListDrives(usbFlynet.getDriveList(), usbFlynet.getIdxDrive());
+                }                
                 break;
             case 4:    
                 // Flymaster old series
@@ -531,6 +539,12 @@ public class GPSViewController {
                         break;                        
                 }             
                 break;
+            case Flynet :
+                if (usbFlynet.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbFlynet.getDriveList(),usbFlynet.getIdxDrive());
+                } else {
+                    badListDrives(usbFlynet.getDriveList(), usbFlynet.getIdxDrive());
+                }                
             case Rever :
                 // Rever not connected, new attempt
                 if (usbRever.testConnection(myConfig.getOS())) {
@@ -964,7 +978,12 @@ public class GPSViewController {
                 idGPS = "Skytraxx 3";
                 usbSky3.listTracksFiles(trackPathList);
                 limitMsg = usbSky3.getMsgClosingDate();
-                break;                
+                break;    
+            case Flynet :
+                idGPS = "Flynet XC "+usbFlynet.getVerFirmware();
+                usbFlynet.listTracksFiles(trackPathList);
+                limitMsg = usbFlynet.getMsgClosingDate();                
+                break;
             case Oudie :
                 idGPS = "Naviter Oudie";
                 usbOudie.listTracksFiles(trackPathList);  
@@ -1041,6 +1060,9 @@ public class GPSViewController {
                         break;   
                     case Sky3:                                            
                         myConfig.setIdxGPS(13);
+                        break;        
+                    case Flynet:
+                        myConfig.setIdxGPS(3);
                         break;                        
                     case Oudie:                                            
                         myConfig.setIdxGPS(7);
@@ -1115,7 +1137,10 @@ public class GPSViewController {
                         break;
                     case Sky3 :
                         readUSBGps();
-                        break;                        
+                        break;       
+                    case Flynet :
+                        readUSBGps();
+                        break;                          
                     case Oudie :
                         readUSBGps();
                         break;  
@@ -1295,7 +1320,10 @@ public class GPSViewController {
                         break;        
                     case Sky3 :
                         gpsOK = usbSky3.isConnected();
-                        break;                         
+                        break;      
+                    case Flynet :
+                        gpsOK = usbFlynet.isConnected();
+                        break;                           
                     case Oudie :
                         gpsOK = usbOudie.isConnected();
                         break;   
@@ -1351,7 +1379,10 @@ public class GPSViewController {
                                 break;  
                             case Sky3 :
                                 strTrack = usbSky3.getTrackFile(item.getCol5());
-                                break;                                  
+                                break;   
+                            case Flynet :
+                                strTrack = usbFlynet.getTrackFile(item.getCol5());
+                                break;                                     
                             case Oudie :
                                 strTrack = usbOudie.getTrackFile(item.getCol5());
                                 break;     
@@ -1608,6 +1639,14 @@ public class GPSViewController {
                         break;
                     case Sky3 :
                         strTrack = usbSky3.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;    
+                    case Flynet :
+                        strTrack = usbFlynet.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
                             resCom = 0;
                         } else {
