@@ -6,11 +6,83 @@
  */
 package gps;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author gil
  */
 public class gpsutils {
+    
+    
+    /**
+     * IGC File naming convention
+     * For a track dated :  2017 september 30th we got an IGC file called : 79Uxxxx.IGC
+     * first digit : year value 0 to 9, cycling every 10 years
+     * second digit : month  -> 1  to  C (12)
+     * third digit : day  -> 1  to  31 (V) 
+     * 4th digit manufacturer's IGC code letter
+     * 5 to 7th digit = unique FR Serial Number (S/N); 3 alphanumeric characters
+     * 8 th digit : flight number of the day; 1 to 9 then, if needed, A=10 through to Z=35
+     * 
+     * 
+     * 
+     * Month -> value 1 to 9 then A for 10, B=11, C=12.
+     */
+    public static ArrayList<String> listMonth = new ArrayList<String>() {{
+        add("0");        
+        add("1");
+        add("2");
+        add("3");
+        add("4");
+        add("5");
+        add("6");
+        add("7");
+        add("8");
+        add("9");
+        add("A");
+        add("B");
+        add("C");        
+    }};
+    
+    /**
+     * IGC File naming convention
+     * Day -> value 1 to 9 then A=10, B=11, C=12, .... U=30, V=31.
+     */
+    public static ArrayList<String> listDay = new ArrayList<String>() {{
+        add("0");    
+        add("1");   
+        add("2");
+        add("3");
+        add("4");
+        add("5");
+        add("6");
+        add("7");
+        add("8");
+        add("9");        
+        add("A");
+        add("B");
+        add("C");
+        add("D");
+        add("E");
+        add("F");
+        add("G");
+        add("H");
+        add("I");
+        add("J");     
+        add("K");   
+        add("L");
+        add("M");
+        add("N");
+        add("O");
+        add("P");
+        add("Q");
+        add("R");
+        add("S");
+        add("T");
+        add("U");     
+        add("V");     // 31         
+    }};       
     
     /**
      * calculates checksum of the parameter string and adds this to the output 
