@@ -28,10 +28,8 @@ import systemio.textio;
  * in Folder FLIGHTS, there is a year folder with month subfolders and day subfolders
  * FLIGHTS -> 2017 -> January -> 11 -> 71Bxxxx.IGC
  * FLIGHTS -> 2017 -> December -> 25 -> 7CPxxxx.IGC
- * For a track dated :  2017 september 30th we got an IGC file called : 79Uxxxx.IGC
- * first digit : year   2017 -> 7    (2020 -> will be A ? ) 
- * second digit : month  January -> 1   december -> C
- * third digit : day   First -> 1    31 -> V 
+ * File is named according IGC file specification
+ * See gpsutils
  */
 
 public class skytraax {
@@ -93,57 +91,6 @@ public class skytraax {
         
     }
     
-    ArrayList<String> listMonth = new ArrayList<String>() {{
-        add("0");        
-        add("1");
-        add("2");
-        add("3");
-        add("4");
-        add("5");
-        add("6");
-        add("7");
-        add("8");
-        add("9");
-        add("A");
-        add("B");
-        add("C");        
-    }};    
-    
-    ArrayList<String> listDay = new ArrayList<String>() {{
-        add("0");    
-        add("1");   
-        add("2");
-        add("3");
-        add("4");
-        add("5");
-        add("6");
-        add("7");
-        add("8");
-        add("9");        
-        add("A");
-        add("B");
-        add("C");
-        add("D");
-        add("E");
-        add("F");
-        add("G");
-        add("H");
-        add("I");
-        add("J");     
-        add("K");   
-        add("L");
-        add("M");
-        add("N");
-        add("O");
-        add("P");
-        add("Q");
-        add("R");
-        add("S");
-        add("T");
-        add("U");     
-        add("V");     // 31         
-    }};            
-    
     /**
      * Il faut fixer la valeur qui sera la skyClosureDate
      * Si Closing date renvoit 01/07/2016 la skyClosureDate sera "67"
@@ -174,9 +121,9 @@ public class skytraax {
         System.out.println("iYear : "+iYear);
         sYear = String.valueOf(iYear);
         closingMonth = Integer.parseInt(mdf.format(myCalendar.getTime()));
-        sMonth = listMonth.get(closingMonth);
+        sMonth = gpsutils.listMonth.get(closingMonth);
         closingDay = Integer.parseInt(ddf.format(myCalendar.getTime())) - 1;
-        sDay = listDay.get(closingDay);
+        sDay = gpsutils.listDay.get(closingDay);
         closingSky = sYear+sMonth+sDay;
         
         closingDate = sdf.format(myCalendar.getTime());   
