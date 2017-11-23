@@ -24,6 +24,7 @@ import gps.flytec15;
 import gps.flytec20;
 import gps.oudie;
 import gps.reversale;
+import gps.sensbox;
 import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
@@ -220,6 +221,7 @@ public class GPSViewController {
     private skytraxx3 usbSky3;
     private oudie usbOudie;
     private flynet usbFlynet;
+    private sensbox usbSensbox;
     private syride diskSyr;
     private connect usbConnect;
     private compass usbCompass;
@@ -368,7 +370,12 @@ public class GPSViewController {
                 break;
             case 9:
                 currGPS = gpsType.Sensbox;
-                //AskGPS(9)
+                usbSensbox = new sensbox(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbSensbox.isConnected()) {
+                    goodListDrives(usbSensbox.getDriveList(),usbSensbox.getIdxDrive());
+                } else {
+                    badListDrives(usbSensbox.getDriveList(), usbSensbox.getIdxDrive());
+                }
                 break;
             case 10:
                 currGPS = gpsType.Syride;
@@ -568,7 +575,15 @@ public class GPSViewController {
                 } else {
                     badListDrives(usbSky3.getDriveList(), usbSky3.getIdxDrive());
                 }
-                break;                    
+                break;      
+            case Sensbox :
+                // Sensbox not connected, new attempt
+                if (usbSensbox.testConnection(myConfig.getOS())) {
+                    goodListDrives(usbSensbox.getDriveList(),usbSensbox.getIdxDrive());
+                } else {
+                    badListDrives(usbSensbox.getDriveList(), usbSensbox.getIdxDrive());
+                }
+                break;                 
             case Oudie :
                 // Oudie not connected, new attempt
                 if (usbOudie.testConnection(myConfig.getOS())) {
@@ -984,6 +999,11 @@ public class GPSViewController {
                 usbFlynet.listTracksFiles(trackPathList);
                 limitMsg = usbFlynet.getMsgClosingDate();                
                 break;
+            case Sensbox :
+                idGPS = "Flytec Sensbox";
+                usbSensbox.listTracksFiles(trackPathList);  
+                limitMsg = usbSensbox.getMsgClosingDate();
+                break;                
             case Oudie :
                 idGPS = "Naviter Oudie";
                 usbOudie.listTracksFiles(trackPathList);  
@@ -1063,7 +1083,10 @@ public class GPSViewController {
                         break;        
                     case Flynet:
                         myConfig.setIdxGPS(3);
-                        break;                        
+                        break;   
+                    case Sensbox:                                            
+                        myConfig.setIdxGPS(9);
+                        break;                           
                     case Oudie:                                            
                         myConfig.setIdxGPS(7);
                         break;   
@@ -1140,7 +1163,10 @@ public class GPSViewController {
                         break;       
                     case Flynet :
                         readUSBGps();
-                        break;                          
+                        break;  
+                    case Sensbox :
+                        readUSBGps();
+                        break;                         
                     case Oudie :
                         readUSBGps();
                         break;  
@@ -1323,7 +1349,10 @@ public class GPSViewController {
                         break;      
                     case Flynet :
                         gpsOK = usbFlynet.isConnected();
-                        break;                           
+                        break;      
+                    case Sensbox :
+                        gpsOK = usbSensbox.isConnected();
+                        break;                          
                     case Oudie :
                         gpsOK = usbOudie.isConnected();
                         break;   
@@ -1382,7 +1411,10 @@ public class GPSViewController {
                                 break;   
                             case Flynet :
                                 strTrack = usbFlynet.getTrackFile(item.getCol5());
-                                break;                                     
+                                break;  
+                            case Sensbox :
+                                strTrack = usbSensbox.getTrackFile(item.getCol5());
+                                break;                                   
                             case Oudie :
                                 strTrack = usbOudie.getTrackFile(item.getCol5());
                                 break;     
@@ -1647,6 +1679,14 @@ public class GPSViewController {
                         break;    
                     case Flynet :
                         strTrack = usbFlynet.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;    
+                    case Sensbox :
+                        strTrack = usbSensbox.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
                             resCom = 0;
                         } else {
