@@ -117,15 +117,13 @@ public class skytraax {
         
         
         closingYear = Integer.parseInt(ydf.format(myCalendar.getTime()));
-        int iYear = (closingYear-2000) %10;    // gived by Michael from Skytraxx
-        System.out.println("iYear : "+iYear);
+        int iYear = (closingYear-2000) %10;    
         sYear = String.valueOf(iYear);
         closingMonth = Integer.parseInt(mdf.format(myCalendar.getTime()));
         sMonth = gpsutils.listMonth.get(closingMonth);
         closingDay = Integer.parseInt(ddf.format(myCalendar.getTime())) - 1;
         sDay = gpsutils.listDay.get(closingDay);
         closingSky = sYear+sMonth+sDay;
-        
         closingDate = sdf.format(myCalendar.getTime());   
         SimpleDateFormat sdfMsg = new SimpleDateFormat("dd/MM/YY");
         msgClosingDate = sdfMsg.format(myCalendar.getTime());  
@@ -171,7 +169,6 @@ public class skytraax {
                     if (listFile != null) {
                         for (int i=0; i<listFile.length; i++)         
                         {
-                            //System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].isDirectory());
                             if (listFile[i].getName().equals("SYSTEM") && listFile[i].isDirectory()) {
                                 try {
                                     if (exploreFolderSystem(listFile[i])) cond1 = true;
@@ -180,7 +177,6 @@ public class skytraax {
                                 }
                             }
                             if (listFile[i].getName().equals("FLIGHTS") && listFile[i].isDirectory()) {
-                                //System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].getAbsolutePath());
                                 fFlights = listFile[i];
                                 cond2 = true;
                             }
@@ -234,7 +230,6 @@ public class skytraax {
                 } else {
                     verFirmware = "";
                 }
-                System.out.println(verFirmware);
             }
             lines.close();            
         } catch (Exception e) {
@@ -252,7 +247,6 @@ public class skytraax {
                 if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {
                     if (files[i].getName().substring(0,3).compareTo(closingSky) > 0) {
                         trackPathList.add(files[i].getPath());
-                        System.out.println(files[i].getPath());
                     }
                 }
             }
