@@ -36,6 +36,7 @@ public class syride {
     private ObservableList <String> driveList;   
     private ArrayList<String> flightFolderList;
     private StringBuilder sbError;
+    private osType currentOS;
 
     public boolean isConnected() {
         return connected;
@@ -64,19 +65,18 @@ public class syride {
     
     public syride (osType currOs, int gpsLimit) {
         boolean conn = false;
-        fFlights = null;          
-        
-      //  setDateLevel(gpsLimit);
-        
-        conn = testSysPCTools(currOs);
+        fFlights = null;    
+        currentOS = currOs;
+                
+        conn = testSysPCTools();
                      
     }
     
-    public boolean testSysPCTools(osType currOs) {
+    public boolean testSysPCTools() {
         
         boolean res = false;
         
-        switch (currOs) {
+        switch (currentOS) {
             case WINDOWS:
                 // https://stackoverflow.com/questions/9677692/getting-my-documents-path-in-java 
                 // System.getProperty("user.home")+File.separatorChar + "Documents"  
@@ -123,6 +123,26 @@ public class syride {
                 }
                 break;
             case LINUX :
+                fFlights = new File(System.getProperty("user.home")+"/syride/parapente");
+                if (fFlights.exists() && fFlights.isDirectory()) {
+                    res = true;
+                    setConnected(res);                     
+                    fArchives = new File(System.getProperty("user.home")+"/syride/archives");
+                    if (!fArchives.exists()) {
+                        try {
+                            fArchives = new File(System.getProperty("user.home")+"/syride/archives");
+                            boolean okArchives = fArchives.mkdir();
+                            if (!okArchives) {
+                                fArchives = null;
+                            }
+                        } catch (Exception e) {
+                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                            sbError.append("\r\n").append(e.toString()).append("\r\n");
+                            sbError.append("Unable to create syride/archives");
+                            mylogging.log(Level.SEVERE, sbError.toString()); 
+                        }                             
+                    }
+                }
                 break;
             default:
                 throw new AssertionError();
@@ -180,7 +200,18 @@ public class syride {
                 String nameDay = fIGC.getName();
                 String sPathParapenteDay = fIGC.getParent();  
                 Path pathParapenteDay = Paths.get(sPathParapenteDay);
-                sPathArchivesDay = sPathParapenteDay.replaceAll("Parapente", "archives");
+                switch (currentOS) {
+                    case WINDOWS:
+                        sPathArchivesDay = sPathParapenteDay.replaceAll("Parapente", "archives");
+                        break;
+                    case MACOS:
+                        sPathArchivesDay = sPathParapenteDay.replaceAll("parapente", "archives");
+                        break;
+                    case LINUX:
+                        sPathArchivesDay = sPathParapenteDay.replaceAll("parapente", "archives");
+                        break;                        
+                }
+                sPathArchivesDay = sPathParapenteDay.replaceAll("parapente", "archives");
                 Path pathArchivesDay = Paths.get(sPathArchivesDay);  
                 File fArchivesDay = new File(sPathArchivesDay);
                 if (!fArchivesDay.exists()) {
