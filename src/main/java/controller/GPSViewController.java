@@ -593,7 +593,7 @@ public class GPSViewController {
                 }
                 break; 
             case Syride :
-                if (diskSyr.testSysPCTools(myConfig.getOS())) {
+                if (diskSyr.testSysPCTools()) {
                     resCom = 5;
                     actuLed();   
                     flightListWithProgress(); 
