@@ -78,6 +78,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.SelectionMode;
@@ -549,9 +551,24 @@ public class CarnetViewController  {
         Image dbImage = null;
                 
         currTrace = new traceGPS(null,"",true, myConfig);  
+        String strDTFlight = rs.getString("V_Date");
+        // in database, date is in principle YYYY-MM-DD HH:MM:SS      
+        // but sometimes we have only YYYY-MM-DD
+        Pattern fullDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}");
+        Matcher matchFull = fullDate.matcher(strDTFlight);
+        if(! matchFull.find()) {
+            // Date in ot YYYY-MM-DD HH:MM, check for YYYY-MM-DD            
+            Pattern dayDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+            Matcher matchDay = dayDate.matcher(strDTFlight);
+            if(matchDay.find()) {                    
+                strDTFlight += " 12:00:00";
+            } else {
+                 strDTFlight = "2000-01-01 12:00:00";
+            }
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");       
-        currTrace.setDate_Vol(LocalDateTime.parse(rs.getString("V_Date"), formatter)); 
-        currTrace.setDT_Deco(LocalDateTime.parse(rs.getString("V_Date"), formatter));          
+        currTrace.setDate_Vol(LocalDateTime.parse(strDTFlight, formatter)); 
+        currTrace.setDT_Deco(LocalDateTime.parse(strDTFlight, formatter));          
         long lDuree = rs.getLong("V_Duree");
         currTrace.setDuree_Vol(rs.getLong("V_Duree")); 
         currTrace.setsDuree_Vol(rs.getString("V_sDuree")); 
