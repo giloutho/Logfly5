@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
+   <children>
+      <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxHeight="60.0" maxWidth="1.7976931348623157E308" minHeight="60.0" minWidth="-Infinity" prefHeight="60.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <children>
+                  <RadioButton maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="80.0" text="fTous" textFill="WHITE">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </RadioButton>
+                  <RadioButton layoutX="20.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="100.0" text="fDécollages" textFill="WHITE" />
+                  <RadioButton layoutX="80.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="100.0" text="fAtteros" textFill="WHITE" />
+                  <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <TextField maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0">
+                           <HBox.margin>
+                              <Insets right="8.0" top="10.0" />
+                           </HBox.margin>
+                        </TextField>
+                        <Button fx:id="btnGEarth" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#askWinGE" prefHeight="30.0" prefWidth="30.0" text="Button">
+                           <graphic>
+                              <ImageView fx:id="top_GEarth" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/loupe.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <HBox.margin>
+                              <Insets right="8.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
+                        <ImageView fx:id="top_Menu" fitHeight="25.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/list.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </ImageView>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <SplitPane dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <items>
+                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="580.0" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="580.0">
+                     <children>
+                        <TableView fx:id="tableVols" minWidth="-Infinity" prefHeight="550.0" prefWidth="580.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-25.0" AnchorPane.topAnchor="0.0">
+                           <columns>
+                              <TableColumn fx:id="imgCol" editable="false" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" sortable="false" />
+                              <TableColumn fx:id="dateCol" maxWidth="207.0" minWidth="70.0" prefWidth="207.0" text="fNom" />
+                              <TableColumn fx:id="heureCol" editable="false" maxWidth="116.0" minWidth="16.0" prefWidth="111.0" sortable="false" text="fLocalite" />
+                              <TableColumn fx:id="dureeCol" maxWidth="83.0" minWidth="0.0" prefWidth="33.0" text="fCP" />
+                              <TableColumn fx:id="siteCol" maxWidth="150.0" minWidth="38.0" prefWidth="44.0" text="fAlt." />
+                              <TableColumn fx:id="voileCol" maxWidth="201.0" minWidth="38.0" prefWidth="108.0" text="fOrientation" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="530.0" prefWidth="300.0">
+                     <children>
+                        <WebView fx:id="mapViewer" layoutX="32.0" prefHeight="530.0" prefWidth="300.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+               </items>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </SplitPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
