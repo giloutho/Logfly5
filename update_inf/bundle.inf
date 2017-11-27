@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bundle>
-	<windows>http://www.logfly.org/download/logfly5/Logfly_Install.exe</windows>
-	<macos>http://www.logfly.org/download/logfly5/Logfly5-08.dmg</macos>
+    <windows>http://www.logfly.org/download/logfly5/Logfly5-13.exe</windows>
+    <macos>http://www.logfly.org/download/logfly5/Logfly5-13.pkg</macos>
     <linux>http://www.logfly.org/download/logfly5/Logfly.db</linux>
 </bundle>
