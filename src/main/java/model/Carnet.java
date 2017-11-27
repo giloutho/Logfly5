@@ -10,6 +10,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -50,11 +52,33 @@ public class Carnet {
     }
     
     public void setDate(String dateStr) throws ParseException {            
-        // in database, date is YYYY-MM-DD HH:MM:SS        
-        java.util.Date dDate = sdfSql.parse(dateStr);
-        Locale osLocale = Locale.getDefault();
-        DateFormat dtloc = DateFormat.getDateInstance(DateFormat.SHORT,osLocale);
-        date.set(dtloc.format(dDate));
+        // in database, date is in principle YYYY-MM-DD HH:MM:SS      
+        // but sometimes we have only YYYY-MM-DD
+        Pattern fullDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
+        Matcher matchFull = fullDate.matcher(dateStr);
+        try {
+            if(! matchFull.find()) {
+                // Date in ot YYYY-MM-DD HH:MM, check for YYYY-MM-DD            
+                Pattern dayDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+                Matcher matchDay = dayDate.matcher(dateStr);
+                if(matchDay.find()) {                    
+                    SimpleDateFormat sdfDay = new SimpleDateFormat("yyyy-MM-dd");
+                    java.util.Date dateDay = sdfDay.parse(dateStr);
+                    Locale osLocale = Locale.getDefault();
+                    DateFormat dtloc = DateFormat.getDateInstance(DateFormat.SHORT,osLocale);
+                    date.set(dtloc.format(dateDay));
+                } else {
+                    date.set("01-01-2000");
+                }
+            } else {
+                java.util.Date dDate = sdfSql.parse(dateStr);
+                Locale osLocale = Locale.getDefault();
+                DateFormat dtloc = DateFormat.getDateInstance(DateFormat.SHORT,osLocale);
+                date.set(dtloc.format(dDate));
+            }
+        } catch (ParseException e) {
+
+        }
     }
 
     public String getHeure() {
@@ -63,7 +87,10 @@ public class Carnet {
     
     public void setHeure(String dateStr) {
         // in database, date is YYYY-MM-DD HH:MM:SS
-        heure.set(dateStr.substring(11,16));
+        if (dateStr.length() > 15)  
+            heure.set(dateStr.substring(11,16));
+        else
+            heure.set("12:00");
     }
     
     public String getDuree() {
