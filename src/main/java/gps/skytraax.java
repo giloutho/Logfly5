@@ -167,18 +167,22 @@ public class skytraax {
                 if (size < 63999999999L) {
                     File listFile[] = aDrive.listFiles();
                     if (listFile != null) {
-                        for (int i=0; i<listFile.length; i++)         
+                        for (int i=0; i<listFile.length; i++) 
                         {
-                            if (listFile[i].getName().equals("SYSTEM") && listFile[i].isDirectory()) {
-                                try {
-                                    if (exploreFolderSystem(listFile[i])) cond1 = true;
-                                } catch (Exception e) {
-                                    
+                            if ( !listFile[i].getName().startsWith("."))
+                            {
+                                System.out.println("Skytraxx test de "+listFile[i].getName());
+                                if (listFile[i].getName().equals("SYSTEM") && listFile[i].isDirectory()) {
+                                    try {
+                                        if (exploreFolderSystem(listFile[i])) cond1 = true;
+                                    } catch (Exception e) {
+
+                                    }
                                 }
-                            }
-                            if (listFile[i].getName().equals("FLIGHTS") && listFile[i].isDirectory()) {
-                                fFlights = listFile[i];
-                                cond2 = true;
+                                if (listFile[i].getName().equals("FLIGHTS") && listFile[i].isDirectory()) {
+                                    fFlights = listFile[i];
+                                    cond2 = true;
+                                }
                             }
                         }
                         if (cond1 == true && cond2 == true) {
@@ -207,9 +211,11 @@ public class skytraax {
     private boolean exploreFolderSystem(File dir) throws Exception {  
                
         File[] files = dir.listFiles();
+        System.out.println("Skytraxx test systeme de "+dir.getName());
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
-            if (fileName.equals("system.txt")) {     
+            if (fileName.equals("system.txt")) {   
+               System.out.println("Skytraxx systeme.txt trouvé");
                 readFirmware(files[i]);
                 return true;
             }
@@ -221,17 +227,20 @@ public class skytraax {
     private void readFirmware(File fSystem) throws IOException {
         
         try {
+            System.out.println("Skytraxx ouverture systeme.txt");
             Stream<String> lines = Files.lines(Paths.get(fSystem.getAbsolutePath()));
             Optional<String> hasFirmware = lines.filter(s -> s.contains("Firmware:")).findFirst();
             if(hasFirmware.isPresent()){
                 String[] sFirmware = hasFirmware.get().split(":");
                 if (sFirmware.length > 1) {
                     verFirmware = sFirmware[1];
+                    System.out.println("Skytraxx version firmware "+sFirmware[1]);  
                 } else {
                     verFirmware = "";
                 }
             }
-            lines.close();            
+            lines.close();
+            System.out.println("Skytraxx fermeture systeme.txt");            
         } catch (Exception e) {
             e.printStackTrace();
         }        
@@ -241,17 +250,22 @@ public class skytraax {
         // Recursivité à vérifier pour le skytraax        
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
-            String fileName = files[i].getName();
-            if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {                                    
-                // Problem of dot files writed by MacOS 
-                if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {
-                    if (files[i].getName().substring(0,3).compareTo(closingSky) > 0) {
-                        trackPathList.add(files[i].getPath());
+            System.out.println("ExploreFolder de "+files[i].getName());
+            if (files[i].isDirectory()) {
+                System.out.println("ExploreFolder appel récursif de "+files[i].getName());
+                exploreFolder(files[i], trackPathList);                
+            } else {
+                String fileName = files[i].getName();
+                System.out.println("ExploreFolder simple "+files[i].getName());
+                if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {                                    
+                    // Problem of dot files writed by MacOS 
+                    if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {
+                        if (files[i].getName().substring(0,3).compareTo(closingSky) > 0) {                            
+                            trackPathList.add(files[i].getPath());
+                            System.out.println("*** "+files[i].getName()+" a été ajouté");
+                        }
                     }
                 }
-            }
-            if (files[i].isDirectory()) {
-                exploreFolder(files[i], trackPathList);
             }
         }        
     }
