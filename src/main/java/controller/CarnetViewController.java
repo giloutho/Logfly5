@@ -612,14 +612,6 @@ public class CarnetViewController  {
         mapNoIGC.getPointsList().add(pPoint1);
         mapNoIGC.setStrComment(currTrace.getComment());
         if (mapNoIGC.genMap() == 0) {
-            /** ----- Begin Debug --------*/ 
-            String sDebug = mapNoIGC.getMap_HTML();
-            final Clipboard clipboard = Clipboard.getSystemClipboard();
-            final ClipboardContent content = new ClipboardContent();
-            content.putString(mapNoIGC.getMap_HTML()); 
-            System.out.println("C'est dans le clipboard...");
-            clipboard.setContent(content);
-            /** ----- End Debug ---------*/
             // Delete cache for navigate back
             mapViewer.getEngine().load("about:blank");            
             mapViewer.getEngine().loadContent(mapNoIGC.getMap_HTML()); 
