@@ -1214,7 +1214,7 @@ public class GPSViewController {
         Image imgImgLed=null;
         Image imgGo = null;
         Tooltip goToolTip = new Tooltip();
-        goToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        goToolTip.setStyle(myConfig.getDecoToolTip());
 
         switch (resCom) {
             case 0 :
@@ -1848,12 +1848,12 @@ public class GPSViewController {
         btnDecocher.setText(i18n.tr("Décocher"));
         btnMaj.setText(i18n.tr("Mise à jour Carnet"));
         Tooltip majToolTip = new Tooltip();
-        majToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        majToolTip.setStyle(myConfig.getDecoToolTip());
         majToolTip.setText(i18n.tr("Tous les vols cochés sont incorporés dans le carnet"));
         btnVisu.setTooltip(majToolTip);
         btnVisu.setText(i18n.tr("Visualisation trace")); 
         Tooltip viToolTip = new Tooltip();
-        viToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        viToolTip.setStyle(myConfig.getDecoToolTip());
         viToolTip.setText(i18n.tr("Le vol sélectionné (clic gauche) est visualisé sans incorporation dans le carnet"));
         btnVisu.setTooltip(viToolTip);        
         dateCol.setText(i18n.tr("Date"));
