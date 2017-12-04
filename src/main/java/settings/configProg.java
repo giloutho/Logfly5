@@ -417,10 +417,8 @@ public class configProg {
     public static void setVersion(String version) {
         configProg.version = version;
     }
-    
-    
-    
-        
+
+                  
     /**
      * Check db connection
      * @param dbCheckName
@@ -1166,4 +1164,11 @@ public class configProg {
         }
     }
     
+    public String getDecoToolTip() {
+        
+        // on line tool for gradient : https://www.w3schools.com/colors/colors_gradient.asp
+        String decoToolTip = "-fx-background-color: linear-gradient(#ffff00, #ff9900); -fx-text-fill: black;";
+        
+        return decoToolTip;
+    }    
 }
