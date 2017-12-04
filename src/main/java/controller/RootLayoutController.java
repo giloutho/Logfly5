@@ -302,15 +302,15 @@ public class RootLayoutController {
         mnPhotos.setText(i18n.tr("Photos"));
         mnCarto.setText(i18n.tr("Cartographie"));        
         Tooltip confToolTip = new Tooltip();
-        confToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        confToolTip.setStyle(myConfig.getDecoToolTip());
         confToolTip.setText(i18n.tr("Configuration"));
         btnConfig.setTooltip(confToolTip);
         Tooltip toolsToolTip = new Tooltip();
-        toolsToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");        
+        toolsToolTip.setStyle(myConfig.getDecoToolTip());        
         toolsToolTip.setText(i18n.tr("Outils"));
         btnTools.setTooltip(toolsToolTip);
         Tooltip supToolTip = new Tooltip();
-        supToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");        
+        supToolTip.setStyle(myConfig.getDecoToolTip());        
         supToolTip.setText(i18n.tr("Support"));
         btnSupport.setTooltip(supToolTip);
     }    
