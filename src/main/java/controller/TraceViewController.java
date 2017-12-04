@@ -473,25 +473,25 @@ public class TraceViewController {
         
         btnMap.setStyle("-fx-background-color: transparent;");
         Tooltip mapToolTip = new Tooltip();
-        mapToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        mapToolTip.setStyle(myConfig.getDecoToolTip());
         mapToolTip.setText(i18n.tr("Carte Google Maps plein écran"));
         btnMap.setTooltip(mapToolTip);
                 
         btnVisuGPS.setStyle("-fx-background-color: transparent;"); 
         Tooltip visuToolTip = new Tooltip();
-        visuToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        visuToolTip.setStyle(myConfig.getDecoToolTip());
         visuToolTip.setText(i18n.tr("Affichage VisuGPS"));
         btnVisuGPS.setTooltip(visuToolTip);
         
         btnScore.setStyle("-fx-background-color: transparent;");      
         Tooltip scoreToolTip = new Tooltip();
-        scoreToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        scoreToolTip.setStyle(myConfig.getDecoToolTip());
         scoreToolTip.setText(i18n.tr("Evaluation de la trace"));
         btnScore.setTooltip(scoreToolTip);
         
         btnGEarth.setStyle("-fx-background-color: transparent;");      
         Tooltip geToolTip = new Tooltip();
-        geToolTip.setStyle("-fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+        geToolTip.setStyle(myConfig.getDecoToolTip());
         geToolTip.setText(i18n.tr("Génération fichier Google Earth"));
         btnGEarth.setTooltip(geToolTip);
     }
