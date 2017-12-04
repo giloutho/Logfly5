@@ -224,9 +224,13 @@ public class Main extends Application {
     @Override
     public void stop() throws SQLException{
         if (myConfig.isValidConfig())  {
-            myConfig.setMainWidth((int)primaryStage.getWidth());
-            myConfig.setMainHeight((int)primaryStage.getHeight());
-            myConfig.writeProperties();
+            int currWidth = (int)primaryStage.getWidth();
+            int currHeight = (int)primaryStage.getHeight();
+            if (currWidth > 670 && currHeight > 630) { 
+                myConfig.setMainWidth(currWidth);
+                myConfig.setMainHeight(currHeight);            
+                myConfig.writeProperties();
+            }
             myConfig.getDbConn().close();
         }
     }
