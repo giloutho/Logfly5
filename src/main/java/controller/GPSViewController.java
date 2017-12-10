@@ -343,13 +343,10 @@ public class GPSViewController {
                 break;
             case 6:
                 currGPS = gpsType.Sky;
-                System.out.println("Demande connection Skytraxx");
                 usbSky = new skytraax(myConfig.getOS(), myConfig.getGpsLimit());
                 if (usbSky.isConnected()) {
-                    System.out.println("Skytraxx connecté");
                     goodListDrives(usbSky.getDriveList(),usbSky.getIdxDrive());
                 } else {
-                    System.out.println("Skytraxx non connecté");
                     badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
                 }
                 break;
@@ -960,7 +957,6 @@ public class GPSViewController {
                 // Sum checked flights
                 for (Gpsmodel checkedData : dataImport) {
                     checkedData.checkedProperty().addListener((obs, wasChecked, isNowChecked) -> {
-                        System.out.println("Touché");
                         actuMsgBar();
                     });
                 }    
@@ -988,9 +984,7 @@ public class GPSViewController {
                 limitMsg = usbRever.getMsgClosingDate();
                 break;   
             case Sky :
-                System.out.println("ReadUSBGPS affichage firmware Skytraxx");
                 idGPS = "Skytraxx 2 "+usbSky.getVerFirmware();
-                System.out.println("listTracksFiles du Skytraxx lancé");
                 usbSky.listTracksFiles(trackPathList);
                 limitMsg = usbSky.getMsgClosingDate();
                 break;
@@ -1127,7 +1121,6 @@ public class GPSViewController {
     
     
     private void flightListSimple() {
-        System.out.println("Liste simple");
         readUSBGps();
         afficheFlyList();
     }
@@ -1768,7 +1761,6 @@ public class GPSViewController {
                 }
             } else {
                 if (errorComMsg != null)  {
-                    System.out.println("errorComMsg : "+errorComMsg);
                     alertbox aError = new alertbox(myConfig.getLocale());
                     aError.alertError(errorComMsg);
                 } else if (strTrack == null) {
