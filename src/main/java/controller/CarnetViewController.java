@@ -476,11 +476,12 @@ public class CarnetViewController  {
                             // Delete cache for navigate back
                             mapViewer.getEngine().load("about:blank");
                             /** ----- Debut Debug --------*/ 
-                            String sDebug = visuMap.getMap_HTML();
-                            final Clipboard clipboard = Clipboard.getSystemClipboard();
-                            final ClipboardContent content = new ClipboardContent();
-                            content.putString(visuMap.getMap_HTML());            
-                            clipboard.setContent(content);
+//                            String sDebug = visuMap.getMap_HTML();
+//                            final Clipboard clipboard = Clipboard.getSystemClipboard();
+//                            final ClipboardContent content = new ClipboardContent();
+//                            content.putString(visuMap.getMap_HTML());            
+//                            clipboard.setContent(content);
+                            /** ----- Fin Debug --------*/ 
                             mapViewer.getEngine().loadContent(visuMap.getMap_HTML()); 
                             if (dbImage != null) {
                                 winPhoto myPhoto = new winPhoto();    
@@ -1028,7 +1029,7 @@ public class CarnetViewController  {
      * Display a fullscreen map of the track with flght parameters
      */    
     @FXML
-    private void showFullMap() {
+    private void showFullMapOld() {
         if (currTrace.isDecodage()) {        
             map_visu visuFullMap = new map_visu(currTrace, myConfig);
             if (visuFullMap.isMap_OK()) {
@@ -1075,6 +1076,38 @@ public class CarnetViewController  {
             
         }
     }
+    
+    @FXML
+    private void showFullMap() {
+        
+        if (currTrace.isDecodage()) {        
+            map_visu visuFullMap = new map_visu(currTrace, myConfig);
+            if (visuFullMap.isMap_OK()) {            
+                try {
+                    String sHTML = visuFullMap.getMap_HTML();
+                    FXMLLoader loader = new FXMLLoader();
+                    loader.setLocation(Main.class.getResource("/Fullmap.fxml")); 
+
+                    AnchorPane page = (AnchorPane) loader.load();
+                    Stage fullMap = new Stage();            
+                    fullMap.initModality(Modality.WINDOW_MODAL);       
+                    fullMap.initOwner(mainApp.getPrimaryStage());
+                    Scene scene = new Scene(page);
+                    fullMap.setScene(scene);
+                   
+                    // Initialization of a communication bridge between CarnetView and KmlView
+                    FullMapController controller = loader.getController();
+                    controller.setCarnetBridge(this);
+                    controller.setMapStage(fullMap); 
+                    controller.setParams(myConfig, sHTML);
+                    controller.setWinMax();
+                    fullMap.showAndWait();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }    
     
      /**
      * VisuGPS is a powerful webservice for gps track display
