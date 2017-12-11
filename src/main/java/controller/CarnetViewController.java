@@ -1085,6 +1085,12 @@ public class CarnetViewController  {
             if (visuFullMap.isMap_OK()) {            
                 try {
                     String sHTML = visuFullMap.getMap_HTML();
+                    /** ----- Begin Debug --------*/                 
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(sHTML);            
+                    clipboard.setContent(content);                                
+                    /**------ End Debug --------- */                    
                     FXMLLoader loader = new FXMLLoader();
                     loader.setLocation(Main.class.getResource("/Fullmap.fxml")); 
 
