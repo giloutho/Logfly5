@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import javafx.concurrent.Task;
 import controller.CarnetViewController;
+import controller.FullMapController;
 import controller.TraceViewController;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -39,6 +40,7 @@ public class scoring {
     
     private CarnetViewController carnetController;
     private TraceViewController extController;
+    private FullMapController mapController;
     
     // Settings
     configProg myConfig;
@@ -56,6 +58,12 @@ public class scoring {
         // 2 when process finished, kml file genration instruction will be called in CarnetViewController 
         codeRetour = pRetour;
     }
+    
+    public scoring (FullMapController callFullMap, configProg currConfig)  {
+        myConfig = currConfig;
+        this.mapController = callFullMap;
+        codeRetour = 5;
+    }    
     
     public scoring (TraceViewController callExterne, int pRetour, int myParam, configProg currConfig)  {
         myConfig = currConfig;
@@ -220,7 +228,10 @@ public class scoring {
                     break;
                 case 4:
                     extController.scoreReturn(codeRetour);
-                    break;                
+                    break;    
+                case 5:
+                    mapController.scoreReturn();
+                    break;                       
             }
         else {
             alertbox aError = new alertbox(myConfig.getLocale());
