@@ -102,6 +102,22 @@
         info.update(altiLg[i]+'<br/>Alt : '+altiVal[i]+'m<br/>Vz : '+Vario[i]+'m/s<br/>Vit : '+Speed[i]+' km/h');
     }
 
+    // Efface la légende
+    function hideLegend() {
+        legend.getContainer().innerHTML='';   
+    }
+
+    // Affiche la légende
+    function fillLegend() {
+        legend._div.innerHTML = '';
+        %legende%        
+    };
+
+    // Démarre la mesure
+    function startMeasure() {
+        document.getElementById('measure').click();
+    }
+
     //%ScoreBalises%
 
     map = new L.Map('carte');
@@ -279,14 +295,14 @@ var toggle = L.easyButton({
             icon: 'fa-user-times',
             title: 'remove infos',
             onClick: function(control) {
-                legend.getContainer().innerHTML='';
+                hideLegend();
                 control.state('add-infos');
             }
         }, {
             icon: 'fa-user-plus',
             stateName: 'add-infos',
             onClick: function(control) {
-                legend.update();
+                fillLegend();
                 control.state('remove-infos');
             },
             title: 'remove infos'
@@ -298,14 +314,10 @@ var toggle = L.easyButton({
 
     legend.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'legend');
-        this.update();
+        fillLegend();
         return this._div;
     };
 
-    legend.update = function () {
-        this._div.innerHTML = '';
-        %legende%        
-    };
     legend.addTo(map);
 
     setTimeout(function(){ map.fitBounds(track.getBounds()); }, 2000);
