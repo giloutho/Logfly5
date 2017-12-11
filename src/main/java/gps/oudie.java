@@ -106,14 +106,17 @@ public class oudie {
                 sb.append(aDrive.getName()).append(" ").append(String.format("%4.0f", sizeGo)).append(" Go");
                 driveList.add(sb.toString());
                 // Capacity > 64 Go jumped
-                if (size < 63999999999L) {
+                if (size < 83999999999L) {
                     File listFile[] = aDrive.listFiles();
                     if (listFile != null) {
                         for (int i=0; i<listFile.length; i++)         
                         {
                             if (listFile[i].getName().equals("Settings") && listFile[i].isDirectory()) {
                                 try {
-                                    if (exploreFolderSettings(listFile[i])) cond1 = true;
+                                    // No default settings file, later settings folder will explored
+                                    // to extract firmware version
+                                    //if (exploreFolderSettings(listFile[i])) cond1 = true;
+                                    cond1 = true;
                                 } catch (Exception e) {
                                     
                                 }
@@ -141,7 +144,7 @@ public class oudie {
     } 
     
     /** 
-     * SD card of Skytraax has a folder called Settings with a default settings file called Default.xml 
+     * In this Settings folder no default file, it's user_name_choosed.xml 
      * @param dir
      * @return
      * @throws Exception 
