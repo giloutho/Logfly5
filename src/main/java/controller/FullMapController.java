@@ -7,24 +7,31 @@
 package controller;
 
 import dialogues.alertbox;
+import dialogues.dialogbox;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.util.logging.Level;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ToolBar;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.web.WebEngine;
+import javafx.scene.image.WritableImage;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javax.imageio.ImageIO;
 import leaflet.map_visu;
-import model.Carnet;
+import littlewins.winMail;
+import littlewins.winTrackFile;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.listLeague;
+import systemio.mylogging;
 import trackgps.scoring;
 import trackgps.traceGPS;
 
@@ -70,6 +77,12 @@ public class FullMapController {
     private traceGPS carnetTrace;    
     private String carnetHTML; 
     private boolean dispLegend = true;  
+    private int idxDb;
+    private int firstLeagueIdx;
+    private int newLeagueIdx; 
+    private ObservableList <String> allLeagues;
+    private StringBuilder sbError;
+    private File snapFile;
 
     @FXML
     private void initialize() {
@@ -79,9 +92,10 @@ public class FullMapController {
                
     }    
     
-    public void setParams(configProg mainConfig, String pHTML) {
+    public void setParams(configProg mainConfig, String pHTML, int idxCarnet) {
         this.myConfig = mainConfig;
         this.carnetHTML = pHTML;
+        this.idxDb = idxCarnet;
         viewMap.getEngine().loadContent(carnetHTML,"text/html");
         i18n = I18nFactory.getI18n("","lang/Messages",FullMapController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
@@ -104,38 +118,36 @@ public class FullMapController {
        viewMap.getEngine().executeScript("startMeasure()");
     }    
     
+    // BtScoring clic
     @FXML
     private void showLeague(ActionEvent event) {
+        askScoring();
+    }   
+    
+    private void askScoring() {
         scoring currScore = new scoring(this,myConfig);  
-        currScore.start(carnetTrace, myConfig.getIdxLeague());  
-    }    
+        currScore.start(carnetTrace,chbLeague.getSelectionModel().getSelectedIndex());
+    }
+    
+    private void updateDb()  {
+        StringBuilder sReq = new StringBuilder();
+        sReq.append("UPDATE Vol SET V_League='").append(String.valueOf(carnetTrace.getScore_Idx_League())).append("'");
+        sReq.append(",V_Score='").append(carnetTrace.getScore_JSON()).append("'");
+        sReq.append(" WHERE V_ID = ?");            
+        try {
+            PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq.toString());
+            pstmt.setInt(1, idxDb);
+            pstmt.executeUpdate(); 
+            pstmt.close();                        
+        } catch (Exception e) {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertError(e.getMessage()); 
+        } 
+    }
     
     public void scoreReturn() {
         // If scoring failed, error message was sent by Scoring class
-        if (carnetTrace.isScored())  {
-            // Mise à jour de la db
-//            Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
-//            StringBuilder sReq = new StringBuilder();
-//            sReq.append("UPDATE Vol SET V_League='").append(String.valueOf(currTrace.getScore_Idx_League())).append("'");
-//            sReq.append(",V_Score='").append(currTrace.getScore_JSON()).append("'");
-//            sReq.append(" WHERE V_ID = ?");            
-//            try {
-//                PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq.toString());
-//                pstmt.setInt(1, Integer.valueOf(selectedVol.getIdVol()));
-//                pstmt.executeUpdate(); 
-//                pstmt.close();
-//                switch (pRetour) {
-//                    case 1:
-//                        showFullMap();
-//                        break;   
-//                    case 2:
-//                        showWinGE();
-//                        break;  
-//                }                
-//            } catch (Exception e) {
-//                alertbox aError = new alertbox(myConfig.getLocale());
-//                aError.alertError(e.getMessage()); 
-//            }      
+        if (carnetTrace.isScored())  {     
             try {
                 map_visu visuFullMap = new map_visu(carnetTrace, myConfig);
                 if (visuFullMap.isMap_OK()) {
@@ -152,16 +164,34 @@ public class FullMapController {
     
     @FXML
     private void recHTML(ActionEvent event) {
-        // label.setText("Clic HTML");
+        
+        winTrackFile myTrace = new winTrackFile(carnetHTML);        
+        
     }    
     
     @FXML
     private void sendMail(ActionEvent event) {
-        // label.setText("Clic mail...");
+        if (snapshot()) {            
+            winMail showMail = new winMail(myConfig,snapFile.getAbsolutePath());            
+        } else {
+            winMail showMail = new winMail(myConfig,null); 
+        }            
     }    
     
     @FXML
     private void closeMap(ActionEvent event) {
+        if (firstLeagueIdx != newLeagueIdx && firstLeagueIdx == -1) {
+            updateDb();
+        } else if (firstLeagueIdx != newLeagueIdx)  {
+            String stFirstLeague = allLeagues.get(firstLeagueIdx);
+            String stNewLeague = allLeagues.get(newLeagueIdx);
+            dialogbox dConfirm = new dialogbox();
+            StringBuilder sbMsg = new StringBuilder(); 
+            sbMsg.append(i18n.tr("Mettre à jour le score : ")).append(stFirstLeague).append(" -> ").append(stNewLeague);
+            if (dConfirm.YesNo(i18n.tr("Scoring"), sbMsg.toString())) { 
+                updateDb();
+            }
+        }
         // get a handle to the stage
         Stage stage = (Stage) btClose.getScene().getWindow();
         stage.close();  
@@ -189,30 +219,61 @@ public class FullMapController {
         carnetTrace = carnetController.currTrace;     
     }   
     
+    
     /**
      * Choicebox is fille with online contest supported by scoring module     
      */
     private void iniChbLeague()  { 
         
         listLeague suppLeagues = new listLeague();
-        ObservableList <String> allLeagues = suppLeagues.fill();        
+        allLeagues = suppLeagues.fill();        
         
         chbLeague.getItems().clear();
-        chbLeague.setItems(allLeagues);
-        chbLeague.getSelectionModel().select(myConfig.getIdxLeague());                       
+        chbLeague.setItems(allLeagues);  
+        chbLeague.getSelectionModel().selectedItemProperty()
+            .addListener((observable, oldValue, newValue) -> {
+                System.out.println((String)newValue+" "+chbLeague.getSelectionModel().getSelectedIndex());
+                newLeagueIdx = chbLeague.getSelectionModel().getSelectedIndex();
+        });        
         // debugging
         if (carnetTrace.isScored())  {
-            System.out.println("League : "+carnetTrace.getScore_League());
             String currLeague = carnetTrace.getScore_League();
             int size = allLeagues.size();
             for(int index=0; index<size; index++){
                 if (currLeague.equals(allLeagues.get(index))){
-                    System.out.println("Index dans la liste : "+index);
+                    firstLeagueIdx = index;
+                    chbLeague.getSelectionModel().select(index);    
                     break;
                 }
             }
+        } else {
+            chbLeague.getSelectionModel().select(myConfig.getIdxLeague()); 
+            firstLeagueIdx = -1;
         }
     }    
+    
+    private boolean snapshot() {
+        
+        boolean res = false;
+        
+        // code from http://java-buddy.blogspot.fr/2012/12/take-snapshot-of-node-with-javafx.html
+        WritableImage snapImage = viewMap.snapshot(new SnapshotParameters(), null);
+
+        // code from http://java-buddy.blogspot.fr/2012/12/save-writableimage-to-file.html
+        try {
+            String fileName = carnetTrace.suggestName()+".png";
+            snapFile = systemio.tempacess.getAppFile("Logfly", fileName);
+            RenderedImage renderedImage = SwingFXUtils.fromFXImage(snapImage, null);
+            ImageIO.write(renderedImage, "png",snapFile);
+            res = true;
+        } catch (IOException ex) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(ex.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+        
+        return res;
+    }
     
     /**
      * Translate labels of the window
