@@ -172,9 +172,9 @@ public class FullMapController {
     @FXML
     private void sendMail(ActionEvent event) {
         if (snapshot()) {            
-            winMail showMail = new winMail(myConfig,snapFile.getAbsolutePath());            
+            winMail showMail = new winMail(myConfig,snapFile.getAbsolutePath(), false);            
         } else {
-            winMail showMail = new winMail(myConfig,null); 
+            winMail showMail = new winMail(myConfig,null, false); 
         }            
     }    
     
