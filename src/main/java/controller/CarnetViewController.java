@@ -1104,8 +1104,10 @@ public class CarnetViewController  {
                     // Initialization of a communication bridge between CarnetView and KmlView
                     FullMapController controller = loader.getController();
                     controller.setCarnetBridge(this);
-                    controller.setMapStage(fullMap); 
-                    controller.setParams(myConfig, sHTML);
+                    controller.setMapStage(fullMap);  
+                    Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+                    int idxFlight = Integer.valueOf(selectedVol.getIdVol());
+                    controller.setParams(myConfig, sHTML, idxFlight);
                     controller.setWinMax();
                     fullMap.showAndWait();
                 } catch (IOException e) {
