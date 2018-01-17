@@ -51,9 +51,11 @@ public class winMail {
     private File uploadFile;
     private String filePath = null;
     private boolean mailSended = false;
+    private boolean supportMsg;
 
-    public winMail(configProg currConfig, String pFilePath) {
+    public winMail(configProg currConfig, String pFilePath, boolean pSupport) {
         myConfig = currConfig;
+        supportMsg = pSupport;
         i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);   
         if (pFilePath != null)  {
             filePath = pFilePath;
@@ -166,6 +168,7 @@ public class winMail {
         lbDest.setText(i18n.tr("Destinataire "));
         txtDest = new TextField();
         txtDest.setPrefWidth(250);
+        if (supportMsg) txtDest.setText(privateData.mailSupport.toString());
         // récup nom pilote
         hbDest.getChildren().addAll(lbDest, txtDest);
 
