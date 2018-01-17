@@ -77,6 +77,7 @@ public class ImportViewController {
     private HBox hbTable;
     
     private RootLayoutController rootController;
+    private File importDirectory;
 
     /**
      * recovered settings
@@ -108,7 +109,15 @@ public class ImportViewController {
      */
     @FXML
     private void selectImpFolder() throws Exception {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
+        //if (myConfig.getPathImport() != null)
+        DirectoryChooser directoryChooser = new DirectoryChooser();     
+        String iniPath = myConfig.getPathImport();
+        if (iniPath != null && !iniPath.equals("")) {
+            File iniImport = new File(iniPath);
+            if (iniImport.exists()) {
+                directoryChooser.setInitialDirectory(new File(iniPath));
+            }
+        }
         File selectedDirectory = directoryChooser.showDialog(dialogStage);
         if(selectedDirectory != null){
             long tempsDebut = System.currentTimeMillis();
@@ -119,7 +128,7 @@ public class ImportViewController {
             System.out.println("Opération effectuée en: "+ Float.toString(seconds) + " secondes.");
             if (trackPathList.size() > 0) {
                 InitialiseTableData();
-                
+                importDirectory = selectedDirectory;
             }            
         }
         
@@ -257,24 +266,27 @@ public class ImportViewController {
                 nbVols++;
             }
         }
-        dialogbox dConfirm = new dialogbox();
-        StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
-        if (dConfirm.YesNo("", sbMsg.toString()))   {       
-            for (Import item : data){
-                if (item.getChecked())  {     
-                    File fMyTrace = new File(item.getFilePath());
-                    if(fMyTrace.exists() && fMyTrace.isFile()) {           
-                        traceGPS myTrace = new traceGPS(fMyTrace,true, myConfig);
-                        if (myTrace.isDecodage()) { 
-                            dbAdd myDbAdd = new dbAdd(myConfig);
-                            myDbAdd.addVolCarnet(myTrace);
+        if (nbVols > 0) {
+            dialogbox dConfirm = new dialogbox();
+            StringBuilder sbMsg = new StringBuilder();
+            sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
+            if (dConfirm.YesNo("", sbMsg.toString()))   {       
+                for (Import item : data){
+                    if (item.getChecked())  {     
+                        File fMyTrace = new File(item.getFilePath());
+                        if(fMyTrace.exists() && fMyTrace.isFile()) {           
+                            traceGPS myTrace = new traceGPS(fMyTrace,true, myConfig);
+                            if (myTrace.isDecodage()) { 
+                                dbAdd myDbAdd = new dbAdd(myConfig);
+                                myDbAdd.addVolCarnet(myTrace);
+                            }
                         }
                     }
                 }
+                myConfig.setPathImport(importDirectory.getAbsolutePath());
+                rootController.changeCarnetView();
             }
-            rootController.changeCarnetView();
-        }                                                                  
+        }
     }               
     
     /** 
