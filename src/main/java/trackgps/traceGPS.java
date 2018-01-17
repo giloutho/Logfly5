@@ -1785,5 +1785,29 @@ public class traceGPS {
         
         return txtData;    
     }
+    
+    public String suggestName() {        
+         
+        String suggName1 = Date_Vol_SQL.replaceAll("-","_");
+        String suggName2 = suggName1.replaceAll(":","_");
+        String suggName = suggName2.replaceAll(" ","_");
+        
+        String suggPilote;
+        String finalName = null;
+        if (sPilote != null && !sPilote.equals(""))  {
+            // Il y a un problème s'il y a un point dans l'expression comme Gégé avait fait -> sPilote = G. LEGRAS...        
+            String suggPilote1 = sPilote.replaceAll("\\.","_");
+            suggPilote = suggPilote1.replaceAll(" ","_");  
+            if (suggPilote.equals("-")) 
+                finalName = suggName;
+            else
+                finalName = suggPilote+"_"+suggName; 
+        } else {
+            suggPilote = "";
+            finalName = suggName; 
+        }            
+  
+        return finalName;        
+    }
 
 }
