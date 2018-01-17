@@ -19,12 +19,15 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import Logfly.Main;
+import java.io.File;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import littlewins.winLog;
+import littlewins.winMail;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -93,6 +96,34 @@ public class RootLayoutController {
             switchMenu(4);
             mainApp.showTraceview();
         });  
+        mnCalendrier.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(5);
+            comingSoon();
+        });        
+        mnStat.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(6);
+            comingSoon();
+        });           
+        mnSites.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(7);
+            comingSoon();
+        });            
+        mnBalises.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(8);
+            comingSoon();
+        });      
+        mnEspaces.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(9);
+            comingSoon();
+        });       
+        mnPhotos.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(10);
+            comingSoon();
+        });    
+        mnCarto.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(11);
+            comingSoon();
+        });            
         btnSupport.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override public void handle(MouseEvent e) {                        
@@ -174,6 +205,12 @@ public class RootLayoutController {
         LbMsg.setPadding(new Insets(4, 0, 0, iLeftPadding));
         LbMsg.setText(sMessage);
         LbMsg.setVisible(visuBar);
+    }
+    
+    private void comingSoon() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);                       
+        alert.setContentText(i18n.tr("C'est pour bientôt..."));
+        alert.showAndWait();   
     }
     
     /**
@@ -272,8 +309,16 @@ public class RootLayoutController {
     }
     
     private void sendMailSupport() {
-        alertbox aError = new alertbox(myConfig.getLocale());
-        aError.alertInfo(i18n.tr("Non implémenté..."));                      
+        if (myConfig.isValidConfig()) {
+            File fileLog = new File(myConfig.getPathW()+"logfly.log");
+            if (fileLog.exists()) {   
+                winMail showMail = new winMail(myConfig,fileLog.getAbsolutePath(), true);            
+            } else {
+                winMail showMail = new winMail(myConfig, null, true);   
+            }
+        } else {
+            winMail showMail = new winMail(myConfig, null, true); 
+        }
     }
     
     private void dbRepair() {
