@@ -148,10 +148,10 @@ public class winMail {
         Label lbMail = new Label();
         lbMail.setPrefSize(100, 15);
         lbMail.setPadding(new Insets(5, 0, 0, 0));
-        lbMail.setText("Adresse mail ");
+        lbMail.setText(i18n.tr("Expéditeur "));
         txtAdress = new TextField();
-        txtAdress.setPrefWidth(250);        
-        //txtAdress.setText(myConfig.getPiloteMail());    
+        txtAdress.setPrefWidth(250);    
+        txtAdress.setText(myConfig.getPiloteMail());    
         hbAdresse.getChildren().addAll(lbMail, txtAdress); 
 
         // Element horizontal : Label + champ destinataire
@@ -163,7 +163,7 @@ public class winMail {
         Label lbDest = new Label();
         lbDest.setPrefSize(100, 15);
         lbDest.setPadding(new Insets(5, 0, 0, 0));
-        lbDest.setText("Destinataire ");
+        lbDest.setText(i18n.tr("Destinataire "));
         txtDest = new TextField();
         txtDest.setPrefWidth(250);
         // récup nom pilote
@@ -178,7 +178,7 @@ public class winMail {
         Label lbSubject = new Label();
         lbSubject.setPrefSize(100, 15);
         lbSubject.setPadding(new Insets(5, 0, 0, 0));
-        lbSubject.setText("Sujet ");
+        lbSubject.setText(i18n.tr("Sujet "));
         txtSubject = new TextField();
         txtSubject.setPrefWidth(300);
         hbSubject.getChildren().addAll(lbSubject, txtSubject);        
@@ -195,11 +195,11 @@ public class winMail {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btSend = new Button("Envoyer");
+        Button btSend = new Button(i18n.tr("Envoyer"));
         btSend.setOnAction((event) -> {
             checkAndSend();
         });
-        Button btClose = new Button("Annuler");
+        Button btClose = new Button(i18n.tr("Annuler"));
         btClose.setOnAction((event) -> {            
             subStage.close();
         });
