@@ -38,6 +38,7 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import model.Carnet;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -132,7 +133,7 @@ public class TraceViewController {
      * Show a fullscreen map of the track in a new window with flght parameters
      */
     @FXML
-    private void showFullMap() {
+    private void showFullMapOld() {
         if (extTrace.isDecodage()) {        
             map_visu visuFullMap = new map_visu(extTrace, myConfig);
             if (visuFullMap.isMap_OK()) {
@@ -176,6 +177,38 @@ public class TraceViewController {
             aError.alertError(errMsg);
         }
     }
+    
+    @FXML
+    private void showFullMap() {
+        
+        if (extTrace.isDecodage()) {        
+            map_visu visuFullMap = new map_visu(extTrace, myConfig);
+            if (visuFullMap.isMap_OK()) {            
+                try {
+                    String sHTML = visuFullMap.getMap_HTML();                   
+                    FXMLLoader loader = new FXMLLoader();
+                    loader.setLocation(Main.class.getResource("/Fullmap.fxml")); 
+
+                    AnchorPane page = (AnchorPane) loader.load();
+                    Stage fullMap = new Stage();            
+                    fullMap.initModality(Modality.WINDOW_MODAL);       
+                    fullMap.initOwner(mainApp.getPrimaryStage());
+                    Scene scene = new Scene(page);
+                    fullMap.setScene(scene);
+                   
+                    // Initialization of a communication bridge between CarnetView and KmlView
+                    FullMapController controller = loader.getController();
+                    controller.setTraceBridge(this);
+                    controller.setMapStage(fullMap);  
+                    controller.setParams(myConfig, sHTML, -1);
+                    controller.setWinMax();
+                    fullMap.showAndWait();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }        
     
     /**
      * VisuGPS need a track with http url
@@ -462,6 +495,8 @@ public class TraceViewController {
         this.mainApp = mainApp;    
         myConfig = mainApp.myConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",TraceViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0); 
+        // StatusBar is cleaned
+        mainApp.rootLayoutController.updateMsgBar("", false, 60);
         winTraduction();
     }
 
