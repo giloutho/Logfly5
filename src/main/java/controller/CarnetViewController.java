@@ -71,8 +71,13 @@ import igc.mergingIGC;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
+import java.time.LocalDate;
 import static java.time.LocalDateTime.now;
+import java.time.LocalTime;
 import java.time.Period;
+import java.time.format.DateTimeFormatterBuilder;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -80,12 +85,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.collections.transformation.SortedList;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.SelectionMode;
 import javafx.stage.Screen;
 import littlewins.winGlider;
-import model.Gpsmodel;
 import photo.imgmanip;
 import settings.osType;
 import systemio.mylogging;
@@ -107,11 +110,11 @@ public class CarnetViewController  {
    // @FXML
    // private TableColumn<Carnet, Image> imgCol;
     @FXML
-    private TableColumn<Carnet, String> dateCol;
+    private TableColumn<Carnet, LocalDate> dateCol;
     @FXML
     private TableColumn<Carnet, String> heureCol;
     @FXML
-    private TableColumn<Carnet, String> dureeCol;
+    private TableColumn<Carnet, LocalTime> dureeCol;
     @FXML
     private TableColumn<Carnet, String> siteCol;        
     @FXML
@@ -167,30 +170,34 @@ public class CarnetViewController  {
      * Fill the table with data from db
      */
     private void iniTable() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy");
+        DateTimeFormatter dtfDuree = new DateTimeFormatterBuilder().appendValue(HOUR_OF_DAY, 2).appendLiteral("h").appendValue(MINUTE_OF_HOUR, 2).appendLiteral("mn").toFormatter();
+        
         dataCarnet = FXCollections.observableArrayList();
         dataYear = FXCollections.observableArrayList();
         
         tableVols.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                        
         imgCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("camera"));
-        dateCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("date"));
+        dateCol.setCellValueFactory(new PropertyValueFactory<Carnet, LocalDate>("date"));
         heureCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("heure"));
-        dureeCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("duree"));
+        dureeCol.setCellValueFactory(new PropertyValueFactory<Carnet, LocalTime>("duree"));        
         siteCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("site"));     
-        voileCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("engin"));     
+        voileCol.setCellValueFactory(new PropertyValueFactory<Carnet, String>("engin"));    
+        
         
         // Try to change look with value of Site column
         dateCol.setCellFactory(column -> {
-            return new TableCell<Carnet, String>() {
+            return new TableCell<Carnet, LocalDate>() {
                 @Override
-                protected void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);  // obligatoire
-                    if (item == null || empty) {
+                protected void updateItem(LocalDate lDate, boolean empty) {
+                    super.updateItem(lDate, empty);  // obligatoire
+                    if (lDate == null || empty) {
                         setText(null);
                         setStyle("");
                     } else {
-                        setText(item); // Fill cell with the string
-                        // If needing, we can change all informations of the table
+                        setText(dtf.format(lDate)); // Fill cell with the string
+                        // If needed, we can change all informations of the table
                         Carnet currLigne = getTableView().getItems().get(getIndex());  
                         if (currLigne.getComment()) {                       
                             setTextFill(Color.CORAL); //The text in red                            
@@ -202,6 +209,20 @@ public class CarnetViewController  {
                 }
             };
         });
+        
+        dureeCol.setCellFactory(column -> {
+            return new TableCell<Carnet, LocalTime>() {
+                @Override
+                protected void updateItem(LocalTime ltDuree, boolean empty) {
+                    super.updateItem(ltDuree, empty);  // obligatoire
+                    if (ltDuree == null || empty) {
+                        setText(null);
+                    } else {                        
+                        setText(dtfDuree.format(ltDuree)); // Fill cell with the string                                              
+                    }
+                }
+            };
+        });        
         
         imgCol.setCellFactory(column -> {
             TableCell<Carnet, String> cell = new TableCell<Carnet, String>() {
@@ -327,7 +348,7 @@ public class CarnetViewController  {
                     ca.setIdVol(rs.getString("V_ID"));
                     ca.setDate(rs.getString("V_Date"));
                     ca.setHeure(rs.getString("V_Date"));
-                    ca.setDuree(rs.getString("V_sDuree"));
+                    ca.setDuree(rs.getString("V_Duree"));
                     ca.setSite(rs.getString("V_Site"));  
                     ca.setAltiDeco(rs.getString("V_AltDeco")); 
                     ca.setLatDeco(rs.getString("V_LatDeco")); 
