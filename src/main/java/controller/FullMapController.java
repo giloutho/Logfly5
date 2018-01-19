@@ -66,7 +66,8 @@ public class FullMapController {
     @FXML
     private WebView viewMap; 
     
-    private CarnetViewController carnetController;    
+    private CarnetViewController carnetController;  
+    private TraceViewController extController;    
     
     private Stage mapStage;    
     
@@ -74,7 +75,7 @@ public class FullMapController {
     
     private static I18n i18n;
     
-    private traceGPS carnetTrace;    
+    private traceGPS mapTrace;    
     private String carnetHTML; 
     private boolean dispLegend = true;  
     private int idxDb;
@@ -126,13 +127,13 @@ public class FullMapController {
     
     private void askScoring() {
         scoring currScore = new scoring(this,myConfig);  
-        currScore.start(carnetTrace,chbLeague.getSelectionModel().getSelectedIndex());
+        currScore.start(mapTrace,chbLeague.getSelectionModel().getSelectedIndex());
     }
     
     private void updateDb()  {
         StringBuilder sReq = new StringBuilder();
-        sReq.append("UPDATE Vol SET V_League='").append(String.valueOf(carnetTrace.getScore_Idx_League())).append("'");
-        sReq.append(",V_Score='").append(carnetTrace.getScore_JSON()).append("'");
+        sReq.append("UPDATE Vol SET V_League='").append(String.valueOf(mapTrace.getScore_Idx_League())).append("'");
+        sReq.append(",V_Score='").append(mapTrace.getScore_JSON()).append("'");
         sReq.append(" WHERE V_ID = ?");            
         try {
             PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq.toString());
@@ -147,9 +148,9 @@ public class FullMapController {
     
     public void scoreReturn() {
         // If scoring failed, error message was sent by Scoring class
-        if (carnetTrace.isScored())  {     
+        if (mapTrace.isScored())  {     
             try {
-                map_visu visuFullMap = new map_visu(carnetTrace, myConfig);
+                map_visu visuFullMap = new map_visu(mapTrace, myConfig);
                 if (visuFullMap.isMap_OK()) {
                     carnetHTML = visuFullMap.getMap_HTML();
                     viewMap.getEngine().loadContent(carnetHTML,"text/html");
@@ -180,16 +181,18 @@ public class FullMapController {
     
     @FXML
     private void closeMap(ActionEvent event) {
-        if (firstLeagueIdx != newLeagueIdx && firstLeagueIdx == -1) {
-            updateDb();
-        } else if (firstLeagueIdx != newLeagueIdx)  {
-            String stFirstLeague = allLeagues.get(firstLeagueIdx);
-            String stNewLeague = allLeagues.get(newLeagueIdx);
-            dialogbox dConfirm = new dialogbox();
-            StringBuilder sbMsg = new StringBuilder(); 
-            sbMsg.append(i18n.tr("Mettre à jour le score : ")).append(stFirstLeague).append(" -> ").append(stNewLeague);
-            if (dConfirm.YesNo(i18n.tr("Scoring"), sbMsg.toString())) { 
+        if (idxDb != -1) {
+            if (firstLeagueIdx != newLeagueIdx && firstLeagueIdx == -1) {
                 updateDb();
+            } else if (firstLeagueIdx != newLeagueIdx)  {
+                String stFirstLeague = allLeagues.get(firstLeagueIdx);
+                String stNewLeague = allLeagues.get(newLeagueIdx);
+                dialogbox dConfirm = new dialogbox();
+                StringBuilder sbMsg = new StringBuilder(); 
+                sbMsg.append(i18n.tr("Mettre à jour le score : ")).append(stFirstLeague).append(" -> ").append(stNewLeague);
+                if (dConfirm.YesNo(i18n.tr("Scoring"), sbMsg.toString())) { 
+                    updateDb();
+                }
             }
         }
         // get a handle to the stage
@@ -216,9 +219,17 @@ public class FullMapController {
      */
     public void setCarnetBridge(CarnetViewController callCarnet)  {
         this.carnetController = callCarnet;   
-        carnetTrace = carnetController.currTrace;     
+        mapTrace = carnetController.currTrace;     
     }   
     
+    /**
+     * Set a communication bridge with TraceViewController 
+     * @param callExterne 
+     */
+    public void setTraceBridge(TraceViewController callExterne)  {
+        this.extController = callExterne;  
+        mapTrace = extController.extTrace;      
+    }    
     
     /**
      * Choicebox is fille with online contest supported by scoring module     
@@ -236,8 +247,8 @@ public class FullMapController {
                 newLeagueIdx = chbLeague.getSelectionModel().getSelectedIndex();
         });        
         // debugging
-        if (carnetTrace.isScored())  {
-            String currLeague = carnetTrace.getScore_League();
+        if (mapTrace.isScored())  {
+            String currLeague = mapTrace.getScore_League();
             int size = allLeagues.size();
             for(int index=0; index<size; index++){
                 if (currLeague.equals(allLeagues.get(index))){
@@ -261,7 +272,7 @@ public class FullMapController {
 
         // code from http://java-buddy.blogspot.fr/2012/12/save-writableimage-to-file.html
         try {
-            String fileName = carnetTrace.suggestName()+".png";
+            String fileName = mapTrace.suggestName()+".png";
             snapFile = systemio.tempacess.getAppFile("Logfly", fileName);
             RenderedImage renderedImage = SwingFXUtils.fromFXImage(snapImage, null);
             ImageIO.write(renderedImage, "png",snapFile);
