@@ -153,6 +153,7 @@ public class CarnetViewController  {
     traceGPS currTrace=null;    
     
     private StringBuilder sbError;
+    private String statusStart;
 
     private ObservableList <Carnet> dataCarnet; 
     private ObservableList <String> dataYear; 
@@ -529,7 +530,29 @@ public class CarnetViewController  {
             } catch(Exception e) { } 
         }         
     }
-    
+
+    private void updateStatusBarSel() {
+        
+        int countSelFlights = 0;
+        int totalSec = 0;
+        
+        ObservableList<Carnet> selFlights = tableVols.getSelectionModel().getSelectedItems();         
+        for(Carnet flight : selFlights){  
+            countSelFlights++;  
+            totalSec += flight.duree.getValue().getHour()*3600+flight.duree.getValue().getMinute()*60+flight.duree.getValue().getSecond();
+        }
+        
+        int nbHour = totalSec/3600;
+        int nbMn = (totalSec - (nbHour*3600))/60;
+        StringBuilder sbMsg = new StringBuilder();
+        //sbMsg.append(statusStart).append("  ").append(String.valueOf(countSelFlights));
+        //sbMsg.append(i18n.tr(" vols sélectionnés"));
+        sbMsg.append(statusStart).append("     ").append(i18n.tr("Sélection [")).append(String.valueOf(countSelFlights)).append("]");
+        sbMsg.append(i18n.tr(" temps de vol : ")).append(String.valueOf(nbHour)).append("h");
+        sbMsg.append(String.format("%02d", nbMn)).append("mn");
+        mainApp.rootLayoutController.updateMsgBar(sbMsg.toString(), true, 60);
+        
+    }    
     
     private void updateStatusBar(String yearFiltre) {
         // calculate flight hours
@@ -548,9 +571,11 @@ public class CarnetViewController  {
                     sbMsg.append(yearFiltre).append(" : ");
                     sbMsg.append(String.valueOf(nbHour)+i18n.tr(" heures "));
                     sbMsg.append(String.format("%02d", nbMn)+i18n.tr(" minutes"));
-                    mainApp.rootLayoutController.updateMsgBar(sbMsg.toString(), true, 60);
+                    statusStart = sbMsg.toString();
+                    mainApp.rootLayoutController.updateMsgBar(statusStart, true, 60);
                 } else {
-                    mainApp.rootLayoutController.updateMsgBar("", false, 60);
+                    statusStart = "";
+                    mainApp.rootLayoutController.updateMsgBar(statusStart, false, 60);
                 }
             }
         } catch ( Exception e ) {
@@ -683,6 +708,7 @@ public class CarnetViewController  {
      * @param currCarnet 
      */
     private void showCarnetDetails(Carnet currCarnet) {
+        updateStatusBarSel();
         if (currCarnet != null) {                                   
             decodeVolCarnet(currCarnet.getIdVol());
                         
