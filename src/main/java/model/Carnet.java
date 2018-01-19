@@ -6,27 +6,33 @@
  */
 package model;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 /**
  *
  * @author Gil Thomas logfly.org
  * 
  * Model for CarnetviewController
+ * 
+ * For a correct sorting in tableview date must be LocalDate
+ * Solution found in https://stackoverflow.com/questions/43851194/javafx-sort-tableview-column-by-date-dd-mm-yyyy-format
  */
 
 public class Carnet {
     public SimpleStringProperty idVol = new SimpleStringProperty();
-    public SimpleStringProperty date = new SimpleStringProperty();
+    public ObjectProperty<LocalDate> date = new SimpleObjectProperty();
     public SimpleStringProperty heure = new SimpleStringProperty();
-    public SimpleStringProperty duree = new SimpleStringProperty();
+    public ObjectProperty<LocalTime> duree = new SimpleObjectProperty();
     public SimpleStringProperty site = new SimpleStringProperty();
     public SimpleStringProperty engin = new SimpleStringProperty();
     public SimpleStringProperty altiDeco = new SimpleStringProperty();
@@ -37,7 +43,6 @@ public class Carnet {
     public SimpleBooleanProperty Photo = new SimpleBooleanProperty();  
     public SimpleStringProperty camera = new SimpleStringProperty();    
     
-    private SimpleDateFormat sdfSql = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     
     public String getIdVol() {
         return idVol.get();
@@ -47,13 +52,15 @@ public class Carnet {
         idVol.set(idVolStr);
     }
 
-    public String getDate() {
+    public LocalDate getDate() {
         return date.get();
     }
     
     public void setDate(String dateStr) throws ParseException {            
+        
         // in database, date is in principle YYYY-MM-DD HH:MM:SS      
         // but sometimes we have only YYYY-MM-DD
+        DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Pattern fullDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
         Matcher matchFull = fullDate.matcher(dateStr);
         try {
@@ -61,24 +68,22 @@ public class Carnet {
                 // Date in ot YYYY-MM-DD HH:MM, check for YYYY-MM-DD            
                 Pattern dayDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
                 Matcher matchDay = dayDate.matcher(dateStr);
-                if(matchDay.find()) {                    
-                    SimpleDateFormat sdfDay = new SimpleDateFormat("yyyy-MM-dd");
-                    java.util.Date dateDay = sdfDay.parse(dateStr);
-                    Locale osLocale = Locale.getDefault();
-                    DateFormat dtloc = DateFormat.getDateInstance(DateFormat.SHORT,osLocale);
-                    date.set(dtloc.format(dateDay));
+                if(matchDay.find()) {          
+                    // Direct parsing is possible because we have default ISO_LOCAL_DATE format
+                    LocalDate localDate = LocalDate.parse(dateStr);
+                    date.set(localDate);
                 } else {
-                    date.set("01-01-2000");
+                    LocalDate localDate = LocalDate.parse("2000-01-01");
+                    date.set(localDate);
                 }
             } else {
-                java.util.Date dDate = sdfSql.parse(dateStr);
-                Locale osLocale = Locale.getDefault();
-                DateFormat dtloc = DateFormat.getDateInstance(DateFormat.SHORT,osLocale);
-                date.set(dtloc.format(dDate));
+                LocalDateTime ldtFromDb = LocalDateTime.parse(dateStr, formatterSQL);
+                LocalDate localDate = ldtFromDb.toLocalDate();
+                date.set(localDate);
             }
-        } catch (ParseException e) {
+        } catch (Exception e) {
 
-        }
+        }   
     }
 
     public String getHeure() {
@@ -93,12 +98,13 @@ public class Carnet {
             heure.set("12:00");
     }
     
-    public String getDuree() {
+    public LocalTime getDuree() {
         return duree.get();
     }
     
     public void setDuree(String dureeStr) {
-        duree.set(dureeStr);
+        int seconds = Integer.parseInt(dureeStr);
+        duree.set(LocalTime.ofSecondOfDay(seconds));     
     }
     
     public String getSite() {
