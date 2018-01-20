@@ -706,7 +706,10 @@ public class traceGPS {
                                   // we can find a carriage return
                                   for (int kk = 0 ; kk < sPilote.length() ; kk++) {
                                         char aChar = sPilote.charAt(kk);                                      
-                                        if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sPilote.substring(kk,kk+1));
+                                        if ((int)aChar > 31 && (int)aChar < 122) {
+                                            if ((int)aChar == 39) GoodName += "\\";     // Escape single quote                                                                                                           
+                                            GoodName = GoodName.concat(sPilote.substring(kk,kk+1));
+                                        }
                                   }
                                   sPilote = GoodName;
                                 break;                                
@@ -720,7 +723,10 @@ public class traceGPS {
                                   // always a possible CR in the string
                                   for (int kk = 0 ; kk < sVoile.length() ; kk++) {
                                         char aChar = sVoile.charAt(kk);                                      
-                                        if ((int)aChar > 31 && (int)aChar < 122) GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
+                                        if ((int)aChar > 31 && (int)aChar < 122) {
+                                            if ((int)aChar == 39) GoodName += "\\";     // Escape single quote  
+                                            GoodName = GoodName.concat(sVoile.substring(kk,kk+1));
+                                        }
                                   }
                                   sVoile = GoodName;
                                 break;                               
