@@ -125,11 +125,12 @@ public class flymaster {
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
 
-            if(osType != SerialComPlatform.OS_WINDOWS) {
+            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
+            //if(osType != SerialComPlatform.OS_WINDOWS) {
                 // Prepare serial port for burst style data read of 500 milli-seconds timeout
                 // This line is a problem with Windows
                 scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-            }
+            //}
             // ID GPS request + raw flight list (true)
             if (getDeviceInfo(true)) {
                 res = true;
@@ -159,11 +160,12 @@ public class flymaster {
             handle = scm.openComPort(serialPortName, true, true, true);            
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-            if(osType != SerialComPlatform.OS_WINDOWS) {
+            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
+           // if(osType != SerialComPlatform.OS_WINDOWS) {
                 // Prepare serial port for burst style data read of 500 milli-seconds timeout
                 // This line is a problem with Windows
                 scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-            }
+          //  }
             if (getDeviceInfo(false)) {
                 res = true;
             } else {
