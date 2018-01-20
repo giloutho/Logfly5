@@ -28,6 +28,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import littlewins.winLog;
 import littlewins.winMail;
+import littlewins.winWeb;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -292,6 +293,14 @@ public class RootLayoutController {
             }
         });
         cm.getItems().add(cmItem1);
+        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Notes de publication"));        
+        cmItem2.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                winWeb myWeb = new winWeb(myConfig,"http://logfly.org/logfly5/historique");
+            }
+        });
+        cm.getItems().add(cmItem2);          
         
         MenuItem cmItemSup = new MenuItem(i18n.tr("Base données"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
