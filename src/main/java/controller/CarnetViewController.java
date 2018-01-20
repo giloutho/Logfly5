@@ -85,8 +85,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
 import littlewins.winGlider;
 import photo.imgmanip;
@@ -263,6 +265,16 @@ public class CarnetViewController  {
             return cell ;
         });
         
+        // Context menu added on a row of the tableview : https://stackoverflow.com/questions/21009377/context-menu-on-a-row-of-tableview
+        tableVols.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent t) {
+                if(t.getButton() == MouseButton.SECONDARY) {
+                    clicContextMenu().show(tableVols, t.getScreenX(), t.getScreenY());
+                }
+            }
+        });        
+                
         Statement stmt = null;
         ResultSet rsYear = null;                
         try {
@@ -711,27 +723,64 @@ public class CarnetViewController  {
         updateStatusBarSel();
         if (currCarnet != null) {                                   
             decodeVolCarnet(currCarnet.getIdVol());
-                        
-//            top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-//                new EventHandler<MouseEvent>() {
-//                    @Override public void handle(MouseEvent e) {                        
-//                            clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
-//                    }
-//            });    
-//            top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-//                new EventHandler<MouseEvent>() {
-//                    @Override public void handle(MouseEvent e) { 
-//                        if (myConfig.isVisuGPSinNav()) {
-//                            runVisuGPS(true);
-//                        } else {
-//                            clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
-//                        }
-//                    }
-//            }); 
         } else {
-            // todo
-           
+            // todo           
         }              
+    }
+    
+    private ContextMenu clicContextMenu() {        
+        final ContextMenu cm = new ContextMenu();
+        
+        MenuItem cmItemGlider = new MenuItem(i18n.tr("Modifier la voile"));
+        cmItemGlider.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                changeGlider();
+            }
+        });
+        cm.getItems().add(cmItemGlider);        
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo du jour"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                gestionPhoto();
+            }            
+        });
+        cm.getItems().add(cmItem0);
+        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Commentaire"));
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               gestionComment();
+            }
+        });
+        cm.getItems().add(cmItem1);
+        
+        MenuItem cmItemSup = new MenuItem(i18n.tr("Supprimer"));        
+        cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                supprimeVol();
+            }
+        });
+        cm.getItems().add(cmItemSup);
+        
+        MenuItem cmItemEx = new MenuItem(i18n.tr("Exporter"));
+        cmItemEx.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                exportTrace();
+            }
+        });
+        cm.getItems().add(cmItemEx);   
+        
+        MenuItem cmPlus = new MenuItem(i18n.tr("Plus..."));
+        cmPlus.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                Bounds boundsInScreen = top_Menu.localToScreen(top_Menu.getBoundsInLocal());
+                clicTop_Menu().show(top_Menu, boundsInScreen.getMinX(), boundsInScreen.getMinY());
+            }
+        });
+        cm.getItems().add(cmPlus);        
+        
+        return cm;
     }
                   
     /**
@@ -780,7 +829,7 @@ public class CarnetViewController  {
                 exportTrace();
             }
         });
-         cm.getItems().add(cmItemEx);
+        cm.getItems().add(cmItemEx);
         
         MenuItem cmItemFic = new MenuItem(i18n.tr("Fichier trace"));
         cmItemFic.setOnAction(new EventHandler<ActionEvent>() {
