@@ -151,7 +151,7 @@ public class map_markers {
                 // in HTML a  \\' is needed but java alredy place one \ before apostrophe
                 // therefore only one is added
                 if (currPoint.Comment != null && !currPoint.Comment.equals("")) {
-                    commentOk = currPoint.Comment.replace("'", "\'"); 
+                    commentOk = currPoint.Comment.replace("'", "\\'"); 
                     sbComment.append(".bindPopup('").append(commentOk).append("').openPopup();");
                 } else {
                     sbComment.append(";");
