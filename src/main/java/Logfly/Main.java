@@ -18,6 +18,7 @@ import controller.CarnetViewController;
 import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.RootLayoutController;
+import controller.SitesViewController;
 import controller.TraceViewController;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -35,6 +36,7 @@ public class Main extends Application {
     private CarnetViewController controlCarnet;
     private TraceViewController controlTrace;
     private GPSViewController controlGPS;
+    private SitesViewController controlSites;
     private StringBuilder sbError;
     
     
@@ -117,7 +119,9 @@ public class Main extends Application {
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (IOException e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
     
@@ -141,7 +145,9 @@ public class Main extends Application {
             rootLayout.setCenter(carnetOverview);                                                      
             
         } catch (IOException e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
     
@@ -163,7 +169,9 @@ public class Main extends Application {
             rootLayout.setCenter(importOverview);                                                      
             
         } catch (IOException e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
 
@@ -187,7 +195,9 @@ public class Main extends Application {
             rootLayout.setCenter(traceOverview);                                                      
             
         } catch (IOException e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
     
@@ -209,9 +219,37 @@ public class Main extends Application {
             rootLayout.setCenter(gpsOverview);                                                      
             
         } catch (IOException e) {
-            e.printStackTrace();
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
+    
+    /**
+     * Display logbook inside root window
+     */
+    public void showSitesOverview() {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/SitesView.fxml"));
+            AnchorPane sitesOverview = (AnchorPane) loader.load();            
+            
+            // Initialization of a communication bridge between Sitescontroller an RootLayout
+            controlSites = loader.getController();  
+            // Controller needs an access to main app
+            // with this, we avoid a NullPointerException with a call to
+            // mainApp.getPrimaryStage() in RootLayoutController     
+            controlSites.setMainApp(this);
+            
+            // Place logbook window in center of RootLayout.
+            rootLayout.setCenter(sitesOverview);                                                      
+            
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }    
     
     /**
      * Return main stage
