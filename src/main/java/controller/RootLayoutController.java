@@ -107,7 +107,7 @@ public class RootLayoutController {
         });           
         mnSites.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(7);
-            comingSoon();
+            mainApp.showSitesOverview();
         });            
         mnBalises.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(8);
