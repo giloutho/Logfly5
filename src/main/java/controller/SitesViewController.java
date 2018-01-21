@@ -16,7 +16,6 @@ import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
@@ -30,7 +29,6 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.web.WebView;
 import leaflet.map_markers;
-import littlewins.winPhoto;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -66,6 +64,8 @@ public class SitesViewController {
     @FXML
     private RadioButton rdAttero;
     @FXML
+    private RadioButton rdNondef;    
+    @FXML
     private ImageView top_Menu;
     @FXML
     private WebView mapViewer;    
@@ -99,6 +99,7 @@ public class SitesViewController {
         rdAll.setSelected(true);    
         rdDeco.setToggleGroup(rdGroup);
         rdAttero.setToggleGroup(rdGroup);
+        rdNondef.setToggleGroup(rdGroup);        
     }    
     
     /**
@@ -246,11 +247,20 @@ public class SitesViewController {
     @FXML
     private void pushAttero() {
         if (rdAttero.isSelected()) {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError("Attero enfoncé");   
+            String sReq = "SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site WHERE S_Type = 'A' ORDER BY S_Nom";
+            fillTable(sReq);
         }
     }       
     
+    @FXML
+    private void pushNondef() {
+        if (rdNondef.isSelected()) {
+            String sReq = "SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site WHERE S_Type <> 'D' AND S_Type <> 'A' ORDER BY S_Nom";
+            fillTable(sReq);
+        }
+    }     
+    
+
     
     /**
      * Db search request
@@ -287,6 +297,7 @@ public class SitesViewController {
         rdAll.setText(i18n.tr("Tous"));
         rdDeco.setText(i18n.tr("Décollage"));
         rdAttero.setText(i18n.tr("Atterissage"));
+        rdNondef.setText(i18n.tr("Non défini"));        
         btnSearch.setStyle("-fx-background-color: transparent;");                
     }    
     
