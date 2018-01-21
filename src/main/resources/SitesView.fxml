@@ -22,16 +22,27 @@
                <children>
                   <RadioButton fx:id="rdAll" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushAll" prefWidth="80.0" text="fTous" textFill="WHITE">
                      <HBox.margin>
-                        <Insets left="10.0" />
+                        <Insets left="10.0" right="5.0" top="8.0" />
                      </HBox.margin>
                   </RadioButton>
-                  <RadioButton fx:id="rdDeco" layoutX="20.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushDeco" prefWidth="100.0" text="fDécollages" textFill="WHITE" />
-                  <RadioButton fx:id="rdAttero" layoutX="80.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushAttero" prefWidth="100.0" text="fAtteros" textFill="WHITE" />
+                  <RadioButton fx:id="rdDeco" layoutX="20.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushDeco" prefWidth="100.0" text="fDécollages" textFill="WHITE">
+                     <HBox.margin>
+                        <Insets right="5.0" top="8.0" />
+                     </HBox.margin></RadioButton>
+                  <RadioButton fx:id="rdAttero" layoutX="80.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushAttero" prefWidth="100.0" text="fAtteros" textFill="WHITE">
+                     <HBox.margin>
+                        <Insets right="5.0" top="8.0" />
+                     </HBox.margin></RadioButton>
+                  <RadioButton fx:id="rdNondef" mnemonicParsing="false" onAction="#pushNondef" text="fNon définis" textFill="WHITE">
+                     <HBox.margin>
+                        <Insets right="5.0" top="8.0" />
+                     </HBox.margin>
+                  </RadioButton>
                   <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
                      <children>
                         <TextField fx:id="txtSearch" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0">
                            <HBox.margin>
-                              <Insets right="8.0" top="10.0" />
+                              <Insets right="8.0" top="8.0" />
                            </HBox.margin>
                         </TextField>
                         <Button fx:id="btnSearch" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#askSearch" prefHeight="30.0" prefWidth="30.0" text="Button">
