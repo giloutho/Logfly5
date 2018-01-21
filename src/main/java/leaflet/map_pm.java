@@ -178,7 +178,7 @@ public class map_pm {
             // To avoid an unsightly \ in place of apostrophe
             // in HTML a  \\' is needed but java alredy place one \ before apostrophe
             // therefore only one is added
-            String commentOk = removeRC.replace("'", "\'");           
+            String commentOk = removeRC.replace("'", "\\'");           
             txtComment.append("<div id=\"comment_to_pop_up\"><a class=\"b-close-c\">x<a/>");
             txtComment.append("<p>").append(commentOk).append("</p></div>").append(RC);
             txtComment.append("<div id=\"carte\"></div>");                        
