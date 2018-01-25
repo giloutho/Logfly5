@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&v=3"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <style>
+        html, body, #map {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+
+    </style>
+</head>
+<body>
+<style>
+    pre.ui-coordinates {
+        position:absolute;
+        bottom:10px;
+        left:10px;
+        padding:5px 10px;
+        background:rgba(0,0,0,0.5);
+        color:#fff;
+        font-size:11px;
+        line-height:18px;
+        border-radius:3px;
+    }
+</style>
+<div id="map"></div>
+<pre id='coordinates' class='ui-coordinates'></pre>
+<script type='text/javascript'>
+
+    function getElevation(lMarker)
+    {
+        // Code inspiré de http://www.daftlogic.com/sandbox-google-maps-find-altitude.htm
+        var locations = [];
+        elevator = new google.maps.ElevationService();
+        var myMarker = lMarker;
+        var googleLocation = new google.maps.LatLng(myMarker.getLatLng());
+        locations.push(googleLocation);
+        // Create a LocationElevationRequest object using the array's one value
+        var positionalRequest = {'locations': locations};
+        elevator.getElevationForLocations(positionalRequest, function(results, status)
+        {
+            if (status == google.maps.ElevationStatus.OK)
+            {
+                if (results[0])
+                {
+                    // Impossible de retourner la valeur car cette fonction est "asynchrone"
+                    // Cf http://www.developpez.net/forums/d955312/webmasters-developpement-web/javascript/js-fonction-anonyme-retour-variable/
+                    console.log([googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),results[0].elevation.toFixed(0)].join(', '));
+                    java.setLatitude(googleLocation.lat().toFixed(4));
+                    java.setLongitude(googleLocation.lng().toFixed(4));    
+                    java.setAltitude(results[0].elevation.toFixed(0));                
+                    coordinates.innerHTML = 'Latitude: ' + googleLocation.lat().toFixed(5) + '<br />Longitude: ' + googleLocation.lng().toFixed(5)+ '<br />Altitude : ' +results[0].elevation.toFixed(0)+' m';
+                }
+                else
+                {
+                    alert("No found");
+                }
+            }
+            else
+            {
+                alert("Elevation service failed due to: " + status);
+            }
+        });
+    }
+
+    // create a map in the "map" div, set the view to a given place and zoom
+    var map = L.map('map').setView([%coord%], 12);
+
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+
+%layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer
+    };
+
+    // Si on met les couches Google, en mettant les lignes indispensables concernant le zIndex, l'infobox Lat, Long Coordinates ne s'affiche pas
+    L.control.layers(baseMaps).addTo(map);
+
+    var coordinates = document.getElementById('coordinates');
+
+    var violetIcon = new L.Icon({
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    var marker = L.marker([%coord%],{icon: violetIcon, draggable: true}).addTo(map);
+
+    // every time the marker is dragged, update the coordinates container
+    marker.on('dragend', ondragend);
+
+    // Set the initial marker coordinate on load.
+    ondragend();
+
+    function ondragend() {
+        getElevation(marker);
+    }
+
+</script>
+</body>
+</html>
