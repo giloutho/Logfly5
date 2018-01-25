@@ -140,7 +140,7 @@ public class dbAdd {
         String res = null;        
         StringBuilder sReq = new StringBuilder();
         LocalDateTime ldtNow = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String sQuote ="'";
         Statement stmt = null;
         ResultSet rs = null;
