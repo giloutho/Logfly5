@@ -9,14 +9,21 @@ package controller;
 import Logfly.Main;
 import dialogues.alertbox;
 import igc.pointIGC;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -27,7 +34,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import leaflet.map_markers;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
@@ -150,7 +161,7 @@ public class SitesViewController {
                 }   
                 tableSites.setItems(dataSites); 
                 if (tableSites.getItems().size() > 0) {
-                    tableSites.getSelectionModel().select(5);                    
+                    tableSites.getSelectionModel().select(0);                    
                 }                
             }
             
@@ -260,6 +271,34 @@ public class SitesViewController {
         }
     }     
     
+    private boolean editSite() {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/SiteForm.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);       
+            dialogStage.initOwner(mainApp.getPrimaryStage());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            String st =   tableSites.getSelectionModel().getSelectedItem().getIdSite();
+            // Communication bridge between SiteForm and SiteView controllers
+            SiteFormController controller = loader.getController();
+            controller.setSiteBridge(this);
+            controller.setDialogStage(dialogStage); 
+            controller.setEditForm(myConfig,tableSites.getSelectionModel().getSelectedItem().getIdSite(),0);   // 0 -> edit an existing file
+            // This window will be modal
+            dialogStage.showAndWait();
+            
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     
     /**
@@ -282,13 +321,41 @@ public class SitesViewController {
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         iniTable();
-       // iniEventBar();     
+        iniEventBar();     
     }    
+    
+    private void iniEventBar() {
+        top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+            new EventHandler<MouseEvent>() {
+                @Override public void handle(MouseEvent e) {                        
+                    clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+                }
+        });          
+    }
+    
+    /**
+     * Adding Context Menus, last paragraph
+    *     http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm    
+    */
+    private ContextMenu clicTop_Menu()   {
+        final ContextMenu cm = new ContextMenu();
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Modifier"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                editSite();
+            }            
+        });
+        cm.getItems().add(cmItem0);
+        
+        return cm;        
+    }
     
     /**
     * Translate labels of the window
     */
-    private void winTraduction() {
+    private void winTraduction() {        
+        
         nomCol.setText(i18n.tr("Nom"));
         villeCol.setText(i18n.tr("Localité"));
         cpCol.setText(i18n.tr("CP"));
