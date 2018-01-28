@@ -8,6 +8,7 @@ package controller;
 
 import Logfly.Main;
 import dialogues.alertbox;
+import geoutils.position;
 import igc.pointIGC;
 import java.io.File;
 import java.nio.file.Files;
@@ -15,21 +16,24 @@ import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import leaflet.map_markers_coord;
@@ -74,15 +78,47 @@ public class SiteFormController {
     @FXML
     private TextField txLat;
     @FXML
+    private TextField txDMLatDeg;  
+    @FXML
+    private TextField txDMLatMin; 
+    @FXML
+    private TextField txDMLatHem;    
+    @FXML
+    private TextField txDMSLatDeg;
+    @FXML
+    private TextField txDMSLatMin;
+    @FXML
+    private TextField txDMSLatSec;
+    @FXML
+    private TextField txDMSLatHem;
+    @FXML
     private Label lbLong;
     @FXML
-    private TextField txLong;    
+    private TextField txLong;
+    @FXML
+    private TextField txDMLongDeg;
+    @FXML
+    private TextField txDMLongMin;
+    @FXML
+    private TextField txDMLongMer;
+    @FXML
+    private TextField txDMSLongDeg;
+    @FXML
+    private TextField txDMSLongMin;
+    @FXML
+    private TextField txDMSLongSec;
+    @FXML
+    private TextField txDMSLongMer;
     @FXML
     private Button btRefreshMap;     
     @FXML
     private Label lbAlt;
     @FXML
-    private TextField txAlt;   
+    private TextField txAlt; 
+    @FXML
+    private Label lbAltUnit;
+    @FXML
+    private Button btUpdateMap;
     @FXML
     private Label lbComment;
     @FXML
@@ -131,7 +167,16 @@ public class SiteFormController {
         // This procedure will be called after setMainApp()   
         rdGroup = new ToggleGroup();    
         rdDeco.setToggleGroup(rdGroup);        
-        rdAttero.setToggleGroup(rdGroup);       
+        rdAttero.setToggleGroup(rdGroup);  
+        txLat.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            public void handle(KeyEvent ke) {
+                if(ke.getCode().equals(KeyCode.TAB) || ke.getCode().equals(KeyCode.ENTER)) {
+                    conversion(1);
+                    txLong.requestFocus();
+                    System.out.println("Champ suivant");                    
+                }
+            }
+        });
     }  
     
     /**
@@ -183,7 +228,12 @@ public class SiteFormController {
                         rdDeco.setSelected(true);
                         break;
                 }
-                setUpdateDate(rs.getString(12));
+                // First release stored a date like YYYY-MM-dd HH:MM:SS
+                // We avoid a parsing error
+                String sDate = rs.getString(12);
+                if (sDate.length() > 10) sDate = sDate.substring(0,10);
+                setUpdateDate(sDate);
+                conversion(1);
                 iniMap();
                // debugMap();
             }
@@ -205,15 +255,15 @@ public class SiteFormController {
      * date format must be checked, in very old versions format is dd/mm/yy
      * @param dateStr 
      */
-    private void setUpdateDate(String dateStr) {
-        DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd");          
+    private void setUpdateDate(String dateStr) {      
         Pattern dayDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
         Matcher matchDay = dayDate.matcher(dateStr);        
         try {        
             if(matchDay.find()) {          
                 // Direct parsing is possible because we have default ISO_LOCAL_DATE format
                 LocalDate localDate = LocalDate.parse(dateStr);
-                dialogStage.setTitle(i18n.tr("Date de mise à jour : "+localDate));                
+                DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+                dialogStage.setTitle(i18n.tr("Date de mise à jour : "+localDate.format(formatter)));                
             } 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -235,6 +285,48 @@ public class SiteFormController {
         }
   
         
+    }
+    
+    private void conversion(int idFocus) {
+        position p1 = new position();
+        String sHem;
+        String sMer;
+        switch (idFocus) {
+            case 1 :
+                p1.setLatitudeDd(Double.parseDouble(txLat.getText()));
+                p1.setLongitudedeDd(Double.parseDouble(txLong.getText()));
+                break;
+            case 2 :
+                p1.setLatitudeDMm(Double.parseDouble(txDMLatDeg.getText()), Double.parseDouble(txDMLatMin.getText()), txDMLatHem.getText());
+                p1.setLongitudeDMm(Double.parseDouble(txDMLongDeg.getText()),Double.parseDouble(txDMLongMin.getText()),txDMLongMer.getText());
+                break;
+            case 3 :
+                p1.setLatitudeDMS(Double.parseDouble(txDMSLatDeg.getText()),Double.parseDouble(txDMSLatMin.getText()),Double.parseDouble(txDMSLatSec.getText()),txDMSLatHem.getText());
+                p1.setLongitudeDMS(Double.parseDouble(txDMSLongDeg.getText()),Double.parseDouble(txDMSLongMin.getText()),Double.parseDouble(txDMSLongSec.getText()),txDMSLongMer.getText());
+                break;
+        }
+        // fields update
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+        decimalFormatSymbols.setDecimalSeparator('.');        
+        DecimalFormat df2 = new DecimalFormat("##.0000", decimalFormatSymbols);
+        DecimalFormat df3 = new DecimalFormat("###.0000", decimalFormatSymbols);
+        txLat.setText(df2.format(p1.getLatitude())); 
+        txDMLatDeg.setText(String.format("%2d" , p1.getLatDegres()));
+        txDMSLatDeg.setText(String.format("%2d" , p1.getLatDegres()));
+        txDMLatMin.setText(df2.format(p1.getLatMin_mm()));
+        txDMSLatMin.setText(String.format("%2d" , p1.getLatMin_ms()));
+        txDMSLatSec.setText(df2.format(p1.getLatSec_ms()));
+        txDMLatHem.setText(p1.getHemisphere());
+        txDMSLatHem.setText(p1.getHemisphere());
+        
+        txLong.setText(df3.format(p1.getLongitude())); 
+        txDMLongDeg.setText(String.format("%3d" , p1.getLongDegres()));
+        txDMSLongDeg.setText(String.format("%3d" , p1.getLongDegres()));
+        txDMLongMin.setText(df2.format(p1.getLongMin_mm()));
+        txDMSLongMin.setText(String.format("%2d" , p1.getLongMin_ms()));
+        txDMSLongSec.setText(df2.format(p1.getLongSec_ms()));
+        txDMLongMer.setText(p1.getMeridien());
+        txDMSLongMer.setText(p1.getMeridien());        
     }
     
     private void iniMap() {
@@ -390,6 +482,7 @@ public class SiteFormController {
   
         public void setLongitude(String value) { 
             txLong.setText(value);
+            conversion(1);
         } 
         
         public void setAltitude(String value) { 
