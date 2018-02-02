@@ -162,7 +162,7 @@ public class position {
             this.setHemisphere("S");        
     }
     
-    public void setLatitudeDMm(double pDeg, double pMin, String pHem) {
+    public void setLatitudeDMm(int pDeg, double pMin, String pHem) {
     
         double calcLatitude;
         calcLatitude = pDeg+((pMin*60)/3600);
@@ -172,11 +172,18 @@ public class position {
         this.setLatDegres((int)pDeg);
         this.setLatMin_ms((int)Math.floor(pMin));
         this.setLatMin_mm(pMin);
-        this.setLatSec_ms ((pMin- this.getLatMin_ms()*60));
+        this.setLatSec_ms ((pMin- this.getLatMin_ms())*60);
         this.setHemisphere(pHem);        
+        System.out.println(pDeg+"-"+pMin+"-"+pHem);
+        System.out.println(this.getLatitude());
+        System.out.println(this.getLatDegres());
+        System.out.println(this.getLatMin_ms());
+        System.out.println(this.getLatMin_mm());
+        System.out.println(this.getLatSec_ms());
+        System.out.println(this.getHemisphere());        
     }
     
-    public void setLatitudeDMS(double pDeg, double pMin, double pSec, String pHem) {
+    public void setLatitudeDMS(int pDeg, int pMin, double pSec, String pHem) {
         double calcLatitude = pDeg+(((pMin*60)+(pSec))/3600);
         // Si hémisphère Sud on passe en négatif
         if (pHem.equals("S")) calcLatitude = calcLatitude * - 1;
@@ -213,7 +220,7 @@ public class position {
             this.setMeridien("W");                
     }
     
-    public void setLongitudeDMm(double pDeg, double pMin, String pMer)  {
+    public void setLongitudeDMm(int pDeg, double pMin, String pMer)  {
         double calcLongitude;
         calcLongitude = pDeg+((pMin*60)/3600);
         // si on est en Ouest on passe en négatif
@@ -222,11 +229,11 @@ public class position {
         this.setLongDegres((int)pDeg);
         this.setLongMin_ms((int)Math.floor(pMin));
         this.setLongMin_mm(pMin);
-        this.setLongSec_ms ((pMin- this.getLongMin_ms()*60));
+        this.setLongSec_ms ((pMin- this.getLongMin_ms())*60);
         this.setMeridien(pMer);   
     }
     
-    public void setLongitudeDMS(double pDeg, double pMin, double pSec, String pMer)  {
+    public void setLongitudeDMS(int pDeg, double pMin, double pSec, String pMer)  {
         double calcLongitude = pDeg+(((pMin*60)+(pSec))/3600);
         // est en Ouest on passe en négatif
         if (pMer.equals("W")) calcLongitude = calcLongitude * - 1;
