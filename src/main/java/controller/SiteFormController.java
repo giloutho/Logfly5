@@ -9,6 +9,7 @@ package controller;
 import Logfly.Main;
 import dialogues.alertbox;
 import geoutils.position;
+import geoutils.reversegeocode;
 import igc.pointIGC;
 import java.io.File;
 import java.nio.file.Files;
@@ -18,12 +19,15 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.InvalidationListener;
+import javafx.beans.WeakInvalidationListener;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -31,11 +35,16 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Paint;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 import leaflet.map_markers_coord;
 import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
@@ -74,7 +83,11 @@ public class SiteFormController {
     @FXML
     private TextField txPays;  
     @FXML
-    private Label lbLat;
+    private Label lbLat1;
+    @FXML
+    private Label lbLat2;    
+    @FXML
+    private Label lbLat3;    
     @FXML
     private TextField txLat;
     @FXML
@@ -92,7 +105,11 @@ public class SiteFormController {
     @FXML
     private TextField txDMSLatHem;
     @FXML
-    private Label lbLong;
+    private Label lbLong1;
+    @FXML
+    private Label lbLong2;
+    @FXML
+    private Label lbLong3;    
     @FXML
     private TextField txLong;
     @FXML
@@ -124,9 +141,11 @@ public class SiteFormController {
     @FXML
     private TextArea txComment; 
     @FXML
-    private WebView mapViewer;    
+    private Label lbPointeur;
     @FXML
-    private Label lbMarqueur;
+    private Label lbGeoloc;
+    @FXML
+    private WebView mapViewer;    
     @FXML
     private Button btCancel;
     @FXML
@@ -153,32 +172,324 @@ public class SiteFormController {
     private String oldName;
     private double latDep;
     private double longDep;
-    
+    private String debLbGeoloc;
+    private Paint colorBadValue = Paint.valueOf("FA6C04");
+    private Paint colorGoodValue = Paint.valueOf("FFFFFF");
+    private Pattern validDoubleText = Pattern.compile("-?((\\d*)|(\\d+\\.\\d*))");
+    private Pattern validIntText = Pattern.compile("-?(\\d*)");
+    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();    
+    private DecimalFormat df2;
+    private DecimalFormat df3;
+    private position displayPos;
+    private boolean updateProgress;
     
     //START | SQLITE
     private static Statement stat;
     private PreparedStatement prep;
     //END | SQLITE  
     
+    
+    /**
+     * A la place de conversion, on initialise une position globale  à la classe
+     * Valeur change on change la propriété considérée dans position
+     * on lance un actuchamps qui n'est qu'une lecture de la position
+     * position est à modifier avec les set à revoir comme setLatDegres
+     */
     @FXML
     private void initialize() {
         // We need to intialize i18n before TableView building
         // For this reason we put building code in iniTable() 
-        // This procedure will be called after setMainApp()   
+        // This procedure will be called after setMainApp()                 
+        
         rdGroup = new ToggleGroup();    
         rdDeco.setToggleGroup(rdGroup);        
         rdAttero.setToggleGroup(rdGroup);  
-        txLat.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent ke) {
-                if(ke.getCode().equals(KeyCode.TAB) || ke.getCode().equals(KeyCode.ENTER)) {
-                    conversion(1);
-                    txLong.requestFocus();
-                    System.out.println("Champ suivant");                    
-                }
+        
+        // ********  DD Fields ************
+        // Listener are waiting for numeric values
+        // BE CAREFUL to set numeric strings without spaces     
+        TextFormatter<Double> fmTxLat = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmTxLat.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < -90 || newValue > 90) {                      
+                    txLat.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txLat.requestFocus();                
+                } else {
+                    txLat.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLatitudeDd(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });    
+        txLat.setTextFormatter(fmTxLat);
+        
+        TextFormatter<Double> fmTxLong = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });          
+        fmTxLong.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < -180 || newValue > 180) {                      
+                    txLong.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txLong.requestFocus();                
+                } else {
+                    txLong.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLongitudeDd(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });                            
+        txLong.setTextFormatter(fmTxLong);
+        
+        // ********  DMm fields
+        // Listener are waiting for numeric values
+        // BE CAREFUL to set numeric strings without spaces  
+        TextFormatter<Integer> fmTxDMLatDeg = new TextFormatter<Integer>(new IntegerStringConverter(), 0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validIntText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });             
+        
+        fmTxDMLatDeg.valueProperty().addListener((obs, oldValue, newValue) -> {     
+                if (newValue < -90 || newValue > 90) {                      
+                    txDMLatDeg.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMLatDeg.requestFocus();                
+                } else {
+                    txDMLatDeg.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLatDegres(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });                
+        txDMLatDeg.setTextFormatter(fmTxDMLatDeg);  
+        
+        TextFormatter<Double> fmDMLatMin = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmDMLatMin.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < 0 || newValue > 60) {                      
+                    txDMLatMin.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMLatMin.requestFocus();                
+                } else {
+                    txDMLatMin.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLatMin_mm(newValue);
+                    if (!updateProgress) {
+                        updateFieldsPos();
+                    }
+                }            
+        });        
+        txDMLatMin.setTextFormatter(fmDMLatMin);
+
+        txDMLatHem.textProperty().addListener((observable, oldValue, newValue) -> {                        
+            if (!newValue.equals("N") && !newValue.equals("S")) {
+                txDMLatHem.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                txDMLatHem.requestFocus();    
+            } else {
+               txDMLatHem.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));   
             }
-        });
-    }  
+        });        
+        
+        TextFormatter<Integer> fmTxDMLongDeg = new TextFormatter<Integer>(new IntegerStringConverter(), 0,
+                change -> {
+                    String newText = change.getControlNewText();
+                    if (validIntText.matcher(newText).matches()) {
+                        return change;
+                    } else {
+                        return null;
+                    }
+                });
+
+        fmTxDMLongDeg.valueProperty().addListener((obs, oldValue, newValue) -> {            
+            if (newValue < -180 || newValue > 180) {
+                txDMLongDeg.setStyle("-fx-control-inner-background: #" + colorBadValue.toString().toString().substring(2));
+                txDMLongDeg.requestFocus();
+            } else {
+                txDMLongDeg.setStyle("-fx-control-inner-background: #" + colorGoodValue.toString().substring(2));
+                displayPos.setLongDegres(newValue);
+                if (!updateProgress) updateFieldsPos();
+            }
+        });         
+        txDMLongDeg.setTextFormatter(fmTxDMLongDeg);
+        
+        TextFormatter<Double> fmDMLongMin = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {                                                                                                                                                                                                                                                                                                                                                                                                                       
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmDMLongMin.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < 0 || newValue > 60) {                      
+                    txDMLongMin.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMLongMin.requestFocus();                
+                } else {
+                    txDMLongMin.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLongMin_mm(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });        
+        txDMLongMin.setTextFormatter(fmDMLongMin);     
+        
+        txDMLongMer.textProperty().addListener((observable, oldValue, newValue) -> {                        
+            if (!newValue.equals("W") && !newValue.equals("E")) {
+                txDMLongMer.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                txDMLongMer.requestFocus();    
+            } else {
+               txDMLongMer.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));   
+            }
+        });          
+                
+        //********** DMS Fields ****************
+        TextFormatter<Integer> fmTxDMSLatDeg = new TextFormatter<Integer>(new IntegerStringConverter(), 0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validIntText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });             
+        
+        fmTxDMSLatDeg.valueProperty().addListener((obs, oldValue, newValue) -> {     
+                System.out.println("listener fmTxDMSLatDeg ");
+                if (newValue < -90 || newValue > 90) {                      
+                    txDMSLatDeg.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMSLatDeg.requestFocus();                
+                } else {
+                    txDMSLatDeg.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLatDegres(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });                
+        txDMSLatDeg.setTextFormatter(fmTxDMSLatDeg);         
+
+        TextFormatter<Integer> fmTxDMSLatMin = new TextFormatter<Integer>(new IntegerStringConverter(), 0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validIntText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                     
+        fmTxDMSLatMin.valueProperty().addListener((obs, oldValue, newValue) -> {                 
+                if (newValue < 0 || newValue > 60) {                      
+                    txDMSLatMin.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMSLatMin.requestFocus();                
+                } else {
+                    txDMSLatMin.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLatMin_ms(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });                
+        txDMSLatMin.setTextFormatter(fmTxDMSLatMin);    
+        
+        TextFormatter<Double> fmDMSLatSec = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmDMSLatSec.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < 0 || newValue > 60) {                      
+                    txDMSLatSec.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMSLatSec.requestFocus();                
+                } else {
+                    txDMSLatSec.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLatSec_ms(newValue);                    
+                    if (!updateProgress) {
+                        updateFieldsPos();
+                    }
+                }            
+        });        
+        txDMSLatSec.setTextFormatter(fmDMSLatSec);
+
+        txDMSLatHem.textProperty().addListener((observable, oldValue, newValue) -> {                        
+            if (!newValue.equals("N") && !newValue.equals("S")) {
+                txDMSLatHem.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                txDMSLatHem.requestFocus();    
+            } else {
+               txDMSLatHem.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));   
+            }
+        });           
+        
+        TextFormatter<Integer> fmTxDMSLongDeg = new TextFormatter<Integer>(new IntegerStringConverter(), 0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validIntText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                     
+        fmTxDMSLongDeg.valueProperty().addListener((obs, oldValue, newValue) -> {    
+                if (newValue < -180 || newValue > 180) {                      
+                    txDMSLongDeg.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMSLongDeg.requestFocus();                
+                } else {
+                    txDMSLongDeg.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLongDegres(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });                
+        txDMSLongDeg.setTextFormatter(fmTxDMSLongDeg); 
+
+        TextFormatter<Integer> fmTxDMSLongMin = new TextFormatter<Integer>(new IntegerStringConverter(), 0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validIntText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });             
+        
+        fmTxDMSLongMin.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < 0 || newValue > 60) {                      
+                    txDMSLongMin.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMSLongMin.requestFocus();                
+                } else {
+                    txDMSLongMin.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLongMin_ms(newValue);
+                    if (!updateProgress) updateFieldsPos();
+                }            
+        });                
+        txDMSLongMin.setTextFormatter(fmTxDMSLongMin); 
     
+        TextFormatter<Double> fmTxDMSLongSec = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmTxDMSLongSec.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < 0 || newValue > 60) {                      
+                    txDMSLongSec.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txDMSLongSec.requestFocus();                
+                } else {
+                    txDMSLongSec.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                    displayPos.setLongSec_ms(newValue);                    
+                    if (!updateProgress) {
+                        updateFieldsPos();
+                    }
+                }            
+        });        
+        txDMSLongSec.setTextFormatter(fmTxDMSLongSec);        
+
+        txDMSLongMer.textProperty().addListener((observable, oldValue, newValue) -> {                        
+            if (!newValue.equals("W") && !newValue.equals("E")) {
+                txDMSLongMer.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                txDMSLongMer.requestFocus();    
+            } else {
+               txDMSLongMer.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));   
+            }
+        });               
+    }  
+     
     /**
      * Define Edit conditions
      * ModeEdit = 0 Modification d'une fiche
@@ -215,10 +526,6 @@ public class SiteFormController {
                 txPays.setText(rs.getString(5));
                 txOrien.setText(rs.getString(7));
                 txAlt.setText(rs.getString(8));
-                txLat.setText(rs.getString(9));
-                latDep = rs.getDouble(9);
-                txLong.setText(rs.getString(10));
-                longDep = rs.getDouble(10);
                 txComment.setText(rs.getString(11));
                 switch (rs.getString(6)) {
                     case "A":
@@ -233,8 +540,17 @@ public class SiteFormController {
                 String sDate = rs.getString(12);
                 if (sDate.length() > 10) sDate = sDate.substring(0,10);
                 setUpdateDate(sDate);
-                conversion(1);
-                iniMap();
+                
+                displayPos = new position();
+                latDep = rs.getDouble(9);
+                longDep = rs.getDouble(10);
+                displayPos.setLatitudeDd(latDep);
+                displayPos.setLongitudeDd(longDep);
+                System.out.println("Display lat "+displayPos.getLatitude()+"  long "+displayPos.getLongitude());
+                updateFieldsPos();
+                
+                
+                iniMap(latDep,longDep);
                // debugMap();
             }
         } catch ( Exception e ) {
@@ -251,6 +567,43 @@ public class SiteFormController {
         }       
     }
     
+    /**
+     * Numeric fields have listener wich are waiting for numeric values
+     * BE CAREFUL -> we must set string values not formatted strings
+     *     String.Value OK
+     *     String.format("%3d", xx )  -> BAD
+     * Formatted strings include spaces. 
+     * This spaces trigger a silencious exception
+     * three days for fix the mystake...
+     */
+    private void updateFieldsPos() {
+        decimalFormatSymbols.setDecimalSeparator('.'); 
+        // fields update       
+        df2 = new DecimalFormat("#0.0000", decimalFormatSymbols);
+        df3 = new DecimalFormat("##0.0000", decimalFormatSymbols);
+        updateProgress = true;
+        
+        txLat.setText(df2.format(displayPos.getLatitude()));      
+        txLong.setText(df3.format(displayPos.getLongitude()));
+
+        txDMLatDeg.setText(String.valueOf(displayPos.getLatDegres()));            
+        txDMLatMin.setText(df2.format(displayPos.getLatMin_mm())); 
+        txDMLatHem.setText(displayPos.getHemisphere());         
+        txDMLongDeg.setText(String.valueOf(displayPos.getLongDegres()));        
+        txDMLongMin.setText(df2.format(displayPos.getLongMin_mm()));
+        txDMLongMer.setText(displayPos.getMeridien());
+                
+        txDMSLatDeg.setText(String.valueOf(displayPos.getLatDegres()));
+        txDMSLatMin.setText(String.valueOf(displayPos.getLatMin_ms()));
+        txDMSLatSec.setText(df2.format(displayPos.getLatSec_ms())); 
+        txDMSLatHem.setText(displayPos.getHemisphere());
+        txDMSLongDeg.setText(String.valueOf(displayPos.getLongDegres()));
+        txDMSLongMin.setText(String.valueOf(displayPos.getLongMin_ms()));
+        txDMSLongSec.setText(df2.format(displayPos.getLongSec_ms()));
+        txDMSLongMer.setText(displayPos.getMeridien());
+   
+        updateProgress = false;
+    }
     /**
      * date format must be checked, in very old versions format is dd/mm/yy
      * @param dateStr 
@@ -286,56 +639,32 @@ public class SiteFormController {
   
         
     }
-    
-    private void conversion(int idFocus) {
-        position p1 = new position();
-        String sHem;
-        String sMer;
-        switch (idFocus) {
-            case 1 :
-                p1.setLatitudeDd(Double.parseDouble(txLat.getText()));
-                p1.setLongitudedeDd(Double.parseDouble(txLong.getText()));
-                break;
-            case 2 :
-                p1.setLatitudeDMm(Double.parseDouble(txDMLatDeg.getText()), Double.parseDouble(txDMLatMin.getText()), txDMLatHem.getText());
-                p1.setLongitudeDMm(Double.parseDouble(txDMLongDeg.getText()),Double.parseDouble(txDMLongMin.getText()),txDMLongMer.getText());
-                break;
-            case 3 :
-                p1.setLatitudeDMS(Double.parseDouble(txDMSLatDeg.getText()),Double.parseDouble(txDMSLatMin.getText()),Double.parseDouble(txDMSLatSec.getText()),txDMSLatHem.getText());
-                p1.setLongitudeDMS(Double.parseDouble(txDMSLongDeg.getText()),Double.parseDouble(txDMSLongMin.getText()),Double.parseDouble(txDMSLongSec.getText()),txDMSLongMer.getText());
-                break;
-        }
-        // fields update
-        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-        decimalFormatSymbols.setDecimalSeparator('.');        
-        DecimalFormat df2 = new DecimalFormat("##.0000", decimalFormatSymbols);
-        DecimalFormat df3 = new DecimalFormat("###.0000", decimalFormatSymbols);
-        txLat.setText(df2.format(p1.getLatitude())); 
-        txDMLatDeg.setText(String.format("%2d" , p1.getLatDegres()));
-        txDMSLatDeg.setText(String.format("%2d" , p1.getLatDegres()));
-        txDMLatMin.setText(df2.format(p1.getLatMin_mm()));
-        txDMSLatMin.setText(String.format("%2d" , p1.getLatMin_ms()));
-        txDMSLatSec.setText(df2.format(p1.getLatSec_ms()));
-        txDMLatHem.setText(p1.getHemisphere());
-        txDMSLatHem.setText(p1.getHemisphere());
         
-        txLong.setText(df3.format(p1.getLongitude())); 
-        txDMLongDeg.setText(String.format("%3d" , p1.getLongDegres()));
-        txDMSLongDeg.setText(String.format("%3d" , p1.getLongDegres()));
-        txDMLongMin.setText(df2.format(p1.getLongMin_mm()));
-        txDMSLongMin.setText(String.format("%2d" , p1.getLongMin_ms()));
-        txDMSLongSec.setText(df2.format(p1.getLongSec_ms()));
-        txDMLongMer.setText(p1.getMeridien());
-        txDMSLongMer.setText(p1.getMeridien());        
+    private void findTown() {
+        String finalSiteDeco;
+        
+        reversegeocode rechTown = new reversegeocode();
+        // Unlike map_visu, we don't need to a decimalFormat
+        // lat and long are always with a point as decimal separator
+        
+        // Best results with a low precision in coordinates
+        String sCoord = txLat.getText().substring(0, 6)+","+txLong.getText().substring(0,6);
+        String siteDeco = rechTown.googleGeocode(sCoord, true);
+        // Very difficult to parse Google result
+        // it's never the same order 
+        // result can be 06460 Caussols, France
+        // or 06460 Caussols, France
+        if (siteDeco.length() > 10) 
+            lbGeoloc.setText(debLbGeoloc+" "+siteDeco);
+        else
+            lbGeoloc.setText("");
     }
     
-    private void iniMap() {
+    private void iniMap(double dLatitude, double dLongitude) {
         
-        pointIGC pPoint1 = new pointIGC();      
-        double dLatitude = latDep;
-        if (latDep > 90 || latDep < -90) dLatitude = 0;
-        pPoint1.setLatitude(dLatitude);
-        double dLongitude = longDep;
+        pointIGC pPoint1 = new pointIGC();             
+        if (dLatitude > 90 || dLatitude < -90) dLatitude = 0;
+        pPoint1.setLatitude(dLatitude);        
         if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
         pPoint1.setLongitude(dLongitude);
         pPoint1.setAltiGPS(Integer.parseInt(txAlt.getText()));
@@ -344,7 +673,7 @@ public class SiteFormController {
             // with first maps, we made this            
             // mapViewer.getEngine().load("about:blank");                     
             // to delete cache for navigate back
-            // with this bridge (jsobject) does not work
+            // problem : with this instruction, the bridge (jsobject) does not work
             mapViewer.getEngine().loadContent(myMap.getMap_HTML());   
             // java object is sent to webwiew
             final JSObject jsobj = (JSObject) mapViewer.getEngine().executeScript("window"); 
@@ -419,6 +748,11 @@ public class SiteFormController {
         }
     }
     
+    @FXML    
+    private void handleUpdate() {
+        iniMap(Double.parseDouble(txLat.getText()), Double.parseDouble(txLong.getText()));
+    }
+    
     /**
      * valid changes
      */
@@ -457,7 +791,32 @@ public class SiteFormController {
      * Translate labels of the window
      */
     private void winTraduction() {
-                  
+        
+        Tooltip caracToolTip = new Tooltip();
+        caracToolTip.setStyle(myConfig.getDecoToolTip());
+        caracToolTip.setText(i18n.tr("Caractères acceptés : - . 0-9"));
+        Tooltip latToolTip = new Tooltip();
+        latToolTip.setStyle(myConfig.getDecoToolTip());
+        latToolTip.setText(i18n.tr("Caractères acceptés : N S"));
+        Tooltip longToolTip = new Tooltip();
+        longToolTip.setStyle(myConfig.getDecoToolTip());
+        longToolTip.setText(i18n.tr("Caractères acceptés : W E"));        
+        txLat.setTooltip(caracToolTip);
+        txDMLatDeg.setTooltip(caracToolTip);
+        txDMLatMin.setTooltip(caracToolTip); 
+        txDMLatHem.setTooltip(latToolTip);  
+        txDMSLatDeg.setTooltip(caracToolTip);
+        txDMSLatMin.setTooltip(caracToolTip);
+        txDMSLatSec.setTooltip(caracToolTip);
+        txDMSLatHem.setTooltip(latToolTip);
+       // txLong.setTooltip(caracToolTip);
+        txDMLongDeg.setTooltip(caracToolTip);
+        txDMLongMin.setTooltip(caracToolTip);
+        txDMLongMer.setTooltip(longToolTip);
+        txDMSLongDeg.setTooltip(caracToolTip);
+        txDMSLongMin.setTooltip(caracToolTip);
+        txDMSLongSec.setTooltip(caracToolTip);
+        txDMSLongMer.setTooltip(longToolTip);
         lbNom.setText(i18n.tr("Nom"));
         lbOrien.setText(i18n.tr("Orientation"));   
         lbLocalite.setText(i18n.tr("Localité"));   
@@ -465,13 +824,18 @@ public class SiteFormController {
         lbPays.setText(i18n.tr("Pays"));   
         rdDeco.setText(i18n.tr("Décollage"));     
         rdAttero.setText(i18n.tr("Atterissage"));       
-        lbLat.setText(i18n.tr("Latitude"));   
-        lbLong.setText(i18n.tr("Longitude"));   
+        lbLat1.setText(i18n.tr("Latitude"));   
+        lbLat2.setText(i18n.tr("Latitude"));   
+        lbLat3.setText(i18n.tr("Latitude"));   
+        lbLong1.setText(i18n.tr("Longitude"));   
+        lbLong2.setText(i18n.tr("Longitude"));   
+        lbLong3.setText(i18n.tr("Longitude"));   
         lbAlt.setText(i18n.tr("Alti déco"));   
         lbComment.setText(i18n.tr("Commentaire"));   
-        lbMarqueur.setText(i18n.tr("Déplacer le marqueur avec un clic maintenu pour actualiser les coordonnées"));
         btCancel.setText(i18n.tr("Annuler"));  
-        btOk.setText(i18n.tr("Valider"));          
+        btOk.setText(i18n.tr("Valider"));       
+        debLbGeoloc = i18n.tr("Géolocalisation");
+        lbPointeur.setText(i18n.tr("Déplacer le marqueur pour modifier les coordonnées"));
     }    
     
     public class Bridge { 
@@ -482,7 +846,6 @@ public class SiteFormController {
   
         public void setLongitude(String value) { 
             txLong.setText(value);
-            conversion(1);
         } 
         
         public void setAltitude(String value) { 
@@ -491,3 +854,4 @@ public class SiteFormController {
     }    
     
 }
+ 
