@@ -8,6 +8,7 @@ package controller;
 
 import Logfly.Main;
 import dialogues.alertbox;
+import dialogues.dialogbox;
 import igc.pointIGC;
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -16,6 +17,8 @@ import java.sql.Statement;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -65,9 +68,7 @@ public class SitesViewController {
     @FXML
     private TableColumn<Sitemodel, String> orientCol;   
     @FXML
-    private TextField txtSearch;
-    @FXML
-    private Button btnSearch;      
+    private TextField txtSearch;    
     @FXML
     private RadioButton rdAll;    
     @FXML
@@ -99,6 +100,8 @@ public class SitesViewController {
     //END | SQLITE    
     
     private ObservableList <Sitemodel> dataSites; 
+    private FilteredList<Sitemodel> filteredData;
+    private SortedList<Sitemodel> sortedData;
     
     @FXML
     private void initialize() {
@@ -119,9 +122,41 @@ public class SitesViewController {
      */
     private void iniTable() {
         
-        dataSites = FXCollections.observableArrayList();     
+        dataSites = FXCollections.observableArrayList();    
         
         tableSites.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        
+        // filter process read on http://code.makery.ch/blog/javafx-8-tableview-sorting-filtering/
+        // wrap the ObservableList in a FilteredList (initially display all data).
+        filteredData = new FilteredList<>(dataSites, p -> true);
+        
+        // set the filter Predicate whenever the filter changes.
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(site -> {
+                // If filter text is empty, display all persons.
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                // Compare first name and last name of every person with filter text.
+                String lowerCaseFilter = newValue.toLowerCase();
+
+                if (site.getNom().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches site name
+                } 
+                else if (site.getVille() != null && !site.getVille().equals("")) {
+                    if (site.getVille().toLowerCase().contains(lowerCaseFilter)) 
+                        return true; // Filter matches site locality
+                }
+                return false; // Does not match.
+            });
+        });        
+       
+        // wrap the FilteredList in a SortedList. 
+        sortedData = new SortedList<>(filteredData);
+        
+        // bind the SortedList comparator to the TableView comparator.
+        sortedData.comparatorProperty().bind(tableSites.comparatorProperty());
                        
         nomCol.setCellValueFactory(new PropertyValueFactory<Sitemodel, String>("nom"));
         villeCol.setCellValueFactory(new PropertyValueFactory<Sitemodel, String>("ville"));
@@ -158,8 +193,8 @@ public class SitesViewController {
                     si.setOrient(rs.getString("S_Orientation"));  
                     si.setType(rs.getString("S_Type"));                     
                     dataSites.add(si);                
-                }   
-                tableSites.setItems(dataSites); 
+                }    
+                tableSites.setItems(sortedData);
                 if (tableSites.getItems().size() > 0) {
                     tableSites.getSelectionModel().select(0);                    
                 }                
@@ -299,15 +334,81 @@ public class SitesViewController {
             return false;
         }
     }
-
+    
+    public void editReturn(boolean formUpdated, Sitemodel newsite) {
+        
+        if (formUpdated) {            
+            tableSites.getSelectionModel().getSelectedItem().setNom(newsite.getNom());
+            tableSites.getSelectionModel().getSelectedItem().setVille(newsite.getVille());
+            tableSites.getSelectionModel().getSelectedItem().setCp(newsite.getCp());
+            tableSites.getSelectionModel().getSelectedItem().setAlt(newsite.getAlt());
+            tableSites.getSelectionModel().getSelectedItem().setOrient(newsite.getOrient());  
+            tableSites.getSelectionModel().getSelectedItem().setType(newsite.getType());   
+            tableSites .refresh();            
+        }        
+    }
     
     /**
-     * Db search request
+     * Delete a site in database
      */
-    @FXML
-    private void askSearch() {
-        // to do      
+    private void deleteSite() {
+        PreparedStatement pstmt = null;
+        
+        int selectedIndex = tableSites.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            Sitemodel selSite = tableSites.getSelectionModel().getSelectedItem();
+            dialogbox dConfirm = new dialogbox();
+            StringBuilder sbMsg = new StringBuilder();             
+            sbMsg.append(selSite.getNom());
+            sbMsg.append(" ");
+            sbMsg.append(selSite.getVille());                        
+            if (dConfirm.YesNo(i18n.tr("Suppression du site"), sbMsg.toString()))   {                
+                String sReq = "DELETE FROM Site WHERE S_ID = ?";
+                try {
+                    pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                    pstmt.setInt(1, Integer.valueOf(selSite.getIdSite()));
+                    pstmt.executeUpdate();    
+                    tableSites.getItems().remove(selectedIndex);
+                    pstmt.close();
+                } catch (Exception e) {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(e.getMessage());                                                           
+                }                                                
+            }                                 
+        } else {
+            // no site selected
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertError(i18n.tr("Aucun site sélectionné..."));                       
+        }        
     }    
+    
+    private void addSite() {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/SiteForm.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);       
+            dialogStage.initOwner(mainApp.getPrimaryStage());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Communication bridge between SiteForm and SiteView controllers
+            SiteFormController controller = loader.getController();
+            controller.setSiteBridge(this);
+            controller.setDialogStage(dialogStage); 
+            controller.setEditForm(myConfig,null,1);   // 1 -> add a new site 
+            // This window will be modal
+            dialogStage.showAndWait();
+            
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }        
+    }
+     
 
     /**
      * Is called by the main application to give a reference back to itself.
@@ -348,6 +449,22 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem0);
         
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Ajouter"));        
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                addSite();
+            }            
+        });
+        cm.getItems().add(cmItem1);
+        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Supprimer"));        
+        cmItem2.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                deleteSite();
+            }            
+        });
+        cm.getItems().add(cmItem2);
+        
         return cm;        
     }
     
@@ -364,8 +481,7 @@ public class SitesViewController {
         rdAll.setText(i18n.tr("Tous"));
         rdDeco.setText(i18n.tr("Décollage"));
         rdAttero.setText(i18n.tr("Atterissage"));
-        rdNondef.setText(i18n.tr("Non défini"));        
-        btnSearch.setStyle("-fx-background-color: transparent;");                
+        rdNondef.setText(i18n.tr("Non défini"));                        
     }    
     
 }
