@@ -12,154 +12,314 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane maxHeight="670.0" maxWidth="680.0" minHeight="670.0" minWidth="680.0" prefHeight="670.0" prefWidth="680.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SiteFormController">
+<AnchorPane maxHeight="695.0" maxWidth="695.0" minHeight="695.0" minWidth="695.0" prefHeight="695.0" prefWidth="695.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SiteFormController">
    <children>
       <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox maxHeight="45.0" minHeight="45.0" prefHeight="45.0" prefWidth="200.0">
+            <HBox maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
                <children>
                   <Label fx:id="lbNom" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fNom">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="10.0" right="10.0" top="10.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txNom" maxWidth="20.0" minWidth="200.0" prefWidth="200.0">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
+                        <Insets right="10.0" top="5.0" />
                      </HBox.margin>
                   </TextField>
                   <Label fx:id="lbOrien" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fOrientation">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="10.0" right="10.0" top="10.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txOrien" maxWidth="200.0" minWidth="200.0" prefWidth="200.0">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
+                        <Insets right="10.0" top="5.0" />
                      </HBox.margin>
                   </TextField>
                </children>
             </HBox>
-            <HBox layoutX="10.0" layoutY="10.0" maxHeight="45.0" minHeight="45.0" prefHeight="45.0" prefWidth="200.0">
+            <HBox layoutX="10.0" layoutY="10.0" maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
                <children>
                   <Label fx:id="lbLocalite" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fLocalité">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="10.0" right="10.0" top="10.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txLocalite" maxWidth="20.0" minWidth="200.0" prefWidth="200.0">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
+                        <Insets right="10.0" top="5.0" />
                      </HBox.margin>
                   </TextField>
                   <Label fx:id="lbCP" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fCode Postal">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="10.0" right="10.0" top="10.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txCP" maxWidth="75.0" minWidth="75.0" prefWidth="75.0">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
+                        <Insets right="10.0" top="5.0" />
                      </HBox.margin>
                   </TextField>
                </children>
             </HBox>
-            <HBox layoutX="10.0" layoutY="60.0" maxHeight="45.0" minHeight="45.0" prefHeight="45.0" prefWidth="200.0">
+            <HBox layoutX="10.0" layoutY="60.0" maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
                <children>
                   <Label fx:id="lbPays" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fPays">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="10.0" right="10.0" top="10.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txPays" maxWidth="20.0" minWidth="200.0" prefWidth="200.0">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
+                        <Insets right="10.0" top="5.0" />
                      </HBox.margin>
                   </TextField>
                   <RadioButton fx:id="rdDeco" maxWidth="120.0" minWidth="120.0" mnemonicParsing="false" prefWidth="120.0" text="fDécollage">
                      <HBox.margin>
-                        <Insets left="40.0" top="12.0" />
+                        <Insets left="40.0" top="10.0" />
                      </HBox.margin>
                   </RadioButton>
                   <RadioButton fx:id="rdAttero" layoutX="370.0" layoutY="25.0" maxWidth="120.0" minWidth="120.0" mnemonicParsing="false" prefWidth="120.0" text="fAtterissage">
                      <HBox.margin>
-                        <Insets left="30.0" top="12.0" />
+                        <Insets left="30.0" top="10.0" />
                      </HBox.margin>
                   </RadioButton>
                </children>
             </HBox>
-            <HBox layoutX="10.0" layoutY="60.0" maxHeight="45.0" minHeight="45.0" prefHeight="45.0" prefWidth="200.0">
+            <HBox layoutX="10.0" layoutY="115.0" maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
                <children>
-                  <Label fx:id="lbLat" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fLatitude">
+                  <Label fx:id="lbLat" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="DD">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="10.0" right="10.0" top="10.0" />
                      </HBox.margin>
+                  </Label>
+                  <Label fx:id="lbLat1" alignment="CENTER_RIGHT" layoutX="230.0" layoutY="20.0" maxHeight="20.0" maxWidth="80.0" minHeight="20.0" minWidth="80.0" prefHeight="20.0" prefWidth="80.0" text="fLatitude">
+                     <HBox.margin>
+                        <Insets right="5.0" top="10.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
                   </Label>
                   <TextField fx:id="txLat" maxWidth="85.0" minWidth="85.0" prefWidth="85.0">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
+                        <Insets right="3.0" top="5.0" />
                      </HBox.margin>
                   </TextField>
-                  <Label fx:id="lbLong" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="80.0" minHeight="20.0" minWidth="80.0" prefHeight="20.0" prefWidth="80.0" text="fLongitude">
+                  <Label fx:id="lbLong1" alignment="CENTER_RIGHT" layoutX="332.0" layoutY="20.0" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fLongitude">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="15.0" />
+                        <Insets left="88.0" right="5.0" top="10.0" />
                      </HBox.margin>
                   </Label>
-                  <TextField fx:id="txLong" maxWidth="85.0" minWidth="85.0" prefWidth="85.0">
+                  <TextField fx:id="txLong" maxWidth="85.0" minWidth="85.0" prefWidth="85.0" promptText="">
                      <HBox.margin>
-                        <Insets right="10.0" top="10.0" />
-                     </HBox.margin>
-                  </TextField>
-                  <Button fx:id="btRefreshMap" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" prefWidth="26.0" text="\@">
-                     <HBox.margin>
-                        <Insets left="10.0" right="25.0" top="11.0" />
-                     </HBox.margin>
-                  </Button>
-                  <Label fx:id="lbAlt" alignment="CENTER_RIGHT" layoutX="235.0" layoutY="25.0" maxHeight="20.0" maxWidth="80.0" minHeight="20.0" minWidth="80.0" prefHeight="20.0" prefWidth="80.0" text="fAlti Déco">
-                     <HBox.margin>
-                        <Insets top="15.0" />
-                     </HBox.margin>
-                  </Label>
-                  <TextField fx:id="txAlt" layoutX="325.0" layoutY="22.0" maxWidth="85.0" minWidth="85.0" prefWidth="85.0">
-                     <HBox.margin>
-                        <Insets left="15.0" top="10.0" />
+                        <Insets top="5.0" />
                      </HBox.margin>
                   </TextField>
                </children>
             </HBox>
-            <HBox layoutX="10.0" layoutY="60.0" maxHeight="160.0" minHeight="160.0" prefHeight="160.0" prefWidth="200.0">
+            <HBox layoutX="10.0" layoutY="60.0" maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="lbLong" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="DMm">
+                     <HBox.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label fx:id="lbLat2" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="80.0" minHeight="20.0" minWidth="80.0" prefHeight="20.0" prefWidth="80.0" text="fLatitude">
+                     <HBox.margin>
+                        <Insets right="4.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMLatDeg" alignment="CENTER_RIGHT" maxWidth="40.0" minWidth="40.0" prefWidth="40.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label alignment="CENTER_RIGHT" layoutX="260.0" layoutY="20.0" maxHeight="20.0" maxWidth="8.0" minHeight="20.0" minWidth="8.0" prefHeight="20.0" prefWidth="8.0" text="°">
+                     <HBox.margin>
+                        <Insets top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMLatMin" alignment="CENTER_RIGHT" layoutX="325.0" layoutY="22.0" maxWidth="75.0" minWidth="75.0" prefWidth="75.0">
+                     <HBox.margin>
+                        <Insets left="2.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <TextField fx:id="txDMLatHem" layoutX="531.0" layoutY="15.0" maxWidth="28.0" minWidth="28.0" prefWidth="28.0">
+                     <HBox.margin>
+                        <Insets left="2.0" right="3.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label fx:id="lbLong2" alignment="CENTER_RIGHT" layoutX="260.0" layoutY="20.0" maxHeight="20.0" maxWidth="80.0" minHeight="20.0" minWidth="80.0" prefHeight="20.0" prefWidth="80.0" text="fLongitude">
+                     <HBox.margin>
+                        <Insets left="40.0" right="5.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMLongDeg" alignment="CENTER_RIGHT" maxWidth="40.0" minWidth="40.0" prefWidth="40.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="8.0" minHeight="20.0" minWidth="8.0" prefHeight="20.0" prefWidth="8.0" text="°">
+                     <HBox.margin>
+                        <Insets top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMLongMin" alignment="CENTER_RIGHT" maxWidth="75.0" minWidth="75.0" prefWidth="75.0">
+                     <HBox.margin>
+                        <Insets left="2.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <TextField fx:id="txDMLongMer" maxWidth="35.0" minWidth="35.0" prefWidth="35.0">
+                     <HBox.margin>
+                        <Insets left="2.0" right="3.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox layoutX="10.0" layoutY="150.0" maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="lbDMS" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="DMS">
+                     <HBox.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label fx:id="lbLat3" alignment="CENTER_RIGHT" layoutX="230.0" layoutY="20.0" maxHeight="20.0" maxWidth="80.0" minHeight="20.0" minWidth="80.0" prefHeight="20.0" prefWidth="80.0" text="fLatitude">
+                     <HBox.margin>
+                        <Insets right="5.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMSLatDeg" alignment="CENTER_RIGHT" maxWidth="40.0" minWidth="40.0" prefWidth="40.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="8.0" minHeight="20.0" minWidth="8.0" prefHeight="20.0" prefWidth="8.0" text="'">
+                     <HBox.margin>
+                        <Insets top="6.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMSLatMin" alignment="CENTER_RIGHT" maxWidth="35.0" minWidth="35.0" prefWidth="35.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="8.0" minHeight="20.0" minWidth="8.0" prefHeight="20.0" prefWidth="8.0" text="''">
+                     <HBox.margin>
+                        <Insets top="6.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMSLatSec" alignment="CENTER_RIGHT" maxWidth="75.0" minWidth="75.0" prefWidth="75.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <TextField fx:id="txDMSLatHem" maxWidth="30.0" minWidth="30.0" prefWidth="30.0">
+                     <HBox.margin>
+                        <Insets left="2.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label fx:id="lbLong3" alignment="CENTER_RIGHT" maxWidth="80.0" minWidth="80.0" prefWidth="80.0" text="fLongitude">
+                     <HBox.margin>
+                        <Insets right="5.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMSLongDeg" alignment="CENTER_RIGHT" layoutX="297.0" layoutY="15.0" maxWidth="40.0" minWidth="40.0" prefWidth="40.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label alignment="CENTER_RIGHT" layoutX="332.0" layoutY="20.0" maxHeight="20.0" maxWidth="8.0" minHeight="20.0" minWidth="8.0" prefHeight="20.0" prefWidth="8.0" text="'">
+                     <HBox.margin>
+                        <Insets top="6.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMSLongMin" alignment="CENTER_RIGHT" layoutX="467.0" layoutY="15.0" maxWidth="35.0" minWidth="35.0" prefWidth="35.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label alignment="CENTER_RIGHT" layoutX="502.0" layoutY="18.0" maxHeight="20.0" maxWidth="8.0" minHeight="20.0" minWidth="8.0" prefHeight="20.0" prefWidth="8.0" text="''">
+                     <HBox.margin>
+                        <Insets top="6.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txDMSLongSec" alignment="CENTER_RIGHT" layoutX="345.0" layoutY="15.0" maxWidth="75.0" minWidth="75.0" prefWidth="75.0">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <TextField fx:id="txDMSLongMer" layoutX="416.0" layoutY="15.0" maxWidth="35.0" minWidth="35.0" prefWidth="35.0">
+                     <HBox.margin>
+                        <Insets left="2.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox layoutX="10.0" layoutY="145.0" maxHeight="35.0" minHeight="35.0" prefHeight="35.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="lbAlt" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fAltitude">
+                     <HBox.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="txAlt" alignment="CENTER_RIGHT" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" promptText="23500">
+                     <HBox.margin>
+                        <Insets right="3.0" top="5.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label fx:id="lbAltUnit" text="m">
+                     <HBox.margin>
+                        <Insets top="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Button fx:id="btUpdateMap" maxWidth="250.0" minWidth="250.0" mnemonicParsing="false" onAction="#handleUpdate" prefWidth="250.0" text="Afficher les coordonnées">
+                     <HBox.margin>
+                        <Insets left="100.0" top="5.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+            <HBox layoutX="10.0" layoutY="60.0" maxHeight="100.0" minHeight="100.0" prefHeight="100.0" prefWidth="200.0">
                <children>
                   <Label fx:id="lbComment" alignment="CENTER_RIGHT" maxHeight="20.0" maxWidth="100.0" minHeight="20.0" minWidth="100.0" prefHeight="20.0" prefWidth="100.0" text="fCommentaire">
                      <HBox.margin>
                         <Insets left="10.0" right="10.0" top="15.0" />
                      </HBox.margin>
                   </Label>
-                  <TextArea fx:id="txComment" maxHeight="136.0" maxWidth="533.0" minHeight="136.0" minWidth="533.0" prefHeight="136.0" prefWidth="533.0">
+                  <TextArea fx:id="txComment" maxHeight="90.0" maxWidth="533.0" minHeight="90.0" minWidth="533.0" prefHeight="90.0" prefWidth="533.0">
                      <HBox.margin>
-                        <Insets bottom="5.0" top="12.0" />
+                        <Insets top="5.0" />
                      </HBox.margin>
                   </TextArea>
                </children>
             </HBox>
-            <HBox layoutX="10.0" layoutY="210.0" maxHeight="260.0" minHeight="260.0" prefHeight="260.0" prefWidth="200.0">
+            <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="610.0" maxHeight="15.0" minHeight="15.0" prefHeight="15.0" prefWidth="200.0">
                <children>
-                  <WebView fx:id="mapViewer" prefHeight="238.0" prefWidth="533.0">
+                  <Label fx:id="lbPointeur" maxHeight="14.0" minHeight="14.0" prefHeight="14.0" text="pDéplacer le marqueur pour actualiser les coordonnées">
                      <HBox.margin>
-                        <Insets bottom="5.0" left="120.0" top="5.0" />
-                     </HBox.margin>
-                  </WebView>
-               </children>
-            </HBox>
-            <HBox alignment="CENTER_LEFT" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="200.0">
-               <children>
-                  <Label fx:id="lbMarqueur" text="pDéplacer le marqueur par avec un clic maintenu pour actualiser les coordonnées">
-                     <HBox.margin>
-                        <Insets left="120.0" />
+                        <Insets left="120.0" right="5.0" />
                      </HBox.margin>
                      <font>
                         <Font size="11.0" />
                      </font>
                   </Label>
+                  <Label fx:id="lbGeoloc" alignment="CENTER_RIGHT" layoutX="130.0" layoutY="11.0" maxHeight="14.0" maxWidth="240.0" minHeight="14.0" minWidth="240.0" prefHeight="14.0" prefWidth="240.0" text="pGéolocalisation">
+                     <font>
+                        <Font size="11.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <HBox layoutX="10.0" layoutY="210.0" maxHeight="290.0" minHeight="290.0" prefHeight="290.0" prefWidth="200.0">
+               <children>
+                  <WebView fx:id="mapViewer" prefHeight="238.0" prefWidth="533.0">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="120.0" />
+                     </HBox.margin>
+                  </WebView>
                </children>
             </HBox>
             <HBox alignment="CENTER_RIGHT" layoutX="10.0" layoutY="145.0" maxHeight="45.0" minHeight="45.0" prefHeight="45.0" prefWidth="200.0">
