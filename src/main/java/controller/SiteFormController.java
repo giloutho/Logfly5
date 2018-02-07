@@ -19,16 +19,15 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.beans.InvalidationListener;
-import javafx.beans.WeakInvalidationListener;
-import javafx.event.EventHandler;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -38,14 +37,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.paint.Paint;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import leaflet.map_markers_coord;
+import model.Sitemodel;
 import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -155,6 +156,7 @@ public class SiteFormController {
     
     // Reference to SiteViewController
     private SitesViewController siteController;
+    private Sitemodel si = new Sitemodel();
     
     private Stage dialogStage;    
     
@@ -163,6 +165,7 @@ public class SiteFormController {
     
     // bridge between java code and javascript map
     private final Bridge pont = new Bridge();
+    private WebEngine webEngine;
     
     // Settings
     private configProg myConfig;
@@ -204,6 +207,39 @@ public class SiteFormController {
         rdGroup = new ToggleGroup();    
         rdDeco.setToggleGroup(rdGroup);        
         rdAttero.setToggleGroup(rdGroup);  
+        
+        webEngine = mapViewer.getEngine();
+        webEngine.setJavaScriptEnabled(true);
+        webEngine.getLoadWorker().stateProperty().addListener(
+            new ChangeListener<Worker.State>() {
+                public void changed(ObservableValue ov, Worker.State oldState, Worker.State newState) {
+                    if (newState == Worker.State.SUCCEEDED) {        
+                        System.out.println("Ready!");
+                        JSObject jso = (JSObject) webEngine.executeScript("window");
+                        jso.setMember("java", new Bridge());
+                    }
+                }
+            });              
+                
+        txNom.textProperty().addListener((ov, oldValue, newValue) -> {
+            if (newValue != null) txNom.setText(newValue.toUpperCase());
+        });        
+        
+        txOrien.textProperty().addListener((ov, oldValue, newValue) -> {
+            if (newValue != null) txOrien.setText(newValue.toUpperCase());
+        });
+
+        txLocalite.textProperty().addListener((ov, oldValue, newValue) -> {
+            if (newValue != null) txLocalite.setText(newValue.toUpperCase());
+        });        
+        
+        txCP.textProperty().addListener((ov, oldValue, newValue) -> {
+            if (newValue != null) txCP.setText(newValue.toUpperCase());
+        });
+
+        txPays.textProperty().addListener((ov, oldValue, newValue) -> {
+            if (newValue != null) txPays.setText(newValue.toUpperCase());
+        });        
         
         // ********  DD Fields ************
         // Listener are waiting for numeric values
@@ -359,7 +395,6 @@ public class SiteFormController {
             });             
         
         fmTxDMSLatDeg.valueProperty().addListener((obs, oldValue, newValue) -> {     
-                System.out.println("listener fmTxDMSLatDeg ");
                 if (newValue < -90 || newValue > 90) {                      
                     txDMSLatDeg.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
                     txDMSLatDeg.requestFocus();                
@@ -513,58 +548,66 @@ public class SiteFormController {
             
         ResultSet rs = null;
         Statement stmt = null;
-        
-        String sReq = "SELECT * FROM Site WHERE S_ID = "+idSite;
-        try {        
-            stmt = myConfig.getDbConn().createStatement();
-            rs =  stmt.executeQuery(sReq);
-            if (rs != null)  { 
-                txNom.setText(rs.getString(2));
-                oldName = rs.getString(2);
-                txLocalite.setText(rs.getString(3));
-                txCP.setText(rs.getString(4));
-                txPays.setText(rs.getString(5));
-                txOrien.setText(rs.getString(7));
-                txAlt.setText(rs.getString(8));
-                txComment.setText(rs.getString(11));
-                switch (rs.getString(6)) {
-                    case "A":
-                        rdAttero.setSelected(true);
-                        break;
-                    case "D":
-                        rdDeco.setSelected(true);
-                        break;
+        if (editMode == 0 || editMode == 2) {
+            String sReq = "SELECT * FROM Site WHERE S_ID = "+idSite;
+            try {        
+                stmt = myConfig.getDbConn().createStatement();
+                rs =  stmt.executeQuery(sReq);
+                if (rs != null)  { 
+                    txNom.setText(rs.getString(2));
+                    oldName = rs.getString(2);
+                    txLocalite.setText(rs.getString(3));
+                    txCP.setText(rs.getString(4));
+                    txPays.setText(rs.getString(5));
+                    txOrien.setText(rs.getString(7));
+                    txAlt.setText(rs.getString(8));
+                    txComment.setText(rs.getString(11));
+                    switch (rs.getString(6)) {
+                        case "A":
+                            rdAttero.setSelected(true);
+                            break;
+                        case "D":
+                            rdDeco.setSelected(true);
+                            break;
+                    }
+                    // First release stored a date like YYYY-MM-dd HH:MM:SS
+                    // We avoid a parsing error
+                    String sDate = rs.getString(12);
+                    if (sDate.length() > 10) sDate = sDate.substring(0,10);
+                    setUpdateDate(sDate);
+
+                    displayPos = new position();
+                    latDep = rs.getDouble(9);
+                    longDep = rs.getDouble(10);
+                    displayPos.setLatitudeDd(latDep);
+                    displayPos.setLongitudeDd(longDep);
+                    updateFieldsPos();
+
+
+                    iniMap(latDep,longDep);
+                   // debugMap();
                 }
-                // First release stored a date like YYYY-MM-dd HH:MM:SS
-                // We avoid a parsing error
-                String sDate = rs.getString(12);
-                if (sDate.length() > 10) sDate = sDate.substring(0,10);
-                setUpdateDate(sDate);
-                
-                displayPos = new position();
-                latDep = rs.getDouble(9);
-                longDep = rs.getDouble(10);
-                displayPos.setLatitudeDd(latDep);
-                displayPos.setLongitudeDd(longDep);
-                System.out.println("Display lat "+displayPos.getLatitude()+"  long "+displayPos.getLongitude());
-                updateFieldsPos();
-                
-                
-                iniMap(latDep,longDep);
-               // debugMap();
-            }
-        } catch ( Exception e ) {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.getMessage());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        } finally {
-            try{
-                rs.close(); 
-                stmt.close();
-            } catch(Exception e) { } 
-        }       
+            } catch ( Exception e ) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.getMessage());
+                mylogging.log(Level.SEVERE, sbError.toString());            
+            } finally {
+                try{
+                    rs.close(); 
+                    stmt.close();
+                } catch(Exception e) { } 
+            } 
+        } else {
+            displayPos = new position();
+            latDep = 0;
+            longDep = 0;
+            displayPos.setLatitudeDd(latDep);
+            displayPos.setLongitudeDd(longDep);
+            updateFieldsPos();
+            iniMap(latDep, longDep);
+        }
     }
     
     /**
@@ -602,6 +645,8 @@ public class SiteFormController {
         txDMSLongSec.setText(df2.format(displayPos.getLongSec_ms()));
         txDMSLongMer.setText(displayPos.getMeridien());
    
+        findTown();
+        
         updateProgress = false;
     }
     /**
@@ -641,23 +686,28 @@ public class SiteFormController {
     }
         
     private void findTown() {
-        String finalSiteDeco;
+        String finalSiteDeco = "";
         
-        reversegeocode rechTown = new reversegeocode();
-        // Unlike map_visu, we don't need to a decimalFormat
-        // lat and long are always with a point as decimal separator
+        String sLat = txLat.getText();
+        String sLong = txLong.getText();
         
-        // Best results with a low precision in coordinates
-        String sCoord = txLat.getText().substring(0, 6)+","+txLong.getText().substring(0,6);
-        String siteDeco = rechTown.googleGeocode(sCoord, true);
-        // Very difficult to parse Google result
-        // it's never the same order 
-        // result can be 06460 Caussols, France
-        // or 06460 Caussols, France
-        if (siteDeco.length() > 10) 
-            lbGeoloc.setText(debLbGeoloc+" "+siteDeco);
-        else
-            lbGeoloc.setText("");
+        if (sLat != null && !sLat.equals("") && sLong != null && !sLong.equals("")) {        
+            reversegeocode rechTown = new reversegeocode();
+            // Unlike map_visu, we don't need to a decimalFormat
+            // lat and long are always with a point as decimal separator
+
+            // Best results with a low precision in coordinates
+            if (sLat.length() > 6) sLat = sLat.substring(0, 6);
+            if (sLong.length() > 6) sLong = sLong.substring(0, 6);
+            String sCoord = sLat+","+sLong;
+            String siteDeco = rechTown.googleGeocode(sCoord, true);
+            // Very difficult to parse Google result
+            // it's never the same order 
+            // result can be 06460 Caussols, France
+            // or 06460 Caussols, France
+            if (siteDeco.length() > 10) finalSiteDeco = siteDeco;                            
+        }
+        lbGeoloc.setText(finalSiteDeco);
     }
     
     private void iniMap(double dLatitude, double dLongitude) {
@@ -667,23 +717,18 @@ public class SiteFormController {
         pPoint1.setLatitude(dLatitude);        
         if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
         pPoint1.setLongitude(dLongitude);
-        pPoint1.setAltiGPS(Integer.parseInt(txAlt.getText()));
+        String sAlt = txAlt.getText();
+        if (sAlt != null && !sAlt.equals(""))
+            pPoint1.setAltiGPS(Integer.parseInt(sAlt));
         map_markers_coord myMap = new map_markers_coord(i18n, myConfig.getIdxMap(), pPoint1); 
-        if (myMap.isMap_OK()) {   
-            // with first maps, we made this            
-            // mapViewer.getEngine().load("about:blank");                     
-            // to delete cache for navigate back
-            // problem : with this instruction, the bridge (jsobject) does not work
-            mapViewer.getEngine().loadContent(myMap.getMap_HTML());   
-            // java object is sent to webwiew
-            final JSObject jsobj = (JSObject) mapViewer.getEngine().executeScript("window"); 
-            jsobj.setMember("java", pont); 
+        if (myMap.isMap_OK()) {              
+            webEngine.loadContent(myMap.getMap_HTML());   
         }
         
     }
 
-    private void updateDb() {
-        
+    private boolean updateDb() {
+        boolean res = false;
         String siteType;
         StringBuilder sbReq = new StringBuilder();   
         String Quote = "'";
@@ -691,7 +736,7 @@ public class SiteFormController {
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
         
-        if (rdDeco.isSelected()) 
+        if (rdAttero.isSelected()) 
             siteType = "A";
         else
             if (rdDeco.isSelected())
@@ -711,9 +756,14 @@ public class SiteFormController {
         // editMode = 2 modifying a form dynamically from the logbook like Site Noxx à renommer
         // editMode = 3 Creating a form dynamically from the logbook with take off coordinates (option different site)
         
-        if (!badCoord) {
-            String sNom = txNom.getText();
-            String sLocalite = txLocalite.getText();
+        if (!badCoord) {             
+            si.setIdSite(idSite);
+            si.setNom(txNom.getText());
+            si.setVille(txLocalite.getText());
+            si.setCp(txCP.getText());           
+            si.setAlt(txAlt.getText());
+            si.setOrient(txOrien.getText());  
+            si.setType(siteType);   
             String sPays = txPays.getText();
             String sComment = txComment.getText();
             PreparedStatement pstmt = null;
@@ -725,19 +775,20 @@ public class SiteFormController {
                     sReq = "INSERT INTO Site (S_Nom,S_Localite,S_CP,S_Pays,S_Type,S_Orientation,S_Alti,S_Latitude,S_Longitude,S_Commentaire,S_Maj) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
                 }
                 pstmt = myConfig.getDbConn().prepareStatement(sReq);
-                pstmt.setString(1,sNom); 
-                pstmt.setString(2,sLocalite);
-                pstmt.setString(3,txCP.getText());
+                pstmt.setString(1,si.getNom()); 
+                pstmt.setString(2,si.getVille());
+                pstmt.setString(3,si.getCp());
                 pstmt.setString(4,sPays);
-                pstmt.setString(5,siteType);
-                pstmt.setString(6,txOrien.getText());
-                pstmt.setString(7,txAlt.getText());
+                pstmt.setString(5,si.getType());
+                pstmt.setString(6,si.getOrient());
+                pstmt.setString(7,si.getAlt());
                 pstmt.setString(8,txLat.getText());
                 pstmt.setString(9,txLong.getText());
                 pstmt.setString(10,sComment);
                 pstmt.setString(11,today.format(formatter));
                 pstmt.setInt(12, Integer.valueOf(idSite));
                 pstmt.executeUpdate(); 
+                res = true;
             } catch (Exception e) {
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
@@ -746,11 +797,14 @@ public class SiteFormController {
                 mylogging.log(Level.SEVERE, sbError.toString()); 
             }                       
         }
+        
+        return res;
     }
     
     @FXML    
-    private void handleUpdate() {
-        iniMap(Double.parseDouble(txLat.getText()), Double.parseDouble(txLong.getText()));
+    private void handleUpdate() {      
+        findTown();
+        iniMap(Double.parseDouble(txLat.getText()), Double.parseDouble(txLong.getText()));            
     }
     
     /**
@@ -758,7 +812,9 @@ public class SiteFormController {
      */
     @FXML
     private void handleOk() {
-        updateDb();
+        if (updateDb()) {
+            siteController.editReturn(true, si);
+        }
         dialogStage.close();
     }      
     
@@ -809,7 +865,7 @@ public class SiteFormController {
         txDMSLatMin.setTooltip(caracToolTip);
         txDMSLatSec.setTooltip(caracToolTip);
         txDMSLatHem.setTooltip(latToolTip);
-       // txLong.setTooltip(caracToolTip);
+        txLong.setTooltip(caracToolTip);
         txDMLongDeg.setTooltip(caracToolTip);
         txDMLongMin.setTooltip(caracToolTip);
         txDMLongMer.setTooltip(longToolTip);
@@ -838,6 +894,9 @@ public class SiteFormController {
         lbPointeur.setText(i18n.tr("Déplacer le marqueur pour modifier les coordonnées"));
     }    
     
+    /**
+     * A voir avec https://stackoverflow.com/questions/32564195/load-a-new-page-in-javafx-webview
+     */
     public class Bridge { 
   
         public void setLatitude(String value) { 
@@ -850,6 +909,7 @@ public class SiteFormController {
         
         public void setAltitude(String value) { 
             txAlt.setText(value);
+            System.out.println("Alt "+value);
         }        
     }    
     
