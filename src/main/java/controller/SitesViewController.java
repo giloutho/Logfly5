@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,7 +24,9 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -33,20 +36,26 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import leaflet.map_X_markers;
 import leaflet.map_markers;
+import leaflet.map_visu;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.osType;
 import systemio.mylogging;
 
 /**
@@ -76,7 +85,9 @@ public class SitesViewController {
     @FXML
     private RadioButton rdAttero;
     @FXML
-    private RadioButton rdNondef;    
+    private RadioButton rdNondef; 
+    @FXML
+    private Button btnMap;
     @FXML
     private ImageView top_Menu;
     @FXML
@@ -168,7 +179,7 @@ public class SitesViewController {
         tableSites.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> showSiteMap((Sitemodel) newValue));          
         
-        fillTable("SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site ORDER BY S_Nom");
+        fillTable("SELECT * FROM Site ORDER BY S_Nom");
     }    
     
     /**
@@ -191,7 +202,9 @@ public class SitesViewController {
                     si.setCp(rs.getString("S_CP"));
                     si.setAlt(rs.getString("S_Alti"));
                     si.setOrient(rs.getString("S_Orientation"));  
-                    si.setType(rs.getString("S_Type"));                     
+                    si.setType(rs.getString("S_Type"));         
+                    si.setLatitude(rs.getDouble("S_Latitude"));
+                    si.setLongitude(rs.getDouble("S_Longitude"));
                     dataSites.add(si);                
                 }    
                 tableSites.setItems(sortedData);
@@ -408,6 +421,99 @@ public class SitesViewController {
             e.printStackTrace();
         }        
     }
+    /**
+     * We had a big problem with the webviewer
+     * if there is long distances between markers, 
+     * map.fitBounds(tabPoints,{maxZoom : 15}) doesn't work properly
+     * We checke with browsers, HTML is correct and fitBounds is correct
+     * webviewer displays the map at zoom level 0 (entire earth)
+     * We put this instruction in html code : if (map.getZoom() < 5) map.setZoom(7);
+     */
+    @FXML
+    private void showFullMap() {
+
+        String sHTML = null;
+        
+        ArrayList<pointIGC> sitesList = new ArrayList<>();
+        
+        ObservableList<Sitemodel> selSites = tableSites.getSelectionModel().getSelectedItems();   
+
+        for(Sitemodel oneSite : selSites){   
+            pointIGC pPoint1 = new pointIGC();
+            double dLatitude = oneSite.getLatitude();
+            if (dLatitude > 90 || dLatitude < -90) dLatitude = 0;
+            pPoint1.setLatitude(dLatitude);
+            double dLongitude = oneSite.getLongitude();
+            if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
+            pPoint1.setLongitude(dLongitude);
+            pPoint1.setAltiGPS(Integer.parseInt(oneSite.getAlt()));
+            StringBuilder sbComment = new StringBuilder();
+            sbComment.append(oneSite.getNom()).append("<BR>");
+            sbComment.append(i18n.tr("Altitude")).append(" : ").append(String.valueOf(pPoint1.AltiGPS)).append(" m" );
+            pPoint1.Comment = sbComment.toString();   
+            sitesList.add(pPoint1);              
+        }
+        
+        if (sitesList.size() > 1)  {
+            map_X_markers mapSite = new map_X_markers(i18n, myConfig.getIdxMap());
+            mapSite.setPointsList(sitesList);
+            if (mapSite.genMap() == 0) {
+                sHTML = mapSite.getMap_HTML();               
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);                       
+                alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
+                alert.showAndWait();   
+            }            
+        } else if (sitesList.size() == 1)  {
+            map_markers mapSite = new map_markers(i18n, myConfig.getIdxMap());
+            mapSite.getPointsList().add(sitesList.get(0));
+            mapSite.setStrComment(null);
+            if (mapSite.genMap() == 0) {  
+                sHTML = mapSite.getMap_HTML();               
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);                       
+                alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
+                alert.showAndWait();   
+            }
+        } 
+        if (sHTML != null)  {
+            AnchorPane anchorPane = new AnchorPane();                
+            WebView viewMap = new WebView();   
+            AnchorPane.setTopAnchor(viewMap, 10.0);
+            AnchorPane.setLeftAnchor(viewMap, 10.0);
+            AnchorPane.setRightAnchor(viewMap, 10.0);
+            AnchorPane.setBottomAnchor(viewMap, 10.0);
+            anchorPane.getChildren().add(viewMap);  
+
+            /** ----- Begin Debug --------*/                 
+            final Clipboard clipboard = Clipboard.getSystemClipboard();
+            final ClipboardContent content = new ClipboardContent();
+            content.putString(sHTML);            
+            clipboard.setContent(content);                                
+            /**------ End Debug --------- */
+            //viewMap.getEngine().loadContent(sHTML,"text/html");
+            StackPane subRoot = new StackPane();
+            subRoot.getChildren().add(anchorPane);
+            Scene secondScene = null;
+            if (myConfig.getOS() == osType.LINUX) {
+                // With this code for Linux, this is not OK with Win and Mac 
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+            } else {
+                // With this code, subStage.setMaximized(true) don't run under Linux
+                secondScene = new Scene(subRoot, 500, 400);
+            }
+            Stage subStage = new Stage();
+            // We want modal window
+            subStage.initModality(Modality.APPLICATION_MODAL);
+            subStage.setScene(secondScene); 
+            viewMap.getEngine().loadContent(sHTML,"text/html");
+            // Ne fonctionnait pas sous Linux...
+            subStage.setMaximized(true);
+            subStage.show();            
+        }
+    }    
      
 
     /**
@@ -481,7 +587,12 @@ public class SitesViewController {
         rdAll.setText(i18n.tr("Tous"));
         rdDeco.setText(i18n.tr("Décollage"));
         rdAttero.setText(i18n.tr("Atterissage"));
-        rdNondef.setText(i18n.tr("Non défini"));                        
+        rdNondef.setText(i18n.tr("Non défini"));     
+        btnMap.setStyle("-fx-background-color: transparent;");
+        Tooltip mapToolTip = new Tooltip();
+        mapToolTip.setStyle(myConfig.getDecoToolTip());
+        mapToolTip.setText(i18n.tr("Carte plein écran"));
+        btnMap.setTooltip(mapToolTip);        
     }    
     
 }
