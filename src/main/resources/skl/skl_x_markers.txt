@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&v=3"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <style>
+        html, body, #carte {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }    
+        .leaflet-google-layer{
+            z-index: 0;
+        }
+        .leaflet-map-pane{
+            z-index: 100;
+        }        
+    </style>
+</head>
+<body>
+
+<div id="carte"></div>
+
+<script type='text/javascript'>
+    var tabPoints = [];
+%tabPoints%
+    var infoPoints = [];
+%infoPoints%
+
+    L.Map = L.Map.extend({
+        openPopup: function(popup) {
+            //        this.closePopup();  // just comment this
+            this._popup = popup;
+
+            return this.addLayer(popup).fire('popupopen', {
+                popup: this._popup
+            });
+        }
+    }); /***  end of hack ***/
+
+
+    // Si on ne met pas le setView, le Extend destiné à ouvrir les Popup de tous les markers ne fonctionne pas
+    var map = new L.Map('carte');
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    var googleLayer = new L.Google('TERRAIN');
+
+    %layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+        "Google" : googleLayer
+    };
+
+    L.control.layers(baseMaps).addTo(map);
+
+    for (var i = 0; i < tabPoints.length; i++) {
+        marker = new L.marker(tabPoints[i])
+                .addTo(map)
+                .bindPopup(infoPoints[i])
+                .openPopup();
+    }
+
+    map.fitBounds(tabPoints,{maxZoom : 15});
+    if (map.getZoom() < 5) map.setZoom(7);
+
+</script>
+</body>
+</html>
