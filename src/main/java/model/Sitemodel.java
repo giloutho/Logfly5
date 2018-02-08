@@ -7,7 +7,7 @@
 package model;
 
 import javafx.beans.property.SimpleStringProperty;
-
+import javafx.beans.property.SimpleDoubleProperty;
 /**
  *
  * @author gil
@@ -21,6 +21,8 @@ public class Sitemodel {
     public SimpleStringProperty alt = new SimpleStringProperty();
     public SimpleStringProperty orient = new SimpleStringProperty();    
     public SimpleStringProperty type = new SimpleStringProperty();
+    public SimpleDoubleProperty latitude = new SimpleDoubleProperty();
+    public SimpleDoubleProperty longitude = new SimpleDoubleProperty();
      
     public String getIdSite() {
         return idSite.get();
@@ -77,5 +79,23 @@ public class Sitemodel {
     public void setType(String typeStr) {
         type.set(typeStr);
     }    
+
+    public Double getLatitude() {
+        return latitude.get();
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude.set(latitude);
+    }
+
+    public Double getLongitude() {
+        return longitude.get();
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude.set(longitude);
+    }
+    
+   
     
 }
