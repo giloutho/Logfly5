@@ -7,14 +7,26 @@
 package controller;
 
 import Logfly.Main;
+import database.dbAdd;
+import database.dbSearch;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import igc.pointIGC;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,6 +37,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -45,9 +58,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javax.management.StringValueExp;
 import leaflet.map_X_markers;
 import leaflet.map_markers;
 import leaflet.map_visu;
@@ -104,6 +119,7 @@ public class SitesViewController {
     // Settings
     configProg myConfig;
     StringBuilder sbError;
+    String RC = "\n";
     
     //START | SQLITE
     private static Statement stat;
@@ -127,6 +143,7 @@ public class SitesViewController {
         rdNondef.setToggleGroup(rdGroup);        
     }    
     
+    
     /**
      * Initialization of the TableView
      * Fill the table with data from db
@@ -139,6 +156,7 @@ public class SitesViewController {
         
         // filter process read on http://code.makery.ch/blog/javafx-8-tableview-sorting-filtering/
         // wrap the ObservableList in a FilteredList (initially display all data).
+        // the same site has an old version of code : http://code.makery.ch/blog/javafx-2-tableview-filter/
         filteredData = new FilteredList<>(dataSites, p -> true);
         
         // set the filter Predicate whenever the filter changes.
@@ -193,7 +211,6 @@ public class SitesViewController {
             stmt = myConfig.getDbConn().createStatement();
             rs = stmt.executeQuery(sReq);
             if (rs != null)  { 
-                tableSites.getItems().clear();  
                 while (rs.next()) {
                     Sitemodel si = new Sitemodel();  
                     si.setIdSite(rs.getString("S_ID"));
@@ -290,7 +307,9 @@ public class SitesViewController {
     @FXML
     private void pushAll() {
         if (rdAll.isSelected()) {
-            String sReq = "SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site ORDER BY S_Nom";
+            String sReq = "SELECT * FROM Site ORDER BY S_Nom";
+            dataSites.clear();
+            mapViewer.getEngine().load("about:blank");  
             fillTable(sReq);
         }
     }       
@@ -298,15 +317,19 @@ public class SitesViewController {
     @FXML
     private void pushDeco() {
         if (rdDeco.isSelected()) {
-            String sReq = "SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site WHERE S_Type = 'D' ORDER BY S_Nom";
-            fillTable(sReq);
+            String sReq = "SELECT * FROM Site WHERE S_Type = 'D' ORDER BY S_Nom";
+            dataSites.clear(); 
+            mapViewer.getEngine().load("about:blank");
+            fillTable(sReq);   
         }
     }       
     
     @FXML
     private void pushAttero() {
         if (rdAttero.isSelected()) {
-            String sReq = "SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site WHERE S_Type = 'A' ORDER BY S_Nom";
+            String sReq = "SELECT * FROM Site WHERE S_Type = 'A' ORDER BY S_Nom";
+            dataSites.clear(); 
+            mapViewer.getEngine().load("about:blank");
             fillTable(sReq);
         }
     }       
@@ -314,7 +337,9 @@ public class SitesViewController {
     @FXML
     private void pushNondef() {
         if (rdNondef.isSelected()) {
-            String sReq = "SELECT S_ID, S_Nom, S_Localite, S_CP,S_Alti, S_Orientation,S_Type FROM Site WHERE S_Type <> 'D' AND S_Type <> 'A' ORDER BY S_Nom";
+            String sReq = "SELECT * FROM Site WHERE S_Type <> 'D' AND S_Type <> 'A' ORDER BY S_Nom";
+            dataSites.clear(); 
+            mapViewer.getEngine().load("about:blank");  
             fillTable(sReq);
         }
     }     
@@ -381,7 +406,11 @@ public class SitesViewController {
                     pstmt = myConfig.getDbConn().prepareStatement(sReq);
                     pstmt.setInt(1, Integer.valueOf(selSite.getIdSite()));
                     pstmt.executeUpdate();    
-                    tableSites.getItems().remove(selectedIndex);
+                    // With filtered list tableSites.getItems().remove(selectedIndex) does'nt work
+                    int visibleIndex = tableSites.getSelectionModel().getSelectedIndex();
+                    // Source index of master data.
+                    int sourceIndex = sortedData.getSourceIndexFor(dataSites, visibleIndex);
+                    dataSites.remove(sourceIndex);
                     pstmt.close();
                 } catch (Exception e) {
                     alertbox aError = new alertbox(myConfig.getLocale());
@@ -514,6 +543,138 @@ public class SitesViewController {
             subStage.show();            
         }
     }    
+    
+    /**
+     * Sequence is patterned on FFVL format. 
+     * But since 2014, FFVL remove export sites files
+     * We need a field country, for this, we use SITE_STRUCTURE_NOM field
+     */
+    private void exportCsv() {
+  
+        String Pt_Virg = ";";
+        String Req; 
+        int res = -1;
+        Statement stmt = null;
+        ResultSet rs = null; ;
+        String sReq;
+        StringBuilder sbLine;
+        
+        ObservableList<Sitemodel> selSites = tableSites.getSelectionModel().getSelectedItems();   
+
+        int nbSites = 0;
+        for(Sitemodel oneSite : selSites){   
+            nbSites++;
+        }
+        dialogbox dConfirm = new dialogbox();
+        StringBuilder sbMsg = new StringBuilder(); 
+        sbMsg.append(String.valueOf(nbSites)).append(" ").append(i18n.tr(" sites sélectionnés- Exporter ?"));
+        if (dConfirm.YesNo("", sbMsg.toString()))   { 
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter(i18n.tr("Format csv"), "*.csv"),
+                new FileChooser.ExtensionFilter(i18n.tr("Format texte"), "*.txt")
+            );  
+            File selectedFile = fileChooser.showSaveDialog(null);        
+            if(selectedFile != null){
+                String selExt = systemio.textio.getFileExtension(selectedFile);
+                selExt = selExt.toUpperCase();            
+                try {
+                   // FileWriter fileWriter = null;
+                    //fileWriter = new FileWriter(selectedFile);
+                    FileOutputStream fileStream = new FileOutputStream(selectedFile);
+                    Charset ENCODING = StandardCharsets.ISO_8859_1;
+                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, ENCODING);
+                   // fileWriter.write(currTrace.getFicIGC());
+                    for(Sitemodel oneSite : selSites){                          
+                        sReq = "SELECT * FROM Site WHERE S_ID ="+oneSite.getIdSite();
+                        stmt = myConfig.getDbConn().createStatement();
+                        rs =  stmt.executeQuery(sReq);
+                        if (rs != null)  {
+                            sbLine = new StringBuilder();
+                            sbLine.append("").append(Pt_Virg); // POINT_ID                            
+                            sbLine.append(rs.getString(2)).append(Pt_Virg);  // POINT_NOM                            
+                            sbLine.append(rs.getString(9)).append(Pt_Virg);   // POINT_LATITUDE                            
+                            sbLine.append(rs.getString(10)).append(Pt_Virg);  // POINT_LONGITUDE                            
+                            sbLine.append(rs.getString(8)).append(Pt_Virg);  // POINT_ALTITUDE
+                            switch (rs.getString(6)) {
+                                case "A":                                    
+                                    sbLine.append("Atterrissage").append(Pt_Virg);   // POINT_TYPE
+                                    break;
+                                case "D":                                    
+                                    sbLine.append("Décollage").append(Pt_Virg);   // //POINT_TYPE
+                                    break;
+                                default:                                    
+                                    sbLine.append("Inconnu").append(Pt_Virg);   // POINT_TYPE
+                            }                              
+                            sbLine.append("").append(Pt_Virg);   // POINT_DEPARTEMENT                             
+                            sbLine.append(rs.getString(7)).append(Pt_Virg);   // POINT_ORIENTATION                            
+                            sbLine.append("").append(Pt_Virg);  // POINT_PRATIQUE                            
+                            sbLine.append("").append(Pt_Virg);   // SITE_ID                            
+                            sbLine.append(rs.getString(4)).append(Pt_Virg);  // SITE_CP                            
+                            sbLine.append(rs.getString(3)).append(Pt_Virg);    // SITE_COMMUNE                            
+                            sbLine.append(rs.getString(5)).append(Pt_Virg);   // SITE_STRUCTURE_NOM                            
+                            sbLine.append("").append(Pt_Virg);   // SITE_STRUCTURE_URL                            
+                            sbLine.append("").append(Pt_Virg);   // SITE_URL                            
+                            sbLine.append("").append(Pt_Virg);    // DIRECTION                            
+                            sbLine.append(rs.getString(11)).append(RC);    // COMMENTAIRE
+                            writer.write(sbLine.toString());                            
+                        }
+                    }
+                    writer.close();
+                    alertbox aInfo = new alertbox(myConfig.getLocale());
+                    aInfo.alertInfo(i18n.tr("Export terminé")); 
+                } catch (Exception e) {
+                    res = 2;
+                }
+                                  
+            }        
+        }
+    }
+    
+    private void importCsv() {        
+        FileChooser fileChooser = new FileChooser();
+     //   FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.csv)"), "*.csv");        
+    //    fileChooser.getExtensionFilters().add(csvFilter);
+        int addSitesOK = 0;
+        int addSitesBad = 0;
+        int addNb = 0;
+        File selectedFile = fileChooser.showOpenDialog(mainApp.getPrimaryStage());  
+        if(selectedFile != null){    
+            try {
+                Charset ENCODING = StandardCharsets.ISO_8859_1;
+                Path path = Paths.get(selectedFile.getAbsolutePath());
+                List<String> lines = Files.readAllLines(path, ENCODING);
+                for (String oneLine : lines) {
+                    System.out.println(oneLine);
+                    addNb++;
+                    String[] partLine = oneLine.split(";");
+                    if (partLine.length > 3 && !partLine[0].equals("POINT_ID")) {
+                       dbSearch rechSite = new dbSearch(myConfig);
+                       if (!rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]))) {
+                           dbAdd addSite = new dbAdd(myConfig);
+                           boolean addRes = addSite.importSite(partLine);
+                           if (addRes) {
+                               addSitesOK++;                                                                        
+                           }
+                           else
+                               addSitesBad++;
+                        }
+                    }
+                }
+                alertbox aInfo = new alertbox(myConfig.getLocale());
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.append(String.valueOf(addSitesOK)).append(" ").append(i18n.tr("sites importés")).append(" / ").append(String.valueOf(addNb));
+                // if addSiteBad > 0
+                sbMsg.append(RC).append(String.valueOf(addSitesBad)).append(" ").append(i18n.tr("sites rejetés"));
+                aInfo.alertInfo(sbMsg.toString());
+                // Refresh table with all sites
+                rdAll.setSelected(true);
+                pushAll();                
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
+        }                
+    }
      
 
     /**
@@ -528,7 +689,7 @@ public class SitesViewController {
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         iniTable();
-        iniEventBar();     
+        iniEventBar();             
     }    
     
     private void iniEventBar() {
@@ -570,6 +731,22 @@ public class SitesViewController {
             }            
         });
         cm.getItems().add(cmItem2);
+        
+        MenuItem cmItem3 = new MenuItem(i18n.tr("Importer"));        
+        cmItem3.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                importCsv();
+            }            
+        });
+        cm.getItems().add(cmItem3);        
+        
+        MenuItem cmItem4 = new MenuItem(i18n.tr("Exporter"));        
+        cmItem4.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                exportCsv();
+            }            
+        });
+        cm.getItems().add(cmItem4);        
         
         return cm;        
     }
