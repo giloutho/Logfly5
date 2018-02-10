@@ -196,4 +196,72 @@ public class dbAdd {
         
         return res;
     }
+    
+    public boolean importSite(String[] partImport)  {
+        boolean res = false;
+        StringBuilder sReq = new StringBuilder();
+        LocalDateTime ldtNow = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String sQuote ="'";
+        Statement stmt = null;
+        ResultSet rs = null;
+        PreparedStatement preparedStatement = null;
+        try {            
+            StringBuilder insertTableSQL = new StringBuilder();
+            insertTableSQL.append("INSERT INTO Site (S_Nom,S_Localite,S_CP,S_Pays,S_Type,S_Orientation,S_Alti,S_Latitude,S_Longitude,S_Commentaire,S_Maj) VALUES");
+            insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?)");
+            preparedStatement = myConfig.getDbConn().prepareStatement(insertTableSQL.toString());
+            preparedStatement.setString(1, partImport[1].toUpperCase());
+            preparedStatement.setString(2,partImport[11].toUpperCase());            
+            preparedStatement.setString(3,partImport[10]);
+            preparedStatement.setString(4,partImport[12].toUpperCase());
+            switch (partImport[5]) {
+                case "Décollage":
+                    preparedStatement.setString(5,"D");
+                    break;
+                case "Atterrissage":
+                    preparedStatement.setString(5,"A");
+                    break;    
+                default:
+                    preparedStatement.setString(5,"");
+            }
+            // Orientation j'ai limité le champ à 20 caractères donc il faut s'assurer que ça ne dépasse pas
+            // dans le 74 on avait Coche Cabane : N,SO,OSO,O,ONO,NO,NNO soit 21 caractères !!!
+            preparedStatement.setString(6,partImport[7]);   
+            // Je voulais l'altitude en numérique pour pouvoir éventuellement rechercher tous les décos supérieur à 1000
+            // Exceptionnellement l'altitude peut être saisie 1870m au lieu de 1870 ce qui naturellement déclenche des erreurs à l'insertion 
+            String sAlt;
+            if (partImport[4].length() > 4)
+                sAlt = partImport[4].substring(0, 4);
+            else
+                sAlt = partImport[4];
+            preparedStatement.setInt(7,Integer.parseInt(sAlt));
+            double dLat = Double.parseDouble(partImport[2]);            
+            preparedStatement.setDouble(8, dLat);
+            double dLong = Double.parseDouble(partImport[3]); 
+            preparedStatement.setDouble(9,dLong);
+            String sComment;
+            if (partImport.length > 15) 
+                sComment = partImport[16];
+            else
+                sComment = "";
+            preparedStatement.setString(10,sComment);
+            preparedStatement.setString(11,ldtNow.format(formatter));
+            preparedStatement.executeUpdate();                
+            res = true;
+        } catch ( Exception e ) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("requête : ").append(sReq);
+            mylogging.log(Level.SEVERE, sbError.toString());                                   
+        } finally {
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                 }
+            } catch(Exception e) { } 
+        }                
+        
+        return res;        
+    }
 }
