@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import javafx.scene.control.Alert;
+import javax.management.StringValueExp;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -253,4 +254,55 @@ public class dbSearch {
         return res;
         
     }
+    
+    /**
+     * Check if a site exists in database
+     * Code directly translated from xLogfly
+     * @param pLat
+     * @param pLong
+     * @return 
+     */
+    public boolean existeSite(double pLat,double pLong) {
+        boolean res = false;
+        Statement stmt = null;
+        ResultSet rs = null;
+        double arrLat, arrLong;
+        double latMin, latMax, longMin, longMax;
+        StringBuilder sbReq = new StringBuilder();
+        
+        // On réduit à deux décimales, pour les explis voir l'aide à Ceil
+        arrLat = Math.ceil(pLat*1000)/1000;
+        arrLong = Math.ceil(pLong*1000)/1000;
+        // First we take a greater value : 0.005 
+        // we have a problem with landing zone just near take off
+        // take off is inserted, it exists so landing is rejected
+        latMin = arrLat - 0.001;     // 0,01 1,13 km 0,001  113m
+        latMax = arrLat + 0.001;
+        longMin = arrLong - 0.001;
+        longMax = arrLong + 0.001;
+        sbReq.append("SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Type FROM Site WHERE S_Latitude > ");
+        sbReq.append(String.valueOf(latMin)).append(" AND S_Latitude < ").append(String.valueOf(latMax));
+        sbReq.append(" AND S_Longitude > ").append(String.valueOf(longMin)).append(" AND S_Longitude < ").append(String.valueOf(longMax));
+        try {
+            stmt = myConfig.getDbConn().createStatement();
+            rs = stmt.executeQuery(sbReq.toString());
+            // if (rs != null)  is not a good solution
+            // the best test -> if rs.next() returns false then there are no rows.
+            if (rs.next()) {
+                res = true;
+            }            
+        } catch ( Exception e ) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("Problème de lecture sur le carnet de vol");
+            mylogging.log(Level.SEVERE, sbError.toString());                                                         
+        } finally {
+            try{
+                rs.close(); 
+                stmt.close();
+            } catch(Exception e) { } 
+        }            
+        
+        return res;
+    }    
 }
