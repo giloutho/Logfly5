@@ -9,6 +9,7 @@ package controller;
 import Logfly.Main;
 import database.dbAdd;
 import database.dbSearch;
+import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import igc.pointIGC;
@@ -32,6 +33,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -66,6 +68,7 @@ import javax.management.StringValueExp;
 import leaflet.map_X_markers;
 import leaflet.map_markers;
 import leaflet.map_visu;
+import littlewins.winTrackFile;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -129,6 +132,12 @@ public class SitesViewController {
     private ObservableList <Sitemodel> dataSites; 
     private FilteredList<Sitemodel> filteredData;
     private SortedList<Sitemodel> sortedData;
+    
+    private int addNb = 0;
+    private int addSitesOK = 0;
+    private int addSitesBad = 0;
+    private StringBuilder sbDoublons;
+    private StringBuilder sbRejected;
     
     @FXML
     private void initialize() {
@@ -302,6 +311,27 @@ public class SitesViewController {
                 } catch(Exception e) { } 
             } 
         }
+    }    
+    
+    private void searchDuplicate() {
+        double latMin, latMax, longMin, longMax;
+        StringBuilder sbReq = new StringBuilder();
+        
+        Sitemodel selectedSite = tableSites.getSelectionModel().getSelectedItem();
+        // On réduit à deux décimales, pour les explis voir l'aide à Ceil
+        double arrLat = Math.ceil(selectedSite.getLatitude()*1000)/1000;
+        double arrLong = Math.ceil(selectedSite.getLongitude()*1000)/1000;
+        latMin = arrLat - 0.001;     // 0,01 1,13 km 0,001  113m
+        latMax = arrLat + 0.001;
+        longMin = arrLong - 0.001;
+        longMax = arrLong + 0.001;
+        sbReq.append("SELECT * FROM Site WHERE S_Latitude > ");
+        sbReq.append(String.valueOf(latMin)).append(" AND S_Latitude < ").append(String.valueOf(latMax));
+        sbReq.append(" AND S_Longitude > ").append(String.valueOf(longMin)).append(" AND S_Longitude < ").append(String.valueOf(longMax));
+        dataSites.clear();
+        mapViewer.getEngine().load("about:blank");  
+        txtSearch.setText(null);
+        fillTable(sbReq.toString());
     }    
 
     @FXML
@@ -631,6 +661,82 @@ public class SitesViewController {
         }
     }
     
+    private void importFileCsv(File pFile)  {
+        
+        addNb = 0;
+        addSitesOK = 0;
+        addSitesBad = 0;
+        sbDoublons = new StringBuilder();
+        sbRejected = new StringBuilder();
+        
+        try {
+            Charset ENCODING = StandardCharsets.ISO_8859_1;
+            Path path = Paths.get(pFile.getAbsolutePath());
+            List<String> lines = Files.readAllLines(path, ENCODING);
+            for (String oneLine : lines) {
+                addNb++;
+                String[] partLine = oneLine.split(";");
+                if (partLine.length > 3 && !partLine[0].equals("POINT_ID")) {
+                   dbSearch rechSite = new dbSearch(myConfig);
+                   //String siteExist = rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]));
+                   String siteExist = null;
+                   if (siteExist == null) {
+                       dbAdd addSite = new dbAdd(myConfig);
+                       boolean addRes = addSite.importSite(partLine);
+                       if (addRes) {
+                           addSitesOK++;                                                                        
+                       } else {
+                           addSitesBad++;
+                           System.out.println("bad : "+partLine[1]+" "+partLine[2]+" "+partLine[3]);
+                       }
+                    } else {
+                       sbDoublons.append(partLine[1]).append(" ").append(siteExist).append(RC);   
+                       sbRejected.append(oneLine).append(RC);
+                   }
+                }
+            } 
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }                    
+    }
+    
+    private void closeImportCsv() {
+        boolean writeReject = false;
+        
+        alertbox aInfo = new alertbox(myConfig.getLocale());
+        StringBuilder sbMsg = new StringBuilder();
+        sbMsg.append(String.valueOf(addSitesOK)).append(" ").append(i18n.tr("sites importés")).append(" / ").append(String.valueOf(addNb)).append(" ").append("lignes");
+        if (addSitesBad > 0) sbMsg.append(RC).append(String.valueOf(addSitesBad)).append(" ").append(i18n.tr("sites rejetés"));
+        aInfo.alertInfo(sbMsg.toString());
+        if (addSitesOK < addNb) {    
+            if (myConfig.isValidConfig()) {
+                try {
+                    File fileReject = new File(myConfig.getPathW()+"rejectedsites.csv");
+                    FileOutputStream fileStream = new FileOutputStream(fileReject);
+                    Charset ENCODING = StandardCharsets.ISO_8859_1;
+                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, ENCODING);   
+                    writer.write(sbRejected.toString());                            
+                    writer.close();
+                    writeReject = true;
+                } catch (Exception e) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());                
+                }
+            }
+            if (writeReject) {
+                String msg = i18n.tr("Liste enregistrée dans <rejectedsites.csv>")+RC+RC;
+                sbDoublons.insert(0,msg);
+            }
+            winTrackFile displayDoub = new winTrackFile(sbDoublons.toString());             
+        }
+        // Refresh table with all sites
+        rdAll.setSelected(true);
+        pushAll();               
+    }
+        
     private void importCsv() {        
         FileChooser fileChooser = new FileChooser();
      //   FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.csv)"), "*.csv");        
@@ -640,42 +746,32 @@ public class SitesViewController {
         int addNb = 0;
         File selectedFile = fileChooser.showOpenDialog(mainApp.getPrimaryStage());  
         if(selectedFile != null){    
-            try {
-                Charset ENCODING = StandardCharsets.ISO_8859_1;
-                Path path = Paths.get(selectedFile.getAbsolutePath());
-                List<String> lines = Files.readAllLines(path, ENCODING);
-                for (String oneLine : lines) {
-                    System.out.println(oneLine);
-                    addNb++;
-                    String[] partLine = oneLine.split(";");
-                    if (partLine.length > 3 && !partLine[0].equals("POINT_ID")) {
-                       dbSearch rechSite = new dbSearch(myConfig);
-                       if (!rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]))) {
-                           dbAdd addSite = new dbAdd(myConfig);
-                           boolean addRes = addSite.importSite(partLine);
-                           if (addRes) {
-                               addSitesOK++;                                                                        
-                           }
-                           else
-                               addSitesBad++;
-                        }
-                    }
+            ProgressForm pForm = new ProgressForm();
+
+            Task<Void> task = new Task<Void>() {
+                @Override
+                public Void call() throws InterruptedException { 
+                    importFileCsv(selectedFile);
+                    return null ;
                 }
-                alertbox aInfo = new alertbox(myConfig.getLocale());
-                StringBuilder sbMsg = new StringBuilder();
-                sbMsg.append(String.valueOf(addSitesOK)).append(" ").append(i18n.tr("sites importés")).append(" / ").append(String.valueOf(addNb));
-                // if addSiteBad > 0
-                sbMsg.append(RC).append(String.valueOf(addSitesBad)).append(" ").append(i18n.tr("sites rejetés"));
-                aInfo.alertInfo(sbMsg.toString());
-                // Refresh table with all sites
-                rdAll.setSelected(true);
-                pushAll();                
-            } catch (Exception e) {
-                System.out.println(e.toString());
-            }
+
+            };
+            // binds progress of progress bars to progress of task:
+            pForm.activateProgressBar(task);
+
+            // task is finished 
+            task.setOnSucceeded(event -> {
+                pForm.getDialogStage().close();
+                closeImportCsv();
+            });
+
+            pForm.getDialogStage().show();
+
+            Thread thread = new Thread(task);
+            thread.start();                
         }                
     }
-     
+        
 
     /**
      * Is called by the main application to give a reference back to itself.
@@ -732,6 +828,23 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem2);
         
+        MenuItem cmItem22 = new MenuItem(i18n.tr("Doublons"));        
+        cmItem22.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                searchDuplicate();
+            }            
+        });
+        cm.getItems().add(cmItem22);   
+        
+        MenuItem cmItem23 = new MenuItem(i18n.tr("Export waypoints"));        
+        cmItem23.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                alertbox aMsg = new alertbox(myConfig.getLocale());
+                aMsg.alertInfo(i18n.tr("Non implémenté...")); 
+            }            
+        });
+        cm.getItems().add(cmItem23);          
+        
         MenuItem cmItem3 = new MenuItem(i18n.tr("Importer"));        
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -747,6 +860,7 @@ public class SitesViewController {
             }            
         });
         cm.getItems().add(cmItem4);        
+
         
         return cm;        
     }
