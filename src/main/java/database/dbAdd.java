@@ -12,6 +12,8 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.scene.control.Alert;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -206,46 +208,60 @@ public class dbAdd {
         Statement stmt = null;
         ResultSet rs = null;
         PreparedStatement preparedStatement = null;
+        String p_Nom = null;
+        String p_Localite = null;
+        String p_CP = null;
+        String p_Pays = null;
+        String p_Type = null;
+        String p_Orientation = null;
+        int p_Alt = 0;
+        double p_Latitude = 0.00;
+        double p_Longitude = 0.00;
+        String p_Commentaire = null;
+        if (partImport.length > 1) p_Nom = partImport[1].toUpperCase();
+        if (partImport.length > 11) p_Localite = partImport[11].toUpperCase();
+        if (partImport.length > 10) p_CP = partImport[10];
+        if (partImport.length > 12) p_Pays = partImport[12].toUpperCase();        
+        if (partImport.length > 5) {
+            switch (partImport[5]) {
+                case "Décollage":
+                    p_Type = "D";
+                    break;
+                case "Atterrissage":
+                    p_Type = "A";
+                    break;    
+            }            
+        }
+        if (partImport.length > 7) p_Orientation = partImport[7]; // dans le 74 on avait Coche Cabane : N,SO,OSO,O,ONO,NO,NNO soit 21 caractères !!!        
+        if (partImport.length > 4) {
+            // Je voulais l'altitude en pur numérique pour pouvoir éventuellement rechercher tous les décos supérieur à 1000
+            // L'altitude peut être saisie avec ou sans espaces et avec la lettre m (1870m)
+            String numberNoWhiteSpace = partImport[4].replaceAll("\\s","");
+            Pattern patternI = Pattern.compile("([\\+-]?\\d+)([eE][\\+-]?\\d+)?");
+            Matcher matcherI = patternI.matcher(numberNoWhiteSpace);
+            if (matcherI.find()) {
+                p_Alt = Integer.parseInt(matcherI.group(0));                
+            } 
+        }
+        if (partImport.length > 2) p_Latitude = Double.parseDouble(partImport[2]); 
+        if (partImport.length > 3) p_Longitude = Double.parseDouble(partImport[3]); 
+        if (partImport.length > 15) p_Commentaire = partImport[16];        
+            
         try {            
             StringBuilder insertTableSQL = new StringBuilder();
             insertTableSQL.append("INSERT INTO Site (S_Nom,S_Localite,S_CP,S_Pays,S_Type,S_Orientation,S_Alti,S_Latitude,S_Longitude,S_Commentaire,S_Maj) VALUES");
             insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?)");
             preparedStatement = myConfig.getDbConn().prepareStatement(insertTableSQL.toString());
-            preparedStatement.setString(1, partImport[1].toUpperCase());
-            preparedStatement.setString(2,partImport[11].toUpperCase());            
-            preparedStatement.setString(3,partImport[10]);
-            preparedStatement.setString(4,partImport[12].toUpperCase());
-            switch (partImport[5]) {
-                case "Décollage":
-                    preparedStatement.setString(5,"D");
-                    break;
-                case "Atterrissage":
-                    preparedStatement.setString(5,"A");
-                    break;    
-                default:
-                    preparedStatement.setString(5,"");
-            }
-            // Orientation j'ai limité le champ à 20 caractères donc il faut s'assurer que ça ne dépasse pas
-            // dans le 74 on avait Coche Cabane : N,SO,OSO,O,ONO,NO,NNO soit 21 caractères !!!
-            preparedStatement.setString(6,partImport[7]);   
-            // Je voulais l'altitude en numérique pour pouvoir éventuellement rechercher tous les décos supérieur à 1000
-            // Exceptionnellement l'altitude peut être saisie 1870m au lieu de 1870 ce qui naturellement déclenche des erreurs à l'insertion 
-            String sAlt;
-            if (partImport[4].length() > 4)
-                sAlt = partImport[4].substring(0, 4);
-            else
-                sAlt = partImport[4];
-            preparedStatement.setInt(7,Integer.parseInt(sAlt));
-            double dLat = Double.parseDouble(partImport[2]);            
-            preparedStatement.setDouble(8, dLat);
-            double dLong = Double.parseDouble(partImport[3]); 
-            preparedStatement.setDouble(9,dLong);
-            String sComment;
-            if (partImport.length > 15) 
-                sComment = partImport[16];
-            else
-                sComment = "";
-            preparedStatement.setString(10,sComment);
+            preparedStatement.setString(1, p_Nom);
+            preparedStatement.setString(2,p_Localite);            
+            preparedStatement.setString(3,p_CP);
+            preparedStatement.setString(4,p_Pays);
+            preparedStatement.setString(5,p_Type);                    
+            preparedStatement.setString(6,p_Orientation);   
+            preparedStatement.setInt(7,p_Alt);;            
+            preparedStatement.setDouble(8, p_Latitude);
+            preparedStatement.setDouble(9,p_Longitude);
+            preparedStatement.setString(10,p_Commentaire);
             preparedStatement.setString(11,ldtNow.format(formatter));
             preparedStatement.executeUpdate();                
             res = true;
@@ -253,6 +269,7 @@ public class dbAdd {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.getMessage());
             sbError.append("\r\n").append("requête : ").append(sReq);
+            sbError.append("\r\n").append(partImport[1]).append(";").append(partImport[2]).append(";").append(partImport[3]);
             mylogging.log(Level.SEVERE, sbError.toString());                                   
         } finally {
             try {
