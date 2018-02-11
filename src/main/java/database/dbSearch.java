@@ -262,8 +262,9 @@ public class dbSearch {
      * @param pLong
      * @return 
      */
-    public boolean existeSite(double pLat,double pLong) {
-        boolean res = false;
+    public String existeSite(double pLat,double pLong) {
+        String res = null;
+        StringBuilder sbRes = new StringBuilder();
         Statement stmt = null;
         ResultSet rs = null;
         double arrLat, arrLong;
@@ -280,7 +281,7 @@ public class dbSearch {
         latMax = arrLat + 0.001;
         longMin = arrLong - 0.001;
         longMax = arrLong + 0.001;
-        sbReq.append("SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Type FROM Site WHERE S_Latitude > ");
+        sbReq.append("SELECT S_ID,S_Nom,S_Latitude,S_Longitude,S_Localite FROM Site WHERE S_Latitude > ");
         sbReq.append(String.valueOf(latMin)).append(" AND S_Latitude < ").append(String.valueOf(latMax));
         sbReq.append(" AND S_Longitude > ").append(String.valueOf(longMin)).append(" AND S_Longitude < ").append(String.valueOf(longMax));
         try {
@@ -289,7 +290,8 @@ public class dbSearch {
             // if (rs != null)  is not a good solution
             // the best test -> if rs.next() returns false then there are no rows.
             if (rs.next()) {
-                res = true;
+                sbRes.append(" - !!! > ").append(rs.getString("S_Nom")).append(" ").append(rs.getString("S_Localite"));
+                res = sbRes.toString();
             }            
         } catch ( Exception e ) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
