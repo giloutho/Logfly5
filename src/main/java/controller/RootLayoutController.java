@@ -331,7 +331,7 @@ public class RootLayoutController {
     }
     
     private void dbRepair() {
-         alertbox aError = new alertbox(myConfig.getLocale());
+        alertbox aError = new alertbox(myConfig.getLocale());
         aError.alertInfo(i18n.tr("Non implémenté..."));     
     }
     
