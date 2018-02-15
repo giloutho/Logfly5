@@ -277,7 +277,7 @@ public class ImportViewController {
                         if(fMyTrace.exists() && fMyTrace.isFile()) {           
                             traceGPS myTrace = new traceGPS(fMyTrace,true, myConfig);
                             if (myTrace.isDecodage()) { 
-                                dbAdd myDbAdd = new dbAdd(myConfig);
+                                dbAdd myDbAdd = new dbAdd(myConfig, i18n);
                                 myDbAdd.addVolCarnet(myTrace);
                             }
                         }
