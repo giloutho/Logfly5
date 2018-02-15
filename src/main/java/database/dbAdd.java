@@ -37,9 +37,9 @@ public class dbAdd {
     
     private StringBuilder sbError;
     
-    public dbAdd(configProg pConfig)  {
+    public dbAdd(configProg pConfig, I18n pI18n)  {
         myConfig = pConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",dbAdd.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        this.i18n = pI18n;
     }
     
     
