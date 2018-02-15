@@ -1432,7 +1432,7 @@ public class GPSViewController {
                             if (strTrack != null ) {                                
                                 traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
                                 if (downTrack.isDecodage()) { 
-                                    dbAdd myDbAdd = new dbAdd(myConfig);
+                                    dbAdd myDbAdd = new dbAdd(myConfig,i18n);
                                     int resAdd = myDbAdd.addVolCarnet(downTrack);
                                     if (resAdd == 0) nbFlightIn++;
                                 } else {
