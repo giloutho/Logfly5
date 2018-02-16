@@ -8,6 +8,7 @@ package controller;
 
 import Logfly.Main;
 import database.dbAdd;
+import database.dbImport;
 import database.dbSearch;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
@@ -68,13 +69,17 @@ import javax.management.StringValueExp;
 import leaflet.map_X_markers;
 import leaflet.map_markers;
 import leaflet.map_visu;
+import littlewins.winChoose;
+import littlewins.winSiteList;
 import littlewins.winTrackFile;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.osType;
+import settings.privateData;
 import systemio.mylogging;
+import systemio.webdown;
 
 /**
  *
@@ -660,119 +665,13 @@ public class SitesViewController {
             }        
         }
     }
-    
-    private void importFileCsv(File pFile)  {
-        
-        addNb = 0;
-        addSitesOK = 0;
-        addSitesBad = 0;
-        sbDoublons = new StringBuilder();
-        sbRejected = new StringBuilder();
-        
-        try {
-            Charset ENCODING = StandardCharsets.ISO_8859_1;
-            Path path = Paths.get(pFile.getAbsolutePath());
-            List<String> lines = Files.readAllLines(path, ENCODING);
-            for (String oneLine : lines) {
-                addNb++;
-                String[] partLine = oneLine.split(";");
-                if (partLine.length > 3 && !partLine[0].equals("POINT_ID")) {
-                   dbSearch rechSite = new dbSearch(myConfig);
-                   //String siteExist = rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]));
-                   String siteExist = null;
-                   if (siteExist == null) {
-                       dbAdd addSite = new dbAdd(myConfig);
-                       boolean addRes = addSite.importSite(partLine);
-                       if (addRes) {
-                           addSitesOK++;                                                                        
-                       } else {
-                           addSitesBad++;
-                           System.out.println("bad : "+partLine[1]+" "+partLine[2]+" "+partLine[3]);
-                       }
-                    } else {
-                       sbDoublons.append(partLine[1]).append(" ").append(siteExist).append(RC);   
-                       sbRejected.append(oneLine).append(RC);
-                   }
-                }
-            } 
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-        }                    
+           
+    private void fileImportCsv() {
+        winChoose myWinChoose = new winChoose(myConfig, i18n);
+        rdAll.setSelected(true);        
+        pushAll();
     }
-    
-    private void closeImportCsv() {
-        boolean writeReject = false;
-        
-        alertbox aInfo = new alertbox(myConfig.getLocale());
-        StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(String.valueOf(addSitesOK)).append(" ").append(i18n.tr("sites importés")).append(" / ").append(String.valueOf(addNb)).append(" ").append("lignes");
-        if (addSitesBad > 0) sbMsg.append(RC).append(String.valueOf(addSitesBad)).append(" ").append(i18n.tr("sites rejetés"));
-        aInfo.alertInfo(sbMsg.toString());
-        if (addSitesOK < addNb) {    
-            if (myConfig.isValidConfig()) {
-                try {
-                    File fileReject = new File(myConfig.getPathW()+"rejectedsites.csv");
-                    FileOutputStream fileStream = new FileOutputStream(fileReject);
-                    Charset ENCODING = StandardCharsets.ISO_8859_1;
-                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, ENCODING);   
-                    writer.write(sbRejected.toString());                            
-                    writer.close();
-                    writeReject = true;
-                } catch (Exception e) {
-                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                    sbError.append("\r\n").append(e.toString());
-                    mylogging.log(Level.SEVERE, sbError.toString());                
-                }
-            }
-            if (writeReject) {
-                String msg = i18n.tr("Liste enregistrée dans <rejectedsites.csv>")+RC+RC;
-                sbDoublons.insert(0,msg);
-            }
-            winTrackFile displayDoub = new winTrackFile(sbDoublons.toString());             
-        }
-        // Refresh table with all sites
-        rdAll.setSelected(true);
-        pushAll();               
-    }
-        
-    private void importCsv() {        
-        FileChooser fileChooser = new FileChooser();
-     //   FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.csv)"), "*.csv");        
-    //    fileChooser.getExtensionFilters().add(csvFilter);
-        int addSitesOK = 0;
-        int addSitesBad = 0;
-        int addNb = 0;
-        File selectedFile = fileChooser.showOpenDialog(mainApp.getPrimaryStage());  
-        if(selectedFile != null){    
-            ProgressForm pForm = new ProgressForm();
-
-            Task<Void> task = new Task<Void>() {
-                @Override
-                public Void call() throws InterruptedException { 
-                    importFileCsv(selectedFile);
-                    return null ;
-                }
-
-            };
-            // binds progress of progress bars to progress of task:
-            pForm.activateProgressBar(task);
-
-            // task is finished 
-            task.setOnSucceeded(event -> {
-                pForm.getDialogStage().close();
-                closeImportCsv();
-            });
-
-            pForm.getDialogStage().show();
-
-            Thread thread = new Thread(task);
-            thread.start();                
-        }                
-    }
-        
-
+           
     /**
      * Is called by the main application to give a reference back to itself.
      * 
@@ -843,12 +742,23 @@ public class SitesViewController {
                 aMsg.alertInfo(i18n.tr("Non implémenté...")); 
             }            
         });
-        cm.getItems().add(cmItem23);          
+        cm.getItems().add(cmItem23);  
+
+        MenuItem cmItem24 = new MenuItem(i18n.tr("Télécharger"));        
+        cmItem24.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                winSiteList myWin = new winSiteList(myConfig,i18n);
+                // Refresh table with all sites
+                rdAll.setSelected(true);
+                pushAll(); 
+            }            
+        });
+        cm.getItems().add(cmItem24);         
         
         MenuItem cmItem3 = new MenuItem(i18n.tr("Importer"));        
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                importCsv();
+                fileImportCsv();
             }            
         });
         cm.getItems().add(cmItem3);        
