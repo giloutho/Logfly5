@@ -52,14 +52,21 @@ public class webdown {
     private I18n i18n; 
     private boolean downSuccess;
     private String downPath;
+    private String textButton;
     
     public webdown(String reqUrl, String reqDirDestination, I18n pI18n, String reqSuccessMsg) {
         
         this.strUrl = reqUrl;
-        this.dirDestination = reqDirDestination;
-        this.strSuccessMsg = reqSuccessMsg;   
+        this.dirDestination = reqDirDestination;   
         this.i18n = pI18n;
         downSuccess = false;
+        if (reqSuccessMsg.equals("IMPORT CSV")) {
+            textButton = i18n.tr("Importer");
+            this.strSuccessMsg = i18n.tr("Le fichier a été téléchargé"); 
+        } else {
+            this.strSuccessMsg = reqSuccessMsg; 
+            textButton = i18n.tr("Fermer");
+        }
         winDisplay();        
     }
 
@@ -93,7 +100,7 @@ public class webdown {
         
         labelCount.textProperty().bind(myService.MessagePercent);                
         
-        Button btnClose = new Button(i18n.tr("Fermer"));
+        Button btnClose = new Button(textButton);
         btnClose.setOnAction((event) -> {           
             subStage.close();
         });
@@ -211,9 +218,10 @@ public class webdown {
                 protected Void call() throws Exception {
                     try {                   
                         URL url = new java.net.URL(strUrl);
-                        downPath = dirDestination + File.separator + new File(url.getFile()).getName();
+                        downPath = dirDestination + File.separator + new File(url.getFile()).getName();                        
                         URLConnection conn = url.openConnection();
                         int sizeFile = conn.getContentLength();
+                        System.out.println("url "+strUrl+" downPath "+downPath+" size : "+sizeFile);
                         java.io.InputStream in = conn.getInputStream();
 
                         File dstfile = new File(downPath);
@@ -244,9 +252,9 @@ public class webdown {
                         out.close();
                         
                     } catch (MalformedURLException e) {
-                        
+                        System.out.println("MalformedURLException "+e.getMessage());
                     } catch (IOException e) {
-                        
+                        System.out.println("IOException "+e.getMessage());
                     }                     
                     return null;
                 }
