@@ -158,6 +158,9 @@ public class SiteFormController {
     private SitesViewController siteController;
     private Sitemodel si = new Sitemodel();
     
+    // Reference to CarnetViewController
+    private CarnetViewController carnetController;
+    
     private Stage dialogStage;    
     
     // Localization
@@ -801,6 +804,45 @@ public class SiteFormController {
         return res;
     }
     
+    private void updateCarnet()  {
+        
+        if (!oldName.equals("") && !oldName.equals(txNom.getText())) {
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            String sReq = "SELECT V_ID,V_Site from vol where V_Site = ?";
+            try {
+                pstmt = myConfig.getDbConn().prepareStatement(sReq);                      
+                pstmt.setString(1, oldName); 
+                rs = pstmt.executeQuery();
+                if (rs != null)  {  
+                    PreparedStatement pstmtCarnet = null;                    
+                    String sReqCarnet = "UPDATE Vol SET V_Site=?, V_Pays=? WHERE V_ID =?";
+                    while (rs.next()) {
+                        pstmtCarnet = myConfig.getDbConn().prepareStatement(sReqCarnet);                      
+                        pstmtCarnet.setString(1, txNom.getText());
+                        pstmtCarnet.setString(2, txPays.getText());
+                        pstmtCarnet.setString(3, rs.getString("V_ID"));
+                        pstmtCarnet.executeUpdate();
+                        System.out.println(rs.getString("V_ID")+" mis à jour");
+                    }                
+                }
+            } catch (Exception e) {  
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                
+            } finally {
+                try{
+                    rs.close(); 
+                    pstmt.close();
+                } catch(Exception e) { 
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());                
+                } 
+            }                   
+        }     
+     }    
+    
     @FXML    
     private void handleUpdate() {      
         findTown();
@@ -813,7 +855,15 @@ public class SiteFormController {
     @FXML
     private void handleOk() {
         if (updateDb()) {
-            siteController.editReturn(true, si);
+            switch (editMode) {
+                case 0 :
+                    siteController.editReturn(true, si);
+                    break;
+                case 2 :
+                    updateCarnet();
+                    carnetController.editSiteReturn();
+                    break;
+            }
         }
         dialogStage.close();
     }      
@@ -843,6 +893,14 @@ public class SiteFormController {
         this.siteController = pSiteController;        
     }    
 
+    /**
+     * Initialize communication brdige with CarnetViewController 
+     * @param pCarnetController 
+     */
+    public void setCarnetBridge(CarnetViewController pCarnetController) {
+        this.carnetController = pCarnetController;        
+    }      
+    
     /**
      * Translate labels of the window
      */
