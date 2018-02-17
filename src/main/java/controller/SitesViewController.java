@@ -7,40 +7,29 @@
 package controller;
 
 import Logfly.Main;
-import database.dbAdd;
-import database.dbImport;
-import database.dbSearch;
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import igc.pointIGC;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -49,6 +38,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -65,21 +55,16 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javax.management.StringValueExp;
 import leaflet.map_X_markers;
 import leaflet.map_markers;
-import leaflet.map_visu;
 import littlewins.winChoose;
 import littlewins.winSiteList;
-import littlewins.winTrackFile;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.osType;
-import settings.privateData;
 import systemio.mylogging;
-import systemio.webdown;
 
 /**
  *
@@ -181,7 +166,7 @@ public class SitesViewController {
                     return true;
                 }
 
-                // Compare first name and last name of every person with filter text.
+                // Compare fields of every site with filter text.
                 String lowerCaseFilter = newValue.toLowerCase();
 
                 if (site.getNom().toLowerCase().contains(lowerCaseFilter)) {
@@ -190,9 +175,33 @@ public class SitesViewController {
                 else if (site.getVille() != null && !site.getVille().equals("")) {
                     if (site.getVille().toLowerCase().contains(lowerCaseFilter)) 
                         return true; // Filter matches site locality
+                    
+                    else if (site.getCp() != null && !site.getCp().equals("")) {
+                        if (site.getCp().toLowerCase().contains(lowerCaseFilter)) 
+                            return true; // Filter matches site locality
+                    }    
                 }
+                
                 return false; // Does not match.
             });
+        });    
+        
+        // http://stackoverflow.com/questions/32119277/colouring-table-row-in-javafx
+        // Color chart in https://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html
+        tableSites.setRowFactory(tbrow -> new TableRow<Sitemodel>() {
+            @Override
+            public void updateItem(Sitemodel item, boolean empty) {
+                super.updateItem(item, empty) ;
+                if (item == null) {
+                    setStyle("");
+                } else if (item.getType().equals("D")) {
+                    setStyle("-fx-text-background-color: darkslateblue;");
+                } else if (item.getType().equals("A")) {                  
+                    setStyle("-fx-text-background-color: darkcyan;");   
+                } else {
+                    setStyle("-fx-text-background-color: darksalmon;");
+                }
+            }
         });        
        
         // wrap the FilteredList in a SortedList. 
