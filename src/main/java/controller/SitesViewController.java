@@ -388,7 +388,7 @@ public class SitesViewController {
         }
     }     
     
-    private boolean editSite() {
+    private void editSite() {
         try {                     
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
@@ -409,11 +409,12 @@ public class SitesViewController {
             controller.setEditForm(myConfig,tableSites.getSelectionModel().getSelectedItem().getIdSite(),0);   // 0 -> edit an existing file
             // This window will be modal
             dialogStage.showAndWait();
-            
-            return true;
+                       
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
+            
         }
     }
     
