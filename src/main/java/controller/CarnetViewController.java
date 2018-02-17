@@ -754,6 +754,14 @@ public class CarnetViewController  {
             }
         });
         cm.getItems().add(cmItem1);
+
+        MenuItem cmItem11 = new MenuItem(i18n.tr("Fiche site"));
+        cmItem11.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               askEditSite();
+            }
+        });
+        cm.getItems().add(cmItem11);
         
         MenuItem cmItemSup = new MenuItem(i18n.tr("Supprimer"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
@@ -951,6 +959,89 @@ public class CarnetViewController  {
             }
             tableVols.refresh();
         }        
+    }
+    
+    public void editSiteReturn() {
+        String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
+        String lastPos = tableVols.getSelectionModel().getSelectedItem().getIdVol();
+        System.out.println("last Pos "+lastPos);
+        newVolsContent(selectedYear);
+        // newVolsContent select first row, we unselect it
+        tableVols.getSelectionModel().clearSelection();
+        // we want to set focus at initial selected line
+        // from https://stackoverflow.com/questions/40398905/search-tableview-list-in-javafx
+        tableVols.getItems().stream()
+            .filter(Carnet -> Carnet.getIdVol().equals(lastPos))
+            .findAny()
+            .ifPresent(Carnet -> {
+                tableVols.getSelectionModel().select(Carnet);
+                tableVols.scrollTo(Carnet);
+            });        
+    }    
+        
+    private void editSite(String idSite) {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/SiteForm.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);       
+            dialogStage.initOwner(mainApp.getPrimaryStage());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            
+            // Communication bridge between SiteForm and SiteView controllers
+            SiteFormController controller = loader.getController();
+            controller.setCarnetBridge(this);
+            controller.setDialogStage(dialogStage); 
+            controller.setEditForm(myConfig,idSite,2);   // 2 -> Mode 2 : siteFormController called by CarnetViewController
+            // This window will be modal
+            dialogStage.showAndWait();
+                       
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+    }    
+    
+    private void askEditSite() {
+
+        int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+            // We search Id of site 
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            String sReq = "SELECT S_ID,S_Nom FROM Site WHERE S_Nom = ?";
+            try {
+                pstmt = myConfig.getDbConn().prepareStatement(sReq);                      
+                pstmt.setString(1, selectedVol.getSite()); 
+                rs = pstmt.executeQuery();
+                if (rs.next()) {  
+                    editSite(rs.getString("S_ID"));                    
+                } else {
+                    editSite(null);
+                }
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getMessage());    
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                
+            } finally {
+                try{
+                    rs.close(); 
+                    pstmt.close();
+                } catch(Exception e) { 
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());                
+                } 
+            }          
+        }
     }
     
     private void askMergingIGC() {
