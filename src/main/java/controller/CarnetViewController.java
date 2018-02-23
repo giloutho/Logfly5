@@ -91,6 +91,8 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
 import littlewins.winGlider;
+import littlewins.winSiteChoice;
+import model.Sitemodel;
 import photo.imgmanip;
 import settings.osType;
 import systemio.mylogging;
@@ -156,6 +158,8 @@ public class CarnetViewController  {
     
     private StringBuilder sbError;
     private String statusStart;
+    
+    private Sitemodel selectedSite;
 
     private ObservableList <Carnet> dataCarnet; 
     private ObservableList <String> dataYear; 
@@ -763,6 +767,14 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItem11);
         
+        MenuItem cmItem12 = new MenuItem(i18n.tr("Changer site"));
+        cmItem12.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               askListSites();
+            }
+        });
+        cm.getItems().add(cmItem12);        
+        
         MenuItem cmItemSup = new MenuItem(i18n.tr("Supprimer"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -961,22 +973,44 @@ public class CarnetViewController  {
         }        
     }
     
-    public void editSiteReturn() {
-        String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
-        String lastPos = tableVols.getSelectionModel().getSelectedItem().getIdVol();
-        System.out.println("last Pos "+lastPos);
-        newVolsContent(selectedYear);
-        // newVolsContent select first row, we unselect it
-        tableVols.getSelectionModel().clearSelection();
-        // we want to set focus at initial selected line
-        // from https://stackoverflow.com/questions/40398905/search-tableview-list-in-javafx
-        tableVols.getItems().stream()
-            .filter(Carnet -> Carnet.getIdVol().equals(lastPos))
-            .findAny()
-            .ifPresent(Carnet -> {
-                tableVols.getSelectionModel().select(Carnet);
-                tableVols.scrollTo(Carnet);
-            });        
+    public void editSiteReturn(int editMode) {
+        switch (editMode) {
+            case 2 :
+                // in this case ALL flights with the same name have been updated
+                // We must refresh the whole list
+                String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
+                String lastPos = tableVols.getSelectionModel().getSelectedItem().getIdVol();
+                newVolsContent(selectedYear);
+                // newVolsContent select first row, we unselect it
+                tableVols.getSelectionModel().clearSelection();
+                // we want to set focus at initial selected line
+                // from https://stackoverflow.com/questions/40398905/search-tableview-list-in-javafx
+                tableVols.getItems().stream()
+                    .filter(Carnet -> Carnet.getIdVol().equals(lastPos))
+                    .findAny()
+                    .ifPresent(Carnet -> {
+                        tableVols.getSelectionModel().select(Carnet);
+                        tableVols.scrollTo(Carnet);
+                    }); 
+                break;
+            case 3 :
+                Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+                String sReq = "UPDATE Vol SET V_Site = ?, V_Pays = ? WHERE V_ID = ?";                    
+                try {
+                    PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                    pstmt.setString(1,selectedSite.getNom()); 
+                    pstmt.setString(2,selectedSite.getPays()); 
+                    pstmt.setInt(3, Integer.valueOf(selectedVol.getIdVol()));
+                    pstmt.executeUpdate();   
+                    pstmt.close();
+                    tableVols.getSelectionModel().getSelectedItem().site.set(selectedSite.getNom());                  
+                    tableVols.refresh();  
+                } catch (Exception e) {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(e.getMessage()); 
+                }                   
+                break;
+        }            
     }    
         
     private void editSite(String idSite) {
@@ -996,7 +1030,11 @@ public class CarnetViewController  {
             SiteFormController controller = loader.getController();
             controller.setCarnetBridge(this);
             controller.setDialogStage(dialogStage); 
-            controller.setEditForm(myConfig,idSite,2);   // 2 -> Mode 2 : siteFormController called by CarnetViewController
+            if (idSite.equals("NEW")) {
+                controller.setEditForm(myConfig,idSite,3);
+            } else {
+                controller.setEditForm(myConfig,idSite,2);   // 2 -> Mode 2 : siteFormController called by CarnetViewController
+            }
             // This window will be modal
             dialogStage.showAndWait();
                        
@@ -1042,6 +1080,47 @@ public class CarnetViewController  {
                 } 
             }          
         }
+    }
+    
+    private void askListSites() {
+        selectedSite = new Sitemodel();
+        Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+        winSiteChoice myWin = new winSiteChoice(myConfig,i18n, this);
+        if (selectedSite.getIdSite() != null) {
+            if (selectedSite.getIdSite().equals("NEW")) {
+                selectedSite.setLatitude(Double.parseDouble(selectedVol.getLatDeco()));
+                selectedSite.setLongitude(Double.parseDouble(selectedVol.getLongDeco()));                
+                editSite(selectedSite.getIdSite());
+            } else {
+                // Update db
+                String sReq = "UPDATE Vol SET V_Site = ?, V_Pays = ? WHERE V_ID = ?";                    
+                try {
+                    PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                    pstmt.setString(1,selectedSite.getNom()); 
+                    pstmt.setString(2,selectedSite.getPays()); 
+                    pstmt.setInt(3, Integer.valueOf(selectedVol.getIdVol()));
+                    pstmt.executeUpdate();   
+                    pstmt.close();
+                    tableVols.getSelectionModel().getSelectedItem().site.set(selectedSite.getNom());                  
+                    tableVols.refresh();  
+                } catch (Exception e) {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(e.getMessage()); 
+                }   
+            }
+        }
+    }  
+    
+    public double getLatSelectedSite() {        
+        return selectedSite.getLatitude();
+    }
+    
+    public double getLongSelectedSite() {        
+        return selectedSite.getLongitude();
+    }
+        
+    public void updateSelectedSite(Sitemodel pSelectedSite) {
+        selectedSite = pSelectedSite;
     }
     
     private void askMergingIGC() {
