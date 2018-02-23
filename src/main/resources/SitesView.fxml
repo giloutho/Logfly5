@@ -25,14 +25,38 @@
                         <Insets left="10.0" right="5.0" top="8.0" />
                      </HBox.margin>
                   </RadioButton>
+                  <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/darkslateblue.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets left="8.0" right="5.0" top="8.0" />
+                     </HBox.margin>
+                  </ImageView>
                   <RadioButton fx:id="rdDeco" layoutX="20.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushDeco" prefWidth="100.0" text="fDécollages" textFill="WHITE">
                      <HBox.margin>
                         <Insets right="5.0" top="8.0" />
                      </HBox.margin></RadioButton>
+                  <ImageView fitHeight="15.0" fitWidth="15.0" layoutX="210.0" layoutY="38.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/darkcyan.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets left="8.0" right="5.0" top="8.0" />
+                     </HBox.margin>
+                  </ImageView>
                   <RadioButton fx:id="rdAttero" layoutX="80.0" layoutY="31.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#pushAttero" prefWidth="100.0" text="fAtteros" textFill="WHITE">
                      <HBox.margin>
                         <Insets right="5.0" top="8.0" />
                      </HBox.margin></RadioButton>
+                  <ImageView fitHeight="15.0" fitWidth="15.0" layoutX="246.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/darksalmon.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets left="8.0" right="5.0" top="8.0" />
+                     </HBox.margin>
+                  </ImageView>
                   <RadioButton fx:id="rdNondef" mnemonicParsing="false" onAction="#pushNondef" text="fNon définis" textFill="WHITE">
                      <HBox.margin>
                         <Insets right="5.0" top="8.0" />
