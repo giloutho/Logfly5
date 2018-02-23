@@ -18,6 +18,7 @@ public class Sitemodel {
     public SimpleStringProperty nom = new SimpleStringProperty();
     public SimpleStringProperty ville = new SimpleStringProperty();
     public SimpleStringProperty cp = new SimpleStringProperty();    
+    public SimpleStringProperty pays = new SimpleStringProperty();    
     public SimpleStringProperty alt = new SimpleStringProperty();
     public SimpleStringProperty orient = new SimpleStringProperty();    
     public SimpleStringProperty type = new SimpleStringProperty();
@@ -55,6 +56,14 @@ public class Sitemodel {
     public void setCp(String cpStr) {
         cp.set(cpStr);
     }  
+    
+    public String getPays() {
+        return pays.get();
+    }
+
+    public void setPays(String paysStr) {
+        pays.set(paysStr);
+    }      
     
     public String getAlt() {
         return alt.get();
