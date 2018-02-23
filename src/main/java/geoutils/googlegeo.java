@@ -1,0 +1,225 @@
+/*
+ * Copyright Gil THOMAS
+ * This file forms an integral part of Logfly project
+ * See the LICENSE file distributed with source code
+ * for details of Logfly licence project
+ */
+package geoutils;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import settings.privateData;
+
+/**
+ *
+ * @author gil
+ */
+public class googlegeo {
+    
+    
+    private String geoVille = null;
+    private String geoCP = null;
+    private String geoPays = null;    
+    private String geoLat = null;
+    private String geoLong = null; 
+    private String geoAlt = null;
+    private String geoStatus = null;
+
+    public String getGeoVille() {
+        return geoVille;
+    }
+
+    public String getGeoCP() {
+        return geoCP;
+    }
+
+    public String getGeoPays() {
+        return geoPays;
+    }
+
+    public String getGeoLat() {
+        return geoLat;
+    }
+
+    public String getGeoLong() {
+        return geoLong;
+    }
+
+    public String getGeoAlt() {
+        return geoAlt;
+    }
+        
+    public String getGeoStatus() {
+        return geoStatus;
+    }
+                
+    private static String askReverseGeo(String sCoord) {
+        String res = null;
+        
+        try {
+            URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?latlng="+sCoord+"&sensor=true");
+            // making connection
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            if (conn.getResponseCode() != 200) {
+                    throw new RuntimeException("Failed : HTTP error code : "
+                                    + conn.getResponseCode());
+            }
+
+            // Reading data's from url
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+
+            String output;
+            String out="";            
+            while ((output = br.readLine()) != null) {
+                out+=output;
+            }
+            conn.disconnect();
+            res = out;
+        } catch (Exception e) {
+            System.out.println("Pas de connection au service Google");  
+        }
+        
+        return res;
+    }        
+    
+    /**
+     *  Pour affiner le décodage il faudra aller voir sur cette page
+     *  https://developers.google.com/maps/documentation/geocoding/intro?hl=fr#GeocodingResponses 
+     * @param sCoord
+     * @return 
+     */
+    public int googleReverseGeo(String sCoord) {
+        int res = -1;
+        String googVille = null;
+        String googCP = null;
+        String googPays = null;
+        
+        String resJson = askReverseGeo(sCoord);
+        if (resJson != null)  {
+            try {
+                JSONParser jsonParser = new JSONParser();           
+                JSONObject jsonObject = (JSONObject) jsonParser.parse(resJson);
+                String status = (String) jsonObject.get("status");
+                if (status.equals("OK")) {
+                    JSONObject localityObject = new JSONObject();
+                    JSONArray resultat = (JSONArray) jsonObject.get("results");   
+                    parcoursJson:
+                    for (int i = 0; i < resultat.size(); i++) {
+                        JSONObject jsonRes = (JSONObject) resultat.get(i);
+                        JSONArray adressComp = (JSONArray) jsonRes.get("address_components");  
+                        for (int j = 0; j < adressComp.size(); j++) {
+                            JSONObject adressRes = (JSONObject) adressComp.get(j);
+                            JSONArray adressTypes = (JSONArray) adressRes.get("types");
+                            for (int k = 0; k < adressTypes.size(); k++) {                           
+                                if(adressTypes.get(k).toString().equals("locality")) {
+                                    googVille = adressRes.get("short_name").toString();
+                                }
+                                if(adressTypes.get(k).toString().equals("country")) {
+                                   googPays = adressRes.get("short_name").toString();
+                                }                           
+                                if(adressTypes.get(k).toString().equals("postal_code")) {
+                                   googCP = adressRes.get("short_name").toString();
+                                }                                      
+                                if (googCP != null && googVille != null && googPays != null) {
+                                    break parcoursJson;    
+                                }        
+                            }
+                        }
+                    }
+                    geoCP = googCP;
+                    geoVille = googVille;
+                    geoPays = googPays;
+                    res = 0;
+                } else {
+                    geoStatus = status; 
+                }
+            } catch (ParseException ex) {
+                geoStatus = ex.getMessage();                
+            } catch (NullPointerException ex) {
+                geoStatus = ex.getMessage(); 
+            }
+        } else {
+            geoStatus = "Pas de réponse du service Google";
+        }  
+        
+        return res;
+    }
+    
+    private String askGoogleElevation(String sCoord) {
+        String res = null;
+        try {
+            String ELEVATION_API_URL =  "https://maps.googleapis.com/maps/api/elevation/json";
+            String USER_AGENT = "Mozilla/5.0";
+            String urlParameters = "locations="+sCoord+"&sensor=true&key="+privateData.elevationKey.toString();
+
+            URL url = new URL(ELEVATION_API_URL + "?" + urlParameters);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", USER_AGENT);
+            conn.setDoOutput(true);
+            if (conn.getResponseCode() != 200) {
+                    throw new RuntimeException("Failed : HTTP error code : "
+                                    + conn.getResponseCode());
+            }
+
+            // Reading data's from url
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+
+            String output;
+            String out="";            
+            while ((output = br.readLine()) != null) {
+                out+=output;
+            }
+            conn.disconnect();
+            res = out;
+        } catch (Exception e) {
+            System.out.println("Pas de connection au service ");  
+        }        
+        
+        return res;
+    }    
+
+    public int googleElevation(String sCoord) {
+
+        int res = -1;
+        String resJson = askGoogleElevation(sCoord);  
+        if (resJson != null)  {
+            try {
+                JSONParser jsonParser = new JSONParser();
+                JSONObject elevationObject = new JSONObject();
+                JSONObject jsonObject = (JSONObject) jsonParser.parse(resJson);
+                String status = (String) jsonObject.get("status");
+                if (status.equals("OK")) {
+                    JSONObject localityObject = new JSONObject();
+                    JSONArray resultat = (JSONArray) jsonObject.get("results");   
+                    for (int i = 0; i < resultat.size(); i++) {
+                        JSONObject jsonRes = (JSONObject) resultat.get(i);
+                        Double elevation = (Double) jsonRes.get("elevation"); 
+                        geoAlt = String.format("%4.0f",elevation);
+                        System.out.println("el "+elevation+"  geoAlt "+geoAlt);
+                        res = 0;
+                    }
+                } else {
+                    geoStatus = status;
+                }
+            } catch (ParseException ex) {
+                geoStatus = ex.getMessage();
+            } catch (NullPointerException ex) {
+                geoStatus = ex.getMessage();
+            }
+        } else {
+            geoStatus = "Pas de réponse du service Google";
+        }    
+        
+        return res;
+    }    
+    
+}
