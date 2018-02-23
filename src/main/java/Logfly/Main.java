@@ -250,7 +250,7 @@ public class Main extends Application {
             mylogging.log(Level.SEVERE, sbError.toString());
         }
     }    
-    
+       
     /**
      * Return main stage
      * @return
