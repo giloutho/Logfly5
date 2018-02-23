@@ -29,6 +29,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -47,6 +48,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
@@ -218,7 +220,17 @@ public class SitesViewController {
         
         // Listener for line changes and  display relevant details
         tableSites.getSelectionModel().selectedItemProperty().addListener(
-        (observable, oldValue, newValue) -> showSiteMap((Sitemodel) newValue));          
+        (observable, oldValue, newValue) -> showSiteMap((Sitemodel) newValue));    
+        
+        // Context menu added on a row of the tableview : https://stackoverflow.com/questions/21009377/context-menu-on-a-row-of-tableview
+        tableSites.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent t) {
+                if(t.getButton() == MouseButton.SECONDARY) {
+                    clicContextMenu().show(tableSites, t.getScreenX(), t.getScreenY());
+                }
+            }
+        });        
         
         fillTable("SELECT * FROM Site ORDER BY S_Nom");
     }    
@@ -388,7 +400,7 @@ public class SitesViewController {
         }
     }     
     
-    private void editSite() {
+    private void siteFormEdit() {
         try {                     
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
@@ -418,7 +430,7 @@ public class SitesViewController {
         }
     }
     
-    public void editReturn(boolean formUpdated, Sitemodel newsite) {
+    public void returnEdit(boolean formUpdated, Sitemodel newsite) {
         
         if (formUpdated) {            
             tableSites.getSelectionModel().getSelectedItem().setNom(newsite.getNom());
@@ -431,10 +443,28 @@ public class SitesViewController {
         }        
     }
     
+    public void returnAdd(boolean formUpdated, Sitemodel newsite) {
+        
+        if (formUpdated) {
+            fillTable("SELECT * FROM Site ORDER BY S_Nom");            
+            tableSites.getSelectionModel().clearSelection();
+            // we want to set focus at new site just inserted
+            // from https://stackoverflow.com/questions/40398905/search-tableview-list-in-javafx
+            System.out.println(newsite.getNom());
+            tableSites.getItems().stream()
+                .filter(Sitemodel -> Sitemodel.getNom().equals(newsite.getNom()))
+                .findAny()
+                .ifPresent(Sitemodel -> {
+                    tableSites.getSelectionModel().select(Sitemodel);
+                    tableSites.scrollTo(Sitemodel);
+            });                       
+        }        
+    }    
+    
     /**
      * Delete a site in database
      */
-    private void deleteSite() {
+    private void siteDelete() {
         PreparedStatement pstmt = null;
         
         int selectedIndex = tableSites.getSelectionModel().getSelectedIndex();
@@ -469,7 +499,7 @@ public class SitesViewController {
         }        
     }    
     
-    private void addSite() {
+    private void siteFormAdd() {
         try {                     
             // Load the fxml file and create a new stage for the popup dialog.
             FXMLLoader loader = new FXMLLoader();
@@ -716,7 +746,7 @@ public class SitesViewController {
         MenuItem cmItem0 = new MenuItem(i18n.tr("Modifier"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                editSite();
+                siteFormEdit();
             }            
         });
         cm.getItems().add(cmItem0);
@@ -724,7 +754,7 @@ public class SitesViewController {
         MenuItem cmItem1 = new MenuItem(i18n.tr("Ajouter"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                addSite();
+                siteFormAdd();
             }            
         });
         cm.getItems().add(cmItem1);
@@ -732,7 +762,7 @@ public class SitesViewController {
         MenuItem cmItem2 = new MenuItem(i18n.tr("Supprimer"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                deleteSite();
+                siteDelete();
             }            
         });
         cm.getItems().add(cmItem2);
@@ -781,6 +811,45 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem4);        
 
+        
+        return cm;        
+    }
+    
+    private ContextMenu clicContextMenu() {        
+        final ContextMenu cm = new ContextMenu();
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Modifier"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                siteFormEdit();
+            }            
+        });
+        cm.getItems().add(cmItem0);
+        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Ajouter"));        
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                siteFormAdd();
+            }            
+        });
+        cm.getItems().add(cmItem1);
+        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Supprimer"));        
+        cmItem2.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                siteDelete();
+            }            
+        });
+        cm.getItems().add(cmItem2);
+        
+        MenuItem cmPlus = new MenuItem(i18n.tr("Plus..."));
+        cmPlus.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                Bounds boundsInScreen = top_Menu.localToScreen(top_Menu.getBoundsInLocal());
+                clicTop_Menu().show(top_Menu, boundsInScreen.getMinX(), boundsInScreen.getMinY());
+            }
+        });
+        cm.getItems().add(cmPlus);         
         
         return cm;        
     }
