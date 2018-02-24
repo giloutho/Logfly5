@@ -42,7 +42,7 @@
             </HBox>
             <HBox fx:id="hbTable" alignment="TOP_CENTER" visible="false">
                <children>
-                  <TableView fx:id="tableImp" editable="true" minWidth="529.0" prefHeight="530.0" prefWidth="606.0">
+                  <TableView fx:id="tableImp" editable="true" minWidth="529.0" prefHeight="530.0" prefWidth="606.0" style="-fx-selection-bar: aqua;">
                      <columns>
                         <TableColumn fx:id="checkCol" prefWidth="75.0" text="fCarnet" />
                         <TableColumn fx:id="dateCol" editable="false" maxWidth="110.0" minWidth="110.0" prefWidth="110.0" text="fDate" />
