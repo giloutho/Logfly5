@@ -88,7 +88,7 @@
             </HBox>
             <HBox fx:id="hbTable" alignment="TOP_CENTER" visible="false">
                <children>
-                  <TableView fx:id="tableImp" editable="true" minWidth="300.0" prefHeight="530.0" prefWidth="350.0">
+                  <TableView fx:id="tableImp" editable="true" minWidth="300.0" prefHeight="530.0" prefWidth="350.0" style="-fx-selection-bar: aqua;">
                      <columns>
                         <TableColumn fx:id="checkCol" minWidth="40.0" prefWidth="40.0" />
                         <TableColumn fx:id="dateCol" editable="false" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" text="fDate" />
