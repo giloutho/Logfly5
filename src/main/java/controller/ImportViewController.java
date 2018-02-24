@@ -120,8 +120,14 @@ public class ImportViewController {
         }
         File selectedDirectory = directoryChooser.showDialog(dialogStage);
         if(selectedDirectory != null){
+            // This clear section was in listtracksFiles
+            // this was a big bug cause by recursive call of listTracksFiles
+            dataImport.clear();
+            tableImp.getItems().clear();
+            trackPathList.clear();
             long tempsDebut = System.currentTimeMillis();
             listTracksFiles(selectedDirectory);
+            System.out.println("au retour size liste : "+trackPathList.size());
             long tempsFin = System.currentTimeMillis();
             float seconds = (tempsFin - tempsDebut) / 1000F;
             System.out.println("Nombre de traces : "+trackPathList.size());
@@ -139,11 +145,7 @@ public class ImportViewController {
      * @param dir
      * @throws Exception 
      */
-    private void listTracksFiles(File dir) throws Exception {      
-        
-        dataImport.clear();
-        tableImp.getItems().clear();
-        trackPathList.clear();
+    private void listTracksFiles(File dir) throws Exception {              
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
@@ -151,7 +153,8 @@ public class ImportViewController {
             if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {
             //if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                    
                 if (files[i].isFile()) {
-                    trackPathList.add(files[i].getPath());                   
+                    trackPathList.add(files[i].getPath());       
+                    System.out.println(files[i].getName()+" size liste : "+trackPathList.size());
                 }
             }
             if (files[i].isDirectory()) {
