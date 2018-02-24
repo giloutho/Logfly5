@@ -28,6 +28,7 @@ import gps.sensbox;
 import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
+import gps.xctracer;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -194,7 +195,7 @@ public class GPSViewController {
     private ObservableList <Gpsmodel> dataImport; 
     
     @FXML
-    private HBox buttonBar;
+    private HBox buttonBar;     // bar with btnMaj, btnVisu and BtnDecocher
     @FXML
     private HBox hbTable;
 
@@ -206,7 +207,7 @@ public class GPSViewController {
                 
     private RootLayoutController rootController;
     
-    private enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot}
+    private enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer}
     
     // current GPS
     private gpsType currGPS;
@@ -226,6 +227,7 @@ public class GPSViewController {
     private connect usbConnect;
     private compass usbCompass;
     private element usbElem;
+    private xctracer usbXctracer;
     private String strTrack;
     private String errorComMsg;
     private int nbTracks = 0;
@@ -239,7 +241,7 @@ public class GPSViewController {
         dateCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("date"));
         heureCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("heure"));
         checkCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel,Boolean>("checked"));
-        checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );                    
+        checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );       
     }
     
     /**
@@ -421,6 +423,15 @@ public class GPSViewController {
                     badListDrives(usbCompass.getDriveList(), usbCompass.getIdxDrive());
                 }
                 break;
+            case 15:
+                currGPS = gpsType.XCTracer;
+                usbXctracer = new xctracer(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbXctracer.isConnected()) {
+                    goodListDrives(usbXctracer.getDriveList(),usbXctracer.getIdxDrive());
+                } else {
+                    badListDrives(usbXctracer.getDriveList(), usbXctracer.getIdxDrive());
+                }
+                break;                
         }
         
     }
@@ -654,7 +665,7 @@ public class GPSViewController {
             actuLed();   
         }
         // Window must be intilaized/refreshed
-        buttonBar.setVisible(true);
+        buttonBar.setVisible(false);
         hbTable.setVisible(false);          
     }
         
@@ -1028,6 +1039,11 @@ public class GPSViewController {
                 usbCompass.listTracksFiles(trackPathList);  
                 limitMsg = usbCompass.getMsgClosingDate();
                 break;                                               
+            case XCTracer :
+                idGPS = "XC Tracer II";
+                usbXctracer.listTracksFiles(trackPathList);  
+                limitMsg = usbXctracer.getMsgClosingDate();
+                break;                 
             }       
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
@@ -1179,7 +1195,10 @@ public class GPSViewController {
                         break;                         
                     case CPilot :
                         readUSBGps();
-                        break;                         
+                        break;  
+                    case XCTracer :
+                        readUSBGps();
+                        break;                        
                 }       
                 return null ;                
             }
@@ -1365,7 +1384,10 @@ public class GPSViewController {
                         break;                           
                     case CPilot :
                         gpsOK = usbCompass.isConnected();
-                        break;                           
+                        break;  
+                    case XCTracer :
+                        gpsOK = usbXctracer.isConnected();
+                        break;                        
             }            
             if (gpsOK){      
                 for (Gpsmodel item : checkedData){
@@ -1428,6 +1450,9 @@ public class GPSViewController {
                             case CPilot :
                                 strTrack = usbCompass.getTrackFile(item.getCol5());
                                 break;                                  
+                            case XCTracer :
+                                strTrack = usbXctracer.getTrackFile(item.getCol5());
+                                break;                                 
                             }                                  
                             if (strTrack != null ) {                                
                                 traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
@@ -1730,7 +1755,15 @@ public class GPSViewController {
                         } else {
                             resCom = 2;   // No GPS answer
                         }     
-                        break;                          
+                        break;
+                    case XCTracer :
+                        strTrack = usbXctracer.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                             
                     default:
                         throw new AssertionError();
                     }                    
