@@ -7,7 +7,7 @@
 package leaflet;
 
 import database.dbSearch;
-import geoutils.reversegeocode;
+import geoutils.googlegeo;
 import igc.pointIGC;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -472,12 +472,19 @@ public class map_visu {
                     finalSiteDeco = siteDeco;                
             }                
         } else {
-            reversegeocode rechDeco = new reversegeocode();
             DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
             decimalFormatSymbols.setDecimalSeparator('.');        
             DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
             String sCoord = decimalFormat.format(traceVisu.getLatDeco())+","+decimalFormat.format(traceVisu.getLongDeco());
-            siteDeco = rechDeco.googleGeocode(sCoord, false);
+            googlegeo myGoog = new googlegeo();
+            if (myGoog.googleReverseGeo(sCoord) == 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
+                System.out.println("Déco sb : "+sb.toString());
+                siteDeco = sb.toString();                
+            } else {
+                siteDeco = "";
+            }
             if (siteDeco.length() > 25) 
                 finalSiteDeco = siteDeco.substring(0,25);
             else
@@ -501,12 +508,19 @@ public class map_visu {
                     finalSiteAtterro = siteAtterro;
             }
         } else {    
-            reversegeocode rechSite = new reversegeocode();
             DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
             decimalFormatSymbols.setDecimalSeparator('.');        
             DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
             String sCoord = decimalFormat.format(lastPoint.Latitude)+","+decimalFormat.format(lastPoint.Longitude);
-            siteAtterro = rechSite.googleGeocode(sCoord, false);
+            googlegeo myGoog = new googlegeo();
+            if (myGoog.googleReverseGeo(sCoord) == 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
+                System.out.println("Atterro sb "+sb.toString());
+                siteAtterro = sb.toString();               
+            } else {
+                siteAtterro = "";
+            }           
             if (siteAtterro.length() > 25) 
                 finalSiteAtterro = siteAtterro.substring(0,25);
             else
