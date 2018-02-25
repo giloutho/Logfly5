@@ -23,13 +23,13 @@ import settings.privateData;
 public class googlegeo {
     
     
-    private String geoVille = null;
-    private String geoCP = null;
-    private String geoPays = null;    
-    private String geoLat = null;
-    private String geoLong = null; 
-    private String geoAlt = null;
-    private String geoStatus = null;
+    private String geoVille = "";
+    private String geoCP = "";
+    private String geoPays = "";    
+    private String geoLat = "";
+    private String geoLong = ""; 
+    private String geoAlt = "";
+    private String geoStatus = "";
 
     public String getGeoVille() {
         return geoVille;
@@ -108,6 +108,7 @@ public class googlegeo {
                 JSONParser jsonParser = new JSONParser();           
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(resJson);
                 String status = (String) jsonObject.get("status");
+                geoStatus = status; 
                 if (status.equals("OK")) {
                     JSONObject localityObject = new JSONObject();
                     JSONArray resultat = (JSONArray) jsonObject.get("results");   
@@ -134,13 +135,11 @@ public class googlegeo {
                             }
                         }
                     }
-                    geoCP = googCP;
-                    geoVille = googVille;
-                    geoPays = googPays;
+                    if (googCP != null) geoCP = googCP;
+                    if (googVille != null) geoVille = googVille;
+                    if (googPays != null) geoPays = googPays;
                     res = 0;
-                } else {
-                    geoStatus = status; 
-                }
+                } 
             } catch (ParseException ex) {
                 geoStatus = ex.getMessage();                
             } catch (NullPointerException ex) {
