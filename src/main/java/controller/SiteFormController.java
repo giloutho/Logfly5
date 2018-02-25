@@ -6,7 +6,6 @@
  */
 package controller;
 
-import Logfly.Main;
 import dialogues.alertbox;
 import geoutils.googlegeo;
 import geoutils.position;
@@ -704,16 +703,13 @@ public class SiteFormController {
         String sLong = txLong.getText();
         
         if (sLat != null && !sLat.equals("") && sLong != null && !sLong.equals("")) {        
-            //reversegeocode rechTown = new reversegeocode();
             // Unlike map_visu, we don't need to a decimalFormat
             // lat and long are always with a point as decimal separator
 
             // Best results with a low precision in coordinates
             if (sLat.length() > 6) sLat = sLat.substring(0, 6);
             if (sLong.length() > 6) sLong = sLong.substring(0, 6);
-            String sCoord = sLat+","+sLong;
-//            String siteDeco = rechTown.googleGeocode(sCoord, true);
-//            if (siteDeco.length() > 10) finalSiteDeco = siteDeco;       
+            String sCoord = sLat+","+sLong;  
             googlegeo myGoog = new googlegeo();
             if (myGoog.googleReverseGeo(sCoord) == 0) {
                 googCP = myGoog.getGeoCP();
