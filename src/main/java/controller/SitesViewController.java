@@ -199,7 +199,7 @@ public class SitesViewController {
                 } else if (item.getType().equals("D")) {
                     setStyle("-fx-text-background-color: darkslateblue;");
                 } else if (item.getType().equals("A")) {                  
-                    setStyle("-fx-text-background-color: darkcyan;");   
+                    setStyle("-fx-text-background-color: darkolivegreen;");   
                 } else {
                     setStyle("-fx-text-background-color: darksalmon;");
                 }
