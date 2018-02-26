@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SitesViewController">
+<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SitesViewController">
    <children>
       <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -97,7 +97,7 @@
                <items>
                   <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="560.0" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="560.0">
                      <children>
-                        <TableView fx:id="tableSites" maxWidth="540.0" minWidth="540.0" prefHeight="530.0" prefWidth="540.0" style="-fx-selection-bar: lightyellow;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <TableView fx:id="tableSites" maxWidth="540.0" minWidth="540.0" prefHeight="530.0" prefWidth="540.0" style="-fx-selection-bar: lightsalmon;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <columns>
                               <TableColumn fx:id="nomCol" maxWidth="210.0" minWidth="210.0" prefWidth="210.0" text="fNom" />
                               <TableColumn fx:id="villeCol" editable="false" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" sortable="false" text="fLocalite" />
