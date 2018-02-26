@@ -661,9 +661,13 @@ public class GPSViewController {
             chbSerial.setVisible(true);     
             chbSerial.getSelectionModel().select(idxList);       
             chbSerial.setVisible(true);     
-            resCom = 4;
-            actuLed();   
+            // C'était une erreur il faut que le refresh apparaisse quoqu'il en soit
+            // donc mis en dessous
+           //resCom = 4;
+           // actuLed();   
         }
+        resCom = 4;
+        actuLed();  
         // Window must be intilaized/refreshed
         buttonBar.setVisible(false);
         hbTable.setVisible(false);          
