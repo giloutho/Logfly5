@@ -1358,13 +1358,22 @@ public class CarnetViewController  {
                     clipboard.setContent(content);                                
                     /**------ End Debug --------- */                    
                     FXMLLoader loader = new FXMLLoader();
-                    loader.setLocation(Main.class.getResource("/Fullmap.fxml")); 
+                    loader.setLocation(Main.class.getResource("/fullmap.fxml")); 
 
                     AnchorPane page = (AnchorPane) loader.load();
                     Stage fullMap = new Stage();            
                     fullMap.initModality(Modality.WINDOW_MODAL);       
                     fullMap.initOwner(mainApp.getPrimaryStage());
-                    Scene scene = new Scene(page);
+                    Scene scene = null;
+                    if (myConfig.getOS() == osType.LINUX) {
+                        // With this code for Linux, this is not OK with Win and Mac 
+                        // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                        scene = new Scene(page, screenBounds.getWidth(), screenBounds.getHeight());
+                    } else {
+                        // With this code, subStage.setMaximized(true) don't run under Linux
+                        scene = new Scene(page, 500, 400);
+                    }                                    
                     fullMap.setScene(scene);
                    
                     // Initialization of a communication bridge between CarnetView and KmlView
