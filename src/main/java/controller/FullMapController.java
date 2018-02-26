@@ -90,7 +90,7 @@ public class FullMapController {
         
       //  WebEngine engine = viewMap.getEngine();
        // engine.load("http://www.example.org");   
-               
+                   
     }    
     
     public void setParams(configProg mainConfig, String pHTML, int idxCarnet) {
