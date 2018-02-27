@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SitesViewController">
+<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SitesViewController">
    <children>
       <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -39,7 +39,7 @@
                      </HBox.margin></RadioButton>
                   <ImageView fitHeight="15.0" fitWidth="15.0" layoutX="210.0" layoutY="38.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@images/darkcyan.png" />
+                        <Image url="@images/darkolivregreen.png" />
                      </image>
                      <HBox.margin>
                         <Insets left="8.0" right="5.0" top="8.0" />
