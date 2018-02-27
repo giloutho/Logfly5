@@ -158,8 +158,6 @@ public class skytraax {
                 throw new AssertionError();
         }
         if (drives != null && drives.length > 0) {
-            // initialized when class is instantiated
-            //driveList = FXCollections.observableArrayList();
             driveList.clear();
             // with Linux, if no USB plugged, drives is null
             for (File aDrive : drives) {       
