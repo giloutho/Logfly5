@@ -66,6 +66,8 @@ public class sensbox {
         boolean conn = false;
         fFlights = null;        
         fDrive = null;   
+        idxDrive = 0;
+        driveList = FXCollections.observableArrayList();        
         
         setDateLevel(gpsLimit);
         
@@ -133,7 +135,6 @@ public class sensbox {
                 throw new AssertionError();
         }
         if (drives != null && drives.length > 0) {
-            driveList = FXCollections.observableArrayList();
             driveList.clear();
             for (File aDrive : drives) {       
                 long size = aDrive.getTotalSpace();
