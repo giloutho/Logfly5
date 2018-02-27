@@ -576,6 +576,7 @@ public class GPSViewController {
                 if (usbSky.testConnection(myConfig.getOS())) {
                     goodListDrives(usbSky.getDriveList(),usbSky.getIdxDrive());
                 } else {
+                    System.out.println("driveList "+usbSky.getDriveList().size());
                     badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
                 }
                 break;     
@@ -641,7 +642,11 @@ public class GPSViewController {
     
     private void goodListDrives(ObservableList <String> driveList, int idxList) {
         if (driveList.size() > 0) {
-            chbSerial.getItems().clear();
+            // Au début je faisais 
+            //   chbSerial.getItems().clear();
+            // J'ai mis lontemps à compredre qu'avec une Observable list
+            // il était inutile de vider la choicebox
+            // elle EST la liste. Il y a un binding définitif
             chbSerial.setItems(driveList);  
             chbSerial.setVisible(true);     
             chbSerial.getSelectionModel().select(idxList);       
@@ -654,17 +659,16 @@ public class GPSViewController {
     }
     
     private void badListDrives(ObservableList <String> driveList, int idxList) {
-        
         if (driveList.size() > 0) {
-            chbSerial.getItems().clear();
+            // Au début je faisais 
+            //   chbSerial.getItems().clear();
+            // J'ai mis lontemps à compredre qu'avec une Observable list
+            // il était inutile de vider la choicebox
+            // elle EST la liste. Il y a un binding définitif
             chbSerial.setItems(driveList);  
             chbSerial.setVisible(true);     
             chbSerial.getSelectionModel().select(idxList);       
             chbSerial.setVisible(true);     
-            // C'était une erreur il faut que le refresh apparaisse quoqu'il en soit
-            // donc mis en dessous
-           //resCom = 4;
-           // actuLed();   
         }
         resCom = 4;
         actuLed();  
