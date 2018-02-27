@@ -74,6 +74,8 @@ public class skytraxx3 {
         fFlights = null;        
         fDrive = null;   
         verFirmware = null;
+        idxDrive = 0;
+        driveList = FXCollections.observableArrayList();        
         
         setDateLevel(gpsLimit);
         
@@ -117,7 +119,6 @@ public class skytraxx3 {
                 throw new AssertionError();
         }
         if (drives != null && drives.length > 0) {
-            driveList = FXCollections.observableArrayList();
             driveList.clear();
             for (File aDrive : drives) {       
                 long size = aDrive.getTotalSpace();
