@@ -69,6 +69,8 @@ public class reversale {
         fLog = null;
         fCompet = null;
         fDrive = null;   
+        idxDrive = 0;
+        driveList = FXCollections.observableArrayList();        
         
         setDateLevel(gpsLimit);
         
@@ -112,7 +114,6 @@ public class reversale {
                 throw new AssertionError();
         }
         if (drives != null && drives.length > 0) {
-            driveList = FXCollections.observableArrayList();
             driveList.clear();
             for (File aDrive : drives) {       
                 long size = aDrive.getTotalSpace();
