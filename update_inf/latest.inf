@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <information>
-    <pubDate>2017-11-27 14:30:00</pubDate>
+    <pubDate>2017-12-28 13:30:00</pubDate>
     <pkgver>5.0</pkgver>
-    <pkgrel>13</pkgrel>
+    <pkgrel>14</pkgrel>
     <severity>5.13</severity>
     <extra>
         <message></message>
