@@ -38,10 +38,13 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 import model.Carnet;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.osType;
 import systemio.textio;
 import systemio.webio;
 import trackgps.scoring;
@@ -185,15 +188,30 @@ public class TraceViewController {
             map_visu visuFullMap = new map_visu(extTrace, myConfig);
             if (visuFullMap.isMap_OK()) {            
                 try {
-                    String sHTML = visuFullMap.getMap_HTML();                   
+                    String sHTML = visuFullMap.getMap_HTML();         
+                    /** ----- Begin Debug --------*/                 
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(sHTML);            
+                    clipboard.setContent(content);                                
+                    /**------ End Debug --------- */                       
                     FXMLLoader loader = new FXMLLoader();
-                    loader.setLocation(Main.class.getResource("/Fullmap.fxml")); 
+                    loader.setLocation(Main.class.getResource("/fullmap.fxml")); 
 
                     AnchorPane page = (AnchorPane) loader.load();
                     Stage fullMap = new Stage();            
                     fullMap.initModality(Modality.WINDOW_MODAL);       
                     fullMap.initOwner(mainApp.getPrimaryStage());
-                    Scene scene = new Scene(page);
+                    Scene scene = null;
+                    if (myConfig.getOS() == osType.LINUX) {
+                        // With this code for Linux, this is not OK with Win and Mac 
+                        // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                        scene = new Scene(page, screenBounds.getWidth(), screenBounds.getHeight());
+                    } else {
+                        // With this code, subStage.setMaximized(true) don't run under Linux
+                        scene = new Scene(page, 500, 400);
+                    }                                    
                     fullMap.setScene(scene);
                    
                     // Initialization of a communication bridge between CarnetView and KmlView
