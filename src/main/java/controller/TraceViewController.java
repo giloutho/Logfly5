@@ -38,10 +38,12 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import java.util.logging.Level;
 import model.Carnet;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 import systemio.textio;
 import systemio.webio;
 import trackgps.scoring;
@@ -84,6 +86,8 @@ public class TraceViewController {
     
     // Reference à l'application principale
     private Main mainApp;
+    
+    private StringBuilder sbError;
     
     @FXML
     private void initialize() {
@@ -187,7 +191,7 @@ public class TraceViewController {
                 try {
                     String sHTML = visuFullMap.getMap_HTML();                   
                     FXMLLoader loader = new FXMLLoader();
-                    loader.setLocation(Main.class.getResource("/Fullmap.fxml")); 
+                    loader.setLocation(Main.class.getResource("/fullmap.fxml"));
 
                     AnchorPane page = (AnchorPane) loader.load();
                     Stage fullMap = new Stage();            
@@ -204,7 +208,9 @@ public class TraceViewController {
                     controller.setWinMax();
                     fullMap.showAndWait();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                        sbError.append("\r\n").append(e.toString());
+                        mylogging.log(Level.SEVERE, sbError.toString());
                 }
             }
         }
@@ -340,7 +346,7 @@ public class TraceViewController {
     private boolean showWinGE() {
         try {                                  
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getResource("view/KmlView.fxml")); 
+            loader.setLocation(Main.class.getResource("/KmlView.fxml")); 
             
             AnchorPane page = (AnchorPane) loader.load();
             Stage dialogStage = new Stage();
