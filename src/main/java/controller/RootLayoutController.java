@@ -47,6 +47,8 @@ public class RootLayoutController {
     @FXML
     private Label mnImport;    
     @FXML
+    private Label mnManuel;     
+    @FXML
     private Label mnTrace;    
     @FXML
     private Label mnCalendrier;    
@@ -93,36 +95,40 @@ public class RootLayoutController {
             switchMenu(3);
             mainApp.showImportview();
         });
-        mnTrace.setOnMouseClicked((MouseEvent event) -> {
+        mnManuel.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(4);
+            comingSoon();
+        });        
+        mnTrace.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(5);
             mainApp.showTraceview();
         });  
         mnCalendrier.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(5);
+            switchMenu(6);
             comingSoon();
         });        
         mnStat.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(6);
+            switchMenu(7);
             comingSoon();
         });           
         mnSites.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(7);
+            switchMenu(8);
             mainApp.showSitesOverview();
         });            
         mnBalises.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(8);
+            switchMenu(9);
             comingSoon();
         });      
         mnEspaces.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(9);
+            switchMenu(10);
             comingSoon();
         });       
         mnPhotos.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(10);
+            switchMenu(11);
             comingSoon();
         });    
         mnCarto.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(11);
+            switchMenu(12);
             comingSoon();
         });            
         btnSupport.addEventHandler(MouseEvent.MOUSE_CLICKED,
@@ -224,6 +230,7 @@ public class RootLayoutController {
         mnCarnet.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnGPS.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         mnImport.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
+        mnManuel.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");        
         mnTrace.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnCalendrier.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnStat.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
@@ -243,27 +250,30 @@ public class RootLayoutController {
                 mnImport.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;
             case 4:
-                mnTrace.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnManuel.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;
             case 5:
-                mnCalendrier.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnTrace.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;
             case 6:
-                mnStat.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnCalendrier.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");               
                 break;
             case 7:
-                mnSites.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnStat.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
                 break;
             case 8:
-                mnBalises.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnSites.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
                 break;
             case 9:
-                mnEspaces.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnBalises.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
                 break;
             case 10:
-                mnPhotos.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnEspaces.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
                 break;
             case 11:
+                mnPhotos.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                break;
+            case 12:    
                 mnCarto.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;           
             default:
@@ -347,6 +357,7 @@ public class RootLayoutController {
         mnCarnet.setText(i18n.tr("Carnet"));
         mnGPS.setText(i18n.tr("Import GPS")); 
         mnImport.setText(i18n.tr("Import disque"));
+        mnManuel.setText(i18n.tr("Import manuel"));
         mnTrace.setText(i18n.tr("Trace externe"));
         mnCalendrier.setText(i18n.tr("Calendrier"));
         mnStat.setText(i18n.tr("Statistiques"));

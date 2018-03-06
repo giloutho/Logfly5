@@ -36,6 +36,10 @@ import systemio.MultipartUtility;
 /**
  *
  * @author gil
+ * 
+ * We have a big restriction with yahoo adresses 
+ * If they are not sended from yahoo SMTP they are rejected by gmail
+ * See https://www.arobase.org/forums/depuis-formulaire-contact-gmail-accepte-pas-yahoo-t27879.html
  */
 public class winMail {
     

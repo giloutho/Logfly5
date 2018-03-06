@@ -45,6 +45,14 @@
                   <Insets left="2.0" />
                </padding>
             </Label>
+            <Label fx:id="mnManuel" layoutX="15.0" layoutY="152.0" prefWidth="110.0" text="fImport manuel" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
             <Label fx:id="mnTrace" layoutX="15.0" layoutY="442.0" prefWidth="110.0" text="fTrace externe" textFill="WHITE">
                <padding>
                   <Insets left="2.0" />
