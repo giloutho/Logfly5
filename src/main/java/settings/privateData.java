@@ -12,12 +12,12 @@ package settings;
  */
 public enum privateData {
     
-    phpSupport ("http://alpidev.com/logfly_contact/support.php"),  // php script called for support request
-    phpMail ("http://alpidev.com/logfly_contact/mailpj.php"),  // php script called for support request
-    updateUrl ("http://www.logfly.org/download/logfly5"),  // url live update    
-    mailSupport ("contact@logfly.org"),
-    sitesUrl ("http://logfly.org/download/sites"), 
-    elevationKey ("AIzaSyBIPOz7GUwpdrsPkrzjpq9V5kOBZSbgqCs");
+    phpSupport ("url support php"),  // php script called for support request
+    phpMail ("url mailing script"),  // php script called for support request
+    updateUrl ("url live update"),  // url live update    
+    mailSupport ("mail support adress"),
+    sitesUrl ("download sites url"), 
+    elevationKey ("Google elevation API key");   
     
 
     private String name = "";
