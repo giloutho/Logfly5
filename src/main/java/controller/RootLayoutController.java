@@ -97,7 +97,7 @@ public class RootLayoutController {
         });
         mnManuel.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(4);
-            comingSoon();
+            mainApp.showManualview();
         });        
         mnTrace.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(5);
