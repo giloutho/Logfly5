@@ -7,6 +7,7 @@
 package littlewins;
 
 import controller.CarnetViewController;
+import controller.ManualViewController;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -26,6 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
@@ -56,7 +58,10 @@ public class winSiteChoice {
     String RC = "\n";
     
     // Reference to CarnetViewController
-    private CarnetViewController carnetController;    
+    private CarnetViewController carnetController; 
+    // Reference to ManualViewController
+    private ManualViewController manualController;
+    private int typeController;
     
     //START | SQLITE
     private static Statement stat;
@@ -70,9 +75,18 @@ public class winSiteChoice {
     public winSiteChoice(configProg pConfig, I18n pI18n, CarnetViewController pCarnetController)  {
         myConfig = pConfig;        
         this.i18n = pI18n;     
-        this.carnetController = pCarnetController;                 
+        this.carnetController = pCarnetController; 
+        typeController = 1;
         showWin();
     }   
+    
+    public winSiteChoice(configProg pConfig, I18n pI18n, ManualViewController pManualController)  {
+        myConfig = pConfig;        
+        this.i18n = pI18n;     
+        this.manualController = pManualController;   
+        typeController = 2;
+        showWin();
+    }             
             
     private void showWin() {
         subStage = new Stage();
@@ -166,9 +180,15 @@ public class winSiteChoice {
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
                     Sitemodel rowData = row.getItem();
-                    System.out.println("Update in winSiteChoice : "+rowData.getNom()+" "+rowData.getPays());
-                    carnetController.updateSelectedSite(rowData);
                     subStage.close();
+                    switch (typeController) {
+                        case 1:
+                            carnetController.updateSelectedSite(rowData);
+                            break;
+                        case 2:
+                            manualController.updateSelectedSite(rowData);
+                            break;
+                    } 
                 }
             });
             return row ;
@@ -181,7 +201,8 @@ public class winSiteChoice {
         vBox.getChildren().addAll(hbSearch,tableView);
         root.getChildren().add(vBox);
         subStage.setScene(new Scene(root, 500, 400));
-        subStage.showAndWait();            
+        subStage.initModality(Modality.WINDOW_MODAL);       
+        subStage.show();            
     }
     
     private void fillTable() {
@@ -226,8 +247,15 @@ public class winSiteChoice {
     private void newSite() {
         Sitemodel newSite = new Sitemodel();
         newSite.setIdSite("NEW");
-        carnetController.updateSelectedSite(newSite);
-        subStage.close();        
+        subStage.close();
+        switch (typeController) {
+            case 1:
+                carnetController.updateSelectedSite(newSite);
+                break;
+            case 2:
+                manualController.updateSelectedSite(newSite);
+                break;
+        }                 
     }
 
 }
