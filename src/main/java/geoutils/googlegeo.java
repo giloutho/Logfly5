@@ -59,11 +59,12 @@ public class googlegeo {
         return geoStatus;
     }
                 
-    private static String askReverseGeo(String sCoord) {
+    private String askReverseGeo(String sCoord) {
         String res = null;
         
         try {
-            URL url = new URL("http://maps.googleapis.com/maps/api/geocode/json?latlng="+sCoord+"&sensor=true");
+            //https://maps.googleapis.com/maps/api/geocode/json?latlng=40.714224,-73.961452&key=YOUR_API_KEY            
+            URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?latlng="+sCoord+"&key="+privateData.geocodeKey.toString());            
             // making connection
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -82,9 +83,9 @@ public class googlegeo {
                 out+=output;
             }
             conn.disconnect();
-            res = out;
+            res = out; 
         } catch (Exception e) {
-            System.out.println("Pas de connection au service Google");  
+            geoStatus = "No answer from Google service";
         }
         
         return res;
@@ -146,11 +147,85 @@ public class googlegeo {
                 geoStatus = ex.getMessage(); 
             }
         } else {
-            geoStatus = "Pas de réponse du service Google";
+            geoStatus = "No answer from Google service";
         }  
         
         return res;
     }
+    
+    private String askGeocode(String sName) {
+        String res = null;
+        
+        try {
+            URL url = new URL("https://maps.googleapis.com/maps/api/geocode/json?address="+sName+"&key="+privateData.geocodeKey.toString());            
+            // making connection
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            if (conn.getResponseCode() != 200) {
+                    throw new RuntimeException("Failed : HTTP error code : "
+                                    + conn.getResponseCode());
+            }
+
+            // Reading data's from url
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+
+            String output;
+            String out="";            
+            while ((output = br.readLine()) != null) {
+                out+=output;
+            }
+            conn.disconnect();
+            res = out;
+        } catch (Exception e) {
+            geoStatus = "No answer from Google service";  
+        }
+        
+        return res;
+    }    
+    
+    /**
+     * from https://stackoverflow.com/questions/11202934/get-latitude-longitude-from-given-address-name-not-geocoder
+     * @param pName 
+     */
+    public int googleLatLong( String pName) {
+        
+        int res = -1;
+        String resJson = askGeocode(pName);
+        if (resJson != null)  {
+            try {
+                JSONParser jsonParser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) jsonParser.parse(resJson);
+                String status = (String) jsonObject.get("status");
+                geoStatus = status; 
+                if (status.equals("OK")) {          
+                
+                    JSONArray resultat = (JSONArray) jsonObject.get("results");
+
+                    JSONObject geoMetryObject = new JSONObject();
+                    JSONObject locations = new JSONObject();
+
+                    int i;
+                    for (i = 0; i < resultat.size(); i++) {
+                        JSONObject jsonRes = (JSONObject) resultat.get(i);
+                        geoMetryObject = (JSONObject) jsonRes.get("geometry");
+
+                        locations = (JSONObject) geoMetryObject.get("location");
+                        geoLat = locations.get("lat").toString();
+                        geoLong = locations.get("lng").toString();
+                        res = 0;
+                    } 
+                } 
+            } catch (Exception e) {
+                geoStatus = e.getMessage();
+            }
+        } else {
+            geoStatus = "No answer from Google service";
+        }  
+        
+        return res;
+        
+    }    
     
     private String askGoogleElevation(String sCoord) {
         String res = null;
@@ -180,7 +255,7 @@ public class googlegeo {
             conn.disconnect();
             res = out;
         } catch (Exception e) {
-            System.out.println("Pas de connection au service ");  
+            geoStatus = "No answer from Google service";
         }        
         
         return res;
@@ -203,19 +278,16 @@ public class googlegeo {
                         JSONObject jsonRes = (JSONObject) resultat.get(i);
                         Double elevation = (Double) jsonRes.get("elevation"); 
                         geoAlt = String.format("%4.0f",elevation);
-                        System.out.println("el "+elevation+"  geoAlt "+geoAlt);
                         res = 0;
                     }
                 } else {
                     geoStatus = status;
                 }
-            } catch (ParseException ex) {
-                geoStatus = ex.getMessage();
-            } catch (NullPointerException ex) {
-                geoStatus = ex.getMessage();
+            } catch (Exception e) {                
+                geoStatus = e.getMessage();
             }
         } else {
-            geoStatus = "Pas de réponse du service Google";
+            geoStatus = "No answer from Google service";
         }    
         
         return res;
