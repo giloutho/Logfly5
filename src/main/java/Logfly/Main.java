@@ -17,11 +17,13 @@ import javafx.stage.Stage;
 import controller.CarnetViewController;
 import controller.GPSViewController;
 import controller.ImportViewController;
+import controller.ManualViewController;
 import controller.RootLayoutController;
 import controller.SitesViewController;
 import controller.TraceViewController;
 import java.sql.SQLException;
 import java.util.logging.Level;
+import javafx.stage.Modality;
 import liveUpdate.checkUpdate;
 import liveUpdate.objects.Release;
 import org.xnap.commons.i18n.I18n;
@@ -174,6 +176,29 @@ public class Main extends Application {
             mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
+    
+    /**
+    *   Display Manual import window inside root window
+    */     
+    public void showManualview(int editMode, String idVol) {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/ManualView.fxml"));
+            AnchorPane manualOverview = (AnchorPane) loader.load();     
+            
+            // Initialization of a communication bridge between ImportView and RootLayout
+            ManualViewController controlManual = loader.getController(); 
+            controlManual.setRootBridge(rootLayoutController, this);
+            // Place Import window in center of RootLayout.
+            rootLayout.setCenter(manualOverview); 
+            controlManual.setMyConfig(editMode,myConfig, idVol);
+                                                                             
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }    
 
     /**
      * Display External GPS track window
