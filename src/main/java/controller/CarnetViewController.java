@@ -85,6 +85,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.SelectionMode;
@@ -163,6 +165,8 @@ public class CarnetViewController  {
 
     private ObservableList <Carnet> dataCarnet; 
     private ObservableList <String> dataYear; 
+    private MenuItem cmManual;
+    private BooleanProperty manualMenu = new SimpleBooleanProperty(false);
     
     @FXML
     private void initialize() {
@@ -177,6 +181,9 @@ public class CarnetViewController  {
      * Fill the table with data from db
      */
     private void iniTable() {
+        
+        cmManual = new MenuItem(i18n.tr("Editer/Dupliquer"));
+        
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy");
         DateTimeFormatter dtfDuree = new DateTimeFormatterBuilder().appendValue(HOUR_OF_DAY, 2).appendLiteral("h").appendValue(MINUTE_OF_HOUR, 2).appendLiteral("mn").toFormatter();
         
@@ -470,7 +477,8 @@ public class CarnetViewController  {
             stmt = myConfig.getDbConn().createStatement();
             rs =  stmt.executeQuery(sReq);
             if (rs != null)  { 
-                if (rs.getString("V_IGC") != null && !rs.getString("V_IGC").equals(""))  {                        
+                if (rs.getString("V_IGC") != null && !rs.getString("V_IGC").equals(""))  {   
+                    manualMenu.set(false);
                     currTrace = new traceGPS(rs.getString("V_IGC"),"",true, myConfig);   // String pFichier, String pType, String pPath
                     if (currTrace.isDecodage()) {
                         // Like in xLogfly we put glider and site
@@ -533,6 +541,7 @@ public class CarnetViewController  {
                     }     
                 } else {
                     // No track to display
+                    manualMenu.set(true);
                     displayNoIGC(rs);
                 }
             }
@@ -682,7 +691,8 @@ public class CarnetViewController  {
                 winPhoto myPhoto = new winPhoto();    
                 myPhoto.showDbPhoto(dbImage);
             }            
-        }                
+        }
+        
     }
     
     /**
@@ -789,7 +799,16 @@ public class CarnetViewController  {
                 exportTrace();
             }
         });
-        cm.getItems().add(cmItemEx);   
+        cm.getItems().add(cmItemEx);
+        
+        cmManual.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                mainApp.showManualview(1,tableVols.getSelectionModel().getSelectedItem().getIdVol());
+            }
+        });
+        cm.getItems().add(cmManual);
+        // binding explanations : http://bekwam.blogspot.fr/2015/08/disabling-menuitems-with-binding.html
+        cmManual.disableProperty().bind(manualMenu.not());
         
         MenuItem cmPlus = new MenuItem(i18n.tr("Plus..."));
         cmPlus.setOnAction(new EventHandler<ActionEvent>() {
@@ -874,16 +893,6 @@ public class CarnetViewController  {
             }
         });
         cm.getItems().add(cmItemMerging);
-        /**
-         * Missing items :
-         * Fusionne les vols
-         * Modifier le décalage UTC        ? pertinent ou alors pour vieille compatibilitité
-         * Fiche site
-         * Actualisation Site
-         * Attribution site
-         * Site différent
-         * Relocaliser le site
-         */
         
         return cm;
     }
@@ -1084,10 +1093,24 @@ public class CarnetViewController  {
     
     private void askListSites() {
         selectedSite = new Sitemodel();
-        Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
         winSiteChoice myWin = new winSiteChoice(myConfig,i18n, this);
+    }  
+    
+    public double getLatSelectedSite() {        
+        return selectedSite.getLatitude();
+    }
+    
+    public double getLongSelectedSite() {        
+        return selectedSite.getLongitude();
+    }
+        
+    public void updateSelectedSite(Sitemodel pSelectedSite) {
+        Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+        selectedSite = pSelectedSite;
         if (selectedSite.getIdSite() != null) {
             if (selectedSite.getIdSite().equals("NEW")) {
+                // A new site will be created. 
+                // Take off coordinates will be sent to SiteForm with selectedSite
                 selectedSite.setLatitude(Double.parseDouble(selectedVol.getLatDeco()));
                 selectedSite.setLongitude(Double.parseDouble(selectedVol.getLongDeco()));                
                 editSite(selectedSite.getIdSite());
@@ -1108,19 +1131,7 @@ public class CarnetViewController  {
                     aError.alertError(e.getMessage()); 
                 }   
             }
-        }
-    }  
-    
-    public double getLatSelectedSite() {        
-        return selectedSite.getLatitude();
-    }
-    
-    public double getLongSelectedSite() {        
-        return selectedSite.getLongitude();
-    }
-        
-    public void updateSelectedSite(Sitemodel pSelectedSite) {
-        selectedSite = pSelectedSite;
+        }        
     }
     
     private void askMergingIGC() {
