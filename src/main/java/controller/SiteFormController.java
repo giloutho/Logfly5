@@ -71,6 +71,8 @@ public class SiteFormController {
     @FXML
     private TextField txLocalite;
     @FXML
+    private Button btGoogle;
+    @FXML
     private Label lbCP;
     @FXML
     private TextField txCP;       
@@ -164,6 +166,8 @@ public class SiteFormController {
     
     // Reference to CarnetViewController
     private CarnetViewController carnetController;
+    // Reference to ManualViewController
+    private ManualViewController manualController;    
     
     private Stage dialogStage;    
     
@@ -192,6 +196,7 @@ public class SiteFormController {
     private DecimalFormat df3;
     private position displayPos;
     private boolean updateProgress;
+    private boolean googleUpdating = false;
     
     //START | SQLITE
     private static Statement stat;
@@ -555,6 +560,11 @@ public class SiteFormController {
             
         ResultSet rs = null;
         Statement stmt = null;
+        googleUpdating = false;
+        googCP = null;
+        googVille = null;
+        googPays = null;
+        googAlt =  null;        
         if (editMode == 0 || editMode == 2) {
             String sReq = "SELECT * FROM Site WHERE S_ID = "+idSite;
             try {        
@@ -611,6 +621,8 @@ public class SiteFormController {
             } else {
                 latDep = 0;
                 longDep = 0;
+                txLocalite.requestFocus();
+                btGoogle.setVisible(true);
             }
             rdDeco.setSelected(true);
             txCP.setText("***");
@@ -655,8 +667,9 @@ public class SiteFormController {
         txDMSLongMin.setText(String.valueOf(displayPos.getLongMin_ms()));
         txDMSLongSec.setText(df2.format(displayPos.getLongSec_ms()));
         txDMSLongMer.setText(displayPos.getMeridien());
-   
+        
         findTown();
+        if (googleUpdating) handleGeoloc();
         
         updateProgress = false;
     }
@@ -695,6 +708,20 @@ public class SiteFormController {
   
         
     }
+    
+    @FXML
+    private void findCoord() {       
+        googlegeo myGoog = new googlegeo();
+        if (myGoog.googleLatLong(txLocalite.getText()) == 0) {
+            googleUpdating = true;   // to avoid a findTown in updateFieldPos;
+            txLat.setText(myGoog.getGeoLat());
+            txLong.setText(myGoog.getGeoLong());
+            iniMap(Double.parseDouble(txLat.getText()), Double.parseDouble(txLong.getText()));
+        } else {
+            //txLocalite.setText(null);
+            txLocalite.setPromptText(myGoog.getGeoStatus());
+        }
+    }
         
     private void findTown() {
         String finalSiteDeco = "";
@@ -724,6 +751,10 @@ public class SiteFormController {
                     googAlt = myGoog.getGeoAlt();
                     System.out.println("googalt "+googAlt);
                 }
+            } else {
+                googCP = null;
+                googVille = null;
+                googPays = null;
             }
         }
         btGeoloc.setText(finalSiteDeco);
@@ -736,7 +767,7 @@ public class SiteFormController {
         pPoint1.setLatitude(dLatitude);        
         if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
         pPoint1.setLongitude(dLongitude);
-        String sAlt = txAlt.getText();
+        String sAlt = txAlt.getText().trim();
         if (sAlt != null && !sAlt.equals(""))
             pPoint1.setAltiGPS(Integer.parseInt(sAlt));
         map_markers_coord myMap = new map_markers_coord(i18n, myConfig.getIdxMap(), pPoint1); 
@@ -782,20 +813,23 @@ public class SiteFormController {
         // editMode = 1 form creation from site list
         // editMode = 2 modifying a form dynamically from the logbook like Site Noxx à renommer
         // editMode = 3 Creating a form dynamically from the logbook with take off coordinates (option different site)
+        // editMode = 4 Creating a form dynamically from the manual import 
         
-        if (!badCoord) {             
-            si.setIdSite(idSite);
-            si.setNom(txNom.getText());
-            si.setVille(txLocalite.getText());
-            si.setCp(txCP.getText());      
-            si.setPays(txPays.getText());
-            si.setAlt(txAlt.getText().trim());
-            si.setOrient(txOrien.getText());  
-            si.setType(siteType);               
-            String sComment = txComment.getText();
-            PreparedStatement pstmt = null;
-            String sReq = "";
-            try {
+        if (!badCoord) {  
+            try {            
+                si.setIdSite(idSite);
+                si.setNom(txNom.getText());
+                si.setVille(txLocalite.getText());
+                si.setCp(txCP.getText());      
+                si.setPays(txPays.getText());
+                si.setAlt(txAlt.getText().trim());
+                si.setOrient(txOrien.getText());  
+                si.setType(siteType);     
+                String sComment = txComment.getText();
+                si.setLatitude(Double.parseDouble(txLat.getText()));
+                si.setLongitude(Double.parseDouble(txLong.getText()));
+                PreparedStatement pstmt = null;
+                String sReq = "";
                 if (editMode == 0 || editMode == 2) {
                     sReq = "UPDATE Site SET S_Nom=?, S_Localite=?, S_CP=?, S_Pays=?, S_Type=?, S_Orientation=?, S_Alti=?, S_Latitude=?, S_Longitude=?, S_Commentaire=?, S_Maj=? WHERE S_ID =?";  
                     pstmt = myConfig.getDbConn().prepareStatement(sReq);
@@ -813,7 +847,7 @@ public class SiteFormController {
                     pstmt.setInt(12, Integer.valueOf(idSite));
                     pstmt.executeUpdate(); 
                     res = true;                    
-                } else if (editMode == 1 || editMode == 3) {
+                } else if (editMode == 1 || editMode == 3 || editMode == 4) {
                     sReq = "INSERT INTO Site (S_Nom,S_Localite,S_CP,S_Pays,S_Type,S_Orientation,S_Alti,S_Latitude,S_Longitude,S_Commentaire,S_Maj) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
                     pstmt = myConfig.getDbConn().prepareStatement(sReq);
                     pstmt.setString(1,si.getNom()); 
@@ -920,6 +954,9 @@ public class SiteFormController {
                     carnetController.updateSelectedSite(si);
                     carnetController.editSiteReturn(editMode);
                     break;                    
+                case 4 :                    
+                    manualController.updateSelectedSite(si);
+                    break;                     
             }
             dialogStage.close();
         }
@@ -967,6 +1004,14 @@ public class SiteFormController {
     }      
     
     /**
+     * Initialize communication brdige with CarnetViewController 
+     * @param pManualController 
+     */
+    public void setManualBridge(ManualViewController pManualController) {
+        this.manualController = pManualController;        
+    }
+    
+    /**
      * Translate labels of the window
      */
     private void winTraduction() {
@@ -984,6 +1029,10 @@ public class SiteFormController {
         geoLocToolTip.setStyle(myConfig.getDecoToolTip());
         geoLocToolTip.setText(i18n.tr("Remplit les champs avec les valeurs du bouton"));
         btGeoloc.setTooltip(geoLocToolTip);
+        Tooltip geocodeToolTip = new Tooltip();
+        geocodeToolTip.setStyle(myConfig.getDecoToolTip());
+        geocodeToolTip.setText(i18n.tr("Recherche Google sur le nom"));        
+        btGoogle.setTooltip(geocodeToolTip);        
         txLat.setTooltip(caracToolTip);
         txDMLatDeg.setTooltip(caracToolTip);
         txDMLatMin.setTooltip(caracToolTip); 
