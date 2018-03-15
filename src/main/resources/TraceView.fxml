@@ -82,7 +82,7 @@
                   </HBox>
                </children>
             </HBox>
-            <AnchorPane fx:id="webAnchor" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="357.0" visible="false">
+            <AnchorPane fx:id="webAnchor" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="530.0" prefWidth="357.0" visible="false" VBox.vgrow="ALWAYS">
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>
