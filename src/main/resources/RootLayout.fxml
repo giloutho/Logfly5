@@ -29,6 +29,14 @@
                   <Insets left="5.0" top="10.0" />
                </VBox.margin>
             </Label>
+            <Label fx:id="mnSynthese" layoutX="15.0" layoutY="469.0" prefWidth="110.0" text="fSynthèse" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
             <Label fx:id="mnGPS" layoutX="15.0" layoutY="417.0" prefWidth="110.0" text="fImport GPS" textFill="WHITE">
                <padding>
                   <Insets left="2.0" />
@@ -54,14 +62,6 @@
                </VBox.margin>
             </Label>
             <Label fx:id="mnTrace" layoutX="15.0" layoutY="442.0" prefWidth="110.0" text="fTrace externe" textFill="WHITE">
-               <padding>
-                  <Insets left="2.0" />
-               </padding>
-               <VBox.margin>
-                  <Insets left="5.0" top="10.0" />
-               </VBox.margin>
-            </Label>
-            <Label fx:id="mnCalendrier" layoutX="15.0" layoutY="469.0" prefWidth="110.0" text="fCalendrier" textFill="WHITE">
                <padding>
                   <Insets left="2.0" />
                </padding>
