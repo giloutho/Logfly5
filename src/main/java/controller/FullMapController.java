@@ -67,7 +67,8 @@ public class FullMapController {
     private WebView viewMap; 
     
     private CarnetViewController carnetController;  
-    private TraceViewController extController;    
+    private TraceViewController extController; 
+    private DashViewController dashController;
     
     private Stage mapStage;    
     
@@ -230,6 +231,15 @@ public class FullMapController {
         this.extController = callExterne;  
         mapTrace = extController.extTrace;      
     }    
+    
+    /**
+     * Set a communication bridge with DashViewController 
+     * @param callExterne 
+     */
+    public void setDashBridge(DashViewController callExterne, traceGPS pTrace)  {
+        this.dashController = callExterne;  
+        mapTrace = pTrace;      
+    }      
     
     /**
      * Choicebox is fille with online contest supported by scoring module     
