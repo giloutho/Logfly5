@@ -51,7 +51,7 @@ import systemio.mylogging;
  *
  * @author gil
  */
-public class ManualViewController implements Initializable {
+public class ManualViewController  {
     
     @FXML
     private DatePicker pickDate;
@@ -118,8 +118,8 @@ public class ManualViewController implements Initializable {
     private String modStatusMsg;    
     private String initialDate;
     
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
+    @FXML
+    private void initialize() {    
         pickDate.setOnAction(event -> {
             LocalDate date = pickDate.getValue();
             System.out.println("Selected date: " + date);
@@ -511,7 +511,7 @@ public class ManualViewController implements Initializable {
      * @param mainConfig 
      */
     public void setMyConfig(int pModeEdit, configProg mainConfig, String pIdVol) {
-                this.mainApp = mainApp; 
+        this.mainApp = mainApp; 
         // 0 -> new flight
         // 1 -> edit existing flight 
         this.editMode = pModeEdit;
@@ -535,7 +535,7 @@ public class ManualViewController implements Initializable {
         }
     }    
     
- /**
+   /**
     * Translate labels of the window
     */
     private void winTraduction() {
