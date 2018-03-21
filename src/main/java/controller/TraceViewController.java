@@ -226,9 +226,9 @@ public class TraceViewController {
                     controller.setWinMax();
                     fullMap.showAndWait();
                 } catch (IOException e) {
-                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                        sbError.append("\r\n").append(e.toString());
-                        mylogging.log(Level.SEVERE, sbError.toString());
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
                 }
             }
         }
