@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.AreaChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="592.0" prefWidth="880.0" stylesheets="@Menu.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.DashViewController">
+   <children>
+      <GridPane layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="588.0" prefWidth="828.0" style="-fx-background-color: black;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="42.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="411.0" minWidth="10.0" prefWidth="108.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="0.0" prefWidth="0.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="282.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="33.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="138.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="300.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="20.0" prefWidth="20.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints maxHeight="159.0" minHeight="10.0" prefHeight="15.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="159.0" minHeight="10.0" prefHeight="47.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="433.0" minHeight="10.0" prefHeight="296.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="231.0" minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="293.0" minHeight="10.0" prefHeight="219.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="276.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <GridPane prefHeight="297.0" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="55.0" minWidth="55.0" prefWidth="55.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="45.0" minWidth="45.0" prefWidth="45.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <Label fx:id="lbMonth1" text="03-2017" textFill="WHITE" GridPane.rowIndex="1" />
+                  <Label fx:id="lbMonth2" layoutX="10.0" layoutY="15.0" text="Fev 17" textFill="WHITE" GridPane.rowIndex="2" />
+                  <Label fx:id="lbMonth3" layoutX="10.0" layoutY="41.0" text="Jan 17" textFill="WHITE" GridPane.rowIndex="3" />
+                  <Label fx:id="lbMonth4" layoutX="10.0" layoutY="67.0" text="Déc 16" textFill="WHITE" GridPane.rowIndex="4" />
+                  <Label fx:id="lbMonth5" layoutX="10.0" layoutY="93.0" text="Nov 16" textFill="WHITE" GridPane.rowIndex="5" />
+                  <Label fx:id="lbMonth6" layoutX="10.0" layoutY="119.0" text="Oct 16" textFill="WHITE" GridPane.rowIndex="6" />
+                  <Label fx:id="lbMonth7" layoutX="10.0" layoutY="145.0" text="Sep 16" textFill="WHITE" GridPane.rowIndex="7" />
+                  <Label fx:id="lbMonth8" layoutX="10.0" layoutY="171.0" text="Aou 16" textFill="WHITE" GridPane.rowIndex="8" />
+                  <Label fx:id="lbMonth9" layoutX="10.0" layoutY="197.0" text="Jui 16" textFill="WHITE" GridPane.rowIndex="9" />
+                  <Label fx:id="lbMonth10" layoutX="10.0" layoutY="223.0" text="Jun 16" textFill="WHITE" GridPane.rowIndex="10" />
+                  <Label fx:id="lbMonth11" layoutX="10.0" layoutY="250.0" text="Mai 16" textFill="WHITE" GridPane.rowIndex="11" />
+                  <Label fx:id="lbMonth12" layoutX="10.0" layoutY="277.0" text="Avr 16" textFill="WHITE" GridPane.rowIndex="12" />
+                  <Label fx:id="lbFlights1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" text="6" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label fx:id="lbFlights2" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="84.0" layoutY="15.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label fx:id="lbFlights3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="54.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label fx:id="lbFlights4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="75.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label fx:id="lbFlights5" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="96.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  <Label fx:id="lbFlights6" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="117.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                  <Label fx:id="lbFlights7" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="138.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                  <Label fx:id="lbFlights8" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="159.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <Label fx:id="lbFlights9" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="180.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                  <Label fx:id="lbFlights10" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="201.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                  <Label fx:id="lbFlights11" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="222.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                  <Label fx:id="lbFlights12" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="82.0" layoutY="244.0" text="150" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                  <Label fx:id="lbVols" alignment="CENTER" maxWidth="50.0" minWidth="50.0" prefHeight="17.0" prefWidth="50.0" text="Flights" textFill="WHITE" GridPane.columnIndex="1" />
+               </children>
+            </GridPane>
+            <BarChart fx:id="barChart1" animated="false" barGap="2.0" categoryGap="4.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+               <xAxis>
+                  <CategoryAxis fx:id="bc_xAxis" animated="false" side="BOTTOM" tickLabelFill="WHITE" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis side="LEFT" tickLabelFill="WHITE" />
+               </yAxis>
+            </BarChart>
+            <AreaChart fx:id="areaChart1" GridPane.columnIndex="6" GridPane.rowIndex="2">
+               <xAxis>
+                  <CategoryAxis fx:id="ac_xAxis" side="BOTTOM" tickLabelFill="WHITE" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis side="LEFT" tickLabelFill="WHITE" />
+               </yAxis>
+            </AreaChart>
+            <GridPane layoutX="47.0" layoutY="74.0" prefHeight="305.0" prefWidth="156.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="55.0" minWidth="55.0" prefWidth="55.0" />
+                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="70.0" minWidth="60.0" prefWidth="60.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
+                  <Label fx:id="lbMonthH1" text="03-2017" textFill="WHITE" GridPane.rowIndex="1" />
+                  <Label fx:id="lbMonthH2" layoutX="10.0" layoutY="15.0" text="Fev 17" textFill="WHITE" GridPane.rowIndex="2" />
+                  <Label fx:id="lbMonthH3" layoutX="10.0" layoutY="41.0" text="Jan 17" textFill="WHITE" GridPane.rowIndex="3" />
+                  <Label fx:id="lbMonthH4" layoutX="10.0" layoutY="67.0" text="Déc 16" textFill="WHITE" GridPane.rowIndex="4" />
+                  <Label fx:id="lbMonthH5" layoutX="10.0" layoutY="93.0" text="Nov 16" textFill="WHITE" GridPane.rowIndex="5" />
+                  <Label fx:id="lbMonthH6" layoutX="10.0" layoutY="119.0" text="Oct 16" textFill="WHITE" GridPane.rowIndex="6" />
+                  <Label fx:id="lbMonthH7" layoutX="10.0" layoutY="145.0" text="Sep 16" textFill="WHITE" GridPane.rowIndex="7" />
+                  <Label fx:id="lbMonthH8" layoutX="10.0" layoutY="171.0" text="Aou 16" textFill="WHITE" GridPane.rowIndex="8" />
+                  <Label fx:id="lbMonthH9" layoutX="10.0" layoutY="197.0" text="Jui 16" textFill="WHITE" GridPane.rowIndex="9" />
+                  <Label fx:id="lbMonthH10" layoutX="10.0" layoutY="223.0" text="Jun 16" textFill="WHITE" GridPane.rowIndex="10" />
+                  <Label fx:id="lbMonthH11" layoutX="10.0" layoutY="250.0" text="Mai 16" textFill="WHITE" GridPane.rowIndex="11" />
+                  <Label fx:id="lbMonthH12" layoutX="10.0" layoutY="277.0" text="Avr 16" textFill="WHITE" GridPane.rowIndex="12" />
+                  <Label fx:id="lbDur1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="79.0" layoutY="41.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label fx:id="lbDur2" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="33.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label fx:id="lbDur3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="54.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label fx:id="lbDur4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="75.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label fx:id="lbDur5" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="96.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                  <Label fx:id="lbDur6" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="117.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                  <Label fx:id="lbDur7" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="138.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                  <Label fx:id="lbDur8" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="159.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                  <Label fx:id="lbDur9" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="180.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                  <Label fx:id="lbDur10" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="222.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                  <Label fx:id="lbDur11" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="222.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                  <Label fx:id="lbDur12" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="126.0" layoutY="244.0" text="928h45" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                  <Label fx:id="lbDur" alignment="CENTER" contentDisplay="RIGHT" layoutX="56.0" layoutY="12.0" maxWidth="60.0" minWidth="60.0" prefHeight="17.0" prefWidth="60.0" text="Heures" textFill="WHITE" GridPane.columnIndex="1" />
+               </children>
+            </GridPane>
+            <PieChart fx:id="pieChart1" labelLineLength="5.0" labelsVisible="false" legendSide="RIGHT" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.rowIndex="4" />
+            <PieChart fx:id="pieChart2" labelLineLength="5.0" labelsVisible="false" layoutX="36.0" layoutY="368.0" legendSide="RIGHT" GridPane.columnIndex="5" GridPane.columnSpan="3" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+            <Label fx:id="lbTopSite" layoutX="36.0" layoutY="349.0" maxWidth="300.0" minWidth="300.0" prefHeight="17.0" prefWidth="300.0" text="Top site : Baulme la Roche" textFill="WHITE" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
+            <Label fx:id="lbGlider1" alignment="CENTER" layoutX="44.0" layoutY="351.0" maxWidth="200.0" minWidth="200.0" prefHeight="17.0" prefWidth="200.0" text="Voiles" textFill="WHITE" GridPane.columnIndex="3" GridPane.rowIndex="5">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Label>
+            <Label fx:id="lbGlider11" alignment="CENTER" layoutX="145.0" layoutY="584.0" maxWidth="200.0" minWidth="200.0" prefHeight="17.0" prefWidth="200.0" text="Sites" textFill="WHITE" GridPane.columnIndex="6" GridPane.rowIndex="5">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Label>
+            <Label fx:id="lbSyntheseDate" alignment="CENTER" layoutX="25.0" layoutY="27.0" maxWidth="250.0" minWidth="250.0" prefWidth="250.0" text="Last twelve months since" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <padding>
+                  <Insets right="5.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <DatePicker fx:id="dpDate" minWidth="120.0" prefWidth="120.0" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+               <GridPane.margin>
+                  <Insets right="20.0" />
+               </GridPane.margin></DatePicker>
+            <ImageView fitHeight="25.0" fitWidth="132.0" pickOnBounds="true" preserveRatio="true" visible="false" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@images/dashboard2.png" />
+               </image>
+               <GridPane.margin>
+                  <Insets left="25.0" />
+               </GridPane.margin>
+            </ImageView>
+            <Hyperlink fx:id="lnkBestFlight" minWidth="320.0" onAction="#showFullMap" prefHeight="29.0" prefWidth="320.0" styleClass="myLink" text="Meilleur vol : 12/12/2015 LA LUNE SUR TERRE" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.valignment="BOTTOM" />
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>
