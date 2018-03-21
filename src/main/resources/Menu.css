@@ -11,7 +11,7 @@ Consulter le fichier LICENSE distribué avec le code source
 
 
 .myLink{
-   -fx-text-fill: white;
+   -fx-text-fill: #01DF01;
    -fx-border-color: transparent;
    -fx-padding: 10 0 0 5;
 }
