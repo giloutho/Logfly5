@@ -20,6 +20,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import Logfly.Main;
 import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -51,7 +53,7 @@ public class RootLayoutController {
     @FXML
     private Label mnTrace;    
     @FXML
-    private Label mnCalendrier;    
+    private Label mnSynthese;    
     @FXML
     private Label mnStat;    
     @FXML
@@ -103,9 +105,9 @@ public class RootLayoutController {
             switchMenu(5);
             mainApp.showTraceview();
         });  
-        mnCalendrier.setOnMouseClicked((MouseEvent event) -> {
+        mnSynthese.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(6);
-            comingSoon();
+            mainApp.showDashView();
         });        
         mnStat.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(7);
@@ -232,7 +234,7 @@ public class RootLayoutController {
         mnImport.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnManuel.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");        
         mnTrace.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
-        mnCalendrier.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
+        mnSynthese.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnStat.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnSites.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnBalises.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
@@ -256,7 +258,7 @@ public class RootLayoutController {
                 mnTrace.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;
             case 6:
-                mnCalendrier.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");               
+                mnSynthese.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");               
                 break;
             case 7:
                 mnStat.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
@@ -359,7 +361,9 @@ public class RootLayoutController {
         mnImport.setText(i18n.tr("Import disque"));
         mnManuel.setText(i18n.tr("Import manuel"));
         mnTrace.setText(i18n.tr("Trace externe"));
-        mnCalendrier.setText(i18n.tr("Calendrier"));
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter dtfYear = DateTimeFormatter.ofPattern(" yyyy");
+        mnSynthese.setText(i18n.tr("Synthèse")+today.format(dtfYear));
         mnStat.setText(i18n.tr("Statistiques"));
         mnSites.setText(i18n.tr("Sites"));
         mnBalises.setText(i18n.tr("Balises"));
