@@ -21,6 +21,7 @@ import controller.ImportViewController;
 import controller.ManualViewController;
 import controller.RootLayoutController;
 import controller.SitesViewController;
+import controller.StatViewController;
 import controller.TraceViewController;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -205,7 +206,6 @@ public class Main extends Application {
         try {
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/DashView.fxml"));
-            //GridPane dashOverview = (GridPane) loader.load();   
             AnchorPane dashOverview = (AnchorPane) loader.load();  
             
             // Initialization of a communication bridge between DashView and RootLayout
@@ -222,6 +222,28 @@ public class Main extends Application {
         }        
         
     }
+    
+    public void showStatView() {
+        
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/StatView.fxml"));            
+            AnchorPane statOverview = (AnchorPane) loader.load();  
+            
+            // Initialization of a communication bridge between DashView and RootLayout
+            StatViewController controlStat = loader.getController(); 
+            controlStat.setRootBridge(rootLayoutController, this);
+            // Place Import window in center of RootLayout.
+            rootLayout.setCenter(statOverview); 
+            controlStat.setMyConfig(myConfig);
+                                                                             
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }        
+        
+    }    
 
     /**
      * Display External GPS track window
