@@ -663,9 +663,11 @@ public class DashViewController {
             barChart1.getData().add(new XYChart.Series(FXCollections.observableArrayList(new XYChart.Data("",0))));
             barChart1.getData().clear();            
             barChart1.getData().addAll(lastFlightSerie);
+            barChart1.setLegendVisible(false);
             bc_xAxis.setAutoRanging(true);
             areaChart1.getData().clear();
             areaChart1.getData().add(lastHoursSerie);
+            areaChart1.setLegendVisible(false);
             pieChart1.getData().clear();
             pieChart1.setData(glidersData);
             glidersData.forEach(d -> {
