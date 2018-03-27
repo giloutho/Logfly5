@@ -19,6 +19,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import Logfly.Main;
+import dialogues.dialogbox;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -111,7 +112,7 @@ public class RootLayoutController {
         });        
         mnStat.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(7);
-            comingSoon();
+            mainApp.showStatView();
         });           
         mnSites.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(8);
@@ -139,6 +140,12 @@ public class RootLayoutController {
                             clicTop_Menu().show(btnSupport, e.getScreenX(), e.getScreenY());
                     }
             });  
+        btnTools.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override public void handle(MouseEvent e) {                        
+                            clicTool_Menu().show(btnTools, e.getScreenX(), e.getScreenY());
+                    }
+            });          
     }
            
     /**
@@ -189,24 +196,17 @@ public class RootLayoutController {
         }
     }
     
-    /**
-     * Show support window
-     */
-//    @FXML 
-//    public void showSupport() {
-//        winTrackFile myTrace = new winTrackFile("Ceci est une trace ");                                    
-//    }
-    
-    /**
-     * Show tools window
-     */
-    @FXML 
-    public void showOutils() {
-        alertbox myInfo = new alertbox(myConfig.getLocale()); 
+    private void originalSize() {
+        dialogbox dConfirm = new dialogbox();
         StringBuilder sb = new StringBuilder();
         sb.append("Largeur : ").append(String.valueOf(mainApp.getPrimaryStage().getWidth()));
+        sb.append(" - > 1100").append(System.getProperty("line.separator"));
         sb.append(" Hauteur : ").append(String.valueOf(mainApp.getPrimaryStage().getHeight()));
-        myInfo.alertInfo(sb.toString());       
+        sb.append(" - > 600");
+        if (dConfirm.YesNo(i18n.tr("Retour à la taille originale"), sb.toString()))   {         
+            mainApp.getPrimaryStage().setWidth(1102);
+            mainApp.getPrimaryStage().setHeight(650);
+        }      
     }
     
     public void updateMsgBar(String sMessage, boolean visuBar, int iLeftPadding) { 
@@ -313,14 +313,60 @@ public class RootLayoutController {
             }
         });
         cm.getItems().add(cmItem2);          
+                                    
+        return cm;
+    }
+    
+    private ContextMenu clicTool_Menu()   {
+        final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItemSup = new MenuItem(i18n.tr("Base données"));        
-        cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Affichage original"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                dbRepair();
+                originalSize();
+            }            
+        });
+        cm.getItems().add(cmItem0);
+        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Copie carnet"));
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               comingSoon();
             }
         });
-        cm.getItems().add(cmItemSup);                     
+        cm.getItems().add(cmItem1);
+        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Envoi carnet"));        
+        cmItem2.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                comingSoon();
+            }
+        });
+        cm.getItems().add(cmItem2);          
+        
+        MenuItem cmItem3 = new MenuItem(i18n.tr("Export csv"));        
+        cmItem3.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                comingSoon();
+            }
+        });
+        cm.getItems().add(cmItem3);  
+        
+        MenuItem cmItem4 = new MenuItem(i18n.tr("Export sql"));        
+        cmItem4.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                comingSoon();
+            }
+        });
+        cm.getItems().add(cmItem4);    
+        
+        MenuItem cmItem5 = new MenuItem(i18n.tr("Traduction"));        
+        cmItem5.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                comingSoon();
+            }
+        });
+        cm.getItems().add(cmItem5);         
         
         return cm;
     }
@@ -341,12 +387,7 @@ public class RootLayoutController {
             winMail showMail = new winMail(myConfig, null, true); 
         }
     }
-    
-    private void dbRepair() {
-        alertbox aError = new alertbox(myConfig.getLocale());
-        aError.alertInfo(i18n.tr("Non implémenté..."));     
-    }
-    
+        
     public void changeCarnetView()  {  
         switchMenu(1);
         mainApp.showCarnetOverview();
