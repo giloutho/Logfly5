@@ -141,7 +141,7 @@
                   </ImageView>
                </graphic>
             </Button>
-            <Button fx:id="btnTools" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#showOutils" style="-fx-background-color: transparent;" text="Button">
+            <Button fx:id="btnTools" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Button">
                <graphic>
                   <ImageView fx:id="icoTools" fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
                      <image>
