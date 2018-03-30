@@ -75,7 +75,7 @@ public class winGlider {
     private void showWin() {
         Stage subStage = new Stage();
         
-        Label lbPilote = new Label("Pilote ");
+        Label lbPilote = new Label(i18n.tr("Pilote "));
         lbPilote.setMinWidth(80);        
         final TextField txPilot = new TextField ();
 //          if Uppercase wanted...
@@ -98,7 +98,7 @@ public class winGlider {
         hBox1.setAlignment(Pos.CENTER_LEFT);
         hBox1.getChildren().addAll(lbPilote, txPilot);
         
-        Label lbVoile = new Label("Voile ");
+        Label lbVoile = new Label(i18n.tr("Voile "));
         lbVoile.setMinWidth(80);
         
         ComboBox cbGliders = new ComboBox();
@@ -127,7 +127,6 @@ public class winGlider {
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
         Button btValid = new Button(i18n.tr("Valider"));
          btValid.setOnAction((event) -> {
-            setModif(true);
             setwPilot(txPilot.getText());
             setwGlider((String) cbGliders.getValue());
             setModif(true);
