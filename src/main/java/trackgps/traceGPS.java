@@ -1350,8 +1350,8 @@ public class traceGPS {
             les deux derniers points sont absents même s'ils sont bon
         */
         if (MissTime && WithAberrant) {
-            Tb_Good_Points.add(Tb_Tot_Points.get(TotPoints-1));
-            Tb_Good_Points.add(Tb_Tot_Points.get(TotPoints));         
+            if (TotPoints-1 < Tb_Tot_Points.size()-1) Tb_Good_Points.add(Tb_Tot_Points.get(TotPoints-1));
+            if (TotPoints < Tb_Tot_Points.size()) Tb_Good_Points.add(Tb_Tot_Points.get(TotPoints));         
         }
         // mini max updated  
         Alt_Maxi_Baro = AltMaxBaro;
