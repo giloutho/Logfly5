@@ -22,6 +22,7 @@ import gps.flymasterold;
 import gps.flynet;
 import gps.flytec15;
 import gps.flytec20;
+import gps.gpsdump;
 import gps.oudie;
 import gps.reversale;
 import gps.sensbox;
@@ -1822,14 +1823,37 @@ public class GPSViewController {
         Thread thread = new Thread(task);
         thread.start();        
     }
+    
+    private void oneFlightWithGpsDump(int pReturn,int idGPS, int idFlight) {
+        gpsdump gpsd = new gpsdump(this, pReturn, myConfig);
+        gpsd.start(idGPS, idFlight);        
+    }
+    
+    public void returnGpsDump(String sIGC) {
+        // If gpsdump call failed, error message was sent by gpsdump class
+        if (sIGC != null && !sIGC.isEmpty()) {                       
+            traceGPS reqIGC = new traceGPS(sIGC, "", true, myConfig);
+            if (reqIGC.isDecodage()) { 
+                showOneTrack(reqIGC);
+            } else {
+                displayErrDwnl(reqIGC);
+            }        
+        }
+    }
                         
     /**
      * Clic on button "Track display" (FXML triggered)
      */
     public void askOneTrack() {
         if(tableImp.getSelectionModel().getSelectedItem() != null)  {
-            Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem();  
-            oneFlightWithProgress(currLineSelection);              
+            Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem(); 
+            // 
+//            int idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+//            if (currGPS == gpsType.FlymSD) {
+//                oneFlightWithGpsDump(6,1,idx);
+//            } else {
+                oneFlightWithProgress(currLineSelection);              
+            //}
         } else {
             alertbox aInfo = new alertbox(myConfig.getLocale());
             aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
