@@ -153,6 +153,9 @@ public class alertbox {
             case 1112 :                
                 msg = i18n.tr("Un seul vol sélectionné");                          
                 break;
+            case 1201:
+                msg = i18n.tr("Module GpsDump non trouvé...");                          
+                break;                
             default:
                 msg = i18n.tr("Erreur indéterminée");
         }        
