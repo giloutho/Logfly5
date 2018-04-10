@@ -60,6 +60,9 @@ public class Carnet {
         
         // in database, date is in principle YYYY-MM-DD HH:MM:SS      
         // but sometimes we have only YYYY-MM-DD
+        //  a user send me a database where sometimes sql datime is like : 2017-08-21 14:45:1014:45:10
+        // hour is repeted twice. We check length of dateStr
+        if (dateStr.length() > 19) dateStr = dateStr.substring(0, 19);                        
         DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         Pattern fullDate = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
         Matcher matchFull = fullDate.matcher(dateStr);
