@@ -6,7 +6,6 @@
  */
 package controller;
 
-import dialogues.alertbox;
 import java.io.IOException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,6 +28,8 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
+import javafx.scene.layout.HBox;
 import littlewins.winLog;
 import littlewins.winMail;
 import littlewins.winWeb;
@@ -75,7 +76,14 @@ public class RootLayoutController {
     private Button btnSupport;
     @FXML
     private Label LbMsg; 
-    
+    @FXML
+    private HBox hbMenu;
+    @FXML
+    private HBox hbInput;
+    @FXML
+    private HBox hbAction;
+    @FXML
+    private SplitPane mapPane;
     // Refer to the main application.
     private Main mainApp;
     
@@ -120,7 +128,7 @@ public class RootLayoutController {
         });            
         mnBalises.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(9);
-            comingSoon();
+            mainApp.showWaypOverview();
         });      
         mnEspaces.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(10);
