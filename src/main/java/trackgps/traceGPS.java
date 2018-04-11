@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import igc.pointIGC;
 import geoutils.trigo;
+import io.jenetics.jpx.WayPoint;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -49,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.TimeZone;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import settings.configProg;
 import systemio.mylogging;
 import systemio.textio;
@@ -116,6 +118,8 @@ public class traceGPS {
     private int bestGainIndice2;
     private String Comment;
     private String photo;
+    private int nbGpxPoint;
+    private int totGpxPoint;
     
     public List<pointIGC> Tb_Tot_Points = new ArrayList<pointIGC>();
     public List<pointIGC> Tb_Good_Points = new ArrayList<pointIGC>();
@@ -168,7 +172,7 @@ public class traceGPS {
                 FicGPX = pFichier;
                 Origine = "GPX";
                 InputStream stream = new ByteArrayInputStream(pFichier.getBytes(StandardCharsets.UTF_8));
-                DecodeGPX(stream);
+                DecodeGPX2(stream);
             } else {
                 numErrDecodage = 1060;    // unknown file extension 
             }                 
@@ -206,7 +210,7 @@ public class traceGPS {
                 FicGPX = pFichier;
                 Origine = "GPX";
                 InputStream stream = new ByteArrayInputStream(pFichier.getBytes(StandardCharsets.UTF_8));
-                DecodeGPX(stream);
+                DecodeGPX2(stream);
             } else {
                 FicIGC = pFichier;
                 Origine = "IGC";
@@ -1371,7 +1375,7 @@ public class traceGPS {
      * @param pathFile
      * @param withThermals 
      */
-    private void DecodeGPX(InputStream in) {
+     private void DecodeGPX(InputStream in) {
         
         int nbPoint = 0;   
         int nbWp;
@@ -1558,6 +1562,196 @@ public class traceGPS {
         }     
     }
     
+     
+    private void DecodeGPX2(InputStream in) {
+        
+        int nbPoint = 0;   
+        int nbWp;
+        int TotPoint = 0;
+        int totWp = 0;
+        LocalDateTime ldt;
+        WayPoint lastWp = null;
+        boolean MissTime = false;
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dtfDate = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        
+        // we must check if creator is empty
+        if (FicGPX.indexOf("creator=\"\"") > 0 ) {
+            FicGPX = FicGPX.replace("creator=\"\"", "creator=\"Logfly\"");
+        }
+        InputStream stream = new ByteArrayInputStream(FicGPX.getBytes(StandardCharsets.UTF_8));
+        try {           
+            io.jenetics.jpx.GPX mygpx = io.jenetics.jpx.GPX.read(stream);
+            List<io.jenetics.jpx.Track> lTrack = mygpx.getTracks();
+            if (lTrack.size() > 0) {                
+                List<WayPoint> lWayp = mygpx.tracks().flatMap(io.jenetics.jpx.Track::segments).flatMap(io.jenetics.jpx.TrackSegment::points).collect(Collectors.toList());                       
+                nbWp = 0;
+                for (io.jenetics.jpx.WayPoint eachWp : lWayp) {                            
+                    pointIGC Point1 = new pointIGC();
+                    Point1.setComment("");
+                    Point1.setLatitude(eachWp.getLatitude().doubleValue());
+                    Point1.setLongitude(eachWp.getLongitude().doubleValue());
+                    Point1.setAltiGPS(eachWp.getElevation().get().intValue());   
+                    // GPX -> Time is UTC. We must convert to LocalDateTime
+                    // with Instant we convert in UTC +0
+                    if (eachWp.getTime() != null) {
+                        ldt = eachWp.getTime().get().toLocalDateTime();
+                        Point1.setPeriode((ldt.getHour()*3600)+(ldt.getMinute()*60)+ldt.getSecond());
+                    } else {
+                        ldt = null;
+                        Point1.setPeriode(0);
+                    }
+                    Point1.setLdtHeure(ldt);         
+                    // First point of GPX track
+                    if (nbPoint == 0) {
+                        // take off time
+                        if (eachWp.getTime() != null) {
+                            DT_Deco = ldt;
+                        } else {
+                            // Time field can be null (BaseCamp GPX generation)
+                            DT_Deco = LocalDateTime.of(2000, 1, 1, 0, 0, 0);                                   
+                            // For SQLIte
+                            Date_Vol_SQL = "2000-01-01 ";
+                        }
+                        // flight date                      
+                        Date_Vol = DT_Deco;
+                        sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                        if (!avecPoints) {
+                            LocalDateTime iniDate_Vol = Date_Vol;
+                            // timezone computing
+                            tzVol = tzCalcul(Point1);
+                            if (tzVol.getID() != null)  {
+                                ZonedDateTime utcZDT = Point1.dHeure.atZone(ZoneId.of("Etc/UTC"));
+                                DT_Deco = LocalDateTime.ofInstant(utcZDT.toInstant(), ZoneId.of(tzVol.getID()));                                         
+                            } else  {
+                                // no timezone, we keep UTC time
+                                DT_Deco = Point1.dHeure;
+                            }
+                            // Update UTC offset
+                            majParamUTC(DT_Deco);
+                            DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");                                        
+                            Date_Vol_SQL = DT_Deco.format(formatterSQL); 
+                            // update of day date if necessary (Australia, NZ)
+                            Date_Vol = DT_Deco;
+                            sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+                            // take off  paremeters update
+                            LatDeco = Point1.Latitude;
+                            LongDeco = Point1.Longitude;
+                            Alt_Deco_Baro = Point1.AltiBaro;
+                            Alt_Deco_GPS = Point1.AltiGPS;
+                            Decodage = true;                                    
+                        }
+                    } else {
+                        pointIGC PtPcdt = Tb_Tot_Points.get(TotPoint - 1);                                 
+                        // parameters computing with previous point
+                        // Totpoint = 1 more than last array index
+                        Point1.setDistPtPcdt(trigo.CoordDistance(Point1.Latitude,Point1.Longitude,PtPcdt.Latitude,PtPcdt.Longitude));
+                        if (Point1.dHeure == null) {
+                            // no timestamp  -> Basecamp generation
+                            MissTime = true;
+                            if (Tb_Tot_Points.get(0).dHeure != null) {
+                                Point1.dHeure = Tb_Tot_Points.get(0).dHeure;
+                            } else {
+                                Point1.dHeure = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+                            }
+                        }
+                        long DiffSec = ChronoUnit.SECONDS.between(PtPcdt.dHeure, Point1.dHeure);
+                        Point1.setPeriodePtPcdt((int)DiffSec);
+                        // to avoid a division by zero
+                        if (Point1.PeriodePtPcdt > 0) {
+                            Point1.setVitesse(Point1.DistPtPcdt / Point1.PeriodePtPcdt * 3.6);                                    
+                        } else  {
+                            Point1.setVitesse(0);
+                        }   
+                    }                                                                                        
+                    Tb_Tot_Points.add(Point1);              
+                    TotPoint++;
+                    nbPoint++;
+                    if (!avecPoints && nbWp == 0) {
+                      lastWp = lWayp.get(lWayp.size() -1);
+                      break;
+                    }
+                    nbWp++;
+                }
+                // compute duration with end point  
+            }            
+            if (!avecPoints)  {                
+                pointIGC Point1 = new pointIGC();
+                Point1.setComment("");
+                Point1.setLatitude(lastWp.getLatitude().doubleValue());
+                Point1.setLongitude(lastWp.getLongitude().doubleValue());
+                Point1.setAltiGPS(lastWp.getElevation().get().intValue());
+                if (lastWp.getTime() != null) {    
+                     ldt = lastWp.getTime().get().toLocalDateTime();    
+                } else {
+                    ldt = null;
+                }
+                Point1.setLdtHeure(ldt); 
+                long decUTC = (long) (utcOffset*3600);
+                DT_Attero = Point1.dHeure.plusSeconds(decUTC);
+                // altitude landing recorded            
+                // it's possible to compute flight duration
+                Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
+                // compute average period between two points            
+                LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
+                sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
+                colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
+
+                Alt_Attero_Baro = Point1.AltiBaro;
+                Alt_Attero_GPS = Point1.AltiGPS;   
+                NbPoints = totWp;                
+            } else {
+                if (TotPoint > 5)  {
+                    // time shift to local time for all points
+                    utcToLocalDecalage();
+                    if (MissTime == true) {
+                        Verif_Tb_Tot_Points(MissTime, true);     //  outliers taken into account
+                    } else {
+                        Verif_Tb_Tot_Points(MissTime, false);     // outliers are not taken into account
+                    } 
+                    if (Tb_Good_Points.size() > 1)  {
+                        pointIGC LastPoint = Tb_Good_Points.get(Tb_Good_Points.size() - 1);                                        
+                        DT_Attero = LastPoint.dHeure;
+                        // altitude landing recorded
+                        Alt_Attero_Baro = LastPoint.AltiBaro;
+                        Alt_Attero_GPS = LastPoint.AltiGPS;
+                        // it's possible to compute flight duration
+                        Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
+                        // compute average period between two points
+                        int AvgPeriode = (int) (Duree_Vol / Tb_Good_Points.size());
+                        if (AvgPeriode < 1) AvgPeriode = 1;
+                        LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
+                        sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
+                        colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
+                        NbPoints = TotPoint;
+                        Signature = "";
+                        // in xLogfly we recalculated an average speed
+                        // it seems unnecessary an average is computed in Verif_Tb_Tot_Points with an integration parameter
+
+                        // Reduce number of points for scoring
+                        fillTb_Calcul();
+
+                        // compute thermals points
+                        calc_Thermiques();
+                        
+                        encodeIGC();
+
+                        Decodage = true;
+                    }                
+                }             
+            }  // end of if size > 0
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            sbError.append("\r\n").append("Path : ").append(pathFichier);
+            mylogging.log(Level.SEVERE, sbError.toString());        
+        }     
+    }
+     
+     
+     
+     
     /**
     * Thermal points computing
     * adapted from a php script [Emmanuel Chabani [Man's] and P.O. Gueneguo (Parawing.net)]
