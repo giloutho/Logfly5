@@ -112,6 +112,10 @@ public class TraceViewController {
             extTrace = new traceGPS(selectedFile,true, myConfig);
             if (extTrace.isDecodage()) {                 
                 map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
+                StringBuilder sbInfo = new StringBuilder();
+                sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
+                sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(i18n.tr("points"));
+                this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
                 if (visuMap.isMap_OK()) {
                     mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
                 }
