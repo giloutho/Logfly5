@@ -357,6 +357,7 @@ public class CarnetViewController  {
         boolean isCamera;
         Statement stmt = null;
         ResultSet rs = null;
+        String dbSqlDate;
         String sReq = "SELECT * from Vol WHERE V_Date >= '"+yearFiltre+"-01-01 00:01' AND V_Date <= '"+yearFiltre+"-12-31 23:59' ORDER BY V_Date DESC";
         try {
             stmt = myConfig.getDbConn().createStatement();
@@ -369,7 +370,7 @@ public class CarnetViewController  {
                     else
                         isCamera = false;
                     Carnet ca = new Carnet();                    
-                    ca.setIdVol(rs.getString("V_ID"));
+                    ca.setIdVol(rs.getString("V_ID"));                    
                     ca.setDate(rs.getString("V_Date"));
                     ca.setHeure(rs.getString("V_Date"));
                     ca.setDuree(rs.getString("V_Duree"));
