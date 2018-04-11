@@ -125,10 +125,14 @@
     var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
     var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 16,
-        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
     });
     var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
     var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    var outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
 
     var googleLayer = new L.Google('TERRAIN');
     var googleSat = new L.Google('SATELLITE');
@@ -140,9 +144,25 @@
         "OpenTopo" : OpenTopoMap,
         "MTK" : mtklayer,
         "4UMaps" : fouryoulayer,
+        "Outdoor" : outdoorlayer,
         "Google Terrain" : googleLayer,
         "Google Sat" : googleSat
     };
+
+    var openaip_cached_basemap = new L.TileLayer("http://{s}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{y}.png", {
+                maxZoom: 14,
+                minZoom: 4,
+                tms: true,
+                detectRetina: true,
+                subdomains: '12',
+                format: 'image/png',
+                transparent: true
+            });
+
+    var hillslayer = new L.TileLayer("http://{s}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png", {
+                maxZoom: 17,
+                attribution: 'Hillshading: SRTM3 v2 (<a href="https://www2.jpl.nasa.gov/srtm/">NASA</a>)'
+            });     
 
 
     var THmarkers = new L.LayerGroup();
@@ -180,6 +200,8 @@
     var track = new L.Polyline(tabPoints, trackOptions);
 
     var Affichage = {
+        "Airspaces" : openaip_cached_basemap,
+        "Shadow" : hillslayer,
         "Trace": track,
         "Thermiques": THmarkers
         ,
