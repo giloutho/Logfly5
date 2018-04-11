@@ -23,6 +23,7 @@ import controller.RootLayoutController;
 import controller.SitesViewController;
 import controller.StatViewController;
 import controller.TraceViewController;
+import controller.WaypViewController;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import liveUpdate.checkUpdate;
@@ -40,6 +41,7 @@ public class Main extends Application {
     private TraceViewController controlTrace;
     private GPSViewController controlGPS;
     private SitesViewController controlSites;
+    private WaypViewController controlWayp;
     private StringBuilder sbError;
     
     
@@ -298,6 +300,32 @@ public class Main extends Application {
     /**
      * Display logbook inside root window
      */
+    public void showWaypOverview() {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/WaypView.fxml"));
+            AnchorPane waypOverview = (AnchorPane) loader.load();            
+            
+            // Initialization of a communication bridge between Sitescontroller an RootLayout
+            controlWayp = loader.getController();  
+            // Controller needs an access to main app
+            // with this, we avoid a NullPointerException with a call to
+            // mainApp.getPrimaryStage() in RootLayoutController     
+            controlWayp.setMainApp(this);
+            
+            // Place logbook window in center of RootLayout.
+            rootLayout.setCenter(waypOverview);                                                      
+            
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }    
+       
+    /**
+     * Display Sites form inside root window
+     */
     public void showSitesOverview() {
         try {
             FXMLLoader loader = new FXMLLoader();            
@@ -319,8 +347,9 @@ public class Main extends Application {
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());
         }
-    }    
-       
+    }        
+    
+    
     /**
      * Return main stage
      * @return
