@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
+    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&v=3"></script>
+    <script src="http://cdn.rawgit.com/shramov/leaflet-plugins/master/layer/tile/Bing.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+   <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.measurecontrol.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.measurecontrol.css" />
+    <style>
+        html, body, #carte {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+        .leaflet-google-layer{
+            z-index: 0;
+        }
+        .leaflet-map-pane{
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+<div id="carte"></div>
+
+<script type='text/javascript'>
+    var map = null;
+    var gmarkers = new Array();
+
+    var IconBase = new L.Icon({
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    var IconBig = new L.Icon({
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [50, 82],
+        iconAnchor: [25, 82],
+        popupAnchor: [1, -34],
+        shadowSize: [82, 82]
+    });
+
+    map = new L.Map('carte');
+
+    var tabPoints = [];
+    var infoPoints = [];
+
+    %tabPoints%
+    %infoPoints%
+
+
+    function createNew(NomPos) {
+        var myPoint = map.getCenter();
+        var contentPos = NomPos;
+        var marker = new L.marker(myPoint, {
+            draggable: true,
+            icon:IconBig
+        }).bindPopup(contentPos);
+        map.addLayer(marker);
+        // j'ai galéré avant de trouveer le ev.target nécessaire ...http://gis.stackexchange.com/questions/39331/location-of-a-dragged-and-dropped-marker-using-leaflet
+        // Le disable doit être placé AVANT le changement d'icône  https://stackoverflow.com/questions/22671733/why-doesnt-marker-dragging-disable-work
+        marker.on('dragend', function(ev){ ev.target.dragging.disable(), ev.target.setIcon(IconBase), getElevation(marker,gmarkers.length-1)});
+        // On ajoute le marker au tableau
+        gmarkers.push(marker);
+    }
+
+    // Efface le marqueur
+    function DelMarker(i) {
+        map.removeLayer(gmarkers[i]);
+    }
+
+    function ChangePos(i) {
+        gmarkers[i].setIcon(IconBig);
+        gmarkers[i].dragging.enable();
+        gmarkers[i].on('dragend', function(ev){ ev.target.dragging.disable(), ev.target.setIcon(IconBase), getElevation(gmarkers[i],i)});
+    }
+
+    // Intercepte le clic et ouvre l'infoWindow
+    function myclick(i) {
+        map.panTo(gmarkers[i].getLatLng());
+        gmarkers[i].openPopup();
+    }
+
+    function ChangeDesc(i,NewDesc) {
+        gmarkers[i].dragging.disable();
+        gmarkers[i].bindPopup(NewDesc);
+        gmarkers[i].openPopup();
+    }
+
+    function markerDelAll() {
+        for(i=0;i<gmarkers.length;i++) {
+            map.removeLayer(gmarkers[i]);
+        }
+    }
+
+
+    function getElevation(lMarker,Idx)
+    {
+        // Code inspiré de http://www.daftlogic.com/sandbox-google-maps-find-altitude.htm
+
+        var locations = [];
+        elevator = new google.maps.ElevationService();
+        var myMarker = lMarker;
+        var clickedLocation = myMarker.getLatLng();
+        console.log(clickedLocation);
+        var googleLocation = new google.maps.LatLng(clickedLocation);
+        locations.push(googleLocation);
+        // Create a LocationElevationRequest object using the array's one value
+        var positionalRequest = {'locations': locations};
+        elevator.getElevationForLocations(positionalRequest, function(results, status)
+        {
+            if (status == google.maps.ElevationStatus.OK)
+            {
+                if (results[0])
+                {
+                    // Impossible de retourner la valeur car cette fonction est "asynchrone"
+                    // Cf http://www.developpez.net/forums/d955312/webmasters-developpement-web/javascript/js-fonction-anonyme-retour-variable/
+                    console.log([Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),results[0].elevation.toFixed(0)].join(', '));
+                    document.title = [Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),results[0].elevation.toFixed(0)].join(', ');
+                }
+                else
+                {
+                    alert("No found");
+                }
+            }
+            else
+            {
+                alert("Elevation service failed due to: " + status);
+            }
+        });
+    }
+
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    var outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+    // Bing ne fonctionne plus    
+    var imagerySet = "Aerial"; // AerialWithLabels | Birdseye | BirdseyeWithLabels | Road
+    var bing = new L.BingLayer("ltzGJVGChuzN5VAohPDU~nY-qwbPPL_P2nMqr0lcGkA~AqgaTCOsTIdffrBxv2aCDQiyia70jvKkir1fU1IuKlAupEtsdPDln_k8AD7_22c2", {type: imagerySet});
+    var googleLayer = new L.Google('TERRAIN');
+    var googleSat = new L.Google('SATELLITE');
+
+    %layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+        "Outdoor" : outdoorlayer,
+        "Google Terrain" : googleLayer,
+        "Google Sat" : googleSat
+    };
+
+    var openaip_cached_basemap = new L.TileLayer("http://{s}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{y}.png", {
+                maxZoom: 14,
+                minZoom: 4,
+                tms: true,
+                detectRetina: true,
+                subdomains: '12',
+                format: 'image/png',
+                transparent: true
+            });
+
+    var hillslayer = new L.TileLayer("http://{s}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png", {
+                maxZoom: 17,
+                attribution: 'Hillshading: SRTM3 v2 (<a href="https://www2.jpl.nasa.gov/srtm/">NASA</a>)'
+            }); 
+
+    var Affichage = {
+        "Airspaces" : openaip_cached_basemap,
+        "Shadow" : hillslayer
+    };
+
+    L.control.layers(baseMaps,Affichage).addTo(map);
+
+    L.Control.measureControl().addTo(map);
+
+    for (var i = 0; i < tabPoints.length; i++) {
+        marker = new L.marker(tabPoints[i], {icon: IconBase})
+                .bindPopup(infoPoints[i])
+        map.addLayer(marker);
+        gmarkers.push(marker);
+    }
+
+    if (tabPoints.length > 0)
+    {
+        map.fitBounds(tabPoints,{maxZoom : 15});
+    }
+    else
+    {
+        map.setView([%CoordIni%], 12);
+    }
+
+</script>
+</body>
+</html>
