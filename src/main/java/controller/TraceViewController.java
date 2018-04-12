@@ -114,7 +114,7 @@ public class TraceViewController {
                 map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
                 StringBuilder sbInfo = new StringBuilder();
                 sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
-                sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(i18n.tr("points"));
+                sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(" ").append(i18n.tr("points"));
                 this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
                 if (visuMap.isMap_OK()) {
                     mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
@@ -466,6 +466,24 @@ public class TraceViewController {
                     }
                     break;
                 case "GPX":
+                   String exportGPX = null;
+                    if (extTrace.getOrigine().equals("IGC")) {
+                        res = extTrace.encodeGPX();
+                        if (res == 0) exportGPX = extTrace.getFicGPX();
+                    } else {
+                        exportGPX = extTrace.getFicGPX();
+                    }
+                    if (exportGPX != null && !exportGPX.equals("")) {
+                        try {
+                            FileWriter fileWriter = null;
+                            fileWriter = new FileWriter(selectedFile);                        
+                            fileWriter.write(extTrace.getFicGPX());
+                            fileWriter.close();
+                            res = 0;
+                        } catch (IOException ex) {
+                            res = 2;
+                        }   
+                    }         
                     break;
             }
             alertbox finOp = new alertbox(myConfig.getLocale());
