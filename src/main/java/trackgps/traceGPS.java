@@ -1725,8 +1725,7 @@ public class traceGPS {
             TrackSegment tseg = TrackSegment.of(gpxWpList);
             final Track track = Track.builder().name(sPilote).desc(sVoile).addSegment(tseg).build();                
             final GPX outGpx = GPX.builder().addTrack(track).build();
-
-            FicGPX = GPX.writer().toString(outGpx);
+            FicGPX = GPX.writer("    ").toString(outGpx);
          //   io.jenetics.jpx.GPX.write(outGpx, pPath);
             res = 0;
         } catch (Exception e) {
