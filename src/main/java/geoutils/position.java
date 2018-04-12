@@ -6,6 +6,9 @@
  */
 package geoutils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+
 /**
  *
  * @author gil
@@ -28,6 +31,9 @@ public class position {
     private int longMin_ms;
     private double longSec_ms;    
     private String meridien;
+    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();    
+    private DecimalFormat df2; 
+    private DecimalFormat df3;       
 
     public position() {
         altitude = 0;
@@ -255,4 +261,75 @@ public class position {
         meridien = pMer;          
     }
     
+    public String getLatForFly() {
+        StringBuilder sbRes = new StringBuilder();
+        String res = "";
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df2 = new DecimalFormat("00.000", decimalFormatSymbols);           
+        // Lat is 45.781300 become 4546.878,N
+        try {         
+            sbRes.append(String.format("%02d",latDegres));
+            sbRes.append(df2.format(latMin_mm));
+            sbRes.append(",").append(hemisphere);
+            res = sbRes.toString();
+        } catch (Exception e) {
+            res = "error";
+        }
+        
+        return res;               
+    }
+    
+    public String getLongForFly() {
+        StringBuilder sbRes = new StringBuilder();
+        String res = "";
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df2 = new DecimalFormat("00.000", decimalFormatSymbols);           
+        // Long is 6.228500 become 00613.710,E
+        try {         
+            sbRes.append(String.format("%03d",longDegres));
+            sbRes.append(df2.format(longMin_mm));
+            sbRes.append(",").append(meridien);
+            res = sbRes.toString();
+        } catch (Exception e) {
+            res = "error";
+        }
+        
+        return res;           
+    }
+    
+    public String getLatForFly15() {
+        StringBuilder sbRes = new StringBuilder();
+        String res = "";
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df2 = new DecimalFormat("00.000", decimalFormatSymbols);           
+        // Lat is 45.781300 become N  45'46.878
+        try {   
+            sbRes.append(hemisphere).append("  ");
+            sbRes.append(String.format("%02d",latDegres)).append("'");
+            sbRes.append(df2.format(latMin_mm));
+            res = sbRes.toString();
+        } catch (Exception e) {
+            res = "error";
+        }
+        
+        return res;               
+    }    
+    
+    public String getLongForFly15() {
+        StringBuilder sbRes = new StringBuilder();
+        String res = "";
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df2 = new DecimalFormat("00.000", decimalFormatSymbols);           
+        // Long is 6.228500 become E 006'13.710
+        try {         
+            sbRes.append(meridien).append(" ");
+            sbRes.append(String.format("%03d",longDegres)).append("'");
+            sbRes.append(df2.format(longMin_mm));
+            res = sbRes.toString();
+        } catch (Exception e) {
+            res = "error";
+        }
+        
+        return res;           
+    }    
 }
