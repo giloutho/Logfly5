@@ -723,6 +723,24 @@ public class CarnetViewController  {
                     }
                     break;
                 case "GPX":
+                    String exportGPX = null;
+                    if (currTrace.getOrigine().equals("IGC")) {
+                        res = currTrace.encodeGPX();
+                        if (res == 0) exportGPX = currTrace.getFicGPX();
+                    } else {
+                        exportGPX = currTrace.getFicGPX();
+                    }
+                    if (exportGPX != null && !exportGPX.equals("")) {
+                        try {
+                            FileWriter fileWriter = null;
+                            fileWriter = new FileWriter(selectedFile);                        
+                            fileWriter.write(currTrace.getFicGPX());
+                            fileWriter.close();
+                            res = 0;
+                        } catch (IOException ex) {
+                            res = 2;
+                        }   
+                    }
                     break;
             }
             alertbox finOp = new alertbox(myConfig.getLocale());
