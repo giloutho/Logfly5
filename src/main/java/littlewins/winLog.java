@@ -8,6 +8,7 @@ package littlewins;
 
 import dialogues.alertbox;
 import java.io.File;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -45,11 +46,26 @@ public class winLog {
     TextField txtAdress;
     TextArea txtLog;
     
-    public winLog(configProg currConfig) {
+    public winLog(configProg currConfig, int pAction) {
         myConfig = currConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
-        readLogFile();
+        switch (pAction) {
+            case 0:
+                readLogFile();
+                break;
+            case 1:
+                reportSystem();
+                break;
+        }
         showText();
+    }
+    
+    private void reportSystem() {
+        StringBuilder sbReport = new StringBuilder();
+        for (Map.Entry<?,?> e : System.getProperties().entrySet()) {
+            sbReport.append(String.format("%s = %s", e.getKey(), e.getValue())).append("\r\n");            
+        }   
+        logTxt = sbReport.toString();
     }
        
     private void readLogFile() {
