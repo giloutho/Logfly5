@@ -24,11 +24,16 @@ public class reversale {
     private boolean connected = false;
     private File fLog;
     private File fCompet;
+    private File fWayp;      
+    private boolean wpExist = false;
+    private File fGoog;      
+    private boolean googExist = false;    
     private File fDrive;
     private int idxDrive;
     private ObservableList <String> driveList;
     private String closingDate;
     private String msgClosingDate;
+    private ArrayList<String> wpPathList;     
     
     public boolean isConnected() {
         return connected;
@@ -61,8 +66,27 @@ public class reversale {
     public ObservableList<String> getDriveList() {
         return driveList;
     }
+
+    public File getfWayp() {
+        return fWayp;
+    }
+
+    public File getfGoog() {
+        return fGoog;
+    }
+
+    public boolean isWpExist() {
+        return wpExist;
+    }
+
+    public boolean isGoogExist() {
+        return googExist;
+    }
     
-    
+    public ArrayList<String> getWpPathList() {
+        return wpPathList;
+    }        
+
     
     public reversale(osType currOs, int gpsLimit) {
         boolean conn = false;
@@ -139,6 +163,14 @@ public class reversale {
                             if (listFile[i].getName().equals("PARAM.VGP")) {
                                 cond2 = true;
                             }
+                            if (listFile[i].getName().equals("GOOGLE") && listFile[i].isDirectory()) {
+                                fGoog = listFile[i];
+                                googExist = true;
+                            }       
+                            if (listFile[i].getName().equals("WPTS") && listFile[i].isDirectory()) {
+                                fWayp = listFile[i];
+                                wpExist = true;
+                            }                             
                         }
                         if (cond1 == true && cond2 == true) {
                             fDrive = aDrive;
@@ -177,12 +209,39 @@ public class reversale {
     }
     
     /**
+     * Different from exploreFolder, not only an extension file difference
+     * We don't take care of closingDate
+     * @param dir
+     * @param wpPathList
+     * @throws Exception 
+     */
+    private void exploreFolderWp(File dir, ArrayList<String> wpNameList) throws Exception {       
+        File[] files = dir.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            // We had a problem with an empty folder.
+            // this folder trigerred a dead loop
+            // In this case files.length had a value of 1 instead of 0 !!!
+            if (files[i].isDirectory() && !files[i].getName().equals(dir.getName())) {
+                exploreFolder(files[i], wpNameList);                
+            } else {
+                String fileName = files[i].getName();
+                if (fileName.endsWith(".wpt") || fileName.endsWith(".WPT") || fileName.endsWith(".kml") || fileName.endsWith(".KML")) {                                    
+                    // Problem of dot files writed by MacOS 
+                    if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {    
+                            wpNameList.add(files[i].getName()); 
+                            wpPathList.add(files[i].getPath());                        
+                    }
+                }
+            }
+        }        
+    }      
+    
+    /**
      * Recursive track search in selected folder and sub folders
      * @param dir
      * @throws Exception 
      */
     public void listTracksFiles(ArrayList<String> trackPathList) throws Exception {   
-        // Recursivité à vérifier pour le skytraax
         // We begin by the most used folder : LOG
         if (fLog != null && fLog.exists())  {
             exploreFolder(fLog, trackPathList);
@@ -195,6 +254,16 @@ public class reversale {
 //        Collections.sort(trackPathList);
 //        Collections.reverse(trackPathList);
     } 
+    
+    public void listWaypFiles(ArrayList<String> waypPathList) throws Exception {   
+        wpPathList = new ArrayList<>();        
+        if (fWayp != null && fWayp.exists())  {        
+           exploreFolderWp(fWayp, waypPathList);
+        }
+        if (fGoog != null && fGoog.exists())  {        
+           exploreFolderWp(fGoog, waypPathList);
+        }        
+    }      
     
     public String getTrackFile(String igcPath) {
         
