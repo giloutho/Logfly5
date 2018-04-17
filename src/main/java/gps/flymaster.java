@@ -25,6 +25,7 @@ import systemio.mylogging;
 import static gps.gpsutils.fourBytesToInt;
 import static gps.gpsutils.oneByteToInt;
 import static gps.gpsutils.twoBytesToInt;
+import waypio.pointRecord;
 
 /**
  *
@@ -54,6 +55,8 @@ public class flymaster {
     private String deviceFirm;
     private ArrayList<String> listPFM;
     private ArrayList<String> listPOS;
+    private ArrayList<String> listPFMWP;
+    private ArrayList<pointRecord> wpreadList;
     private final int IS_GEO   = 0x01;
     private final int IS_HEART = 0x02;
     private final int IS_TAS   = 0x03;
@@ -101,6 +104,15 @@ public class flymaster {
     public String getFinalIGC() {
         return finalIGC;
     }
+
+    public ArrayList<pointRecord> getWpreadList() {
+        return wpreadList;
+    }
+
+    public void setListPFMWP(ArrayList<String> listPFMWP) {        
+        this.listPFMWP = listPFMWP;
+    }
+                
     
     public String getError() {
         if (sbError != null)
@@ -153,6 +165,7 @@ public class flymaster {
      */
     public boolean iniForFlights(String namePort) {
         boolean res = false;
+        listPFMWP = new ArrayList<String>();
         try {
             // open and configure serial port
             serialPortName = namePort;
@@ -200,7 +213,7 @@ public class flymaster {
         write_line("$PFMSNP,");       
 
         // give some time to GPS to send data to computer. We do not depend upon 100 because we also used 
-        Thread.sleep(100);
+        Thread.sleep(200);
     
         // Answer must be something like : $PFMSNP,GpsSD,,02988,1.06j, 872.20,*3C
 
@@ -211,21 +224,17 @@ public class flymaster {
             data = null;
         }
         if (data != null && !data.isEmpty()) {
-            if (callListPFM) {
-                int posPFMSNP = data.indexOf("$PFMSNP");
-                String cleanData = data.substring(posPFMSNP,data.length());
-                String[] tbdata = cleanData.split(",");
-                if (tbdata.length > 0 && tbdata[0].contains("$PFMSNP")) {  
-                    deviceType = tbdata[1];
-                    deviceSerial = tbdata[3];
-                    deviceFirm = tbdata[4];   
-                    res = true;
-                } else {
-                    sbError = new StringBuilder("GPS not splited : "+data);
-                    res = false;
-                }
-            } else {
+            int posPFMSNP = data.indexOf("$PFMSNP");
+            String cleanData = data.substring(posPFMSNP,data.length());
+            String[] tbdata = cleanData.split(",");
+            if (tbdata.length > 0 && tbdata[0].contains("$PFMSNP")) {  
+                deviceType = tbdata[1];
+                deviceSerial = tbdata[3];
+                deviceFirm = tbdata[4];   
                 res = true;
+            } else {
+                sbError = new StringBuilder("GPS not splited : "+data);
+                res = false;
             }
         } else {
             sbError = new StringBuilder("No GPS answer (GetDeviceInfo)");
@@ -281,6 +290,81 @@ public class flymaster {
             listPFM.add(sbRead.toString());
             //System.out.println(sbRead.toString());
         }
+    }
+    
+    private void getListPFMWPL() throws Exception {
+        
+        write_line("$PFMWPL,");
+        while(read_line()>0)
+        {
+            listPFMWP.add(sbRead.toString());
+        }
+    }    
+    
+    public void sendWaypoint() {
+        
+        for (int i = 0; i < listPFMWP.size(); i++) {
+            write_line(listPFMWP.get(i));
+            // answer is read but not verification
+            read_line();
+        }
+        
+    }
+    
+    /**
+     * String read from GPS are decoded to populate ArrayList<pointRecord> wpreadList
+     * GPS string -> $PFMWPL, 45.92732,N,  6.35088,E,1993,LACHAT THONES   ,0*01
+     * @return 
+     */
+    public int getListWaypoints() {
+        int res = 0;
+        wpreadList = new ArrayList<>();
+        String sLat;
+        String sLong;  
+        String sPref;
+        String sAlt;
+        String sBalise;
+        String sDesc;
+        String balAlt;
+        int iAlt;
+        
+        try {
+            getListPFMWPL();
+            if (!listPFMWP.isEmpty()) {
+                for (int i = 0; i < listPFMWP.size(); i++) {
+                    String ligPFM = listPFMWP.get(i);
+                    String[] partWp = ligPFM.split(",");
+                    if (partWp.length > 6) {
+                        sPref = partWp[2].equals("S") ? "-" : ""; 
+                        sLat = sPref+partWp[1].trim();
+                        sPref = partWp[4].equals("W") ? "-" : ""; 
+                        sLong = sPref+partWp[3].trim();
+                        sAlt = partWp[5];
+                        iAlt = Integer.parseInt(sAlt);
+                        balAlt = String.format("%03d",(int) iAlt/10);
+                        sDesc = partWp[6];
+                        // short name build
+                        if (sDesc.length() > 3)
+                            sBalise = sDesc.substring(0, 3);
+                        else
+                            sBalise = sDesc;
+                        sBalise = sBalise+balAlt;
+                        pointRecord myPoint = new pointRecord(sBalise, sAlt, sDesc);
+                        myPoint.setFLat(sLat);
+                        myPoint.setFLong(sLong);
+                        myPoint.setFIndex(i);
+                        wpreadList.add(myPoint);
+                    }            
+                }
+                res = wpreadList.size();
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+        
+        return res;
     }
         
     /**
@@ -693,7 +777,7 @@ public class flymaster {
         }                
     }        
     
-        private int read_line() {
+    private int read_line() {
         int iLen = 0;
         byte[] iRes = null;
         sbRead = new StringBuilder();
