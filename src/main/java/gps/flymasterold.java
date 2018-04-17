@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
 import systemio.mylogging;
+import waypio.pointRecord;
 
 /**
  *
@@ -49,6 +50,10 @@ public class flymasterold {
     private ArrayList<byte[]> packetList;
     private StringBuilder recIGC;
     private StringBuilder sbError = null;
+    private StringBuilder sbRead;      
+    private final int iBufLen = 6144;    
+    private ArrayList<String> listPFMWP;    
+    private ArrayList<pointRecord> wpreadList;    
                 
     public flymasterold() throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
@@ -75,6 +80,14 @@ public class flymasterold {
         else
             return "No Error message";
     }
+    
+    public ArrayList<pointRecord> getWpreadList() {
+        return wpreadList;
+    }
+
+    public void setListPFMWP(ArrayList<String> listPFMWP) {        
+        this.listPFMWP = listPFMWP;
+    }    
     
     /**
      * Initialize serial port and request GPS id [getDeviceInfo]
@@ -118,6 +131,7 @@ public class flymasterold {
      */
     public boolean iniForFlights(String namePort) {
         boolean res = false;
+        listPFMWP = new ArrayList<String>();        
         try {
             // open and configure serial port
             serialPortName = namePort;
@@ -254,6 +268,121 @@ public class flymasterold {
         }
         
     }
+    
+    /**
+     * String read from GPS are decoded to populate ArrayList<pointRecord> wpreadList
+     * GPS string -> $PFMWPL, 45.92732,N,  6.35088,E,1993,LACHAT THONES   ,0*01
+     * @return 
+     */
+    public int getListWaypoints() {
+        int res = 0;
+        wpreadList = new ArrayList<>();
+        String sLat;
+        String sLong;  
+        String sPref;
+        String sAlt;
+        String sBalise;
+        String sDesc;
+        String balAlt;
+        int iAlt;
+        
+        try {
+            getListPFMWPL();
+            if (!listPFMWP.isEmpty()) {
+                for (int i = 0; i < listPFMWP.size(); i++) {
+                    String ligPFM = listPFMWP.get(i);
+                    String[] partWp = ligPFM.split(",");
+                    if (partWp.length > 6) {
+                        sPref = partWp[2].equals("S") ? "-" : ""; 
+                        sLat = sPref+partWp[1].trim();
+                        sPref = partWp[4].equals("W") ? "-" : ""; 
+                        sLong = sPref+partWp[3].trim();
+                        sAlt = partWp[5];
+                        iAlt = Integer.parseInt(sAlt);
+                        balAlt = String.format("%03d",(int) iAlt/10);
+                        sDesc = partWp[6];
+                        // short name build
+                        if (sDesc.length() > 3)
+                            sBalise = sDesc.substring(0, 3);
+                        else
+                            sBalise = sDesc;
+                        sBalise = sBalise+balAlt;
+                        pointRecord myPoint = new pointRecord(sBalise, sAlt, sDesc);
+                        myPoint.setFLat(sLat);
+                        myPoint.setFLong(sLong);
+                        myPoint.setFIndex(i);
+                        wpreadList.add(myPoint);
+                    }            
+                }
+                res = wpreadList.size();
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+        
+        return res;
+    }    
+    
+    private void getListPFMWPL() throws Exception {
+        
+        write_line("$PFMWPL,");
+        while(read_line()>0)
+        {
+            listPFMWP.add(sbRead.toString());
+        }
+    }       
+    
+    private int read_line() {
+        int iLen = 0;
+        byte[] iRes = null;
+        sbRead = new StringBuilder();
+        
+        try {
+            // Windows requested
+            Thread.sleep(100);
+            iLen = 0;
+            while (iLen < iBufLen) {
+                iRes = scm.readBytes(handle, 1);   
+                if (iRes != null)  {
+                    char cData = (char) (iRes[0] & 0xFF);
+                        if (iRes[0] > 0 && cData != '\n') {
+                            if (cData != '\r') {
+                                sbRead.append(cData);
+                                iLen++;
+                            }
+                        } else {           
+                            //  timed out
+                            //System.out.println("ilen : "+iLen+" "+sbRead.toString());
+                            break;
+                        }
+                } else {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
+        }
+        
+        return iLen;
+    }    
+    
+    private void write_line(String reqDevice) {
+        
+        try {
+            scm.writeString(handle, reqDevice, 0);  
+            scm.writeString(handle, "\n", 0);   
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+    }    
+
+    
     
     /**
      * IGC file request with two steps 
