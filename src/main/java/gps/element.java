@@ -27,12 +27,14 @@ public class element {
     private boolean connected = false;
     private File fFlights; 
     private File fConfig;
-    private File fWaypoint;
+    private File fWayp;      
+    private boolean wpExist = false; 
     private File fDrive;
     private int idxDrive;    
     private ObservableList <String> driveList;  
     private String closingDate;
     private String msgClosingDate;  
+    private ArrayList<String> wpPathList;     
 
     public boolean isConnected() {
         return connected;
@@ -61,6 +63,18 @@ public class element {
     
     public String getMsgClosingDate() {
         return msgClosingDate;
+    }    
+
+    public ArrayList<String> getWpPathList() {
+        return wpPathList;
+    }        
+    
+    public boolean isWpExist() {
+        return wpExist;
+    }
+
+    public File getfWayp() {
+        return fWayp;
     }        
 
     public element(osType currOs, int gpsLimit) {
@@ -133,7 +147,8 @@ public class element {
                                 cond1 = true;
                             }
                             if (listFile[i].getName().equals("waypoints") && listFile[i].isDirectory()) {
-                                fWaypoint = listFile[i];
+                                fWayp = listFile[i];
+                                wpExist = true;
                                 cond2 = true;
                             }                            
                             if (listFile[i].getName().equals("flights") && listFile[i].isDirectory()) {
@@ -178,12 +193,48 @@ public class element {
         }        
     }    
     
+    /**
+     * Different from exploreFolder, not only an extension file difference
+     * We don't take care of closingDate
+     * @param dir
+     * @param wpPathList
+     * @throws Exception 
+     */
+    private void exploreFolderWp(File dir, ArrayList<String> wpNameList) throws Exception {      
+        wpPathList = new ArrayList<>();
+        File[] files = dir.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            // We had a problem with an empty folder.
+            // this folder trigerred a dead loop
+            // In this case files.length had a value of 1 instead of 0 !!!
+            if (files[i].isDirectory() && !files[i].getName().equals(dir.getName())) {
+                exploreFolder(files[i], wpNameList);                
+            } else {
+                String fileName = files[i].getName();
+                if (fileName.endsWith(".wpt") || fileName.endsWith(".WPT")) {                                    
+                    // Problem of dot files writed by MacOS 
+                    if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {    
+                            wpNameList.add(files[i].getName()); 
+                            wpPathList.add(files[i].getPath());                        
+                    }
+                }
+            }
+        }        
+    }        
+    
     public void listTracksFiles(ArrayList<String> trackPathList) throws Exception {   
 
         if (fFlights != null && fFlights.exists())  {        
            exploreFolder(fFlights, trackPathList);
         }
     }      
+    
+    public void listWaypFiles(ArrayList<String> waypPathList) throws Exception {   
+        
+        if (fWayp != null && fWayp.exists())  {        
+           exploreFolderWp(fWayp, waypPathList);
+        }
+    }         
 
     public String getTrackFile(String igcPath) {
         
