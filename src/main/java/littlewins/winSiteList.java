@@ -14,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -132,7 +133,8 @@ public class winSiteList {
         tableView.setItems(dataObs);
         
         Group root = new Group();
-        VBox vBox = new VBox();
+        VBox vBox = new VBox(8);            
+        vBox.setPadding(new Insets(20));
         //  vBox.setSpacing(10); 
         //  vBox.setPadding(new Insets(10, 10, 10, 10));
         vBox.getChildren().add(tableView);
