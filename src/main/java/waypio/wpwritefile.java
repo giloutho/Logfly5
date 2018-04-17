@@ -395,6 +395,8 @@ public class wpwritefile {
         try {
             double dLat = Double.parseDouble(sLat);
             String sHem = dLat > 0 ? "N" : "S";
+            // SHem is fixed, sign must be removed 
+            dLat = Math.abs(dLat);
             switch (idFormat) {
                 case 1:
                     // CompeGPS
@@ -424,6 +426,8 @@ public class wpwritefile {
         try {
             double dLong = Double.parseDouble(sLong);    
             String sMer = dLong > 0 ? "E" : "W";
+            // SMer is fixed, sign must be removed 
+            dLong = Math.abs(dLong);            
             switch (idFormat) {
                 case 1:
                     // CompeGPS
