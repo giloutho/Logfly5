@@ -62,17 +62,17 @@
                   </HBox>
                   <HBox fx:id="hbAction" alignment="TOP_RIGHT" maxHeight="40.0" minHeight="40.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="433.0">
                      <children>
-                        <Button fx:id="btSites" mnemonicParsing="false" text="fSites">
+                        <Button fx:id="btSites" mnemonicParsing="false" onAction="#handleSites" text="fSites">
                            <HBox.margin>
                               <Insets top="8.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="btEarth" mnemonicParsing="false" text="Google Earth">
+                        <Button fx:id="btEarth" mnemonicParsing="false" onAction="#handleGE" text="Google Earth">
                            <HBox.margin>
                               <Insets left="8.0" top="8.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="btMail" mnemonicParsing="false" text="fMail">
+                        <Button fx:id="btMail" mnemonicParsing="false" onAction="#handleMail" text="fMail">
                            <HBox.margin>
                               <Insets left="8.0" top="8.0" />
                            </HBox.margin>
