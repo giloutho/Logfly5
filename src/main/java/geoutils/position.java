@@ -37,18 +37,18 @@ public class position {
 
     public position() {
         altitude = 0;
-//        hemisphere = "N";
-//        latDegres = 0;
-//        latitude =0;
-//        latMin_mm = 0;
-//        latMin_ms = 0;
-//        latSec_ms = 0;
-//        longDegres = 0;
-//        longitude = 0;
-//        longMin_mm = 0;
-//        longMin_ms = 0;
-//        longSec_ms = 0;    
-//        meridien = "E";        
+        hemisphere = "N";
+        latDegres = 0;
+        latitude =0;
+        latMin_mm = 0;
+        latMin_ms = 0;
+        latSec_ms = 0;
+        longDegres = 0;
+        longitude = 0;
+        longMin_mm = 0;
+        longMin_ms = 0;
+        longSec_ms = 0;    
+        meridien = "E";        
     }
     
     public int getAltitude() {
