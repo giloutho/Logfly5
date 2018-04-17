@@ -7,7 +7,6 @@
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
     <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&v=3"></script>
     <script src="http://cdn.rawgit.com/shramov/leaflet-plugins/master/layer/tile/Bing.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
@@ -69,7 +68,7 @@
         var marker = new L.marker(myPoint, {
             draggable: true,
             icon:IconBig
-        }).bindPopup(contentPos);
+        }).bindPopup(contentPos).on('click', markerOnClick);
         map.addLayer(marker);
         // j'ai galéré avant de trouveer le ev.target nécessaire ...http://gis.stackexchange.com/questions/39331/location-of-a-dragged-and-dropped-marker-using-leaflet
         // Le disable doit être placé AVANT le changement d'icône  https://stackoverflow.com/questions/22671733/why-doesnt-marker-dragging-disable-work
@@ -93,6 +92,13 @@
     function myclick(i) {
         map.panTo(gmarkers[i].getLatLng());
         gmarkers[i].openPopup();
+    }
+
+    function markerOnClick(e)
+    {
+        var popup = e.target.getPopup();
+        var content = popup.getContent();
+        java.getPopup(content);
     }
 
     function ChangeDesc(i,NewDesc) {
@@ -128,18 +134,17 @@
                 if (results[0])
                 {
                     // Impossible de retourner la valeur car cette fonction est "asynchrone"
-                    // Cf http://www.developpez.net/forums/d955312/webmasters-developpement-web/javascript/js-fonction-anonyme-retour-variable/
-                    console.log([Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),results[0].elevation.toFixed(0)].join(', '));
+                    // Cf http://www.developpez.net/forums/d955312/webmasters-developpement-web/javascript/js-fonction-anonyme-retour-variable/                 
                     document.title = [Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),results[0].elevation.toFixed(0)].join(', ');
                 }
                 else
                 {
-                    alert("No found");
+                    document.title = [Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),0].join(', ');
                 }
             }
             else
             {
-                alert("Elevation service failed due to: " + status);
+                document.title = [Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),0].join(', ');
             }
         });
     }
@@ -200,7 +205,7 @@
 
     for (var i = 0; i < tabPoints.length; i++) {
         marker = new L.marker(tabPoints[i], {icon: IconBase})
-                .bindPopup(infoPoints[i])
+                .bindPopup(infoPoints[i]).on('click', markerOnClick)
         map.addLayer(marker);
         gmarkers.push(marker);
     }
