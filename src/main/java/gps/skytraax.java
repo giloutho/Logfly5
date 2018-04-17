@@ -36,6 +36,8 @@ public class skytraax {
     
     private boolean connected = false;
     private File fFlights;   
+    private File fWayp;      
+    private boolean wpExist = false;
     private File fDrive;
     private int idxDrive;    
     private ObservableList <String> driveList;   
@@ -43,7 +45,7 @@ public class skytraax {
     private String closingDate;
     private String msgClosingDate;    
     private String verFirmware;
-    private ArrayList<String> flightFolderList;
+    private ArrayList<String> wpPathList;
    
 
     public boolean isConnected() {
@@ -78,6 +80,20 @@ public class skytraax {
     public String getVerFirmware() {
         return verFirmware;
     }
+
+    public File getfWayp() {
+        return fWayp;
+    }
+
+    public boolean isWpExist() {
+        return wpExist;
+    }
+
+    public ArrayList<String> getWpPathList() {
+        return wpPathList;
+    }
+        
+    
             
     public skytraax(osType currOs, int gpsLimit) {
         boolean conn = false;
@@ -139,6 +155,7 @@ public class skytraax {
         boolean cond2 = false;
         File[] drives = null;
         int nbDrive = 0;
+        wpExist = false;
             
         switch (currOs) {
             case WINDOWS:
@@ -185,6 +202,10 @@ public class skytraax {
                                     fFlights = listFile[i];
                                     cond2 = true;
                                 }
+                                if (listFile[i].getName().equals("WAYPOINTS") && listFile[i].isDirectory()) {
+                                    fWayp = listFile[i];
+                                    wpExist = true;
+                                }                                
                             }
                         }
                         if (cond1 == true && cond2 == true) {
@@ -266,12 +287,48 @@ public class skytraax {
         }        
     }
     
+    /**
+     * Different from exploreFolder, not only an extension file difference
+     * We don't take care of closingDate
+     * @param dir
+     * @param wpPathList
+     * @throws Exception 
+     */
+    private void exploreFolderWp(File dir, ArrayList<String> wpNameList) throws Exception {  
+        // Recursivité à vérifier pour le skytraax        
+        wpPathList = new ArrayList<>();
+        File[] files = dir.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            // We had a problem with an empty folder.
+            // this folder trigerred a dead loop
+            // In this case files.length had a value of 1 instead of 0 !!!
+            if (files[i].isDirectory() && !files[i].getName().equals(dir.getName())) {
+                exploreFolder(files[i], wpNameList);                
+            } else {
+                String fileName = files[i].getName();
+                if (fileName.endsWith(".wpt") || fileName.endsWith(".WPT")) {                                    
+                    // Problem of dot files writed by MacOS 
+                    if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {    
+                            wpNameList.add(files[i].getName()); 
+                            wpPathList.add(files[i].getPath());                        
+                    }
+                }
+            }
+        }        
+    }    
+    
     public void listTracksFiles(ArrayList<String> trackPathList) throws Exception {   
 
-        flightFolderList = new ArrayList<>();
         
         if (fFlights != null && fFlights.exists())  {        
            exploreFolder(fFlights, trackPathList);
+        }
+    }  
+    
+    public void listWaypFiles(ArrayList<String> waypPathList) throws Exception {   
+        
+        if (fWayp != null && fWayp.exists())  {        
+           exploreFolderWp(fWayp, waypPathList);
         }
     }  
     
