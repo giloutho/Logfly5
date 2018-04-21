@@ -85,7 +85,7 @@ public class RootLayoutController {
     @FXML
     private SplitPane mapPane;
     // Refer to the main application.
-    private Main mainApp;
+    public Main mainApp;
     
     private configProg myConfig;
         
@@ -314,6 +314,14 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem1);
         
+        MenuItem cmItem11 = new MenuItem(i18n.tr("Rapport système"));
+        cmItem11.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               displaySystem();
+            }
+        });
+        cm.getItems().add(cmItem11);        
+        
         MenuItem cmItem2 = new MenuItem(i18n.tr("Notes de publication"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -379,8 +387,12 @@ public class RootLayoutController {
         return cm;
     }
     
+    private void displaySystem() {
+        winLog myLog = new winLog(myConfig,1); 
+    }
+    
     private void displayLog() {
-        winLog myLog = new winLog(myConfig);        
+        winLog myLog = new winLog(myConfig,0);        
     }
     
     private void sendMailSupport() {
