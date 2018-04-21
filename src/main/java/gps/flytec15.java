@@ -23,12 +23,18 @@ package gps;
 import com.serialpundit.core.SerialComPlatform;
 import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.serial.SerialComManager;
+import geoutils.position;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
 import systemio.mylogging;
+import waypio.pointRecord;
 
 public class flytec15 {
     
@@ -39,6 +45,9 @@ public class flytec15 {
     private String lstVols;
     private StringBuilder sbError = null;
     private String deviceId;
+    private ArrayList<String> listPBRWP;
+    private ArrayList<pointRecord> wpreadList;       
+    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();      
     
     public flytec15() throws Exception {
         // Create and initialize serialpundit
@@ -50,6 +59,14 @@ public class flytec15 {
     public String getDeviceId() {
         return deviceId;
     }
+    
+    public ArrayList<pointRecord> getWpreadList() {
+        return wpreadList;
+    }    
+
+    public void setListPBRWP(ArrayList<String> listPBRWP) {
+        this.listPBRWP = listPBRWP;
+    }    
     
     public String getError() {
         if (sbError != null)
@@ -79,7 +96,7 @@ public class flytec15 {
              String[] tbdata = data.split(" ");
             if (tbdata.length > 0) {
                 if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
-                    deviceId = data;
+                    deviceId = data.replaceAll("\r\n", "");
                     res = true;
                 } else {
                     sbError = new StringBuilder("GPS answer not splited : "+data);
@@ -137,7 +154,7 @@ public class flytec15 {
      * @param namePort
      * @return 
      */
-    public boolean iniForFlights(String namePort) {
+    public boolean isPresent(String namePort) {
         boolean res = false;
         try {
             // open and configure serial port
@@ -176,7 +193,6 @@ public class flytec15 {
         scm.writeString(handle, req, 0);
         Thread.sleep(100);
 
-        scm.writeString(handle, req, 0);
         while(exit == false) {
             data  = scm.readString(handle);
             if(data != null) {                                                                 
@@ -242,6 +258,115 @@ public class flytec15 {
         }                                
     } 
     
+    private void getListPBRWP() throws Exception {        
+        boolean exit = false;
+        String data = null;
+        String repGps = "";
+        String req = ("ACT_31_00")+"\r\n";     
+        scm.writeString(handle, req, 0);
+        Thread.sleep(300);               
+        while(exit == false) {
+            data  = scm.readString(handle);
+            if(data != null) {                                                                 
+                repGps += data;  
+                System.out.println(data);             
+            }
+            else {
+                exit = true;
+                break;
+            }
+        }               
+        if (repGps != null) {
+            listPBRWP = new ArrayList<String>(Arrays.asList(repGps.split("\r\n")));
+        }
+    }    
+    
+   public int getListWaypoints() {
+        int res = 0;
+        wpreadList = new ArrayList<>();
+        String sLat;
+        String sLong;  
+        String sPref;
+        String sAlt;
+        String sBalise;
+        String sDesc;
+        String balAlt;
+        int iAlt;
+        
+        try {
+            getListPBRWP();
+            if (!listPBRWP.isEmpty()) {
+                for (int i = 0; i < listPBRWP.size(); i++) {                      
+                    String ligPFM = listPBRWP.get(i);
+                    // ligPFM is somrthing like S03             ;N   4'25.130;W  76'07.610;   950;   400
+                    String[] partWp = ligPFM.split(";");
+                    if (partWp.length > 4) {
+                        sAlt = partWp[3].trim();
+                        iAlt = Integer.parseInt(sAlt);
+                        balAlt = String.format("%03d",(int) iAlt/10);                        
+                        sDesc = partWp[0].trim();
+                        // short name build
+                        if (sDesc.length() > 3)
+                            sBalise = sDesc.substring(0, 3).toUpperCase();
+                        else
+                            sBalise = sDesc;
+                        sBalise = sBalise+balAlt;
+                        sLat = decodeLat(partWp[1]);
+                        sLong = decodeLong(partWp[2]);
+                        pointRecord myPoint = new pointRecord(sBalise, sAlt, sDesc);
+                        myPoint.setFLat(sLat);
+                        myPoint.setFLong(sLong);
+                        myPoint.setFIndex(i);
+                        wpreadList.add(myPoint);                                                     
+                    }
+                }
+                res = wpreadList.size();                
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+        
+        return res;
+    }        
+    
+    public void sendWaypoint() throws Exception {
+        String ligPBRWP; 
+        boolean exit;
+        String repGPS;   
+        String data;
+        for (int i = 0; i < listPBRWP.size(); i++) {            
+            ligPBRWP = listPBRWP.get(i);   
+            exit = false;
+            repGPS = null;            
+            String req = ("ACT_32_00")+"\r\n";
+            scm.writeString(handle, req, 0);            
+            System.out.println("Envoi "+ligPBRWP);
+            scm.writeString(handle, ligPBRWP, 0);
+            Thread.sleep(500);             // necessary with shorter delay, we loss data  
+            while(exit == false) {
+                data  = scm.readString(handle);
+                if(data != null) {                                                                 
+                    repGPS += data;  
+                    if (repGPS.contains("Done"))
+                        exit = true;
+                    else if (repGPS.contains("full list"))
+                        exit = true;
+                    else if (repGPS.contains("Syntax Error"))
+                        exit = true;
+                    else if (repGPS.contains("already exist"))
+                        exit = true;                    
+                }
+                else {
+                    exit = false;
+                    break;
+                }
+            }    
+            System.out.println("repGPS : "+repGPS);            
+        }        
+    }       
+   
     public String getIGC(String req)  {
         String res = null;
         boolean exit = false;
@@ -284,5 +409,95 @@ public class flytec15 {
         }        
     }
     
+    /**
+     * sLat is a string like N   4'25.130
+     * @param sLat
+     * @return 
+     */
+    private String decodeLat(String sLat) {
+        String res = "";
+        String sDeg;
+        String sMn;
+        String sHem;
+        String sCoord;
+        DecimalFormat df2;       
+                       
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df2 = new DecimalFormat("#0.00000", decimalFormatSymbols);        
+        
+        try {
+            sHem = sLat.substring(0,1);
+            if (sLat.length() > 10 && (sHem.equals("N") || sHem.equals("S"))) {
+                sCoord = sLat.substring(1, sLat.length()).trim();
+                String[] sLatApo = sCoord.split("'");
+                if (sLatApo.length > 1) {
+                    sDeg = sLatApo[0];
+                    sMn = sLatApo[1];
+                    if (systemio.checking.parseDouble(sMn) && systemio.checking.checkInt(sDeg)) {   
+                        position myPos = new position();
+                        myPos.setLatDegres(Integer.parseInt(sDeg));
+                        myPos.setHemisphere(sHem);
+                        myPos.setLatMin_mm(Double.parseDouble(sMn));               
+                        res = df2.format(myPos.getLatitude());
+                    } else {
+                        res = "00.00000";
+                    }
+                }else {
+                        res = "00.00000";
+                }
+            } else {
+                        res = "00.00000";
+            }            
+        } catch (Exception e) {
+            res = "00.00000";
+        }            
+        
+        return res;
+    }    
     
+    /**
+     * sLong is a string like W  76'07.610
+     * @param sLong
+     * @return 
+     */
+    private String decodeLong(String sLong) {
+        String res = "";
+        String sCoord;        
+        String sDeg;
+        String sMn;
+        String sMer;
+        DecimalFormat df3;       
+                       
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df3 = new DecimalFormat("##0.00000", decimalFormatSymbols);        
+        
+        try {
+            sMer = sLong.substring(0,1);
+            if (sLong.length() > 10 && (sMer.equals("W") || sMer.equals("E"))) {
+                sCoord = sLong.substring(1, sLong.length()).trim();
+                String[] sLongApo = sCoord.split("'");
+                if (sLongApo.length > 1) {
+                    sDeg = sLongApo[0];
+                    sMn = sLongApo[1];
+                    if (systemio.checking.parseDouble(sMn) && systemio.checking.checkInt(sDeg)) {   
+                        position myPos = new position();
+                        myPos.setLongDegres(Integer.parseInt(sDeg));
+                        myPos.setMeridien(sMer);
+                        myPos.setLongMin_mm(Double.parseDouble(sMn));               
+                        res = df3.format(myPos.getLongitude());
+                    } else {
+                        res = "000.00000";
+                    }
+                }else {
+                        res = "000.00000";
+                }
+            } else {
+                        res = "000.00000";
+            }            
+        } catch (Exception e) {
+            res = "000.00000";
+        }            
+        
+        return res;
+    }        
 }
