@@ -163,7 +163,7 @@ public class flymaster {
      * @param namePort
      * @return 
      */
-    public boolean iniForFlights(String namePort) {
+    public boolean isPresent(String namePort) {
         boolean res = false;
         listPFMWP = new ArrayList<String>();
         try {
