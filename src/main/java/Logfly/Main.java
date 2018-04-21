@@ -16,6 +16,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import controller.CarnetViewController;
 import controller.DashViewController;
+import controller.FullMapController;
 import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.ManualViewController;
@@ -26,11 +27,16 @@ import controller.TraceViewController;
 import controller.WaypViewController;
 import java.sql.SQLException;
 import java.util.logging.Level;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Modality;
+import javafx.stage.Screen;
 import liveUpdate.checkUpdate;
 import liveUpdate.objects.Release;
+import model.Carnet;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.osType;
 import systemio.mylogging;
 
 public class Main extends Application {
@@ -288,7 +294,8 @@ public class Main extends Application {
             controlGPS.setMyConfig(myConfig);
             
             // Place GPS Import window in center of RootLayout..
-            rootLayout.setCenter(gpsOverview);                                                      
+            rootLayout.setCenter(gpsOverview); 
+            controlGPS.displayWinGPS();
             
         } catch (IOException e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -305,17 +312,43 @@ public class Main extends Application {
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/WaypView.fxml"));
             AnchorPane waypOverview = (AnchorPane) loader.load();            
-            
-            // Initialization of a communication bridge between Sitescontroller an RootLayout
-            controlWayp = loader.getController();  
-            // Controller needs an access to main app
-            // with this, we avoid a NullPointerException with a call to
-            // mainApp.getPrimaryStage() in RootLayoutController     
-            controlWayp.setMainApp(this);
-            
-            // Place logbook window in center of RootLayout.
-            rootLayout.setCenter(waypOverview);                                                      
-            
+// Litlle window            
+//                    // Initialization of a communication bridge between Sitescontroller an RootLayout
+//                    controlWayp = loader.getController();  
+//                    // Controller needs an access to main app
+//                    // with this, we avoid a NullPointerException with a call to
+//                    // mainApp.getPrimaryStage() in RootLayoutController     
+//                    controlWayp.setMainApp(this);
+//
+//                    // Place logbook window in center of RootLayout.
+//                    rootLayout.setCenter(waypOverview);                                                      
+// Full window
+                    Stage fullWayp = new Stage();            
+                    fullWayp.initModality(Modality.WINDOW_MODAL);       
+                    fullWayp.initOwner(this.getPrimaryStage());
+                    Scene scene = null;
+                    if (myConfig.getOS() == osType.LINUX) {
+                        // With this code for Linux, this is not OK with Win and Mac 
+                        // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                        scene = new Scene(waypOverview, screenBounds.getWidth(), screenBounds.getHeight());
+                    } else {
+                        // With this code, subStage.setMaximized(true) don't run under Linux
+                        scene = new Scene(waypOverview, 500, 400);
+                    }                                    
+                    fullWayp.setScene(scene);
+                   
+                    // Initialization of a communication bridge between CarnetView and KmlView
+                    controlWayp = loader.getController();
+                    controlWayp.setWaypStage(fullWayp);  
+                    controlWayp.setRootBridge(rootLayoutController);
+                    controlWayp.setMainApp(this); 
+                    controlWayp.setWinMax();
+                    fullWayp.showAndWait();
+
+
+
+
         } catch (IOException e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
