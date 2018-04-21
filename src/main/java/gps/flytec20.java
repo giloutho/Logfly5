@@ -9,13 +9,17 @@ package gps;
 import com.serialpundit.core.SerialComPlatform;
 import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.serial.SerialComManager;
+import geoutils.position;
 import static gps.gpsutils.ajouteChecksum;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
 import systemio.mylogging;
+import waypio.pointRecord;
 
 /**
  *
@@ -40,7 +44,10 @@ public class flytec20 {
     private String deviceSerial;
     private String deviceFirm;
     private ArrayList<String> listPBR;
+    private ArrayList<String> listPBRWP;
+    private ArrayList<pointRecord> wpreadList;    
     private StringBuilder sbError = null;
+    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();       
 
     public String getDeviceType() {
         return deviceType;
@@ -60,7 +67,15 @@ public class flytec20 {
         else
             return "No Error message";
     }
-        
+    
+    public ArrayList<pointRecord> getWpreadList() {
+        return wpreadList;
+    }    
+
+    public void setListPBRWP(ArrayList<String> listPBRWP) {
+        this.listPBRWP = listPBRWP;
+    }
+          
     
     public flytec20() throws Exception {
         // Create and initialize serialpundit
@@ -90,7 +105,11 @@ public class flytec20 {
             if (tbdata.length > 1 && tbdata[0].contains("$PBRSNP")) {  
                 deviceType = tbdata[1];
                 deviceSerial = tbdata[3];
-                deviceFirm = tbdata[4];   
+                String[] tbFirm = tbdata[4].split("\\*");
+                if (tbFirm.length > 1)
+                    deviceFirm = tbFirm[0];
+                else
+                    deviceFirm = tbdata[4];  
                 res = true;
             } else {
                 sbError = new StringBuilder("GPS answer not splited : "+rep);
@@ -143,7 +162,7 @@ public class flytec20 {
      * @param namePort
      * @return 
      */
-    public boolean iniForFlights(String namePort) {
+    public boolean isPresent(String namePort) {
         boolean res = false;
         try {
             // open and configure serial port
@@ -207,6 +226,75 @@ public class flytec20 {
             }     
         }        
     }        
+     
+    private void getListPBRWP() throws Exception {        
+        
+        String req = ajouteChecksum("$PBRWPS,*")+"\r\n";
+        scm.writeString(handle, req, 0);
+        Thread.sleep(100);
+
+        String lstWayp = flAnswer(scm, handle);
+        if (lstWayp != null) {
+            listPBRWP = new ArrayList<String>(Arrays.asList(lstWayp.split("\r\n")));
+        }
+    }
+     
+    public int getListWaypoints() {
+        int res = 0;
+        wpreadList = new ArrayList<>();
+        String sLat;
+        String sLong;  
+        String sPref;
+        String[] sAlt;
+        String sBalise;
+        String sDesc;
+        String balAlt;
+        int iAlt;
+        
+        try {
+            getListPBRWP();
+            if (!listPBRWP.isEmpty()) {
+                for (int i = 0; i < listPBRWP.size(); i++) {                      
+                    String ligPFM = listPBRWP.get(i);
+                    // ligPFM is somrthing like $PBRWPS,0425.130,N,07607.610,W,S03095,S03              ,0950*21
+                    String[] partWp = ligPFM.split(",");
+                    if (partWp.length > 7) {
+                        sAlt = partWp[7].split("\\*");
+                        if (sAlt.length > 1) {
+                            iAlt = Integer.parseInt(sAlt[0]);
+                            balAlt = String.format("%03d",(int) iAlt/10);
+                            // Short name is defined by GPS device loading
+                            sBalise = partWp[5];
+                            sDesc = partWp[6];
+                            sLat = decodeLat(partWp[1], partWp[2]);
+                            sLong = decodeLong(partWp[3], partWp[4]);
+                            pointRecord myPoint = new pointRecord(sBalise, sAlt[0], sDesc);
+                            myPoint.setFLat(sLat);
+                            myPoint.setFLong(sLong);
+                            myPoint.setFIndex(i);
+                            wpreadList.add(myPoint);                                                     
+                        }
+                    }
+                }
+                res = wpreadList.size();                
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+        
+        return res;
+    }    
+    
+    public void sendWaypoint() throws Exception {
+        String ligPBRWP;
+        for (int i = 0; i < listPBRWP.size(); i++) {            
+            ligPBRWP = listPBRWP.get(i);
+            scm.writeString(handle, ligPBRWP, 0);
+            Thread.sleep(300);    // used in Logfly V4
+        }        
+    }    
     
     public String getIGC(String req)  {
         String res = null;
@@ -277,5 +365,75 @@ public class flytec20 {
             mylogging.log(Level.SEVERE, sbError.toString());
         }        
     }
+    
+    /**
+     * sLat is a string like 4553.445 and sHem is "N" or "S"
+     * @param sLat
+     * @param sHem
+     * @return 
+     */
+    private String decodeLat(String sLat, String sHem) {
+        String res = "";
+        String sDeg;
+        String sMn;
+        DecimalFormat df2;       
+                       
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        df2 = new DecimalFormat("#0.00000", decimalFormatSymbols);        
+        
+        try {
+            // Latitude is a decimal number (eg 4553.445 )where 1-2 characters are degrees, 3-4 characters are minutes,
+            // 5  decimal point, 6-8 characters are decimal minutes. The ellipsoid used is WGS-1984
+            sDeg = sLat.substring(0,2);
+            sMn = sLat.substring(2,8);
+            if (systemio.checking.parseDouble(sMn) && systemio.checking.checkInt(sDeg)) {   
+                position myPos = new position();
+                myPos.setLatDegres(Integer.parseInt(sDeg));
+                myPos.setHemisphere(sHem);
+                myPos.setLatMin_mm(Double.parseDouble(sMn));               
+                res = df2.format(myPos.getLatitude());
+            } else {
+                res = "00.00000";
+            }
+        } catch (Exception e) {
+            res = "00.00000";
+        }            
+        
+        return res;
+    }    
+    
+    /**
+     * SLong is a a string like 00627.076 and sMer = "W" or "E"
+     * @param sLong
+     * @return 
+     */
+    private String decodeLong(String sLong, String sMer) {
+        String res = "";
+        String sDeg;
+        String sMn;
+        DecimalFormat df3; 
+        decimalFormatSymbols.setDecimalSeparator('.'); 
+        df3 = new DecimalFormat("##0.00000", decimalFormatSymbols);        
+        
+        try {
+            // Longitude is a decimal number (eg 00627.076) where 1-3 characters are degrees, 4-5 characters are minutes,
+            // 6 decimal point, 7-9 characters are decimal minutes. The ellipsoid used is WGS-1984
+            sDeg = sLong.substring(0,3);
+            sMn = sLong.substring(3,9);
+            if (systemio.checking.parseDouble(sMn) && systemio.checking.checkInt(sDeg) ) {   
+                position myPos = new position();
+                myPos.setLongDegres(Integer.parseInt(sDeg));
+                myPos.setMeridien(sMer);
+                myPos.setLongMin_mm(Double.parseDouble(sMn));               
+                res = df3.format(myPos.getLongitude());
+            } else {
+                res = "000.00000";
+            }
+        } catch (Exception e) {
+            res = "000.00000";
+        }            
+        
+        return res;
+    }    
     
 }
