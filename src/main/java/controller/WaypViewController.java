@@ -7,17 +7,33 @@
 package controller;
 
 import Logfly.Main;
+import dialogues.ProgressForm;
+import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.googlegeo;
 import geoutils.position;
+import gps.compass;
+import gps.connect;
+import gps.element;
+import gps.flymaster;
+import gps.flymasterold;
+import gps.flytec15;
+import gps.flytec20;
+import static gps.gpsutils.ajouteChecksum;
+import gps.oudie;
+import gps.reversale;
+import gps.skytraax;
+import gps.skytraxx3;
 import igc.pointIGC;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -41,10 +57,15 @@ import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import leaflet.map_waypoints;
+import littlewins.winGPS;
 import littlewins.winPoint;
+import littlewins.winUsbWWayp;
+import littlewins.winUsbWayp;
+import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 import systemio.textio;
 import waypio.pointRecord;
 import waypio.wpreadfile;
@@ -100,6 +121,11 @@ public class WaypViewController {
     @FXML
     private WebView viewMap;         
     private WebEngine eng;    
+    // bridge between java code and javascript map
+    private Bridge pont;
+    
+    private Stage waypStage;    
+    private RootLayoutController rootController;  
     
     // Reference to the main application.
     private Main mainApp;
@@ -119,6 +145,17 @@ public class WaypViewController {
     private Stage dialogStage;    
     private String debStatusBar;
     private position defaultPos = new position();
+    
+    private String errorComMsg;
+    private String strWpBrut;
+    private int resCom;   // 0 initial state  1 : successfull communication   2 : unsuccess communication
+    // current GPS
+    private winGPS.gpsType currGPS;    
+    private String currNamePort; 
+    private ArrayList<pointRecord> gpsReadList;
+    private StringBuilder gpsInfo;
+    private ArrayList<String> listForGps = new ArrayList<>();
+    private int gpsTypeName;   // Name type : long, short or mixed
     
     @FXML
     public void initialize() {
@@ -190,29 +227,18 @@ public class WaypViewController {
     }
     
     @FXML
-    private void handleReadGPS() {
-        File selectedFile = new File("/Users/gil/Documents/Logflya/Balises/Lathuile_test.wpt");
-        waypFile = new wpreadfile();
-        textio fread = new textio();                                    
-        String pFichier = fread.readTxt(selectedFile);   
-        if (pFichier != null)  {
-            waypFile.litOzi(pFichier);
-            StringBuilder sbInfo = new StringBuilder();                    
-            sbInfo.append(selectedFile.getAbsolutePath()).append("   ");
-            sbInfo.append(i18n.tr("Format")).append(" OZI   ");       
-            displayWpFile(waypFile.getWpreadList(), sbInfo.toString());
+    private void handleReadGPS() {    
+        if (selectGPS(false)) {
+            readFromGPS();    
         }
     }
     
     @FXML
     private void handleWriteGPS() {
         if (pointList.size() > 0) {
-            
-            File fileTest = new File("test.pcx");
-            
-            wpwritefile wfile = new wpwritefile();
-            wfile.writePCX(pointList, fileTest);
-            System.out.println("OK...");
+            if (selectGPS(true)) {
+                writeToGPS();    
+            }
         }    
     }
     
@@ -220,62 +246,74 @@ public class WaypViewController {
     private void handleReadFile() {
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(dialogStage);        
-        if(selectedFile != null){  
-            String ficType = null;
-            textio fread = new textio();                                    
-            String pFichier = fread.readTxt(selectedFile);   
-            if (pFichier != null)  {
-                if (pFichier.indexOf("OziExplorer") > -1) {
-                    ficType = "OZI";
-                } else if (pFichier.indexOf("PCX5") > -1) {
-                    ficType = "PCX";
-                } else if (pFichier.indexOf("<kml xmlns") > -1) {
-                    ficType = "KML";
-                } else if (pFichier.indexOf("<?xml version=\"1.0\"") > -1 && pFichier.indexOf("version=\"1.1\"") > -1) {
-                    ficType = "GPX";
-                } else if (pFichier.indexOf("code,country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
-                    ficType = "CUP";
-                } else if (pFichier.indexOf("Code,Country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
-                    ficType = "CUP";                  
-                } else if (pFichier.indexOf("XCPlanner") > -1) {
-                    ficType = "XCP";
-                } else if (testCompeGPS(pFichier)) {
-                    ficType = "COM"; 
-                    System.out.println("CompeGPS");
-                } else {
-                    System.out.println("Fichier non reconnu");
-                }
+        if(selectedFile != null){ 
+            readFromFile(selectedFile.getAbsolutePath());
+        }       
+    }
+    
+    private void readFromFile(String fPath) {
+        boolean goodRead = false;
+        File file = new File(fPath);
+        String ficType = null;
+        textio fread = new textio();                                    
+        String pFichier = fread.readTxt(file);   
+        ficType = "nil";
+        if (pFichier != null)  {
+            if (pFichier.indexOf("OziExplorer") > -1) {
+                ficType = "OZI";
+            } else if (pFichier.indexOf("PCX5") > -1) {
+                ficType = "PCX";
+            } else if (pFichier.indexOf("<kml xmlns") > -1) {
+                ficType = "KML";
+            } else if (pFichier.indexOf("<?xml version=\"1.0\"") > -1 && pFichier.indexOf("version=\"1.1\"") > -1) {
+                ficType = "GPX";
+            } else if (pFichier.indexOf("code,country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
+                ficType = "CUP";
+            } else if (pFichier.indexOf("Code,Country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
+                ficType = "CUP";                  
+            } else if (pFichier.indexOf("XCPlanner") > -1) {
+                ficType = "XCP";
+            } else if (testCompeGPS(pFichier)) {
+                ficType = "COM"; 
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertInfo(i18n.tr("Format de fichier non reconnu")); 
             }
-            waypFile = new wpreadfile();
-            StringBuilder sbInfo = new StringBuilder();
-            sbInfo.append(selectedFile.getAbsolutePath()).append("   ");
-            switch (ficType) {
-                case "OZI":
-                    waypFile.litOzi(pFichier);
-                    sbInfo.append(i18n.tr("Format")).append(" OZI   ");                    
-                    break;                
-                case "GPX":
-                    waypFile.litGpx(selectedFile.getAbsolutePath());
-                    sbInfo.append(i18n.tr("Format")).append(" GPX   "); 
-                    break;        
-                case "KML":
-                    waypFile.litKml(pFichier);
-                    sbInfo.append(i18n.tr("Format")).append(" KML   "); 
-                    break;                            
-                case "PCX":
-                    waypFile.litPcx(pFichier);
-                    sbInfo.append(i18n.tr("Format")).append(" PCX   "); 
-                    break;      
-                case "CUP":
-                    waypFile.litCup(pFichier);
-                    sbInfo.append(i18n.tr("Format")).append(" CUP   "); 
-                    break;          
-                case "COM":
-                    waypFile.litComp(pFichier);
-                    sbInfo.append(i18n.tr("Format")).append(" CompeGPS   "); 
-                    break;                     
-            }            
+        }
+        waypFile = new wpreadfile();
+        StringBuilder sbInfo = new StringBuilder();
+        sbInfo.append(file.getAbsolutePath()).append("   ");
+        switch (ficType) {
+            case "OZI":
+                goodRead = waypFile.litOzi(pFichier);
+                sbInfo.append(i18n.tr("Format")).append(" OZI   ");                    
+                break;                
+            case "GPX":
+                goodRead = waypFile.litGpx(file.getAbsolutePath());
+                sbInfo.append(i18n.tr("Format")).append(" GPX   "); 
+                break;        
+            case "KML":
+                goodRead = waypFile.litKml(pFichier);
+                sbInfo.append(i18n.tr("Format")).append(" KML   "); 
+                break;                            
+            case "PCX":
+                goodRead = waypFile.litPcx(pFichier);
+                sbInfo.append(i18n.tr("Format")).append(" PCX   "); 
+                break;      
+            case "CUP":
+                goodRead = waypFile.litCup(pFichier);
+                sbInfo.append(i18n.tr("Format")).append(" CUP   "); 
+                break;          
+            case "COM":
+                goodRead = waypFile.litComp(pFichier);
+                sbInfo.append(i18n.tr("Format")).append(" CompeGPS   "); 
+                break;                     
+        }            
+        if (goodRead) {
             displayWpFile(waypFile.getWpreadList(), sbInfo.toString());
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Impossible de décoder le fichier"));                  
         }        
     }
     
@@ -295,57 +333,107 @@ public class WaypViewController {
         File selectedFile = fileChooser.showSaveDialog(dialogStage);        
         if(selectedFile != null){  
             String sType = fileChooser.getSelectedExtensionFilter().getDescription().substring(0,1);
-            StringBuilder sbInfo = new StringBuilder();
-            sbInfo.append(selectedFile.getAbsolutePath()).append("   ");            
-            switch (sType) {
-                case "1":
-                    if (pointList.size() > 0) {
-                        wpwritefile wfile = new wpwritefile();
-                        sbInfo.append(i18n.tr("Format")).append(" OZI   ");    
-                        resWrite = wfile.writeOzi(pointList, selectedFile);                        
-                    }
-                    break;
-                case "2":
-                    if (pointList.size() > 0) {
-                        wpwritefile wfile = new wpwritefile();
-                        sbInfo.append(i18n.tr("Format")).append(" CompeGPS   ");
-                        resWrite = wfile.writeComp(pointList, selectedFile);
-                    }                    
-                    break;
-                case "3":
-                    if (pointList.size() > 0) {
-                        wpwritefile wfile = new wpwritefile();
-                        sbInfo.append(i18n.tr("Format")).append(" PCX   "); 
-                        resWrite = wfile.writePCX(pointList, selectedFile);
-                    }                    
-                    break;                  
-                case "4":
-                    if (pointList.size() > 0) {
-                        wpwritefile wfile = new wpwritefile();
-                        sbInfo.append(i18n.tr("Format")).append(" KML   ");                         
-                        resWrite = resWrite = wfile.writeKml(pointList, selectedFile);                        
-                    }                    
-                    break;  
-                case "5":
-                    if (pointList.size() > 0) {
-                        wpwritefile wfile = new wpwritefile();
-                        resWrite = wfile.writeGpx(pointList, selectedFile);
-                        sbInfo.append(i18n.tr("Format")).append(" GPX   "); 
-                    }                                        
-                    break;          
-                case "6":
-                    if (pointList.size() > 0) {
-                        wpwritefile wfile = new wpwritefile();
-                        sbInfo.append(i18n.tr("Format")).append(" CUP   "); 
-                        resWrite = wfile.writeCup(pointList, selectedFile);
-                    }                    
-                    break;                    
-            }       
-            if (resWrite) {
-                this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString()+String.valueOf(pointList.size())+" waypoints", true, 50);                   
-            }
+            writeToFile(sType, selectedFile.getAbsolutePath());
         }
     }    
+    
+    private void writeToFile(String sType, String fPath) {
+        File file = new File(fPath);        
+        boolean resWrite = false;
+        StringBuilder sbInfo = new StringBuilder();
+        sbInfo.append(fPath).append("   ");            
+        switch (sType) {
+            case "1":
+                if (pointList.size() > 0) {
+                    wpwritefile wfile = new wpwritefile();
+                    sbInfo.append(i18n.tr("Format")).append(" OZI   ");    
+                    resWrite = wfile.writeOzi(pointList, file);                        
+                }
+                break;
+            case "2":
+                if (pointList.size() > 0) {
+                    wpwritefile wfile = new wpwritefile();
+                    sbInfo.append(i18n.tr("Format")).append(" CompeGPS   ");
+                    resWrite = wfile.writeComp(pointList, file);
+                }                    
+                break;
+            case "3":
+                if (pointList.size() > 0) {
+                    wpwritefile wfile = new wpwritefile();
+                    sbInfo.append(i18n.tr("Format")).append(" PCX   "); 
+                    resWrite = wfile.writePCX(pointList, file);
+                }                    
+                break;                  
+            case "4":
+                if (pointList.size() > 0) {
+                    wpwritefile wfile = new wpwritefile();
+                    sbInfo.append(i18n.tr("Format")).append(" KML   ");                         
+                    resWrite = resWrite = wfile.writeKml(pointList, file);                        
+                }                    
+                break;  
+            case "5":
+                if (pointList.size() > 0) {
+                    wpwritefile wfile = new wpwritefile();
+                    resWrite = wfile.writeGpx(pointList, file);
+                    sbInfo.append(i18n.tr("Format")).append(" GPX   "); 
+                }                                        
+                break;          
+            case "6":
+                if (pointList.size() > 0) {
+                    wpwritefile wfile = new wpwritefile();
+                    sbInfo.append(i18n.tr("Format")).append(" CUP   "); 
+                    resWrite = wfile.writeCup(pointList, file);
+                }                    
+                break;                    
+        }       
+        if (resWrite) {
+            updateTitle(sbInfo.toString()+String.valueOf(pointList.size())+" waypoints");                   
+        }                
+    }
+    
+    @FXML
+    private void handleSites() {
+        if (selectGPS(false)) {
+            readFlytec20();   
+        }       
+    }
+    
+    @FXML
+    private void handleMail() {       
+        waypFile = new wpreadfile();            
+        waypFile.litGpx("/Users/gil/Documents/Logflya/Balises/Lathuile_Logfly.gpx");
+        StringBuilder sbInfo = new StringBuilder();                    
+        sbInfo.append("/Users/gil/Documents/Logflya/Balises/Lathuile_Logfly.gpx").append("   ");
+        sbInfo.append(i18n.tr("Format")).append(" GPX   ");       
+        displayWpFile(waypFile.getWpreadList(), sbInfo.toString());        
+    }
+    
+    @FXML
+    private void handleGE() {
+        //currGPS = gpsType.FlymSD;
+       // currNamePort = "/dev/cu.usbmodem000001";  
+      // gpsTypeName = 2;
+        prepWritingFlym();
+      //  writeToGPS();
+    }
+    
+    /**
+     * displayName is a flag for type name textfield display
+     * @param displayName
+     * @return 
+     */
+    private boolean selectGPS(boolean displayName) {
+        boolean res = false;   
+        winGPS myWin = new winGPS(myConfig, i18n, displayName);    
+        if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {
+            currGPS = myWin.getCurrGPS();
+            currNamePort = myWin.getCurrNamePort();
+            gpsTypeName = myWin.getCurrTypeName();
+            res = true;
+        }
+        
+        return res;
+    }
     
     private void displayWpFile(ArrayList<pointRecord> wpreadList, String infoFile) {
         int sizeList = wpreadList.size();
@@ -356,8 +444,8 @@ public class WaypViewController {
         hbMenu.setVisible(true);
         mapPane.setVisible(true);
         debStatusBar = infoFile;
-        this.mainApp.rootLayoutController.updateMsgBar(infoFile+String.valueOf(sizeList)+" waypoints", true, 50);             
-        
+        //this.mainApp.rootLayoutController.updateMsgBar(infoFile+String.valueOf(sizeList)+" waypoints");  
+        updateTitle(infoFile+String.valueOf(sizeList)+" waypoints");                     
     }    
     
     private boolean testCompeGPS(String pFichier) {
@@ -411,12 +499,725 @@ public class WaypViewController {
                 currPoint.setFIndex(idx);       
                 pointList.add(currPoint);
                 // status bar updating
-                this.mainApp.rootLayoutController.updateMsgBar(debStatusBar+String.valueOf(pointList.size())+" waypoints", true, 50);                  
+                //updateTitle(String.format(debStatusBar+" %d waypoints", pointList.size()));                  
+                updateTitle(debStatusBar+String.valueOf(pointList.size())+" waypoints");                  
             }            
             updateDescription();  
         }              
     }
+    
+    private void displayGpsWaypList() {
+        if (gpsReadList.size() > 0) {
+            displayWpFile(gpsReadList, gpsInfo.toString());
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));  
+        }
+    }
+    
+    private void writeFlymaster() {
        
+        try {
+            prepWritingFlym();
+            flymaster fms = new flymaster();
+            if (listForGps.size() > 0 && fms.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");
+                fms.setListPFMWP(listForGps);
+                fms.sendWaypoint();
+                fms.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }          
+    }
+    
+    private void writeFlymOld() {
+       
+        try {
+            prepWritingFlym();
+            flymasterold fmold = new flymasterold();
+            if (listForGps.size() > 0 && fmold.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
+                fmold.setListPFMWP(listForGps);
+                fmold.sendWaypoint();
+                fmold.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }          
+    }    
+    
+    private void writeFlytec20() {
+       
+        try {
+            prepWritingFly20();
+            flytec20 fls = new flytec20();
+            if (listForGps.size() > 0 && fls.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");
+                fls.setListPBRWP(listForGps);
+                fls.sendWaypoint();
+                fls.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }  
+        
+    }    
+
+    private void writeFlytec15() {
+       
+        try {
+            prepWritingFly15();
+            flytec15 fl15 = new flytec15();
+            if (listForGps.size() > 0 && fl15.isPresent(currNamePort)) {
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flytec 6015/ IQ Basic ");
+                fl15.setListPBRWP(listForGps);
+                fl15.sendWaypoint();
+                fl15.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }          
+    }   
+
+    
+    private void writeToGpsProgress() {
+        dialogbox dConfirm = new dialogbox();
+        StringBuilder sbMsg = new StringBuilder(); 
+        sbMsg.append(i18n.tr("Anciens waypoints éventuellement effacés ?"));
+        StringBuilder sbTitle = new StringBuilder(); 
+        sbTitle.append(i18n.tr("Transfert GPS")).append(" [");
+        switch (gpsTypeName) {
+            case 0:
+                sbTitle.append(i18n.tr("Noms longs"));
+                break;
+            case 1 :
+                sbTitle.append(i18n.tr("Noms courts"));
+                break;
+            case 2 :
+                sbTitle.append(i18n.tr("Mixte"));                
+                break;            
+        }
+        sbTitle.append("]");
+        
+        if (dConfirm.YesNo(sbTitle.toString(), sbMsg.toString()))   {         
+
+            errorComMsg = null;
+
+            ProgressForm pForm = new ProgressForm();
+
+            Task<Void> task = new Task<Void>() {
+                @Override
+                public Void call() throws InterruptedException { 
+                    switch (currGPS) {
+                        case Flytec20 :
+                            writeFlytec20();
+                            break;
+                        case Flytec15 :
+                            writeFlytec15();                            
+                            break;
+                        case FlymSD :
+                            writeFlymaster();
+                            break;
+                        case FlymOld :
+                            break;                   
+                    }       
+                    return null ;                
+                }
+
+            };
+            // binds progress of progress bars to progress of task:
+            pForm.activateProgressBar(task);
+
+            // we update the UI based on result of the task
+            task.setOnSucceeded(event -> {
+                pForm.getDialogStage().close();
+                writeEnd();                       
+            });
+
+            pForm.getDialogStage().show();
+
+            Thread thread = new Thread(task);
+            thread.start();  
+        }                
+    }
+    
+    private void writeToGpsSimple() {
+        String fileName;
+        String sPath;
+        switch (currGPS) {                    
+            case Rever :
+                winUsbWWayp revWin = new winUsbWWayp(i18n, currGPS,"Reversale");
+                fileName = revWin.getFilename();
+                String fileExt = revWin.getFileExt();
+                if (fileName != null) {
+                    reversale usbRev = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbRev.isConnected()) {
+                        if (fileExt.equals(".wpt")) {
+                            if(usbRev.isWpExist()) {
+                                File revWpt = usbRev.getfWayp();
+                                sPath = revWpt.getAbsolutePath()+File.separator+fileName;
+                                writeToFile("1", sPath);     // OziExplorer
+                            }                    
+                        }
+                        if (fileExt.equals(".kml")) {
+                            if(usbRev.isGoogExist()) {
+                                File revGoog = usbRev.getfWayp();
+                                sPath = revGoog.getAbsolutePath()+File.separator+fileName;
+                                writeToFile("4", sPath);     // format kml
+                            }                    
+                        }                        
+                    }   
+                }
+                break;
+            case Sky :
+                winUsbWWayp skyWin = new winUsbWWayp(i18n, currGPS,"Skytraax 2");
+                fileName = skyWin.getFilename();
+                if (fileName != null) {
+                    skytraax usbSky = new skytraax(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbSky.isConnected()) {
+                        if(usbSky.isWpExist()) {
+                            File skyWayp = usbSky.getfWayp();
+                            sPath = skyWayp.getAbsolutePath()+File.separator+fileName;
+                            writeToFile("2", sPath);     // CompeGPS
+                        }                    
+                    }                
+                }  
+                break;
+            case Sky3 :
+                winUsbWWayp sky3Win = new winUsbWWayp(i18n, currGPS,"Skytraax 3");
+                fileName = sky3Win.getFilename();
+                if (fileName != null) {
+                    skytraxx3 usbSky3 = new skytraxx3(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbSky3.isConnected()) {
+                        if(usbSky3.isWpExist()) {
+                            File skyWayp = usbSky3.getfWayp();
+                            sPath = skyWayp.getAbsolutePath()+File.separator+fileName;
+                            writeToFile("2", sPath);     // CompeGPS
+                        }                    
+                    }                
+                }               
+                break;                           
+            case Oudie :
+                winUsbWWayp oudieWin = new winUsbWWayp(i18n, currGPS,"Oudie");
+                fileName = oudieWin.getFilename();
+                if (fileName != null) {
+                    oudie usbOudie = new oudie(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbOudie.isConnected()) {
+                        if(usbOudie.isWpExist()) {
+                            File skyWayp = usbOudie.getfWayp();
+                            sPath = skyWayp.getAbsolutePath()+File.separator+fileName;
+                            writeToFile("6", sPath);     // Cup format
+                        }                    
+                    }                
+                }                      
+                break;  
+            case Syride :
+                break;                            
+            case Connect :
+                winUsbWWayp connWin = new winUsbWWayp(i18n, currGPS,"Connect");
+                fileName = connWin.getFilename();
+                if (fileName != null) {
+                    connect usbConn = new connect(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbConn.isConnected()) {
+                        if(usbConn.isWpExist()) {
+                            File skyWayp = usbConn.getfWayp();
+                            sPath = skyWayp.getAbsolutePath()+File.separator+fileName;
+                            // No specifications in Flytec site, it would accept different formats
+                            // I have a backup with CompeGPS format
+                            writeToFile("2", sPath);     // CompeGPS
+                        }                    
+                    }                
+                }                                        
+                break;   
+            case Element :
+                winUsbWWayp elemWin = new winUsbWWayp(i18n, currGPS,"Element");
+                fileName = elemWin.getFilename();
+                if (fileName != null) {
+                    element usbElem = new element(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbElem.isConnected()) {
+                        if(usbElem.isWpExist()) {
+                            File skyWayp = usbElem.getfWayp();
+                            sPath = skyWayp.getAbsolutePath()+File.separator+fileName;
+                            // Online doc : supports these formats and file extensions:
+                            // CompeGPS (*.wpt or *.com.wpt)
+                            //FS waypoints (*.wpt or *.geo.wpt)
+                            // OziExplorer (*.wpt or *.ozi.wpt)
+                            // SeeYou (*.cup)
+                            // WinPilot (*.dat)
+                            writeToFile("1", sPath);     // OziExplorer
+                        }                    
+                    }                
+                }                         
+                break;                         
+            case CPilot :
+                winUsbWWayp cpilWin = new winUsbWWayp(i18n, currGPS,"C Pilot");
+                fileName = cpilWin.getFilename();
+                if (fileName != null) {
+                    compass usbCpilot = new compass(myConfig.getOS(), myConfig.getGpsLimit());
+                    if (usbCpilot.isConnected()) {
+                        if(usbCpilot.isWpExist()) {
+                            File skyWayp = usbCpilot.getfWayp();
+                            sPath = skyWayp.getAbsolutePath()+File.separator+fileName;
+                            writeToFile("2", sPath);     // Compe GPS format
+                        }                    
+                    }                
+                }                   
+                break;                       
+        }                  
+    } 
+    
+    private void writeToGPS() {   
+
+        alertbox aError = new alertbox(myConfig.getLocale());             
+        switch (currGPS) {
+            case Flytec20 :
+                writeToGpsProgress();                
+                break;
+            case Flytec15 :
+                writeToGpsProgress();                
+                break;
+            case FlymSD :
+                writeToGpsProgress();
+                break;
+            case FlymOld :
+                break;
+            case Rever :
+                writeToGpsSimple();
+                break;
+            case Sky :
+                writeToGpsSimple();
+                break;
+            case Sky3 :
+                writeToGpsSimple();
+                break;       
+            case Flynet :
+                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));  
+                break;  
+            case Sensbox :
+                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));
+                break;                         
+            case Oudie :
+                writeToGpsSimple();
+                break;  
+            case Syride :
+                aError.alertInfo(i18n.tr("Sauvegarder sur le disque et\r\nutiliser GPSDump pour transférer les waypoints")); 
+                break;                            
+            case Connect :
+                writeToGpsSimple();
+                break;   
+            case Element :
+                writeToGpsSimple();
+                break;                         
+            case CPilot :
+                writeToGpsSimple();
+                break;  
+            case XCTracer :
+                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));                  
+                break;                        
+        }               
+    }            
+    
+    private void writeEnd() {
+        
+        int lg = pointList.size();
+        StringBuilder sbMsg = new StringBuilder();
+        sbMsg.append(i18n.tr("Envoi")).append("  ").append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints"));
+        switch (currGPS) {
+            case FlymOld :
+            case FlymSD:               
+            case Flytec15:
+            case Flytec20:
+                dialogbox dConfirm = new dialogbox();        
+                if (dConfirm.YesNo(i18n.tr("Vérifier le contenu du GPS"), sbMsg.toString())) { 
+                    readFromGPS();
+                }                  
+                break;                                 
+        }
+              
+    }
+
+    private void readFlymOld()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flymasterold fmsold = new flymasterold();
+            if (fmsold.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fmsold.getDeviceType()).append(" ").append(fmsold.getDeviceFirm()).append("  ");            
+                int nbWayp = fmsold.getListWaypoints();
+                fmsold.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fmsold.getWpreadList();
+                } 
+            } else {
+                gpsInfo.append(fmsold.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }    
+    
+    private void readFlymaster()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flymaster fms = new flymaster();
+            if (fms.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");            
+                int nbWayp = fms.getListWaypoints();
+                fms.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fms.getWpreadList();
+                }
+            } else {
+                gpsInfo.append(fms.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }    
+    
+   private void readFlytec20()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flytec20 fls = new flytec20();
+            if (fls.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");            
+                int nbWayp = fls.getListWaypoints();
+                fls.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fls.getWpreadList();
+                }
+            } else {
+                gpsInfo.append(fls.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }        
+    
+   private void readFlytec15()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flytec15 fl15 = new flytec15();
+            if (fl15.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flytec 6015 / IQ Basic ");          
+                int nbWayp = fl15.getListWaypoints();
+                fl15.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fl15.getWpreadList();
+                }
+            } else {
+                gpsInfo.append(fl15.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }           
+   
+    private void readFromGpsProgress() {          
+        errorComMsg = null;
+        
+        ProgressForm pForm = new ProgressForm();
+           
+        Task<Void> task = new Task<Void>() {
+            @Override
+            public Void call() throws InterruptedException { 
+                switch (currGPS) {
+                    case Flytec20 :
+                        readFlytec20();
+                        break;
+                    case Flytec15 :
+                        readFlytec15();                        
+                        break;
+                    case FlymSD :
+                        readFlymaster();
+                        break;
+                    case FlymOld :
+                        readFlymOld();
+                        break;                  
+                }       
+                return null ;                
+            }
+        };
+        // binds progress of progress bars to progress of task:
+        pForm.activateProgressBar(task);
+
+        // we update the UI based on result of the task
+        task.setOnSucceeded(event -> {
+            pForm.getDialogStage().close();
+            displayGpsWaypList();                       
+        });
+
+        pForm.getDialogStage().show();
+
+        Thread thread = new Thread(task);
+        thread.start();         
+    }   
+    
+    private void readFromGpsSimple() {
+        String waypPath;
+        switch (currGPS) {                    
+            case Rever :
+                winUsbWayp revWin = new winUsbWayp(myConfig,i18n, currGPS,"Reversale");
+                waypPath = revWin.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);   
+                break;
+            case Sky :
+                winUsbWayp skyWin = new winUsbWayp(myConfig,i18n, currGPS,"Skytraax 2");
+                waypPath = skyWin.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);     
+                break;
+            case Sky3 :
+                winUsbWayp sky3Win = new winUsbWayp(myConfig,i18n, currGPS,"Skytraax 3");
+                waypPath = sky3Win.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);  
+                break;                              
+            case Oudie :
+                winUsbWayp oudWin = new winUsbWayp(myConfig,i18n, currGPS,"Oudie");
+                waypPath = oudWin.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);  
+                break;                                      
+            case Syride :
+               // readUSBGps();
+                break;                            
+            case Connect :
+                winUsbWayp connectWin = new winUsbWayp(myConfig,i18n, currGPS,"C Pilot");
+                waypPath = connectWin.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);  
+                break;   
+            case Element :
+                winUsbWayp elemWin = new winUsbWayp(myConfig,i18n, currGPS,"C Pilot");
+                waypPath = elemWin.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);  
+                break;                         
+            case CPilot :
+                winUsbWayp cpilotWin = new winUsbWayp(myConfig,i18n, currGPS,"C Pilot");
+                waypPath = cpilotWin.getSelWaypPath();
+                if (waypPath != null) 
+                    readFromFile(waypPath);  
+                break;                     
+        }                       
+    }
+    
+    /**
+     * Dans V4 tout se tient dans repGPS
+     */
+    private void readFromGPS() {
+        alertbox aError = new alertbox(myConfig.getLocale());             
+        switch (currGPS) {
+            case Flytec20 :
+                readFromGpsProgress();
+                break;
+            case Flytec15 :
+                readFromGpsProgress();                
+                break;
+            case FlymSD :
+                readFromGpsProgress();
+                break;
+            case FlymOld :
+                readFlymOld();
+                break;
+            case Rever :
+                readFromGpsSimple();
+                break;
+            case Sky :
+                readFromGpsSimple();
+                break;
+            case Sky3 :
+                readFromGpsSimple();
+                break;       
+            case Flynet :
+                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));  
+                break;  
+            case Sensbox :
+                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));
+                break;                         
+            case Oudie :
+                readFromGpsSimple();
+                break;  
+            case Syride :
+                aError.alertInfo(i18n.tr("Utiliser GPSDump pour décharger les waypoints"));                
+                break;                            
+            case Connect :
+                readFromGpsSimple();                
+                break;   
+            case Element :
+                readFromGpsSimple();
+                break;                         
+            case CPilot :
+                readFromGpsSimple();
+                break;  
+            case XCTracer :
+                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));                  
+                break;                        
+        }               
+    }
+    
+    private void prepWritingFlym() {        
+        listForGps = new ArrayList<>();
+        String sName;
+        int idx = 0;
+        try {
+            for(pointRecord onePoint : pointList){                     
+                position myPos = new position();
+                idx++;
+                StringBuilder sbLine = new StringBuilder();
+                myPos.setLatitudeDd(Double.parseDouble(onePoint.getFLat())); 
+                myPos.setLongitudeDd(Double.parseDouble(onePoint.getFLong())); 
+                
+                // $PFMWPR,4546.878,N,00613.710,E,,DOU046          ,0462*
+                sbLine.append("$PFMWPR,").append(myPos.getLatForFly());
+                sbLine.append(",").append(myPos.getLongForFly()).append(",,");
+                // to avoid empty values
+                sName = "WP"+String.format("%03d", idx);   
+                sName = String.format("%1$-16.16s",sName);
+                switch (gpsTypeName) {
+                    case 0:    // long name                    
+                        sName = String.format("%1$-16.16s",onePoint.getFDesc());
+                        break;
+                    case 1 :     // short name
+                        if (onePoint.getFBalise() != null && !onePoint.getFBalise().equals("")) 
+                            sName = String.format("%1$-16.16s",onePoint.getFBalise());
+                        else
+                            sName = String.format("%1$-16.16s",onePoint.getFDesc());
+                        break;
+                    case 2 :      // mixed name
+                        sName = String.format("%1$-16.16s",onePoint.getFBalise()+" "+onePoint.getFDesc());
+                        break;
+                }
+                sbLine.append(sName).append(",");
+                sbLine.append(String.format("%04d", Integer.parseInt(onePoint.getFAlt()))).append("*"); 
+                String fullLine = ajouteChecksum(sbLine.toString())+"\r\n";
+                listForGps.add(fullLine); 
+            }
+            
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);                       
+            alert.setContentText(i18n.tr("Une erreur est survenue pendant la préparation des points"));
+            alert.showAndWait();                  
+        }         
+    }
+
+    private void prepWritingFly20() {
+
+        listForGps = new ArrayList<>();
+        String sName;
+        int idx = 0;        
+        for(pointRecord onePoint : pointList){         
+            try {
+                position myPos = new position();
+                StringBuilder sbLine = new StringBuilder();
+                myPos.setLatitudeDd(Double.parseDouble(onePoint.getFLat())); 
+                myPos.setLongitudeDd(Double.parseDouble(onePoint.getFLong())); 
+                
+                // $PBRWPR,4546.878,N,00613.710,E,,DOU046           ,0462*
+                sbLine.append("$PBRWPR,").append(myPos.getLatForFly());
+                sbLine.append(",").append(myPos.getLongForFly()).append(",,");
+                // to avoid empty values
+                sName = "WP"+String.format("%03d", idx);   
+                String.format("%1$-17.17s",onePoint.getFDesc());
+                switch (gpsTypeName) {
+                    case 0:    // long name                    
+                        sName = String.format("%1$-17.17s",onePoint.getFDesc());
+                        break;
+                    case 1 :     // short name
+                        if (onePoint.getFBalise() != null && !onePoint.getFBalise().equals("")) 
+                            sName = String.format("%1$-17.17s",onePoint.getFBalise());
+                        else
+                            sName = String.format("%1$-17.17s",onePoint.getFDesc());
+                        break;
+                    case 2 :      // mixed name
+                        sName = String.format("%1$-17.17s",onePoint.getFBalise()+" "+onePoint.getFDesc());
+                        break;
+                }                
+                sbLine.append(sName).append(",");
+                
+                sbLine.append(String.format("%04d", Integer.parseInt(onePoint.getFAlt()))).append("*"); 
+                String fullLine = ajouteChecksum(sbLine.toString())+"\r\n";
+                listForGps.add(fullLine);                 
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);                       
+                alert.setContentText(i18n.tr("Une erreur est survenue pendant la préparation des points"));
+                alert.showAndWait();                      
+            }
+            
+        }
+    }    
+
+    private void prepWritingFly15() {
+
+        listForGps = new ArrayList<>();
+        String sName;
+        int idx = 0;        
+        for(pointRecord onePoint : pointList){         
+            try {
+                position myPos = new position();
+                StringBuilder sbLine = new StringBuilder();
+                myPos.setLatitudeDd(Double.parseDouble(onePoint.getFLat())); 
+                myPos.setLongitudeDd(Double.parseDouble(onePoint.getFLong()));                 
+                // DOU046          ;N  45'46.878;E 006'13.710;   462;   400
+                
+                // to avoid empty values
+                sName = "WP"+String.format("%03d", idx);   
+                sName = String.format("%1$-16.16s",sName);
+                sName = sName.replaceAll("'", "-");
+                switch (gpsTypeName) {
+                    case 0:    // long name                    
+                        sName = String.format("%1$-16.16s",onePoint.getFDesc());
+                        break;
+                    case 1 :     // short name
+                        if (onePoint.getFBalise() != null && !onePoint.getFBalise().equals("")) 
+                            sName = String.format("%1$-16.16s",onePoint.getFBalise());
+                        else
+                            sName = String.format("%1$-16.16s",onePoint.getFDesc());
+                        break;
+                    case 2 :      // mixed name
+                        sName = String.format("%1$-16.16s",onePoint.getFBalise()+" "+onePoint.getFDesc());
+                        break;
+                }            
+                
+                sbLine.append(sName).append(";");                
+                sbLine.append(myPos.getLatForFly15()).append(";");
+                sbLine.append(myPos.getLongForFly15()).append(";");
+                sbLine.append(String.format("%6d", Integer.parseInt(onePoint.getFAlt()))).append(";"); 
+                sbLine.append("   400").append("\r\n");    //  Pour le 6015, le rayon  du cylindre est mis par defaut à 400)
+                listForGps.add(sbLine.toString());  
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);                       
+                alert.setContentText(i18n.tr("Une erreur est survenue pendant la préparation des points"));
+                alert.showAndWait();                      
+            }            
+        }
+    }     
     
     private void showMapPoints() {
         
@@ -432,10 +1233,15 @@ public class WaypViewController {
             double dLongitude = Double.parseDouble(onePoint.getFLong());   
             if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
             pPoint1.setLongitude(dLongitude);
-            System.out.println(onePoint.getFDesc()+" Alt "+onePoint.getFAlt());
             pPoint1.setAltiGPS(Integer.parseInt(onePoint.getFAlt()));
             StringBuilder sbComment = new StringBuilder();
-            sbComment.append(onePoint.getFBalise()).append("<BR>").append(onePoint.getFDesc()).append("<BR>");
+            
+            
+            // pour debug
+           // sbComment.append(onePoint.getFBalise()).append("<BR>").append(onePoint.getFDesc()).append("<BR>");
+            sbComment.append(onePoint.getFDesc()).append("<BR>");
+            
+            
             sbComment.append(i18n.tr("Altitude")).append(" : ").append(String.valueOf(pPoint1.AltiGPS)).append(" m" );
             // remove apostrophe
             String sComment = sbComment.toString().replaceAll("'", " ");
@@ -446,16 +1252,20 @@ public class WaypViewController {
         map_waypoints mapSite = new map_waypoints(i18n, myConfig.getIdxMap());
         mapSite.setPointsList(pointsList);
         mapSite.setDefaultPos(defaultPos);
-        if (mapSite.genMap() == 0) {
-
+        if (mapSite.genMap() == 0) { 
             sHTML = mapSite.getMap_HTML();  
                         /** ----- Debut Debug --------*/ 
                         final Clipboard clipboard = Clipboard.getSystemClipboard();
                         final ClipboardContent content = new ClipboardContent();
                         content.putString(sHTML);            
                         clipboard.setContent(content);
-                        /** ----- Fin Debug --------*/                 
-            eng.loadContent(sHTML,"text/html");  
+                        /** ----- Fin Debug --------*/               
+                        
+            eng.loadContent(sHTML,"text/html"); 
+            pont = new Bridge();
+            JSObject jsobj = (JSObject) eng.executeScript("window"); 
+            jsobj.setMember("java", pont); 
+            
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);                       
             alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
@@ -473,7 +1283,7 @@ public class WaypViewController {
                         defaultPos.setLatitudeDd(Double.parseDouble(myGoog.getGeoLat()));     
                         defaultPos.setLongitudeDd(Double.parseDouble(myGoog.getGeoLong())); 
 
-                        // an empty list is required for correctinitialization of tableview
+                        // an empty list is required for correct initialization of tableview
                         ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
                         String infoFile = i18n.tr("Nouveau fichier")+"   ";
                         displayWpFile(emptyList, infoFile);                    
@@ -485,6 +1295,20 @@ public class WaypViewController {
                     txLocality.clear();
                     txLocality.setPromptText(i18n.tr("Problème de geolocalisation"));                                            
                 }                      
+            } else {
+                if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
+                    try {
+                        defaultPos.setLatitudeDd(Double.parseDouble(myConfig.getFinderLat()));     
+                        defaultPos.setLongitudeDd(Double.parseDouble(myConfig.getFinderLong())); 
+                        // an empty list is required for correct initialization of tableview
+                        ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
+                        String infoFile = i18n.tr("Nouveau fichier")+"   ";
+                        displayWpFile(emptyList, infoFile);                           
+                    } catch (Exception e) {
+                        txLocality.clear();
+                        txLocality.setPromptText(i18n.tr("Problème sur paramètres"));                             
+                    }                         
+                }
             }
         } else {
             dialogbox dConfirm = new dialogbox();
@@ -579,7 +1403,7 @@ public class WaypViewController {
                 defaultPos.setLatitudeDd(Double.parseDouble(selectedPoint.getFLat()));
                 defaultPos.setLongitudeDd(Double.parseDouble(selectedPoint.getFLong()));
             }
-            this.mainApp.rootLayoutController.updateMsgBar(debStatusBar+String.valueOf(pointList.size())+" waypoints", true, 50);               
+            updateTitle(debStatusBar+String.valueOf(pointList.size())+" waypoints");               
             showMapPoints();
         }        
     }
@@ -657,13 +1481,18 @@ public class WaypViewController {
         myConfig = mainApp.myConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",WaypViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
-        this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
+        updateTitle(""); 
         eng = viewMap.getEngine();
         eng.setUserAgent(" Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0");   
         eng.titleProperty().addListener( (observable, oldValue, newValue) -> {
             if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
                 decodeCoord(newValue);
         });
+        waypStage.setOnHiding( event -> {
+            rootController.switchMenu(1);
+            rootController.mainApp.showCarnetOverview();
+        });        
+        
         // to avoid an exception        
         defaultPos.setLatitudeDd(45);
         defaultPos.setLongitudeDd(6);
@@ -671,6 +1500,31 @@ public class WaypViewController {
         hbMenu.setVisible(false);
         mapPane.setVisible(false);       
     }        
+    
+    public void setWinMax()  {           
+        waypStage.setMaximized(true);
+    }
+
+    /**
+     * Sets the stage of this Viewer.
+     *
+     * @param pWaypStage
+     */
+    public void setWaypStage(Stage pWaypStage) {
+        this.waypStage = pWaypStage;
+    }      
+    
+    /**
+     * Set a communication bridge with CarnetViewController 
+     * @param callExterne 
+     */
+    public void setRootBridge(RootLayoutController callRoot)  {
+        this.rootController = callRoot;     
+    }      
+    
+    private void updateTitle(String msg) {
+        waypStage.setTitle(msg);
+    }
     
     private void winTraduction() {
         btReadFile.setText(i18n.tr("Lire fichier"));
@@ -685,5 +1539,24 @@ public class WaypViewController {
         colBalise.setText(i18n.tr("Balise"));
         colAlt.setText(i18n.tr("Alt."));
         colDesc.setText(i18n.tr("Nom"));
-    }       
+    }   
+
+    public class Bridge { 
+        /**
+         * In javascript, I'm unable to find index of a marker
+         * But it's easy to find popup content
+         * We search the description in popup content
+         * and find in tableview
+         * Tableview research is tricky... Solution in https://stackoverflow.com/questions/40398905/search-tableview-list-in-javafx
+         * @param value 
+         */
+        public void getPopup(String value) { 
+            String[] partValue = value.split("<BR>");
+            if (partValue.length > 1) {
+                tablePoints.getItems().stream()
+                    .filter(item -> item.getFDesc().equals(partValue[0])).findAny()
+                    .ifPresent(item -> {tablePoints.getSelectionModel().select(item);tablePoints.scrollTo(item);});           
+            }
+        }    
+    }     
 }
