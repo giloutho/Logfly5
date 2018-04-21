@@ -68,6 +68,7 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import leaflet.map_visu;
+import littlewins.winGPS;
 import model.Gpsmodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -84,31 +85,10 @@ import trackgps.traceGPS;
  * 
  * setMyConfig : 
  *          Start method, GPS choicebox is initialized [iniChbGPS]
- * inichbGPS : 
- *          Fill the choicebox with supported GPS
- *          Default GPS defined in settings is selected (idxGPS = myConfig.getIdxGPS()) 
- *          First is 1. Index 0 is reserved for -> Select a GPS
- *          when choicebox index change, choixGPS is launched 
- * choixGPS : run the method of each supported GPS
- *             - Flymaster serial port choiceboix become visible [listSerialPort()]
- *             - Flytec 6020/6030 serial port choiceboix become visible [listSerialPort()]
- *             - Reversale USB GPS
- * listSerialPort : 
- *          if at least one port is detected, start button become visible
- * btnGo : 
- *          run readGPS to download GPS flight list (FXML command) only for serial GPS
- *          for usb GPS, readGPS is started automatically
- * readGPS : at clic on btnGo, run flightListWithProgress();
- * 
- *              this method run the reading method of each supported GPS
- *                  - Flytec 6015 -> readFlytec15
- *                  - Flytec 6020/6030 -> readFlytec20
- *                  - Flymaster new series 
- *              
- *              Tableview is filled with each flight and its own download instruction
- *              
- *              AfficheFlyList is called
- * afficheFlyList :   
+ * Select GPS : display winGPS
+ * displayWinGPS : return from winGPS, if a GPS is connected, FlyWithProgress is started
+ * readGPS : at clic on btnGo, run flightListWithProgress()
+ * afficheFlyList :   started at the end of flightListWithProgress()
  *         - Logbook update : insertLog   
  *         - selected track is displayed : AskOneTrack 
  * btnMaj :
@@ -129,17 +109,6 @@ import trackgps.traceGPS;
  *          
  * showOneTrack :
  *          Display the IGC string parameter in a full screen map.
- * 
- * run the reading method of each supported GPS
- *             - Flymaster -> three cases
- *             		1 : first attempt runFlyWithProgress()
- *                      2 : successfull communication, a new run  clears the table
- *		        3 : unsuccess communication, listSerialPort() restart
- *              - Flytec20 like Flymaster
- *                      1 : first attempt runFlytec20WithProgress
- *
- * runGPSxxWithProgress      : run a dedicated GPSxxread in a different thread
- *		              at the end, generic afficheFlyList() is called	
  * 
  * 
  * When table is filled with GPS flight list :
@@ -169,15 +138,7 @@ public class GPSViewController {
     @FXML
     private Button btnVisu;
     @FXML
-    private Button btnGo;
-    @FXML
-    private ChoiceBox<listGPS.idGPS> chbGPS;   
-    @FXML
-    private ChoiceBox chbSerial;
-    @FXML
-    private Label lbPort;
-    @FXML
-    private ImageView imgLed;
+    private Button btnSelectGPS;
     @FXML
     private TableView<Gpsmodel> tableImp;
     @FXML
@@ -211,9 +172,11 @@ public class GPSViewController {
     private enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer}
     
     // current GPS
-    private gpsType currGPS;
+  //  private gpsType currGPS;
+    
+    private winGPS.gpsType currGPS;    
     private String currNamePort;  
-    private int resCom;   // 0 initial state  1 : successfull communication   2 : unsuccess communication
+    private int resCom;   // 0 initial state  1 : successfull communication   2 : unsuccess communication    
     private int nbToInsert = 0;
     private int nbInserted = 0;
     private String errInsertion;
@@ -295,467 +258,40 @@ public class GPSViewController {
             insertWithProgress();            
         }              
     }
+   
+    public void displayWinGPS() {    
+        if (selectGPS(false)) {
+            flightListWithProgress();    
+        }
+    }   
     
-    /**
-     * triggered by GPS choicebox, if necessary serial choice box becomes visible
-     * @param idxGPS 
+    @FXML
+    private void handleGPS() {
+        winReset();
+        // Necessary because we are in a loop with last GPS memorized in settings
+        // We can't change GPS model
+        myConfig.setIdxGPS(0);
+        displayWinGPS();
+    }
+    
+   /**
+     * displayName is a flag for type name textfield display
+     * @param displayName
+     * @return 
      */
-    private void choixGPS(int idxGPS) {
-                
-        lbPort.setVisible(false);
-        chbSerial.setVisible(false);
-                
-        switch (idxGPS) {
-            case 0:
-                // Select a GPS
-                // No GPS defined in settings                
-                break;
-            case 1:
-                // 6020/6030
-                currGPS = gpsType.Flytec20;
-                listSerialPort();
-                break;
-            case 2:
-                // 6015
-                currGPS = gpsType.Flytec15;
-                listSerialPort();
-                break;
-            case 3:
-                currGPS = gpsType.Flynet; 
-                usbFlynet = new flynet(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbFlynet.isConnected()) {
-                    goodListDrives(usbFlynet.getDriveList(),usbFlynet.getIdxDrive());
-                } else {
-                    badListDrives(usbFlynet.getDriveList(), usbFlynet.getIdxDrive());
-                }                
-                break;
-            case 4:    
-                // Flymaster old series
-                currGPS = gpsType.FlymOld;
-                listSerialPort();                
-                break;
-            case 5:
-                // Reversale
-                currGPS = gpsType.Rever;   
-                usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbRever.isConnected()) {
-                    goodListDrives(usbRever.getDriveList(),usbRever.getIdxDrive());
-                } else {
-                    badListDrives(usbRever.getDriveList(), usbRever.getIdxDrive());
-                }
-                break;
-            case 6:
-                currGPS = gpsType.Sky;
-                usbSky = new skytraax(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbSky.isConnected()) {
-                    goodListDrives(usbSky.getDriveList(),usbSky.getIdxDrive());
-                } else {
-                    badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
-                }
-                break;
-            case 7:
-                currGPS = gpsType.Oudie;
-                usbOudie = new oudie(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbOudie.isConnected()) {
-                    goodListDrives(usbOudie.getDriveList(),usbOudie.getIdxDrive());
-                } else {
-                    badListDrives(usbOudie.getDriveList(), usbOudie.getIdxDrive());
-                }
-                break;                
-            case 8:
-                currGPS = gpsType.Element;
-                usbElem = new element(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbElem.isConnected()) {
-                    goodListDrives(usbElem.getDriveList(),usbElem.getIdxDrive());
-                } else {
-                    badListDrives(usbElem.getDriveList(), usbElem.getIdxDrive());
-                }
-                break;
-            case 9:
-                currGPS = gpsType.Sensbox;
-                usbSensbox = new sensbox(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbSensbox.isConnected()) {
-                    goodListDrives(usbSensbox.getDriveList(),usbSensbox.getIdxDrive());
-                } else {
-                    badListDrives(usbSensbox.getDriveList(), usbSensbox.getIdxDrive());
-                }
-                break;
-            case 10:
-                currGPS = gpsType.Syride;
-                diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit());
-                if (diskSyr.isConnected()) {
-                    resCom = 5;
-                    actuLed();   
-                    flightListWithProgress(); 
-                } else {
-                    alertbox noSyride = new alertbox(myConfig.getLocale()); 
-                    noSyride.alertError(i18n.tr("Sys-PC-Tool n'est pas installé"));
-                }
-                break;
-            case 11:
-                // Flymaster SD 
-                currGPS = currGPS = gpsType.FlymSD;
-                listSerialPort();
-                break;
-            case 12:
-                currGPS = gpsType.Connect;
-                usbConnect = new connect(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbConnect.isConnected()) {
-                    goodListDrives(usbConnect.getDriveList(),usbConnect.getIdxDrive());
-                } else {
-                    badListDrives(usbConnect.getDriveList(), usbConnect.getIdxDrive());
-                }
-                break;
-            case 13:
-                currGPS = gpsType.Sky3;
-                usbSky3 = new skytraxx3(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbSky3.isConnected()) {
-                    goodListDrives(usbSky3.getDriveList(),usbSky3.getIdxDrive());
-                } else {
-                    badListDrives(usbSky3.getDriveList(), usbSky3.getIdxDrive());
-                }
-                break;
-            case 14:
-                currGPS = gpsType.CPilot;
-                usbCompass = new compass(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbCompass.isConnected()) {
-                    goodListDrives(usbCompass.getDriveList(),usbCompass.getIdxDrive());
-                } else {
-                    badListDrives(usbCompass.getDriveList(), usbCompass.getIdxDrive());
-                }
-                break;
-            case 15:
-                currGPS = gpsType.XCTracer;
-                usbXctracer = new xctracer(myConfig.getOS(), myConfig.getGpsLimit());
-                if (usbXctracer.isConnected()) {
-                    goodListDrives(usbXctracer.getDriveList(),usbXctracer.getIdxDrive());
-                } else {
-                    badListDrives(usbXctracer.getDriveList(), usbXctracer.getIdxDrive());
-                }
-                break;                
+    private boolean selectGPS(boolean displayName) {
+        boolean res = false;   
+        winGPS myWin = new winGPS(myConfig, i18n, displayName);    
+        if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {
+            currGPS = myWin.getCurrGPS();
+                    if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou");
+            currNamePort = myWin.getCurrNamePort();
+            res = true;
         }
         
-    }
-    
-    /**
-     * Choicebox is filled with supported GPS
-     */
-    private void iniChbGPS()  {          
-        listGPS suppGPS = new listGPS(myConfig.getLocale());
-        ObservableList <listGPS.idGPS> allGPS = suppGPS.newFill();  
-        chbGPS.getItems().clear();
-        chbGPS.setItems(allGPS);
-        int idxGPS = 0;        
-        int i = 0;
-        for (listGPS.idGPS setModel : allGPS){            
-          if (setModel.getIdModel() == myConfig.getIdxGPS()){
-            idxGPS = i;            
-            break;
-          }
-          i++;
-        }           
-        chbGPS.getSelectionModel().select(idxGPS);    
-        chbGPS.getSelectionModel().selectedIndexProperty()
-        .addListener(new ChangeListener<Number>() {
-          public void changed(ObservableValue ov, Number value, Number new_value) {
-              winReset();
-              choixGPS(allGPS.get(new_value.intValue()).getIdModel());
-          }
-        });        
-        choixGPS(myConfig.getIdxGPS());
-    }
-            
-    /**
-     * Refresh flights table
-     */
-    private void clearAndGo() {
-        // Successfull communication, a new run  clears the table
-        tableImp.getItems().clear();
-        buttonBar.setVisible(false);
-        hbTable.setVisible(false);  
-        Image imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
-        btnGo.setGraphic(new ImageView(imgGo));
-        // with value 2, we are in refresh button case
-        resCom = 2;
-    }
-    
-    /**
-     * Clic on btnGo, run the right method for each supported GPS (FXML triggered)
-     */
-    public void readGPS() {
-                                       
-        switch (currGPS) {
-            case Flytec20 :
-                imgLed.setVisible(false);
-                switch (resCom) {
-                    case 0 :     
-                        // initial state, we try a communication
-                        currNamePort = chbSerial.getSelectionModel().getSelectedItem().toString();
-                        flightListWithProgress();
-                        break;
-                    case 1 :
-                        // Successfull communication, a new run  clears the table
-                        clearAndGo();
-                        break;
-                    case 2 :
-                        // unsuccess communication, listSerialPort() is called for a new attempt
-                        listSerialPort();
-                        break; 
-                }   
-                break;
-            case Flytec15 :
-                imgLed.setVisible(false);
-                switch (resCom) {
-                    case 0 :     
-                        // initial state, we try a communication
-                        currNamePort = chbSerial.getSelectionModel().getSelectedItem().toString();
-                        flightListWithProgress();
-                        break;
-                    case 1 :
-                        // Successfull communication, a new run  clears the table
-                        clearAndGo();
-                        break;
-                    case 2 :
-                        // unsuccess communication, listSerialPort() is called for a new attempt
-                        listSerialPort();
-                        break; 
-                }   
-                break;
-            case FlymSD :
-                imgLed.setVisible(false);
-                switch (resCom) {
-                    case 0 :     
-                        // initial state, we try a communication
-                        currNamePort = chbSerial.getSelectionModel().getSelectedItem().toString();
-                        flightListWithProgress();
-                        break;
-                    case 1 :
-                        // Successfull communication, a new run  clears the table
-                        clearAndGo();
-                        break;
-                    case 2 :
-                        // unsuccess communication, listSerialPort() is called for a new attempt
-                        listSerialPort();
-                        break;                        
-                }               
-                break;     
-            case FlymOld :
-                imgLed.setVisible(false);
-                switch (resCom) {
-                    case 0 :     
-                        // initial state, we try a communication
-                        currNamePort = chbSerial.getSelectionModel().getSelectedItem().toString();
-                        flightListWithProgress();
-                       // runFlyOldWithProgress();
-                        break;
-                    case 1 :
-                        // Successfull communication, a new run  clears the table
-                        clearAndGo();
-                        break;
-                    case 2 :
-                        // unsuccess communication, listSerialPort() is called for a new attempt
-                        listSerialPort();
-                        break;                        
-                }             
-                break;
-            case Flynet :
-                if (usbFlynet.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbFlynet.getDriveList(),usbFlynet.getIdxDrive());
-                } else {
-                    badListDrives(usbFlynet.getDriveList(), usbFlynet.getIdxDrive());
-                }                
-            case Rever :
-                // Rever not connected, new attempt
-                if (usbRever.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbRever.getDriveList(),usbRever.getIdxDrive());
-                } else {
-                    badListDrives(usbRever.getDriveList(), usbRever.getIdxDrive());
-                }
-                break;
-            case Sky :
-                // Skytraxx 2 not connected, new attempt
-                if (usbSky.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbSky.getDriveList(),usbSky.getIdxDrive());
-                } else {
-                    System.out.println("driveList "+usbSky.getDriveList().size());
-                    badListDrives(usbSky.getDriveList(), usbSky.getIdxDrive());
-                }
-                break;     
-            case Sky3 :
-                // Skytraxx 3 not connected, new attempt
-                if (usbSky3.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbSky3.getDriveList(),usbSky3.getIdxDrive());
-                } else {
-                    badListDrives(usbSky3.getDriveList(), usbSky3.getIdxDrive());
-                }
-                break;      
-            case Sensbox :
-                // Sensbox not connected, new attempt
-                if (usbSensbox.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbSensbox.getDriveList(),usbSensbox.getIdxDrive());
-                } else {
-                    badListDrives(usbSensbox.getDriveList(), usbSensbox.getIdxDrive());
-                }
-                break;                 
-            case Oudie :
-                // Oudie not connected, new attempt
-                if (usbOudie.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbOudie.getDriveList(),usbOudie.getIdxDrive());
-                } else {
-                    badListDrives(usbOudie.getDriveList(), usbOudie.getIdxDrive());
-                }
-                break; 
-            case Syride :
-                if (diskSyr.testSysPCTools()) {
-                    resCom = 5;
-                    actuLed();   
-                    flightListWithProgress(); 
-                } else {
-                    alertbox noSyride = new alertbox(myConfig.getLocale()); 
-                    noSyride.alertError(i18n.tr("Sys-PC-Tool n'est pas installé"));
-                }
-                break;                 
-            case Connect :
-                // Connect not connected, new attempt
-                if (usbConnect.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbConnect.getDriveList(),usbConnect.getIdxDrive());
-                } else {
-                    badListDrives(usbConnect.getDriveList(), usbConnect.getIdxDrive());
-                }
-                break;    
-            case Element :
-                // Element not connected, new attempt
-                if (usbElem.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbElem.getDriveList(),usbElem.getIdxDrive());
-                } else {
-                    badListDrives(usbElem.getDriveList(), usbElem.getIdxDrive());
-                }
-                break;                    
-            case CPilot :
-                if (usbCompass.testConnection(myConfig.getOS())) {
-                    goodListDrives(usbCompass.getDriveList(),usbCompass.getIdxDrive());
-                } else {
-                    badListDrives(usbCompass.getDriveList(), usbCompass.getIdxDrive());
-                }                
-        }
-        
-    }
-    
-    private void goodListDrives(ObservableList <String> driveList, int idxList) {
-        if (driveList.size() > 0) {
-            // Au début je faisais 
-            //   chbSerial.getItems().clear();
-            // J'ai mis lontemps à compredre qu'avec une Observable list
-            // il était inutile de vider la choicebox
-            // elle EST la liste. Il y a un binding définitif
-            chbSerial.setItems(driveList);  
-            chbSerial.setVisible(true);     
-            chbSerial.getSelectionModel().select(idxList);       
-            chbSerial.setVisible(true);     
-            resCom = 5;
-            actuLed();   
-            flightListWithProgress();            
-        }            
-        
-    }
-    
-    private void badListDrives(ObservableList <String> driveList, int idxList) {
-        if (driveList.size() > 0) {
-            // Au début je faisais 
-            //   chbSerial.getItems().clear();
-            // J'ai mis lontemps à compredre qu'avec une Observable list
-            // il était inutile de vider la choicebox
-            // elle EST la liste. Il y a un binding définitif
-            chbSerial.setItems(driveList);  
-            chbSerial.setVisible(true);     
-            chbSerial.getSelectionModel().select(idxList);       
-            chbSerial.setVisible(true);     
-        }
-        resCom = 4;
-        actuLed();  
-        // Window must be intilaized/refreshed
-        buttonBar.setVisible(false);
-        hbTable.setVisible(false);          
-    }
-        
-    /**
-     * choicebox is filled with available ports
-     * a filter is applied based on OS
-     */
-    private void listSerialPort() {
-        SerialComManager scm;     
-        int idxSerialList = 0;
-        int idxListPort = 0;
-        try {
-            scm = new SerialComManager();
-            SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
-            int osType = scp.getOSType();
-            String[] ports = scm.listAvailableComPorts();
-            int idx = 0;
-            if (ports.length > 0) {
-                ObservableList <String> portList;
-                portList = FXCollections.observableArrayList();
-                // Dernier port série utilisé
-                String lastSerialUsed = myConfig.getLastSerialCom();
-                // Pour Linux, on prépare tous les ports qui ne devront pas être affichés
-                Pattern p1 = Pattern.compile("^/dev/tty[0-9].*");
-                Pattern p2 = Pattern.compile("^/dev/ttyS[0-9].*");
-                Pattern p3 = Pattern.compile("^/dev/pts.*");
-                Pattern p4 = Pattern.compile("^/dev/console.*");
-                Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
-                Pattern p6 = Pattern.compile("^/dev/ptmx.*");
-                for(String port: ports){
-                    if(osType == SerialComPlatform.OS_MAC_OS_X) {
-                        // Pour éviter de lister 25000 ports inutilisables
-                        if (ports[idx].substring(0,8).equals("/dev/cu."))  {                 
-                            portList.add(port);
-                            if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
-                            idxListPort++;
-                        }
-                    }else if(osType == SerialComPlatform.OS_LINUX) {
-                        // Pour éviter de lister 25000 ports inutilisables
-                        if (!p1.matcher(port).matches() && !p2.matcher(port).matches() && !p3.matcher(port).matches()
-                             && !p4.matcher(port).matches() && !p5.matcher(port).matches() && !p6.matcher(port).matches())
-                        {
-                            portList.add(port);   
-                            if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
-                            idxListPort++;
-                        }   
-                    } else {
-                        portList.add(port);
-                        if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
-                        idxListPort++;
-                    }
-                    idx ++; 
-                }    
-                if (portList.size() > 0) {
-                    chbSerial.getItems().clear();
-                    chbSerial.setItems(portList);  
-                    chbSerial.setVisible(true);
-                    chbSerial.getSelectionModel().select(idxSerialList); 
-                    lbPort.setVisible(true);                    
-                    btnGo.setVisible(true);  
-                    resCom = 0;
-                    actuLed();
-                } else {
-                    // pas sûr que ce soit pertinent...
-                    // on devrait afficher un msg erreur et demander relance totale
-                    resCom = 3;
-                    actuLed();   
-                }
-            }                         
-        } catch (SecurityException ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-
-        } catch (IOException ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-        }
-    }
-    
+        return res;
+    }    
+                                
     /**
      * Old Flymaster series communication method
      */
@@ -935,8 +471,6 @@ public class GPSViewController {
      * Table is filled with GPS flights list
      */
     private void afficheFlyList()  {
-        // LED update
-        actuLed();
         if (resCom == 2)  {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertNumError(1052);  // No GPS response            
@@ -999,59 +533,116 @@ public class GPSViewController {
         try {
             switch (currGPS) {
             case Rever:                
-                idGPS = "Reversale ";
-                usbRever.listTracksFiles(trackPathList);
-                limitMsg = usbRever.getMsgClosingDate();
+                usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbRever.isConnected()) {
+                    idGPS = "Reversale ";
+                    usbRever.listTracksFiles(trackPathList);
+                    limitMsg = usbRever.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }                
                 break;   
             case Sky :
-                idGPS = "Skytraxx 2 "+usbSky.getVerFirmware();
-                usbSky.listTracksFiles(trackPathList);
-                limitMsg = usbSky.getMsgClosingDate();
+                usbSky = new skytraax(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbSky.isConnected()) {
+                    idGPS = "Skytraxx 2 "+usbSky.getVerFirmware();
+                    usbSky.listTracksFiles(trackPathList);
+                    limitMsg = usbSky.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }  
                 break;
             case Sky3 :
-                idGPS = "Skytraxx 3";
-                usbSky3.listTracksFiles(trackPathList);
-                limitMsg = usbSky3.getMsgClosingDate();
+                usbSky3 = new skytraxx3(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbSky3.isConnected()) {
+                    idGPS = "Skytraxx 3";
+                    usbSky3.listTracksFiles(trackPathList);
+                    limitMsg = usbSky3.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }                     
                 break;    
             case Flynet :
-                idGPS = "Flynet XC "+usbFlynet.getVerFirmware();
-                usbFlynet.listTracksFiles(trackPathList);
-                limitMsg = usbFlynet.getMsgClosingDate();                
+                usbFlynet = new flynet(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbFlynet.isConnected()) {                
+                    idGPS = "Flynet XC "+usbFlynet.getVerFirmware();
+                    usbFlynet.listTracksFiles(trackPathList);
+                    limitMsg = usbFlynet.getMsgClosingDate();  
+                } else {
+                    resCom = 2;
+                }                       
                 break;
             case Sensbox :
-                idGPS = "Flytec Sensbox";
-                usbSensbox.listTracksFiles(trackPathList);  
-                limitMsg = usbSensbox.getMsgClosingDate();
+                usbSensbox = new sensbox(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbSensbox.isConnected()) {                
+                    idGPS = "Flytec Sensbox";
+                    usbSensbox.listTracksFiles(trackPathList);  
+                    limitMsg = usbSensbox.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }                         
                 break;                
-            case Oudie :
-                idGPS = "Naviter Oudie";
-                usbOudie.listTracksFiles(trackPathList);  
-                limitMsg = usbOudie.getMsgClosingDate();
+            case Oudie :                 
+                usbOudie = new oudie(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbOudie.isConnected()) {
+                    idGPS = "Naviter Oudie";
+                    usbOudie.listTracksFiles(trackPathList);  
+                    limitMsg = usbOudie.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }  
                 break;
             case Syride :
-                idGPS = "Sys PC Tool";
-                diskSyr.listTracksFiles(trackPathList);  
-                limitMsg = "";
+                diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit()); 
+                if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou 2 ");
+                if (diskSyr.isConnected()) {                
+                    idGPS = "Sys PC Tool";
+                    diskSyr.listTracksFiles(trackPathList);  
+                    limitMsg = "";
+                    if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou 3");
+                } else {
+                    resCom = 2;
+                }                      
                 break;                
             case Connect :
-                idGPS = "Connect/Volirium";
-                usbConnect.listTracksFiles(trackPathList);  
-                limitMsg = usbConnect.getMsgClosingDate();
+                usbConnect = new connect(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbConnect.isConnected()) {
+                    idGPS = "Connect/Volirium";
+                    usbConnect.listTracksFiles(trackPathList);  
+                    limitMsg = usbConnect.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                } 
                 break;   
             case Element :
-                idGPS = "Flytec Element";
-                usbElem.listTracksFiles(trackPathList);  
-                limitMsg = usbElem.getMsgClosingDate();
+                usbElem = new element(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbElem.isConnected()) {                
+                    idGPS = "Flytec Element";
+                    usbElem.listTracksFiles(trackPathList);  
+                    limitMsg = usbElem.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }                     
                 break;                   
             case CPilot :
-                idGPS = "C-Pilot Evo";
-                usbCompass.listTracksFiles(trackPathList);  
-                limitMsg = usbCompass.getMsgClosingDate();
+                usbCompass = new compass(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbCompass.isConnected()) {                
+                    idGPS = "C-Pilot Evo";
+                    usbCompass.listTracksFiles(trackPathList);  
+                    limitMsg = usbCompass.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }
                 break;                                               
             case XCTracer :
-                idGPS = "XC Tracer II";
-                usbXctracer.listTracksFiles(trackPathList);  
-                limitMsg = usbXctracer.getMsgClosingDate();
+                usbXctracer = new xctracer(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbXctracer.isConnected()) {
+                    idGPS = "XC Tracer II";
+                    usbXctracer.listTracksFiles(trackPathList);  
+                    limitMsg = usbXctracer.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }                    
                 break;                 
             }       
             // each gps track header must be decoded
@@ -1129,7 +720,7 @@ public class GPSViewController {
                 }
             } else {
                 // No alert box possible in this thread
-                if (currGPS == gpsType.Syride) {
+                if (currGPS == winGPS.gpsType.Syride) {
                     errorComMsg = i18n.tr("Pas de traces dans le dossier");
                 } else {
                     errorComMsg = i18n.tr("Pas de traces depuis le ")+limitMsg;
@@ -1229,66 +820,6 @@ public class GPSViewController {
     }
     
     /**
-     * LED icon update
-     */
-    private void actuLed() {
-        Image imgImgLed=null;
-        Image imgGo = null;
-        Tooltip goToolTip = new Tooltip();
-        goToolTip.setStyle(myConfig.getDecoToolTip());
-
-        switch (resCom) {
-            case 0 :
-                imgGo = new Image(getClass().getResourceAsStream("/images/download.png"));
-                btnGo.setGraphic(new ImageView(imgGo));
-                btnGo.setVisible(true);
-                goToolTip.setText(i18n.tr("Télécharger les traces du GPS"));
-                btnGo.setTooltip(goToolTip);
-                imgLed.setVisible(false);
-                break;        
-            case 1 :                
-                imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_Green.png"));
-                goToolTip.setText(i18n.tr("Télécharger les traces du GPS"));
-                btnGo.setTooltip(goToolTip);
-                imgLed.setImage(imgImgLed);                
-                imgLed.setVisible(true);
-                break;
-            case 2 :
-                imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_red.png"));
-                imgLed.setImage(imgImgLed);
-                imgGo = new Image(getClass().getResourceAsStream("/images/refresh.png"));
-                btnGo.setGraphic(new ImageView(imgGo));                
-                goToolTip.setText(i18n.tr("Actualiser la liste"));
-                btnGo.setTooltip(goToolTip);
-                imgLed.setVisible(true);
-                break;
-            case 3 :
-                // No serial port
-                btnGo.setVisible(false);
-                imgLed.setVisible(false);
-                break;
-            case 4 :
-                // USB Gps no connected
-                btnGo.setVisible(false);
-                imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_red.png"));
-                imgLed.setImage(imgImgLed);                
-                imgLed.setVisible(true);
-                imgGo = new Image(getClass().getResourceAsStream("/images/Refresh.png"));
-                btnGo.setGraphic(new ImageView(imgGo));                
-                goToolTip.setText(i18n.tr("Actualiser la liste"));
-                btnGo.setVisible(true);
-                break;
-            case 5 :
-                // USB Gps connected
-                btnGo.setVisible(false);
-                imgImgLed = new Image(getClass().getResourceAsStream("/images/Led_Green.png"));
-                imgLed.setImage(imgImgLed);                
-                imgLed.setVisible(true);
-                break;
-        }
-    }
-    
-    /**
      * Insertion of checked flights in the logbook with a different thread
      */
     private void insertWithProgress() {
@@ -1313,7 +844,7 @@ public class GPSViewController {
             pForm.getDialogStage().close();
             String resInsertion = nbInserted+" / "+nbToInsert+i18n.tr(" vol(s) inséré(s) dans le carnet");
             alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
-            if (currGPS != gpsType.Syride)  {
+            if (currGPS != winGPS.gpsType.Syride)  {
                 // Display number of flights inserted
                 aInsFlights.alertInfo(resInsertion);                
             } else {
@@ -1353,16 +884,16 @@ public class GPSViewController {
             flymasterold fmold = new flymasterold();
             switch (currGPS) {
                     case Flytec20 :
-                        if (fls.iniForFlights(currNamePort)) gpsOK = true;  
+                        if (fls.isPresent(currNamePort)) gpsOK = true;  
                         break;
                     case Flytec15 :
-                        if (fliq.iniForFlights(currNamePort)) gpsOK = true;  
+                        if (fliq.isPresent(currNamePort)) gpsOK = true;  
                         break;    
                     case FlymSD :
-                        if (fms.iniForFlights(currNamePort)) gpsOK = true;  
+                        if (fms.isPresent(currNamePort)) gpsOK = true;  
                         break;
                     case FlymOld :
-                        if (fmold.iniForFlights(currNamePort)) gpsOK = true;
+                        if (fmold.isPresent(currNamePort)) gpsOK = true;
                         break;  
                     case Rever :
                         gpsOK = usbRever.isConnected();
@@ -1635,7 +1166,7 @@ public class GPSViewController {
                     switch (currGPS) {
                     case Flytec20 :
                         flytec20 fls = new flytec20();
-                        if (fls.iniForFlights(currNamePort)) { 
+                        if (fls.isPresent(currNamePort)) { 
                             // Download instruction of the flight is stored in column 5
                             strTrack = fls.getIGC(selLineTable.getCol5());
                             fls.closePort(); 
@@ -1646,7 +1177,7 @@ public class GPSViewController {
                         break;
                     case Flytec15 :
                         flytec15 fliq = new flytec15();
-                        if (fliq.iniForFlights(currNamePort)) { 
+                        if (fliq.isPresent(currNamePort)) { 
                             // Download instruction of the flight is stored in column 5
                             strTrack = fliq.getIGC(selLineTable.getCol5());
                             fliq.closePort(); 
@@ -1657,7 +1188,7 @@ public class GPSViewController {
                         break;
                     case FlymSD :
                         flymaster fms = new flymaster();
-                        if (fms.iniForFlights(currNamePort)) {
+                        if (fms.isPresent(currNamePort)) {
                             // Download instruction of the flight is stored in column 5
                             // IGC date is composed with column 1
                             // Col 1 [26.04.17] -> [260417]
@@ -1675,7 +1206,7 @@ public class GPSViewController {
                         break;
                     case FlymOld :
                         flymasterold fmold = new flymasterold();
-                        if (fmold.iniForFlights(currNamePort)) {          
+                        if (fmold.isPresent(currNamePort)) {          
                             if (fmold.getIGC(selLineTable.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
                                 strTrack = fmold.getFinalIGC();
                                 fmold.closePort(); 
@@ -1847,13 +1378,7 @@ public class GPSViewController {
     public void askOneTrack() {
         if(tableImp.getSelectionModel().getSelectedItem() != null)  {
             Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem(); 
-            // 
-//            int idx = tableImp.getSelectionModel().getSelectedIndex()+1;
-//            if (currGPS == gpsType.FlymSD) {
-//                oneFlightWithGpsDump(6,1,idx);
-//            } else {
-                oneFlightWithProgress(currLineSelection);              
-            //}
+            oneFlightWithProgress(currLineSelection);              
         } else {
             alertbox aInfo = new alertbox(myConfig.getLocale());
             aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
@@ -1880,20 +1405,14 @@ public class GPSViewController {
         // clear status bar
         rootController.updateMsgBar("", false, 60);
         winTraduction();
-        iniChbGPS();
     }
     
     /**
      * New GPS -> window is cleaned
      */
     private void winReset() {
-        
         buttonBar.setVisible(false);
-        hbTable.setVisible(false);    
-        lbPort.setVisible(false);
-        chbSerial.setVisible(false);
-        btnGo.setVisible(false); 
-        imgLed.setVisible(false);                
+        hbTable.setVisible(false);                  
         tableImp.getItems().clear();        
     }
     
@@ -1901,7 +1420,7 @@ public class GPSViewController {
     * Translate labels of the window
     */
     private void winTraduction() {
-        lbPort.setText(i18n.tr("Port"));
+        btnSelectGPS.setText(i18n.tr("Sélection GPS"));
         btnDecocher.setText(i18n.tr("Décocher"));
         btnMaj.setText(i18n.tr("Mise à jour Carnet"));
         Tooltip majToolTip = new Tooltip();
