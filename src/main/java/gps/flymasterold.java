@@ -129,7 +129,7 @@ public class flymasterold {
      * @param namePort
      * @return 
      */
-    public boolean iniForFlights(String namePort) {
+    public boolean isPresent(String namePort) {
         boolean res = false;
         listPFMWP = new ArrayList<String>();        
         try {
@@ -333,6 +333,14 @@ public class flymasterold {
             listPFMWP.add(sbRead.toString());
         }
     }       
+    
+    public void sendWaypoint() {        
+        for (int i = 0; i < listPFMWP.size(); i++) {
+            write_line(listPFMWP.get(i));
+            // answer is read but not verification
+            read_line();
+        }
+    }
     
     private int read_line() {
         int iLen = 0;
