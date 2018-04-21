@@ -151,7 +151,11 @@ public class sensbox {
                             if (listFile[i].getName().equals("system") && listFile[i].isDirectory()) {
                                 fConfig = listFile[i];
                                 cond1 = true;
-                            }                    
+                            }  
+                            if (listFile[i].getName().equals("System") && listFile[i].isDirectory()) {
+                                fConfig = listFile[i];
+                                cond1 = true;
+                            }  
                             if (listFile[i].getName().equals("tracks") && listFile[i].isDirectory()) {
                                 fFlights = listFile[i];
                                 cond2 = true;
