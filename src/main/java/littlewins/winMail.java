@@ -57,6 +57,12 @@ public class winMail {
     private boolean mailSended = false;
     private boolean supportMsg;
 
+    /**
+     * Display form mail
+     * @param currConfig   translation parameters
+     * @param pFilePath    file path for attachment
+     * @param pSupport     recipient is support 
+     */
     public winMail(configProg currConfig, String pFilePath, boolean pSupport) {
         myConfig = currConfig;
         supportMsg = pSupport;
