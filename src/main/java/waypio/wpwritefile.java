@@ -12,8 +12,10 @@ import io.jenetics.jpx.Metadata;
 import io.jenetics.jpx.WayPoint;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -24,6 +26,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import systemio.mylogging;
 
 /**
  *
@@ -35,9 +41,16 @@ public class wpwritefile {
     private DecimalFormat df2; 
     private DecimalFormat df3;     
     private String CF =  "\r\n"; 
+    private StringBuilder sbError;
+    private String zipPath;
+
+    public String getZipPath() {
+        return zipPath;
+    }
+        
     
     /**
-     * Waypoint data
+     * Waypoint data Ozi format
      * One line per waypoint
      * each field separated by a comma
      * comma's not allowed in text fields, character 209 can be used instead and a comma will be substituted.
@@ -376,6 +389,68 @@ public class wpwritefile {
         
         return res;    
     }   
+    
+    public boolean zipAllFormats(List<pointRecord> wpList) {
+        boolean res = false;
+        ArrayList<File> waypFormats = new ArrayList<>();  
+        final int bufferSize = 8192;
+        
+        // kml format
+        File ficKml = systemio.tempacess.getAppFile("Logfly", "logflywp.kml");
+        res = writeKml(wpList, ficKml);      
+        if (res) {
+            waypFormats.add(ficKml);
+            File ficGpx = systemio.tempacess.getAppFile("Logfly", "logflywp.gpx");
+            res = writeGpx(wpList, ficGpx);  
+            if (res) {
+                waypFormats.add(ficGpx);
+                File ficCup = systemio.tempacess.getAppFile("Logfly", "logflywp.cup");
+                res = writeCup(wpList, ficCup);  
+                if (res) {
+                    waypFormats.add(ficCup);
+                    File ficOzi = systemio.tempacess.getAppFile("Logfly", "logflywp.wpt");
+                    res = writeOzi(wpList, ficOzi);      
+                    if (res) {
+                        waypFormats.add(ficOzi);
+                        try {
+                            File ficZip = systemio.tempacess.getAppFile("Logfly", "logflywp.zip");
+                            ZipOutputStream zipOutputStream;
+
+                            FileOutputStream fileOutputStream = new FileOutputStream(ficZip.getAbsolutePath());
+                            zipOutputStream = new ZipOutputStream(fileOutputStream);
+ 
+                            for (File f : waypFormats) {
+                                String source = f.getPath();
+                                String entryName = f.getName();
+
+                                ZipEntry zipEntry = new ZipEntry(entryName);
+                                zipOutputStream.putNextEntry(zipEntry);
+
+                                byte[] buffer = new byte[bufferSize];
+                                try (FileInputStream fileInputStream = new FileInputStream(source)) {
+                                    int numberOfByte;
+
+                                    while ((numberOfByte = fileInputStream.read(buffer, 0, bufferSize))
+                                            != -1) {
+                                        zipOutputStream.write(buffer, 0, numberOfByte);
+                                    }
+                                }
+                            }
+                            zipOutputStream.close();
+                            zipPath = ficZip.getAbsolutePath();
+                            res = true;
+                        } catch (IOException ex) {
+                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                            sbError.append("\r\n").append(ex.toString());
+                            mylogging.log(Level.SEVERE, sbError.toString());    
+                        }                        
+                    }
+                }
+            }
+        }
+    
+        return res;
+    }
     
     private String encodeCompAlt(String sAlt) {
         String res = "";
