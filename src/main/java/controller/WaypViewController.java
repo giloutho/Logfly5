@@ -25,6 +25,7 @@ import gps.reversale;
 import gps.skytraax;
 import gps.skytraxx3;
 import igc.pointIGC;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,6 +42,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
@@ -58,6 +60,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import leaflet.map_waypoints;
 import littlewins.winGPS;
+import littlewins.winMail;
 import littlewins.winPoint;
 import littlewins.winUsbWWayp;
 import littlewins.winUsbWayp;
@@ -85,6 +88,8 @@ public class WaypViewController {
     @FXML
     private Button btGo;        
     @FXML
+    private Label lbInfo;
+    @FXML
     private Button btReadFile;    
     @FXML
     private Button btReadGps;
@@ -97,9 +102,7 @@ public class WaypViewController {
     @FXML
     private Button btMail;
     @FXML
-    private Button btEarth;
-    @FXML
-    private Button btSites;   
+    private Button btEarth;  
     @FXML
     private CheckBox chkNoms;
     @FXML
@@ -368,7 +371,7 @@ public class WaypViewController {
                 if (pointList.size() > 0) {
                     wpwritefile wfile = new wpwritefile();
                     sbInfo.append(i18n.tr("Format")).append(" KML   ");                         
-                    resWrite = resWrite = wfile.writeKml(pointList, file);                        
+                    resWrite = wfile.writeKml(pointList, file);                        
                 }                    
                 break;  
             case "5":
@@ -387,34 +390,35 @@ public class WaypViewController {
                 break;                    
         }       
         if (resWrite) {
-            updateTitle(sbInfo.toString()+String.valueOf(pointList.size())+" waypoints");                   
+            displayInfo(sbInfo.toString()+String.valueOf(pointList.size())+" waypoints");                   
         }                
     }
-    
+        
     @FXML
-    private void handleSites() {
-        if (selectGPS(false)) {
-            readFlytec20();   
-        }       
-    }
-    
-    @FXML
-    private void handleMail() {       
-        waypFile = new wpreadfile();            
-        waypFile.litGpx("/Users/gil/Documents/Logflya/Balises/Lathuile_Logfly.gpx");
-        StringBuilder sbInfo = new StringBuilder();                    
-        sbInfo.append("/Users/gil/Documents/Logflya/Balises/Lathuile_Logfly.gpx").append("   ");
-        sbInfo.append(i18n.tr("Format")).append(" GPX   ");       
-        displayWpFile(waypFile.getWpreadList(), sbInfo.toString());        
+    private void handleMail() {   
+        if (pointList.size() > 0) {
+            wpwritefile wzip = new wpwritefile();                       
+            if (wzip.zipAllFormats(pointList)) {
+                 winMail showMail = new winMail(myConfig,wzip.getZipPath(), false);     
+            }
+        }                       
     }
     
     @FXML
     private void handleGE() {
-        //currGPS = gpsType.FlymSD;
-       // currNamePort = "/dev/cu.usbmodem000001";  
-      // gpsTypeName = 2;
-        prepWritingFlym();
-      //  writeToGPS();
+        
+        wpwritefile wfile = new wpwritefile();       
+        File ficKml = systemio.tempacess.getAppFile("Logfly", "logflywp.kml");
+        boolean resWrite = wfile.writeKml(pointList, ficKml);    
+        if (resWrite) {
+            try {                        
+                Desktop dt = Desktop.getDesktop();     
+                dt.open(ficKml);            
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(1030); 
+            }               
+        }
     }
     
     /**
@@ -445,7 +449,7 @@ public class WaypViewController {
         mapPane.setVisible(true);
         debStatusBar = infoFile;
         //this.mainApp.rootLayoutController.updateMsgBar(infoFile+String.valueOf(sizeList)+" waypoints");  
-        updateTitle(infoFile+String.valueOf(sizeList)+" waypoints");                     
+        displayInfo(infoFile+String.valueOf(sizeList)+" waypoints");                     
     }    
     
     private boolean testCompeGPS(String pFichier) {
@@ -499,8 +503,8 @@ public class WaypViewController {
                 currPoint.setFIndex(idx);       
                 pointList.add(currPoint);
                 // status bar updating
-                //updateTitle(String.format(debStatusBar+" %d waypoints", pointList.size()));                  
-                updateTitle(debStatusBar+String.valueOf(pointList.size())+" waypoints");                  
+                //displayInfo(String.format(debStatusBar+" %d waypoints", pointList.size()));                  
+                displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");                  
             }            
             updateDescription();  
         }              
@@ -1403,7 +1407,7 @@ public class WaypViewController {
                 defaultPos.setLatitudeDd(Double.parseDouble(selectedPoint.getFLat()));
                 defaultPos.setLongitudeDd(Double.parseDouble(selectedPoint.getFLong()));
             }
-            updateTitle(debStatusBar+String.valueOf(pointList.size())+" waypoints");               
+            displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");               
             showMapPoints();
         }        
     }
@@ -1481,7 +1485,7 @@ public class WaypViewController {
         myConfig = mainApp.myConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",WaypViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
-        updateTitle(""); 
+        displayInfo(""); 
         eng = viewMap.getEngine();
         eng.setUserAgent(" Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0");   
         eng.titleProperty().addListener( (observable, oldValue, newValue) -> {
@@ -1522,8 +1526,8 @@ public class WaypViewController {
         this.rootController = callRoot;     
     }      
     
-    private void updateTitle(String msg) {
-        waypStage.setTitle(msg);
+    private void displayInfo(String msg) {
+        lbInfo.setText(msg);
     }
     
     private void winTraduction() {
@@ -1534,7 +1538,6 @@ public class WaypViewController {
         btWriteFile.setText(i18n.tr("Ecrire fichier"));
         btWriteGPS.setText(i18n.tr("Envoi GPS"));
         btMail.setText(i18n.tr("Mail"));
-        btSites.setText(i18n.tr("Sites"));
         txLocality.setPromptText(i18n.tr("Lieu de centrage carte"));
         colBalise.setText(i18n.tr("Balise"));
         colAlt.setText(i18n.tr("Alt."));
