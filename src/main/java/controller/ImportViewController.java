@@ -12,6 +12,7 @@ import dialogues.dialogbox;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -29,6 +30,7 @@ import model.Import;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 import trackgps.traceGPS;
 
 /**
@@ -62,6 +64,7 @@ public class ImportViewController {
     
     // Settings
     configProg myConfig;
+    StringBuilder sbError;
      
     // Track list
     ArrayList<String> trackPathList = new ArrayList<>(); 
@@ -120,24 +123,54 @@ public class ImportViewController {
         }
         File selectedDirectory = directoryChooser.showDialog(dialogStage);
         if(selectedDirectory != null){
+            displayFlights(selectedDirectory);
+        }        
+    }
+    
+    private void displayFlights(File fImport)  {
+        try {
             // This clear section was in listtracksFiles
             // this was a big bug cause by recursive call of listTracksFiles
             dataImport.clear();
             tableImp.getItems().clear();
             trackPathList.clear();
             long tempsDebut = System.currentTimeMillis();
-            listTracksFiles(selectedDirectory);
+            listTracksFiles(fImport);
             System.out.println("au retour size liste : "+trackPathList.size());
             long tempsFin = System.currentTimeMillis();
             float seconds = (tempsFin - tempsDebut) / 1000F;
             System.out.println("Nombre de traces : "+trackPathList.size());
             System.out.println("Opération effectuée en: "+ Float.toString(seconds) + " secondes.");
             if (trackPathList.size() > 0) {
+                importDirectory = fImport;
                 InitialiseTableData();
-                importDirectory = selectedDirectory;
-            }            
+            } else {
+                clearData();
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.append(i18n.tr("Traces dans le dossier")).append(" ");
+                sbMsg.append(fImport.getAbsolutePath()).append(" : ") .append("0");
+                rootController.updateMsgBar(sbMsg.toString(), true, 60);
+            }               
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());             
         }
-        
+    }
+    
+    public void defaultFolder() {
+        if (myConfig.getPathImport() != null && !myConfig.getPathImport().equals(""))
+        {
+            try {
+                File fImport = new File(myConfig.getPathImport());
+                if (fImport.exists() && fImport.isDirectory()) 
+                    displayFlights(fImport);                
+            } catch (Exception e) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                 
+            }
+        }
     }
     
     /**
@@ -227,8 +260,9 @@ public class ImportViewController {
             });
             // Update status message
             StringBuilder sbMsg = new StringBuilder();
-            sbMsg.append(i18n.tr("Traces dans le dossier : ")).append(String.valueOf(nbTracks));
-            sbMsg.append("   ").append(i18n.tr("Traces à incorporer : ")).append(String.valueOf(nbNewTracks));
+            sbMsg.append(i18n.tr("Traces dans le dossier")).append(" ").append(importDirectory.getAbsolutePath());
+            sbMsg.append(" : ").append(String.valueOf(nbTracks));
+            sbMsg.append("   ").append(i18n.tr("Traces à incorporer")).append(" : ").append(String.valueOf(nbNewTracks));
             rootController.updateMsgBar(sbMsg.toString(), true, 60);
         }
         
@@ -240,6 +274,35 @@ public class ImportViewController {
         //    list.add(new Book("The Thief", "Fuminori Nakamura"));
         //ObservableList data = FXCollections.observableList(list);
 
+    }
+    
+    @FXML
+    private void handleClean() {
+        ObservableList<Import> data = tableImp.getItems();
+        int nbVols = 0;
+        
+        // Comptage du nombre de vols
+        for (Import nbItem : data){
+            if (!nbItem.getChecked())  {               
+                nbVols++;
+            }
+        }
+        if (nbVols > 0) {
+            dialogbox dConfirm = new dialogbox();
+            StringBuilder sbMsg = new StringBuilder();
+            sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("traces à supprimer dans le dossier")).append(" ?");
+            if (dConfirm.YesNo("", sbMsg.toString()))   {       
+                for (Import item : data){
+                    if (!item.getChecked())  {     
+                        File fMyTrace = new File(item.getFilePath());
+                        if(fMyTrace.exists() && fMyTrace.isFile()) { 
+                            fMyTrace.delete();
+                        }
+                    }
+                }
+                displayFlights(importDirectory);
+            }
+        }        
     }
     
     /**
