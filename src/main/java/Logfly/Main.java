@@ -175,7 +175,7 @@ public class Main extends Application {
             ImportViewController controlImport = loader.getController(); 
             controlImport.setRootBridge(rootLayoutController);
             controlImport.setMyConfig(myConfig);
-            
+            controlImport.defaultFolder();
             // Place Import window in center of RootLayout.
             rootLayout.setCenter(importOverview);                                                      
             
