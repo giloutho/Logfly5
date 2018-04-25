@@ -38,7 +38,7 @@ import systemio.filesmove;
  *
  * @author Gil Thomas logfly.org
  */
-public class ConfigViewController implements Initializable {
+public class ConfigViewController {
 
     @FXML
     private Tab tabCarnet;    
@@ -202,16 +202,13 @@ public class ConfigViewController implements Initializable {
     
     private static I18n i18n;
             
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {   
-        // Empty but necessary
-        // fields initialization is in [myConfig]
-        // But we can read it only after initialization
-        // Any attempt in this method throw an exception
-        // setMyConfig is just below
+
+    @FXML
+    private void initialize() {   
+        txLimite.textProperty().addListener((observable, oldValue, newValue) -> {
+            int n = Integer.parseInt(newValue);
+            if (n > 100) System.out.println("> 100");
+        });
     }    
     
     public void setMyConfig(configProg mainConfig) {
