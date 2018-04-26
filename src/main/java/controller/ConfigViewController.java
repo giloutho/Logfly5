@@ -12,6 +12,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -22,8 +25,12 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.paint.Paint;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.DoubleStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -198,17 +205,83 @@ public class ConfigViewController {
     
     private Stage dialogStage;
     
-    configProg myConfig = new configProg();
+    private configProg myConfig = new configProg();
+    private Pattern validDoubleText = Pattern.compile("-?((\\d*)|(\\d+\\.\\d*))");
+    private Paint colorBadValue = Paint.valueOf("FA6C04");
+    private Paint colorGoodValue = Paint.valueOf("FFFFFF");    
     
     private static I18n i18n;
             
 
     @FXML
     private void initialize() {   
-        txLimite.textProperty().addListener((observable, oldValue, newValue) -> {
-            int n = Integer.parseInt(newValue);
-            if (n > 100) System.out.println("> 100");
+        txLimite.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, 
+                String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    txLimite.setText(newValue.replaceAll("[^\\d]", ""));
+                } else if (newValue != null && !newValue.equals("")) {
+                    int iVal = Integer.parseInt(newValue);
+                    if (iVal > 100) txLimite.setText("100");
+                }
+            }
         });
+        
+        txIntegration.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, 
+                String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    txIntegration.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });  
+
+        TextFormatter<Double> fmLat = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmLat.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < -90 || newValue > 90) {                      
+                    txFinderLat.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txFinderLat.requestFocus();                
+                } else {
+                    txFinderLat.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                }            
+        });        
+        txFinderLat.setTextFormatter(fmLat); 
+        
+        TextFormatter<Double> fmLong = new TextFormatter<Double>(new DoubleStringConverter(), 0.0, 
+            change -> {                                                                                                                                                                                                                                                                                                                                                                                                                       
+                String newText = change.getControlNewText() ;
+                if (validDoubleText.matcher(newText).matches()) {
+                    return change ;
+                } else return null ;
+            });                
+        fmLong.valueProperty().addListener((obs, oldValue, newValue) -> {            
+                if (newValue < -180 || newValue > 180) {                      
+                    txFinderLong.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                    txFinderLong.requestFocus();                
+                } else {
+                    txFinderLong.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                }            
+        });        
+        txFinderLong.setTextFormatter(fmLong);  
+        
+        txSeuilAb.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, 
+                String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    txSeuilAb.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });          
+        
     }    
     
     public void setMyConfig(configProg mainConfig) {
