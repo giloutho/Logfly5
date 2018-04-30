@@ -86,6 +86,7 @@ public class sensbox {
         String sMonth; 
         String sDay;
         
+        if (gpsLimit == 0) gpsLimit = 99;
         Calendar myCalendar = Calendar.getInstance();
         myCalendar.add(Calendar.MONTH, -(gpsLimit));
         SimpleDateFormat sdf = new SimpleDateFormat("YYMMdd");
