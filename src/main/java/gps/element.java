@@ -90,7 +90,7 @@ public class element {
     }
 
     private void setDateLevel(int gpsLimit) { 
-
+        if (gpsLimit == 0) gpsLimit = 99;
         Calendar myCalendar = Calendar.getInstance();
         myCalendar.add(Calendar.MONTH, -(gpsLimit));
         SimpleDateFormat sdf = new SimpleDateFormat("YYMMdd");        
