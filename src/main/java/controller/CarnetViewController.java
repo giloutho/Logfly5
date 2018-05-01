@@ -126,7 +126,7 @@ public class CarnetViewController  {
     @FXML
     private TableColumn<Carnet, String> voileCol;      
     @FXML
-    private Button btnStat;        
+    private Button btnAllFlights;        
     @FXML
     private Button btnMap; 
     @FXML
@@ -353,12 +353,22 @@ public class CarnetViewController  {
         });         
     }
     
+    @FXML 
+    private void handleAllFligfhts() {
+        newVolsContent(null);
+    }
+    
     private void newVolsContent(String yearFiltre)  {
         boolean isCamera;
         Statement stmt = null;
         ResultSet rs = null;
+        String sReq = null;
         String dbSqlDate;
-        String sReq = "SELECT * from Vol WHERE V_Date >= '"+yearFiltre+"-01-01 00:01' AND V_Date <= '"+yearFiltre+"-12-31 23:59' ORDER BY V_Date DESC";
+        if (yearFiltre != null) {
+            sReq = "SELECT * from Vol WHERE V_Date >= '"+yearFiltre+"-01-01 00:01' AND V_Date <= '"+yearFiltre+"-12-31 23:59' ORDER BY V_Date DESC";
+        } else {
+            sReq = "SELECT * from Vol ORDER BY V_Date DESC";
+        }
         try {
             stmt = myConfig.getDbConn().createStatement();
             rs = stmt.executeQuery(sReq);
@@ -1311,16 +1321,7 @@ public class CarnetViewController  {
             aError.alertNumError(1112);   // Only one flight selected
         }
     }
-    
-    /*
-    * Run simple logbook statistics 
-    */
-    @FXML
-    private void clicTop_Stat() {
-        alertbox aInfo = new alertbox(myConfig.getLocale());
-        aInfo.alertInfo(i18n.tr("Statistiques de vol"));              
-    }   
-        
+            
     /**
      * Display a fullscreen map of the track with flght parameters
      */    
@@ -1889,11 +1890,11 @@ public class CarnetViewController  {
         mapToolTip.setText(i18n.tr("Carte Google Maps plein écran"));
         btnMap.setTooltip(mapToolTip);
         
-        btnStat.setStyle("-fx-background-color: transparent;");      
-        Tooltip statToolTip = new Tooltip();
-        statToolTip.setStyle(myConfig.getDecoToolTip());
-        statToolTip.setText(i18n.tr("Statistiques de vol"));
-        btnStat.setTooltip(statToolTip);
+        btnAllFlights.setText(i18n.tr("Tous"));
+        Tooltip allToolTip = new Tooltip();
+        allToolTip.setStyle(myConfig.getDecoToolTip());
+        allToolTip.setText(i18n.tr("Afficher tous les vols du carnet"));
+        btnAllFlights.setTooltip(allToolTip);
                 
         btnScore.setStyle("-fx-background-color: transparent;");      
         Tooltip scoreToolTip = new Tooltip();
