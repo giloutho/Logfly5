@@ -24,14 +24,7 @@
                         <Insets left="10.0" top="10.0" />
                      </HBox.margin>
                   </ChoiceBox>
-                  <Button fx:id="btnStat" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#clicTop_Stat" text="Button">
-                     <graphic>
-                        <ImageView fx:id="top_Stat" fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@images/bar_chart2.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
+                  <Button fx:id="btnAllFlights" mnemonicParsing="false" onAction="#handleAllFligfhts" text="fTous">
                      <HBox.margin>
                         <Insets left="10.0" top="10.0" />
                      </HBox.margin>
