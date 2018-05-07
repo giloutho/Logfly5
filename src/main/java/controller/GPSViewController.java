@@ -1355,8 +1355,9 @@ public class GPSViewController {
         thread.start();        
     }
     
-    private void oneFlightWithGpsDump(int pReturn,int idGPS, int idFlight) {
-        gpsdump gpsd = new gpsdump(this, pReturn, myConfig);
+    private void oneFlightWithGpsDump(int idGPS, int idFlight) {
+        // 6 is a flag for GpsDump -> calling method is oneFlightWithGpsDump
+        gpsdump gpsd = new gpsdump(this, 6, myConfig);
         gpsd.start(idGPS, idFlight);        
     }
     
@@ -1375,10 +1376,48 @@ public class GPSViewController {
     /**
      * Clic on button "Track display" (FXML triggered)
      */
-    public void askOneTrack() {
+     public void askOneTrack() {
         if(tableImp.getSelectionModel().getSelectedItem() != null)  {
-            Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem(); 
-            oneFlightWithProgress(currLineSelection);              
+            int idx;
+            Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem();
+            switch (currGPS) {                    
+                    case Flytec20 :
+                        //oneFlightWithProgress(currLineSelection);
+                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        // 3 is id of Flytec
+                        oneFlightWithGpsDump(3,idx);                        
+                        break;
+                    case Flytec15 :
+                        //oneFlightWithProgress(currLineSelection);
+                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        // 3 is id of Flytec
+                        oneFlightWithGpsDump(3,idx);                          
+                        break;
+                    case FlymSD :
+                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        // 1 is id of Flymaster SD for GPSDump
+                        oneFlightWithGpsDump(1,idx);
+                        break;
+                    case FlymOld :
+                        //oneFlightWithProgress(currLineSelection);
+                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        // 2 is id of Flymaster Old
+                        oneFlightWithGpsDump(2,idx);                          
+                        break;
+                    case Rever :
+                    case Sky :
+                    case Sky3 :      
+                    case Flynet :   
+                    case Sensbox :                       
+                    case Oudie :    
+                    case Syride :                        
+                    case Connect :  
+                    case Element :                           
+                    case CPilot : 
+                    case XCTracer :
+                        oneFlightWithProgress(currLineSelection); 
+                        break; 
+            }
         } else {
             alertbox aInfo = new alertbox(myConfig.getLocale());
             aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
