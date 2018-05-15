@@ -84,10 +84,24 @@ public class gpsdump {
         return new BufferedReader(new InputStreamReader(p.getErrorStream()));
     }    
 
+    /**
+     * Windows call need more parameters
+     *    -  /com="Port number"
+     *    -  /igc_log="File name or folder name"
+     *    -  /win="Window option"  Select how GpsDump shall be shown (0=Hide, 1=Minimized, 2=Show)
+     *    - /exit   Used to make GpsDump exit after doing the job.
+     * @param idGPS
+     * @param idFlight
+     * @return 
+     */
     private int getFlight(int idGPS, int idFlight)  {
         int res = -1; 
+        String[] arrayParam = null;
         boolean gpsDumpOK = false;
-        String sTypeGps = "";
+        String wNoWin = "/win=0";  
+        String wComPort = "/com=5";
+        String wExit = "/exit";        
+        String sTypeGps = "";       
         StringBuilder sbLog = new StringBuilder();
         switch (idGPS) {
             case 1:
@@ -113,8 +127,7 @@ public class gpsdump {
                 break;   
         }
         igcFile = systemio.tempacess.getAppFile("Logfly", "temp.igc");
-        if (igcFile.exists())  igcFile.delete();        
-        String nameIGC = "/name="+igcFile.getAbsolutePath();        
+        if (igcFile.exists())  igcFile.delete();              
         String numberIGC = "/track="+String.valueOf(idFlight);
 
         try {
@@ -122,7 +135,7 @@ public class gpsdump {
             switch (myConfig.getOS()) {
                 case WINDOWS :
                     // to do windows path testing
-                    pathGpsDump = executionPath+File.separator+"gpsdump.exe";    // Windows
+                    pathGpsDump = executionPath+File.separator+"GpsDump.exe";    // Windows
                     File fwGpsDump = new File(pathGpsDump);
                     if(fwGpsDump.exists()) gpsDumpOK = true;         
                     break;                
@@ -139,8 +152,19 @@ public class gpsdump {
             if (gpsDumpOK) {
                 // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
                 // the author has serious doubts : ok only if program run correctly or crashes
-                sbLog.append("Call : ").append(sTypeGps).append(" ").append(nameIGC).append(" ").append(numberIGC).append(CF);
-                Process p = Runtime.getRuntime().exec(new String[]{pathGpsDump,sTypeGps, nameIGC, numberIGC});            
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        String logIGC = "/igc_log="+igcFile.getAbsolutePath();  
+                        arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        break;
+                    case MACOS : 
+                        String nameIGC = "/name="+igcFile.getAbsolutePath();   
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, nameIGC, numberIGC};
+                        break;
+                }
+                sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam));
+                System.out.println(java.util.Arrays.toString(arrayParam));
+                Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
                 String ligne = ""; 
