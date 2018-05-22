@@ -6,9 +6,6 @@
  */
 package controller;
 
-import com.serialpundit.core.SerialComPlatform;
-import com.serialpundit.core.SerialComSystemProperty;
-import com.serialpundit.serial.SerialComManager;
 import database.dbAdd;
 import database.dbSearch;
 import dialogues.ProgressForm;
@@ -31,16 +28,12 @@ import gps.skytraxx3;
 import gps.syride;
 import gps.xctracer;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -48,16 +41,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
@@ -73,7 +62,6 @@ import model.Gpsmodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
-import settings.listGPS;
 import settings.osType;
 import systemio.mylogging;
 import trackgps.traceGPS;
@@ -1357,7 +1345,7 @@ public class GPSViewController {
     
     private void oneFlightWithGpsDump(int idGPS, int idFlight) {
         // 6 is a flag for GpsDump -> calling method is oneFlightWithGpsDump
-        gpsdump gpsd = new gpsdump(this, 6, myConfig);
+        gpsdump gpsd = new gpsdump(this, 6, currNamePort, myConfig);
         gpsd.start(idGPS, idFlight);        
     }
     
@@ -1370,6 +1358,9 @@ public class GPSViewController {
             } else {
                 displayErrDwnl(reqIGC);
             }        
+        } else {
+            alertbox aInfo = new alertbox(myConfig.getLocale());
+            aInfo.alertInfo(i18n.tr("GPSDump n'a pas renvoyé la trace demandée"));
         }
     }
                         
