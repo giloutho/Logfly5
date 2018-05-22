@@ -18,7 +18,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import javafx.concurrent.Task;
-import org.json.simple.parser.ParseException;
 import settings.configProg;
 import systemio.textio;
 
@@ -42,15 +41,17 @@ public class gpsdump {
     private File igcFile;    
     private String CF =  "\r\n"; 
     private String strLog;
+    private String portNumber; 
     
 
     public gpsdump(configProg currConfig)  {
         myConfig = currConfig;
     }
     
-    public gpsdump(GPSViewController callGPSView, int pRetour, configProg currConfig)  {
+    public gpsdump(GPSViewController callGPSView, int pRetour, String pNamePort, configProg currConfig)  {
         myConfig = currConfig;
         this.gpsController = callGPSView;
+        this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
         codeRetour = pRetour;
     }    
     
@@ -99,7 +100,7 @@ public class gpsdump {
         String[] arrayParam = null;
         boolean gpsDumpOK = false;
         String wNoWin = "/win=0";  
-        String wComPort = "/com=5";
+        String wComPort = "/com="+portNumber;
         String wExit = "/exit";        
         String sTypeGps = "";       
         StringBuilder sbLog = new StringBuilder();
@@ -111,7 +112,14 @@ public class gpsdump {
                 sTypeGps = "/gps=flymasterold";
                 break;               
             case 3:
-                sTypeGps = "/gps=flytec";
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        sTypeGps = "/gps=iqcompeo";	// Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
+                        break;
+                    case MACOS :
+                        sTypeGps = "/gps=flytec";
+                        break;
+                }
                 break;
             case 4:
                 sTypeGps = "/gps=ascent";
@@ -125,6 +133,16 @@ public class gpsdump {
             case 7:
                 sTypeGps = "/gps=digiflyair";
                 break;   
+            case 8:
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
+                        break;
+                    case MACOS :
+                        sTypeGps = "/gps=flytec";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
+                        break;
+                }
+                break;                
         }
         igcFile = systemio.tempacess.getAppFile("Logfly", "temp.igc");
         if (igcFile.exists())  igcFile.delete();              
@@ -143,6 +161,7 @@ public class gpsdump {
                     pathGpsDump = executionPath+File.separator+"GpsDump";
                     File fmGpsDump = new File(pathGpsDump);
                     if(fmGpsDump.exists()) gpsDumpOK = true;  
+                    break;
                 case LINUX :
                     pathGpsDump = executionPath+File.separator+"GpsDump";
                     File flGpsDump = new File(pathGpsDump);
@@ -253,9 +272,14 @@ public class gpsdump {
                 case 6:
                     // GPSViewController ask for one track
                     System.out.println(strLog);
-                    textio fread = new textio();                                    
-                    String strIGC = fread.readTxt(igcFile);
-                    gpsController.returnGpsDump(strIGC);
+                    String strIGC = null;
+                    try {
+                        textio fread = new textio();                                    
+                        strIGC = fread.readTxt(igcFile);
+                        gpsController.returnGpsDump(strIGC);
+                    } catch (Exception e) {
+                        
+                    }
                     break;                      
             }
         else {
