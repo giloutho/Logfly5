@@ -42,6 +42,7 @@ public class gpsdump {
     private String CF =  "\r\n"; 
     private String strLog;
     private String portNumber; 
+    private String linuxPort;
     
 
     public gpsdump(configProg currConfig)  {
@@ -51,7 +52,25 @@ public class gpsdump {
     public gpsdump(GPSViewController callGPSView, int pRetour, String pNamePort, configProg currConfig)  {
         myConfig = currConfig;
         this.gpsController = callGPSView;
-        this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
+         switch (myConfig.getOS()) {
+            case WINDOWS :
+                this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
+                break;
+            case LINUX :
+                String subPort = "ca0";
+                if (pNamePort.length() > 8) subPort = pNamePort.substring(0,9);
+                switch (subPort) {
+                    case "/dev/ttyA":
+                        linuxPort = pNamePort.replace("/dev/ttyACM","-ca");  
+                        break;
+                     case "/dev/ttyS":
+                        linuxPort = pNamePort.replace("/dev/ttyS","-c");  
+                        break;       
+                     case "/dev/ttyU":
+                        linuxPort = pNamePort.replace("/dev/ttyUSB","-cu");  
+                        break;                            
+                }                
+         }
         codeRetour = pRetour;
     }    
     
@@ -69,8 +88,16 @@ public class gpsdump {
         
         String executionPath = System.getProperty("user.dir");
         
-        // case MACOS :
-            pathGpsDump = executionPath+File.separator+"GpsDump";
+            switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS :
+                        pathGpsDump = executionPath+File.separator+"GpsDump";
+                        break;
+                    case LINUX :
+                        pathGpsDump = executionPath+File.separator+"gpsdump";
+                        System.out.println(pathGpsDump);
+                        break;
+            }
             File fGpsDump = new File(pathGpsDump);
             if(fGpsDump.exists()) gpsdumpOK = true;         
                 
@@ -106,10 +133,26 @@ public class gpsdump {
         StringBuilder sbLog = new StringBuilder();
         switch (idGPS) {
             case 1:
-                sTypeGps = "/gps=flymaster";
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS :
+                        sTypeGps = "/gps=flymaster";
+                        break;
+                    case LINUX : 
+                        sTypeGps = "-gy"; 
+                        break;
+                }
                 break;
             case 2:
-                sTypeGps = "/gps=flymasterold";
+                 switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS :                     
+                        sTypeGps = "/gps=flymasterold";
+                        break;
+                    case LINUX : 
+                        sTypeGps = "-gy";    // A vérifier
+                        break;
+                }
                 break;               
             case 3:
                 switch (myConfig.getOS()) {
@@ -119,19 +162,45 @@ public class gpsdump {
                     case MACOS :
                         sTypeGps = "/gps=flytec";
                         break;
+                    case LINUX :
+                        sTypeGps = "-gc";
+                        break;                        
                 }
                 break;
             case 4:
-                sTypeGps = "/gps=ascent";
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS : 
+                        sTypeGps = "/gps=ascent";
+                        break;
+                }
                 break; 
             case 5:
-                sTypeGps = "/gps=syride";
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS : 
+                        sTypeGps = "/gps=syride";
+                        break;
+                    case LINUX :
+                        sTypeGps = "-gsy";
+                        break;                        
+                }
                 break;
             case 6:
-                sTypeGps = "/gps=leonardo";
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS :                 
+                        sTypeGps = "/gps=leonardo";
+                        break;
+                }
                 break; 
             case 7:
-                sTypeGps = "/gps=digiflyair";
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS : 
+                        sTypeGps = "/gps=digiflyair";
+                        break;
+                }
                 break;   
             case 8:
                 switch (myConfig.getOS()) {
@@ -141,12 +210,24 @@ public class gpsdump {
                     case MACOS :
                         sTypeGps = "/gps=flytec";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
                         break;
+                    case LINUX :
+                        sTypeGps = "-giq";
+                        break;
                 }
                 break;                
         }
         igcFile = systemio.tempacess.getAppFile("Logfly", "temp.igc");
         if (igcFile.exists())  igcFile.delete();              
-        String numberIGC = "/track="+String.valueOf(idFlight);
+        String numberIGC = null;
+        switch (myConfig.getOS()) {
+            case MACOS :
+            case WINDOWS :
+                numberIGC = "/track="+String.valueOf(idFlight);
+                break;
+            case LINUX :
+                numberIGC = "-f"+String.valueOf(idFlight);
+                break;
+        }
 
         try {
             String executionPath = System.getProperty("user.dir");
@@ -163,7 +244,8 @@ public class gpsdump {
                     if(fmGpsDump.exists()) gpsDumpOK = true;  
                     break;
                 case LINUX :
-                    pathGpsDump = executionPath+File.separator+"GpsDump";
+                    pathGpsDump = executionPath+File.separator+"gpsdump";
+                    System.out.println(pathGpsDump);
                     File flGpsDump = new File(pathGpsDump);
                     if(flGpsDump.exists()) gpsDumpOK = true;                        
                     break;                    
@@ -180,6 +262,10 @@ public class gpsdump {
                         String nameIGC = "/name="+igcFile.getAbsolutePath();   
                         arrayParam =new String[]{pathGpsDump,sTypeGps, nameIGC, numberIGC};
                         break;
+                    case LINUX : 
+                        String tempIGC = "-l"+igcFile.getAbsolutePath();   
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
+                        break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam));
                 System.out.println(java.util.Arrays.toString(arrayParam));
