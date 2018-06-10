@@ -480,6 +480,7 @@ public class GPSViewController {
                 Column5.setVisible(false);
                 Column6.setVisible(false);
                 tableImp.setMaxWidth(300);
+                tableImp.setStyle("-fx-selection-bar: red;");
                 tableImp.setItems(dataImport); 
                 // Special color if a flight is already in the logbook
                 // http://stackoverflow.com/questions/32119277/colouring-table-row-in-javafx
