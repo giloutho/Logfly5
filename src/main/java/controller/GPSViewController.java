@@ -871,18 +871,31 @@ public class GPSViewController {
             flytec15 fliq = new flytec15();
             flymaster fms = new flymaster();
             flymasterold fmold = new flymasterold();
+            gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig);
             switch (currGPS) {
                     case Flytec20 :
-                        if (fls.isPresent(currNamePort)) gpsOK = true;  
+                        if (fls.isPresent(currNamePort)) {
+                            gpsOK = true;
+                            fls.closePort();
+                        }  
                         break;
                     case Flytec15 :
-                        if (fliq.isPresent(currNamePort)) gpsOK = true;  
+                        if (fliq.isPresent(currNamePort)) {
+                            gpsOK = true;
+                            fliq.closePort();
+                        }  
                         break;    
                     case FlymSD :
-                        if (fms.isPresent(currNamePort)) gpsOK = true;  
+                        if (fms.isPresent(currNamePort)) {
+                            gpsOK = true;  
+                            fms.closePort();
+                        }
                         break;
                     case FlymOld :
-                        if (fmold.isPresent(currNamePort)) gpsOK = true;
+                        if (fmold.isPresent(currNamePort)) {
+                            gpsOK = true;
+                            fmold.closePort();
+                        }
                         break;  
                     case Rever :
                         gpsOK = usbRever.isConnected();
@@ -919,28 +932,22 @@ public class GPSViewController {
                         break;                        
             }            
             if (gpsOK){      
-                for (Gpsmodel item : checkedData){
+                int idxTable = 0;
+                for (Gpsmodel item : checkedData){                    
                     strTrack = null;   
-                    if (item.getChecked())  {     
+                    idxTable++;
+                    if (item.getChecked())  { 
                         try {
                             // Download instruction of the flight is stored in column 5
                             switch (currGPS) {
                             case Flytec20 :
-                                strTrack = fls.getIGC(item.getCol5());
+                                strTrack = gpsd.directFlight(3,idxTable); 
                                 break;
                             case Flytec15 :
                                 strTrack = fliq.getIGC(item.getCol5());
                                 break;    
                             case FlymSD :
-                                // Download instruction of the flight is stored in column 5
-                                // IGC date is compsed with column 1
-                                // Col 1 [26.04.17] -> [260417]
-                                String sDate = item.getDate().replaceAll("\\.", "");
-                                if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                    strTrack = fms.getFinalIGC();
-                                } else {
-                                    strTrack = null;
-                                }
+                                strTrack = gpsd.directFlight(1,idxTable);  
                                 break;
                             case FlymOld :
                                 if (fmold.getIGC(item.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {                            
@@ -999,21 +1006,7 @@ public class GPSViewController {
                             errMsg.append(item.getDate()+" "+item.getHeure()+"\r\n");
                         }                    
                     }
-                }
-                switch (currGPS) {
-                    case Flytec20 :
-                        fls.closePort();
-                        break;
-                    case Flytec15 :
-                        fliq.closePort();
-                        break;    
-                    case FlymSD :
-                        fms.closePort();
-                        break;
-                    case FlymOld :
-                        fmold.closePort();
-                        break;
-                }                              
+                }                   
                 nbInserted = nbFlightIn;
                 errInsertion = errMsg.toString();
             }
