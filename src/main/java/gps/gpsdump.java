@@ -17,8 +17,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
 import javafx.concurrent.Task;
 import settings.configProg;
+import systemio.mylogging;
 import systemio.textio;
 
 /**
@@ -35,6 +37,7 @@ public class gpsdump {
     // Settings
     configProg myConfig;
 
+    private StringBuilder sbError;
     private int errorGpsDump;    
     private String pathGpsDump;    
     private int codeRetour;      
@@ -147,7 +150,7 @@ public class gpsdump {
                  switch (myConfig.getOS()) {
                     case MACOS :
                     case WINDOWS :                     
-                        sTypeGps = "/gps=flymasterold";
+                        sTypeGps = "/gps=flymaster";
                         break;
                     case LINUX : 
                         sTypeGps = "-gy";    // A vérifier
@@ -306,6 +309,27 @@ public class gpsdump {
         return res;                          
     }    
     
+    public String directFlight(int idGPS, int idFlight)  { 
+        String res = null;
+        try {
+            int resDown = getFlight(idGPS,idFlight);
+            if (resDown == 0) {
+                textio fread = new textio();                                    
+                res = fread.readTxt(igcFile);
+            } else {
+                sbError = new StringBuilder("===== GPSDump Error =====\r\n");
+                sbError.append(strLog);
+                mylogging.log(Level.SEVERE, sbError.toString());
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder("===== GPSDump Error =====\r\n");
+            sbError = sbError.append(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+                
+        return res;
+    }
+    
     public void start(int idGPS, int idFlight)  {                        
         ProgressForm pForm = new ProgressForm();
            
@@ -356,7 +380,7 @@ public class gpsdump {
                    // mapController.returnXXX
                     break;  
                 case 6:
-                    // GPSViewController ask for one track
+                    // GPSViewController ask for one track with progress bar
                     System.out.println(strLog);
                     String strIGC = null;
                     try {
