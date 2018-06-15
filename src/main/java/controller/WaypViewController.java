@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
@@ -62,6 +64,7 @@ import leaflet.map_waypoints;
 import littlewins.winGPS;
 import littlewins.winMail;
 import littlewins.winPoint;
+import littlewins.winTrackFile;
 import littlewins.winUsbWWayp;
 import littlewins.winUsbWayp;
 import netscape.javascript.JSObject;
@@ -159,6 +162,7 @@ public class WaypViewController {
     private StringBuilder gpsInfo;
     private ArrayList<String> listForGps = new ArrayList<>();
     private int gpsTypeName;   // Name type : long, short or mixed
+    private ContextMenu tableContextMenu;
     
     @FXML
     public void initialize() {
@@ -169,16 +173,6 @@ public class WaypViewController {
         colAlt.setCellValueFactory(new PropertyValueFactory<pointRecord, String>("fAlt"));
         colDesc.setCellValueFactory(new PropertyValueFactory<pointRecord, String>("fDesc"));
         
-        // Context menu added on a row of the tableview : https://stackoverflow.com/questions/21009377/context-menu-on-a-row-of-tableview
-        tablePoints.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent t) {
-                if(t.getButton() == MouseButton.SECONDARY) {
-                    clicContextMenu().show(tablePoints, t.getScreenX(), t.getScreenY());
-                }
-            }
-        });   
-        
         tablePoints.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 centerMap();
@@ -186,7 +180,64 @@ public class WaypViewController {
         });        
         
         tablePoints.setItems(pointList); 
+        
+        buildContextMenu();
+        
+        // Cette procedure provient de https://kubos.cz/2016/04/01/javafx-dynamic-context-menu-on-treeview.html
+        tablePoints.addEventHandler(MouseEvent.MOUSE_RELEASED, e->{ 
+            if (e.getButton()==MouseButton.SECONDARY) { 
+                pointRecord selectedPoint = tablePoints.getSelectionModel().getSelectedItem();
+                
+                //item is selected - this prevents fail when clicking on empty space 
+                if (selectedPoint!=null) { 
+                    //open context menu on current screen position  
+                    tableContextMenu.show(tablePoints, e.getScreenX(), e.getScreenY());
+                } 
+            } else { 
+                //any other click cause hiding menu 
+                tableContextMenu.hide(); 
+            } 
+        });      
+        // --------------------------------------------------------------------------------------        
     }    
+    
+    
+    private void buildContextMenu() {
+        
+        tableContextMenu = new ContextMenu();
+        
+        MenuItem cmPosition = new MenuItem("Position");
+        cmPosition.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                changePosition();
+            }
+        });
+        tableContextMenu.getItems().add(cmPosition);        
+        
+        MenuItem cmEdit = new MenuItem("Editer");        
+        cmEdit.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               editPoint();
+            }            
+        });
+        tableContextMenu.getItems().add(cmEdit);
+        
+        MenuItem cmDelete = new MenuItem("Supprimer");
+        cmDelete.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                deletePoint();
+            }
+        });
+        tableContextMenu.getItems().add(cmDelete);     
+        
+        MenuItem cmBbox = new MenuItem("Bounding Box");
+        cmBbox.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                sendBoundingBox();
+            }
+        });
+        tableContextMenu.getItems().add(cmBbox);          
+    }
     
     @FXML
     private void handleNewWayp() {
@@ -392,6 +443,65 @@ public class WaypViewController {
         if (resWrite) {
             displayInfo(sbInfo.toString()+String.valueOf(pointList.size())+" waypoints");                   
         }                
+    }
+    
+    /**
+     * Si d'aventure on voulait représenter le rectangle sur la carte : http://jsfiddle.net/y1nb7sow/2/
+     */
+    private void sendBoundingBox() {
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();   
+        decimalFormatSymbols.setDecimalSeparator('.');       
+        DecimalFormat df6 = new DecimalFormat("####.000000", decimalFormatSymbols); 
+        DecimalFormat df3 = new DecimalFormat("####.000", decimalFormatSymbols);
+        
+        if (pointList.size() > 1) {
+            double latNord = Double.parseDouble(pointList.get(0).getFLat());
+            String nameNord = pointList.get(0).getFDesc();
+            double latSud = Double.parseDouble(pointList.get(0).getFLat());
+            String nameSud = pointList.get(0).getFDesc();
+            double longEst = Double.parseDouble(pointList.get(0).getFLong());
+            String nameEst = pointList.get(0).getFDesc();
+            double longWest = Double.parseDouble(pointList.get(0).getFLong());
+            String nameWest = pointList.get(0).getFDesc();
+
+            for (int i = 1; i < pointList.size(); i++) {
+                double dLat = Double.parseDouble(pointList.get(i).getFLat());
+                double dLong = Double.parseDouble(pointList.get(i).getFLong());
+                if (dLat > latNord) {
+                    latNord = dLat;
+                    nameNord = pointList.get(i).getFDesc();
+                }
+                if (dLat < latSud) {
+                    latSud = dLat;
+                    nameSud = pointList.get(i).getFDesc();
+                }
+                if (dLong < longEst) {
+                    longEst = dLong;
+                    nameEst = pointList.get(i).getFDesc();
+                }
+                if (dLong > longWest) {
+                    longWest = dLong;
+                    nameWest = pointList.get(i).getFDesc();
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(i18n.tr("Gauche : ")).append(nameEst).append(" -> ").append(df6.format(longEst)).append("\r\n");
+            sb.append(i18n.tr("Bas : ")).append(nameSud).append(" -> ").append(df6.format(latSud)).append("\r\n");
+            sb.append(i18n.tr("Droit : ")).append(nameWest).append(" -> ").append(df6.format(longWest)).append("\r\n");
+            sb.append(i18n.tr("Haut : ")).append(nameNord).append(" -> ").append(df6.format(latNord)).append("\r\n\r\n");
+            sb.append("OSM bounding box simple copy :").append("\r\n");
+            sb.append(df3.format(longEst)).append(" ").append(df3.format(latSud)).append(" ");
+            sb.append(df3.format(longWest)).append(" ").append(df3.format(latNord)).append("\r\n\r\n");
+            sb.append(i18n.tr("Placé dans le presse papier"));
+            
+                                      
+            final Clipboard clipboard = Clipboard.getSystemClipboard();
+            final ClipboardContent content = new ClipboardContent();
+            content.putString(sb.toString());            
+            clipboard.setContent(content);
+            
+            winTrackFile myTrace = new winTrackFile(sb.toString()); 
+        }
     }
         
     @FXML
@@ -1423,7 +1533,7 @@ public class WaypViewController {
     }    
     
     private ContextMenu clicContextMenu() {        
-        final ContextMenu cm = new ContextMenu();
+        final ContextMenu cmBal = new ContextMenu();
         
         MenuItem cmPosition = new MenuItem("Position");
         cmPosition.setOnAction(new EventHandler<ActionEvent>() {
@@ -1431,7 +1541,7 @@ public class WaypViewController {
                 changePosition();
             }
         });
-        cm.getItems().add(cmPosition);        
+        cmBal.getItems().add(cmPosition);        
         
         MenuItem cmEdit = new MenuItem("Editer");        
         cmEdit.setOnAction(new EventHandler<ActionEvent>() {
@@ -1439,7 +1549,7 @@ public class WaypViewController {
                editPoint();
             }            
         });
-        cm.getItems().add(cmEdit);
+        cmBal.getItems().add(cmEdit);
         
         MenuItem cmDelete = new MenuItem("Supprimer");
         cmDelete.setOnAction(new EventHandler<ActionEvent>() {
@@ -1447,9 +1557,17 @@ public class WaypViewController {
                 deletePoint();
             }
         });
-        cm.getItems().add(cmDelete);     
+        cmBal.getItems().add(cmDelete);     
         
-        return cm;
+        MenuItem cmBbox = new MenuItem("Bounding Box");
+        cmBbox.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                sendBoundingBox();
+            }
+        });
+        cmBal.getItems().add(cmBbox);  
+        
+        return cmBal;
     }    
     
     private String debugLoad() {
