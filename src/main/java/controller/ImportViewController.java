@@ -183,11 +183,9 @@ public class ImportViewController {
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
             // put in your filter here
-            if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {
-            //if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                    
+            if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                   
                 if (files[i].isFile()) {
                     trackPathList.add(files[i].getPath());       
-                    System.out.println(files[i].getName()+" size liste : "+trackPathList.size());
                 }
             }
             if (files[i].isDirectory()) {
