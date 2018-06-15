@@ -167,13 +167,15 @@ public class CarnetViewController  {
     private ObservableList <String> dataYear; 
     private MenuItem cmManual;
     private BooleanProperty manualMenu = new SimpleBooleanProperty(false);
+    private ContextMenu tableContextMenu;
     
     @FXML
     private void initialize() {
         // We need to intialize i18n before TableView building
         // For this reason we put building code in iniTable() 
-        // This procedure will be called after setMainApp()                
-        
+        // This procedure will be called after setMainApp()   
+
+    
     }
     
     /**
@@ -276,16 +278,30 @@ public class CarnetViewController  {
             return cell ;
         });
         
-        // Context menu added on a row of the tableview : https://stackoverflow.com/questions/21009377/context-menu-on-a-row-of-tableview
-        tableVols.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent t) {
-                if(t.getButton() == MouseButton.SECONDARY) {
-                    clicContextMenu().show(tableVols, t.getScreenX(), t.getScreenY());
-                }
-            }
-        });        
+        // ------------ Special Procedure -------------
+        // with our first code (more simple), context menu is always displayed
+        // Escape touch is necessary to hide context menu
+        // with this function, context menu is hidden when a line is unselected 
+        
+        buildContextMenu();
+        
+        // Cette procedure provient de https://kubos.cz/2016/04/01/javafx-dynamic-context-menu-on-treeview.html
+        tableVols.addEventHandler(MouseEvent.MOUSE_RELEASED, e->{ 
+            if (e.getButton()==MouseButton.SECONDARY) { 
+                Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
                 
+                //item is selected - this prevents fail when clicking on empty space 
+                if (selectedVol!=null) { 
+                    //open context menu on current screen position  
+                    tableContextMenu.show(tableVols, e.getScreenX(), e.getScreenY());
+                } 
+            } else { 
+                //any other click cause hiding menu 
+                tableContextMenu.hide(); 
+            } 
+        });      
+        // --------------------------------------------------------------------------------------
+                            
         Statement stmt = null;
         ResultSet rsYear = null;                
         try {
@@ -771,8 +787,9 @@ public class CarnetViewController  {
         }              
     }
     
-    private ContextMenu clicContextMenu() {        
-        final ContextMenu cm = new ContextMenu();
+    private void buildContextMenu() {
+        
+        tableContextMenu = new ContextMenu();
         
         MenuItem cmItemGlider = new MenuItem(i18n.tr("Modifier la voile"));
         cmItemGlider.setOnAction(new EventHandler<ActionEvent>() {
@@ -780,7 +797,7 @@ public class CarnetViewController  {
                 changeGlider();
             }
         });
-        cm.getItems().add(cmItemGlider);        
+        tableContextMenu.getItems().add(cmItemGlider);        
         
         MenuItem cmItem0 = new MenuItem(i18n.tr("Photo du jour"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
@@ -788,7 +805,7 @@ public class CarnetViewController  {
                 gestionPhoto();
             }            
         });
-        cm.getItems().add(cmItem0);
+        tableContextMenu.getItems().add(cmItem0);
         
         MenuItem cmItem1 = new MenuItem(i18n.tr("Commentaire"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
@@ -796,7 +813,7 @@ public class CarnetViewController  {
                gestionComment();
             }
         });
-        cm.getItems().add(cmItem1);
+        tableContextMenu.getItems().add(cmItem1);
 
         MenuItem cmItem11 = new MenuItem(i18n.tr("Fiche site"));
         cmItem11.setOnAction(new EventHandler<ActionEvent>() {
@@ -804,7 +821,7 @@ public class CarnetViewController  {
                askEditSite();
             }
         });
-        cm.getItems().add(cmItem11);
+        tableContextMenu.getItems().add(cmItem11);
         
         MenuItem cmItem12 = new MenuItem(i18n.tr("Changer site"));
         cmItem12.setOnAction(new EventHandler<ActionEvent>() {
@@ -812,7 +829,7 @@ public class CarnetViewController  {
                askListSites();
             }
         });
-        cm.getItems().add(cmItem12);        
+        tableContextMenu.getItems().add(cmItem12);        
         
         MenuItem cmItemSup = new MenuItem(i18n.tr("Supprimer"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
@@ -820,7 +837,7 @@ public class CarnetViewController  {
                 supprimeVol();
             }
         });
-        cm.getItems().add(cmItemSup);
+        tableContextMenu.getItems().add(cmItemSup);
         
         MenuItem cmItemEx = new MenuItem(i18n.tr("Exporter"));
         cmItemEx.setOnAction(new EventHandler<ActionEvent>() {
@@ -828,14 +845,14 @@ public class CarnetViewController  {
                 exportTrace();
             }
         });
-        cm.getItems().add(cmItemEx);
+        tableContextMenu.getItems().add(cmItemEx);
         
         cmManual.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 mainApp.showManualview(1,tableVols.getSelectionModel().getSelectedItem().getIdVol());
             }
         });
-        cm.getItems().add(cmManual);
+        tableContextMenu.getItems().add(cmManual);
         // binding explanations : http://bekwam.blogspot.fr/2015/08/disabling-menuitems-with-binding.html
         cmManual.disableProperty().bind(manualMenu.not());
         
@@ -846,10 +863,9 @@ public class CarnetViewController  {
                 clicTop_Menu().show(top_Menu, boundsInScreen.getMinX(), boundsInScreen.getMinY());
             }
         });
-        cm.getItems().add(cmPlus);        
-        
-        return cm;
+        tableContextMenu.getItems().add(cmPlus);         
     }
+    
                   
     /**
      * Adding Context Menus, last paragraph
