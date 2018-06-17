@@ -160,8 +160,10 @@ public class dbSearch {
                         }
                         int dbDuree = rs.getInt("V_Duree");
                         // if it's a 6015 or a flytec we must correct the gps duration displayed and the logbook duration recorded!
+                        // in a 6020 we find differences of 85 sec between real duration (first point - last point)
+                        // and duration displayed in the flight list of the GPS
                         totalSec = gpsTotalSec - iDiffSec;
-                        if (Math.abs(totalSec - dbDuree) < 60 && diffSecOK) {
+                        if (Math.abs(totalSec - dbDuree) < 120 && diffSecOK) {
                             errSearch = null;
                             res = true;
                             break;
