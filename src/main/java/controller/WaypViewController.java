@@ -1532,44 +1532,6 @@ public class WaypViewController {
         hbInput.setDisable(false);
     }    
     
-    private ContextMenu clicContextMenu() {        
-        final ContextMenu cmBal = new ContextMenu();
-        
-        MenuItem cmPosition = new MenuItem("Position");
-        cmPosition.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                changePosition();
-            }
-        });
-        cmBal.getItems().add(cmPosition);        
-        
-        MenuItem cmEdit = new MenuItem("Editer");        
-        cmEdit.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-               editPoint();
-            }            
-        });
-        cmBal.getItems().add(cmEdit);
-        
-        MenuItem cmDelete = new MenuItem("Supprimer");
-        cmDelete.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                deletePoint();
-            }
-        });
-        cmBal.getItems().add(cmDelete);     
-        
-        MenuItem cmBbox = new MenuItem("Bounding Box");
-        cmBbox.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                sendBoundingBox();
-            }
-        });
-        cmBal.getItems().add(cmBbox);  
-        
-        return cmBal;
-    }    
-    
     private String debugLoad() {
         String res = null;
         try {
