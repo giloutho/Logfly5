@@ -40,6 +40,8 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -55,10 +57,12 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import leaflet.map_waypoints;
 import littlewins.winGPS;
@@ -67,6 +71,7 @@ import littlewins.winPoint;
 import littlewins.winTrackFile;
 import littlewins.winUsbWWayp;
 import littlewins.winUsbWayp;
+import model.Balisemodel;
 import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -81,6 +86,17 @@ import waypio.wpwritefile;
 /**
  *
  * @author gil
+ * 
+ * interaction between WaypViewController and Javascript
+ * 
+ *      - New waypoint -> short name (Balise) and long name (Desc) are defined in a form called Coord
+ *      - a javascript function createNew(NomPos) is called
+ *          this function call an elevation from google.maps.ElevationService
+ *          result index point, latitude, longitude and altitude are pushed in the title of html page
+ *      - a java function decodeCoord is triggered with a title changement
+ *      - decodeCoord call updateDescription to update the waypoint description with altitude
+ *      - updateDescription call a javascript function ChangeDesc(i,NewDesc) 
+ *      
  */
 public class WaypViewController {
     
@@ -107,11 +123,17 @@ public class WaypViewController {
     @FXML
     private Button btEarth;  
     @FXML
+    private Button btBbox;
+    @FXML
     private CheckBox chkNoms;
     @FXML
     HBox hbMenu;    
     @FXML
     HBox hbInput;
+    @FXML
+    HBox hbCancel;  
+    @FXML
+    private Button btCancelPos;    
     @FXML
     HBox hbAction;
     @FXML
@@ -181,7 +203,9 @@ public class WaypViewController {
         
         tablePoints.setItems(pointList); 
         
-        buildContextMenu();
+        // We can't put buildContextMenu() here
+        // because we need to intialize i18n before 
+        // buildContextMenu() is in setMainApp()
         
         // Cette procedure provient de https://kubos.cz/2016/04/01/javafx-dynamic-context-menu-on-treeview.html
         tablePoints.addEventHandler(MouseEvent.MOUSE_RELEASED, e->{ 
@@ -206,7 +230,7 @@ public class WaypViewController {
         
         tableContextMenu = new ContextMenu();
         
-        MenuItem cmPosition = new MenuItem("Position");
+        MenuItem cmPosition = new MenuItem(i18n.tr("Position"));
         cmPosition.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 changePosition();
@@ -214,7 +238,7 @@ public class WaypViewController {
         });
         tableContextMenu.getItems().add(cmPosition);        
         
-        MenuItem cmEdit = new MenuItem("Editer");        
+        MenuItem cmEdit = new MenuItem(i18n.tr("Editer"));        
         cmEdit.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                editPoint();
@@ -222,7 +246,7 @@ public class WaypViewController {
         });
         tableContextMenu.getItems().add(cmEdit);
         
-        MenuItem cmDelete = new MenuItem("Supprimer");
+        MenuItem cmDelete = new MenuItem(i18n.tr("Supprimer"));
         cmDelete.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 deletePoint();
@@ -230,18 +254,19 @@ public class WaypViewController {
         });
         tableContextMenu.getItems().add(cmDelete);     
         
-        MenuItem cmBbox = new MenuItem("Bounding Box");
-        cmBbox.setOnAction(new EventHandler<ActionEvent>() {
+        MenuItem cmCoord = new MenuItem(i18n.tr("Coordonnées"));
+        cmCoord.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                sendBoundingBox();
+                displayCoord();
             }
         });
-        tableContextMenu.getItems().add(cmBbox);          
+        tableContextMenu.getItems().add(cmCoord);          
     }
     
     @FXML
     private void handleNewWayp() {
         disableInput();
+//        newPoint();
         int numPoint = pointList.size()+1;
         String prefix = txPrefix.getText();
         String subPrefix;
@@ -260,25 +285,8 @@ public class WaypViewController {
         else
             defBalise = subPrefix+String.format("%03d", numPoint);        
         String defDesc = txPrefix.getText()+" "+String.format("%03d", numPoint);
-        winPoint winNewPoint = new winPoint("", defDesc, defBalise);   
-        if (winNewPoint.isModif()) {    
-            // Ajout dans la liste
-            currPoint = new pointRecord(winNewPoint.getBalise(), winNewPoint.getAlt().trim(), winNewPoint.getDesc());            
-            currPoint.setFIndex(-1);
-            // map updating
-            StringBuilder sb = new StringBuilder();
-            sb.append("createNew(\"");
-            sb.append(winNewPoint.getDesc().trim());
-            sb.append("<BR>").append("Altitude").append(" : ");    
-            sb.append(winNewPoint.getAlt().trim()).append(" m");
-            sb.append("\")");
-            if (eng != null) {              
-                eng.executeScript(sb.toString());
-            }
-            // Point is added to observable list in decodeCoord()
-            // Index of javascript markers array will be stored
-        }
-    }
+        openCoordForm(defDesc, defBalise);
+    }   
     
     @FXML
     private void handleReadGPS() {    
@@ -304,6 +312,85 @@ public class WaypViewController {
             readFromFile(selectedFile.getAbsolutePath());
         }       
     }
+    
+    private void displayCoord() {
+        currPoint = tablePoints.getSelectionModel().getSelectedItem();
+        StringBuilder sb = new StringBuilder();
+        sb.append(i18n.tr("Nom court : ")).append(currPoint.getFBalise()).append("\r\n"); 
+        sb.append(i18n.tr("Nom long : ")).append(currPoint.getFDesc()).append("\r\n");    
+        sb.append(i18n.tr("Latitude : ")).append(currPoint.getFLat()).append("\r\n"); 
+        sb.append(i18n.tr("Longitude : ")).append(currPoint.getFLong()).append("\r\n"); 
+        winTrackFile noTrack = new winTrackFile(sb.toString());            
+    }
+    
+    private void openCoordForm(String pDesc, String pBalise) {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/coord.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            
+            // Communication bridge between coord and WaypView controllers
+            CoordController controller = loader.getController(); 
+            controller.setCoordBridge(this);
+            controller.setDialogStage(dialogStage, myConfig, pDesc, pBalise); 
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
+            
+        }         
+    }
+    
+    public void returnCoordForm(int exitCode, Balisemodel ba) {
+        
+        switch (exitCode) {
+            case 1 :
+                // Ajout dans la liste
+                currPoint = new pointRecord(ba.getNomCourt(), "",ba.getNomLong());            
+                currPoint.setFIndex(-1);
+                // map updating
+                StringBuilder sb = new StringBuilder();
+                sb.append("createNew(\"");
+                sb.append(ba.getNomLong());
+                sb.append("<BR>").append("Altitude").append(" : ");    
+                sb.append("").append(" m");
+                sb.append("\")");
+                if (eng != null) {              
+                    eng.executeScript(sb.toString());
+                }
+                // Point is added to observable list in decodeCoord()
+                // Index of javascript markers array will be stored                   
+                break;
+            case 2 :
+                // Ajout dans la liste
+                currPoint = new pointRecord(ba.getNomCourt(), "",ba.getNomLong());     
+                // First index = 0
+                currPoint.setFIndex(pointList.size());
+                String sLat = ba.getLatitude();
+                currPoint.setFLat(sLat);
+                String sLong = ba.getLongitude();
+                currPoint.setFLong(sLong);
+                // altitude request
+                googlegeo myGoog = new googlegeo();
+                // Best results with a low precision in coordinates
+                if (sLat.length() > 6) sLat = sLat.substring(0, 6);
+                if (sLong.length() > 6) sLong = sLong.substring(0, 6);
+                String sCoord = sLat+","+sLong;  
+                if (myGoog.googleElevation(sCoord) == 0) {
+                    currPoint.setFAlt(myGoog.getGeoAlt().trim());
+                } 
+                pointList.add(currPoint);
+                displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");   
+                showMapPoints();
+                break;
+        }
+        enableInput();
+    }    
     
     private void readFromFile(String fPath) {
         boolean goodRead = false;
@@ -445,10 +532,18 @@ public class WaypViewController {
         }                
     }
     
+    @FXML
+    private void handleCancelPos() {
+        showMapPoints();
+        enableInput();
+        disableCancelPos();
+    }
+    
     /**
-     * Si d'aventure on voulait représenter le rectangle sur la carte : http://jsfiddle.net/y1nb7sow/2/
-     */
-    private void sendBoundingBox() {
+    * Si d'aventure on voulait représenter le rectangle sur la carte : http://jsfiddle.net/y1nb7sow/2/
+    */
+    @FXML
+    private void handleBbox() {
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();   
         decimalFormatSymbols.setDecimalSeparator('.');       
         DecimalFormat df6 = new DecimalFormat("####.000000", decimalFormatSymbols); 
@@ -457,12 +552,16 @@ public class WaypViewController {
         if (pointList.size() > 1) {
             double latNord = Double.parseDouble(pointList.get(0).getFLat());
             String nameNord = pointList.get(0).getFDesc();
+            String shortNord = pointList.get(0).getFBalise();
             double latSud = Double.parseDouble(pointList.get(0).getFLat());
             String nameSud = pointList.get(0).getFDesc();
+            String shortSud = pointList.get(0).getFBalise();
             double longEst = Double.parseDouble(pointList.get(0).getFLong());
             String nameEst = pointList.get(0).getFDesc();
+            String shortEst = pointList.get(0).getFBalise();
             double longWest = Double.parseDouble(pointList.get(0).getFLong());
             String nameWest = pointList.get(0).getFDesc();
+            String shortWest = pointList.get(0).getFBalise();
 
             for (int i = 1; i < pointList.size(); i++) {
                 double dLat = Double.parseDouble(pointList.get(i).getFLat());
@@ -470,28 +569,39 @@ public class WaypViewController {
                 if (dLat > latNord) {
                     latNord = dLat;
                     nameNord = pointList.get(i).getFDesc();
+                    shortNord = pointList.get(i).getFBalise();
                 }
                 if (dLat < latSud) {
                     latSud = dLat;
                     nameSud = pointList.get(i).getFDesc();
+                    shortSud = pointList.get(i).getFBalise();
                 }
-                if (dLong < longEst) {
+                if (dLong > longEst) {
                     longEst = dLong;
                     nameEst = pointList.get(i).getFDesc();
+                    shortEst = pointList.get(i).getFBalise();
                 }
-                if (dLong > longWest) {
+                if (dLong < longWest) {
                     longWest = dLong;
                     nameWest = pointList.get(i).getFDesc();
+                    shortWest = pointList.get(i).getFBalise();
                 }
             }
             StringBuilder sb = new StringBuilder();
-            sb.append(i18n.tr("Gauche : ")).append(nameEst).append(" -> ").append(df6.format(longEst)).append("\r\n");
-            sb.append(i18n.tr("Bas : ")).append(nameSud).append(" -> ").append(df6.format(latSud)).append("\r\n");
-            sb.append(i18n.tr("Droit : ")).append(nameWest).append(" -> ").append(df6.format(longWest)).append("\r\n");
-            sb.append(i18n.tr("Haut : ")).append(nameNord).append(" -> ").append(df6.format(latNord)).append("\r\n\r\n");
-            sb.append("OSM bounding box simple copy :").append("\r\n");
-            sb.append(df3.format(longEst)).append(" ").append(df3.format(latSud)).append(" ");
-            sb.append(df3.format(longWest)).append(" ").append(df3.format(latNord)).append("\r\n\r\n");
+            sb.append(i18n.tr("Gauche : ")).append(shortWest).append(" - ").append(nameWest).append(" -> ").append(df6.format(longWest)).append("\r\n");                    
+            sb.append(i18n.tr("Bas : ")).append(shortSud).append(" - ").append(nameSud).append(" -> ").append(df6.format(latSud)).append("\r\n");
+            sb.append(i18n.tr("Droit : ")).append(shortEst).append(" - ").append(nameEst).append(" -> ").append(df6.format(longEst)).append("\r\n");
+            sb.append(i18n.tr("Haut : ")).append(shortNord).append(" - ").append(nameNord).append(" -> ").append(df6.format(latNord)).append("\r\n\r\n");
+            
+            // On prend une marge de 11 km soit 0.1 degrés
+            longEst+= 0.1;
+            longWest -= 0.1;
+            latNord += 0.1;
+            latSud -= 0.1;
+            sb.append(i18n.tr("Bounding box avec une marge de 11 km :")).append("\r\n");
+            sb.append("          ").append(df3.format(latNord)).append("\r\n");
+            sb.append(df3.format(longWest)).append("           ").append(df3.format(longEst)).append(" ").append("\r\n");
+            sb.append("          ").append(df3.format(latSud)).append("\r\n\r\n");
             sb.append(i18n.tr("Placé dans le presse papier"));
             
                                       
@@ -511,7 +621,7 @@ public class WaypViewController {
             if (wzip.zipAllFormats(pointList)) {
                  winMail showMail = new winMail(myConfig,wzip.getZipPath(), false);     
             }
-        }                       
+        }                           
     }
     
     @FXML
@@ -612,8 +722,7 @@ public class WaypViewController {
                 // Index of javascript array stored
                 currPoint.setFIndex(idx);       
                 pointList.add(currPoint);
-                // status bar updating
-                //displayInfo(String.format(debStatusBar+" %d waypoints", pointList.size()));                  
+                // status bar updating                
                 displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");                  
             }            
             updateDescription();  
@@ -1347,7 +1456,11 @@ public class WaypViewController {
             double dLongitude = Double.parseDouble(onePoint.getFLong());   
             if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
             pPoint1.setLongitude(dLongitude);
-            pPoint1.setAltiGPS(Integer.parseInt(onePoint.getFAlt()));
+            String sAlt = onePoint.getFAlt();
+            if (sAlt.trim() != null && !sAlt.trim().equals("")) {
+                pPoint1.setAltiGPS(Integer.parseInt(onePoint.getFAlt()));
+            } 
+            
             StringBuilder sbComment = new StringBuilder();
             
             
@@ -1446,13 +1559,15 @@ public class WaypViewController {
             sb.append(currPoint.getFDesc());
             sb.append("<BR>").append("Altitude").append(" : ");     
             sb.append(currPoint.getFAlt()).append(" m");
+            sb.append("<BR>").append(i18n.tr("Latitude")).append(" : ").append(currPoint.getFLat());
+            sb.append("<BR>").append(i18n.tr("Longitude")).append(" : ").append(currPoint.getFLong());
             sb.append("\")");                
             if (eng != null) {              
                 eng.executeScript(sb.toString());
             }                   
             tablePoints.refresh();
-            enableInput();        
-        
+            enableInput();
+            disableCancelPos();        
     }
     
     private void centerMap() {
@@ -1467,6 +1582,8 @@ public class WaypViewController {
     private void changePosition() {
         int selectedIndex = tablePoints.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
+            disableInput();
+            enableCancelPos();
             currPoint = tablePoints.getSelectionModel().getSelectedItem();
             StringBuilder sb = new StringBuilder();
             sb.append("ChangePos(").append(String.valueOf(currPoint.getFIndex())).append(")");  
@@ -1525,11 +1642,21 @@ public class WaypViewController {
     private void disableInput() {
         tablePoints.setDisable(true);
         hbInput.setDisable(true);
+        hbAction.setDisable(true);
+    }
+    
+    private void disableCancelPos() {
+        hbCancel.setVisible(false);
+    }
+    
+    private void enableCancelPos() {
+        hbCancel.setVisible(true);
     }
     
     private void enableInput() {
         tablePoints.setDisable(false);
         hbInput.setDisable(false);
+        hbAction.setDisable(false);
     }    
     
     private String debugLoad() {
@@ -1582,7 +1709,9 @@ public class WaypViewController {
         defaultPos.setLongitudeDd(6);
         txPrefix.setText("WAYPOINT");     
         hbMenu.setVisible(false);
-        mapPane.setVisible(false);       
+        mapPane.setVisible(false);  
+        
+                buildContextMenu();
     }        
     
     public void setWinMax()  {           
@@ -1618,10 +1747,13 @@ public class WaypViewController {
         btWriteFile.setText(i18n.tr("Ecrire fichier"));
         btWriteGPS.setText(i18n.tr("Envoi GPS"));
         btMail.setText(i18n.tr("Mail"));
-        txLocality.setPromptText(i18n.tr("Lieu de centrage carte"));
+        StringBuilder sbLoc = new StringBuilder();
+        sbLoc.append(i18n.tr("Nouveau")).append("... ").append("Saisir une ville").append(" + Go");
+        txLocality.setPromptText(sbLoc.toString());
         colBalise.setText(i18n.tr("Balise"));
         colAlt.setText(i18n.tr("Alt."));
         colDesc.setText(i18n.tr("Nom"));
+        btCancelPos.setText(i18n.tr("Abandon"));
     }   
 
     public class Bridge { 
