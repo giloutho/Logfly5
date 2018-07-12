@@ -63,6 +63,7 @@
 
 
     function createNew(NomPos) {
+        map.closePopup();
         var myPoint = map.getCenter();
         var contentPos = NomPos;
         var marker = new L.marker(myPoint, {
@@ -83,6 +84,7 @@
     }
 
     function ChangePos(i) {
+        map.closePopup();
         gmarkers[i].setIcon(IconBig);
         gmarkers[i].dragging.enable();
         gmarkers[i].on('dragend', function(ev){ ev.target.dragging.disable(), ev.target.setIcon(IconBase), getElevation(gmarkers[i],i)});
