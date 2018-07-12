@@ -29,7 +29,7 @@
                         <Insets left="8.0" top="8.0" />
                      </HBox.margin>
                   </Button>
-                  <TextField fx:id="txLocality" promptText="fSaisir un lieu de départ">
+                  <TextField fx:id="txLocality" prefWidth="250.0" promptText="fNouveau... Saisir une ville + Go">
                      <HBox.margin>
                         <Insets left="10.0" top="9.0" />
                      </HBox.margin>
@@ -50,7 +50,7 @@
                </children></HBox>
             <HBox fx:id="hbMenu" maxHeight="40.0" minHeight="40.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="200.0">
                <children>
-                  <HBox fx:id="hbInput" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                  <HBox fx:id="hbInput" minWidth="400.0" prefHeight="100.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
                      <children>
                         <CheckBox fx:id="chkNoms" mnemonicParsing="false" text="fNoms courts auto" textFill="WHITE">
                            <HBox.margin>
@@ -63,6 +63,15 @@
                            </HBox.margin>
                         </TextField>
                         <Button fx:id="btNew" mnemonicParsing="false" onAction="#handleNewWayp" text="fNouveau">
+                           <HBox.margin>
+                              <Insets left="8.0" top="8.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="hbCancel" prefHeight="100.0" prefWidth="100.0" visible="false">
+                     <children>
+                        <Button fx:id="btCancelPos" minWidth="80.0" mnemonicParsing="false" onAction="#handleCancelPos" text="fAbandon">
                            <HBox.margin>
                               <Insets left="8.0" top="8.0" />
                            </HBox.margin>
@@ -86,7 +95,12 @@
                               <Insets left="8.0" top="8.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="btEarth" mnemonicParsing="false" onAction="#handleGE" text="Google Earth">
+                        <Button fx:id="btEarth" mnemonicParsing="false" onAction="#handleGE" text="G Earth">
+                           <HBox.margin>
+                              <Insets left="8.0" top="8.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btBbox" layoutX="379.0" layoutY="18.0" mnemonicParsing="false" onAction="#handleBbox" text="B Box">
                            <HBox.margin>
                               <Insets left="8.0" top="8.0" />
                            </HBox.margin>
