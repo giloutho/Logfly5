@@ -31,6 +31,11 @@
                               <Insets right="10.0" top="10.0" />
                            </HBox.margin>
                         </Button>
+                        <Button fx:id="btnVisu" layoutX="567.0" layoutY="36.0" mnemonicParsing="false" onAction="#handleVisu" text="fVisualisation trace">
+                           <HBox.margin>
+                              <Insets right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </Button>
                         <Button fx:id="btnNettoyage" mnemonicParsing="false" onAction="#handleClean" text="fNettoyage dossier">
                            <HBox.margin>
                               <Insets right="10.0" top="10.0" />
