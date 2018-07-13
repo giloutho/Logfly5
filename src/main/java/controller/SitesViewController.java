@@ -131,6 +131,8 @@ public class SitesViewController {
     private StringBuilder sbDoublons;
     private StringBuilder sbRejected;
     
+    private ContextMenu tableContextMenu;
+    
     @FXML
     private void initialize() {
         // We need to intialize i18n before TableView building
@@ -221,16 +223,23 @@ public class SitesViewController {
         // Listener for line changes and  display relevant details
         tableSites.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> showSiteMap((Sitemodel) newValue));    
+                 
+        // Cette procedure provient de https://kubos.cz/2016/04/01/javafx-dynamic-context-menu-on-treeview.html
+        tableSites.addEventHandler(MouseEvent.MOUSE_RELEASED, e->{ 
+            if (e.getButton()==MouseButton.SECONDARY) { 
+                Sitemodel selectedSite = tableSites.getSelectionModel().getSelectedItem();
+                
+                //item is selected - this prevents fail when clicking on empty space 
+                if (selectedSite != null) { 
+                    //open context menu on current screen position  
+                    tableContextMenu.show(tableSites, e.getScreenX(), e.getScreenY());
+                } 
+            } else { 
+                //any other click cause hiding menu 
+                tableContextMenu.hide(); 
+            } 
+        });           
         
-        // Context menu added on a row of the tableview : https://stackoverflow.com/questions/21009377/context-menu-on-a-row-of-tableview
-        tableSites.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent t) {
-                if(t.getButton() == MouseButton.SECONDARY) {
-                    clicContextMenu().show(tableSites, t.getScreenX(), t.getScreenY());
-                }
-            }
-        });        
         
         fillTable("SELECT * FROM Site ORDER BY S_Nom");
     }    
@@ -724,7 +733,8 @@ public class SitesViewController {
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         iniTable();
-        iniEventBar();             
+        iniEventBar();       
+        buildContextMenu();
     }    
     
     private void iniEventBar() {
@@ -815,8 +825,9 @@ public class SitesViewController {
         return cm;        
     }
     
-    private ContextMenu clicContextMenu() {        
-        final ContextMenu cm = new ContextMenu();
+    private void buildContextMenu() {        
+        
+        tableContextMenu = new ContextMenu();
         
         MenuItem cmItem0 = new MenuItem(i18n.tr("Modifier"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
@@ -824,7 +835,7 @@ public class SitesViewController {
                 siteFormEdit();
             }            
         });
-        cm.getItems().add(cmItem0);
+        tableContextMenu.getItems().add(cmItem0);
         
         MenuItem cmItem1 = new MenuItem(i18n.tr("Ajouter"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
@@ -832,7 +843,7 @@ public class SitesViewController {
                 siteFormAdd();
             }            
         });
-        cm.getItems().add(cmItem1);
+        tableContextMenu.getItems().add(cmItem1);
         
         MenuItem cmItem2 = new MenuItem(i18n.tr("Supprimer"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
@@ -840,7 +851,7 @@ public class SitesViewController {
                 siteDelete();
             }            
         });
-        cm.getItems().add(cmItem2);
+        tableContextMenu.getItems().add(cmItem2);
         
         MenuItem cmPlus = new MenuItem(i18n.tr("Plus..."));
         cmPlus.setOnAction(new EventHandler<ActionEvent>() {
@@ -849,9 +860,8 @@ public class SitesViewController {
                 clicTop_Menu().show(top_Menu, boundsInScreen.getMinX(), boundsInScreen.getMinY());
             }
         });
-        cm.getItems().add(cmPlus);         
-        
-        return cm;        
+        tableContextMenu.getItems().add(cmPlus);         
+     
     }
     
     /**
