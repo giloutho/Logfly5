@@ -8,6 +8,7 @@ package controller;
 
 import database.dbAdd;
 import database.dbSearch;
+import dialogues.alertbox;
 import dialogues.dialogbox;
 import java.io.File;
 import java.util.ArrayList;
@@ -16,21 +17,32 @@ import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
-import model.Gpsmodel;
+import leaflet.map_visu;
 import model.Import;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.osType;
 import systemio.mylogging;
+import systemio.textio;
 import trackgps.traceGPS;
 
 /**
@@ -57,6 +69,8 @@ public class ImportViewController {
     private Button btnDecocher;
     @FXML
     private Button btnMaj;
+    @FXML
+    private Button btnVisu;    
     @FXML
     private Button btnNettoyage;
     // Localization
@@ -274,6 +288,100 @@ public class ImportViewController {
 
     }
     
+    /**
+     * Display messages about error decoding track file
+     * @param badTrack 
+     */
+    private void displayErrDwnl(traceGPS badTrack) {
+        alertbox aError = new alertbox(myConfig.getLocale());
+        String errMsg;
+        if (badTrack.Tb_Tot_Points.size() > 0)  { 
+            // "Unvalid track - Gross points : "+instance.Tb_Tot_Points.size()+" valid points : "+instance.Tb_Good_Points.size());
+            errMsg = i18n.tr("Trace invalide - Points bruts : "+badTrack.Tb_Tot_Points.size()+" points valides : "+badTrack.Tb_Good_Points.size()); 
+        } else {                            
+            errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+        }
+        aError.alertError(errMsg);
+    }
+
+    /**
+     * Display a full screen map of tje selected map after downloading from GPS
+     * @param igcToShow 
+     */
+    public void showOneTrack(traceGPS igcToShow)  {
+        // copied/pasted of showFullMap;
+        map_visu visuFullMap = new map_visu(igcToShow, myConfig);
+        if (visuFullMap.isMap_OK()) {
+            AnchorPane anchorPane = new AnchorPane();                
+            WebView viewMap = new WebView();   
+            AnchorPane.setTopAnchor(viewMap, 10.0);
+            AnchorPane.setLeftAnchor(viewMap, 10.0);
+            AnchorPane.setRightAnchor(viewMap, 10.0);
+            AnchorPane.setBottomAnchor(viewMap, 10.0);
+            anchorPane.getChildren().add(viewMap);  
+
+            String sHTML = visuFullMap.getMap_HTML();
+            /** ----- Begin Debug --------*/                 
+            final Clipboard clipboard = Clipboard.getSystemClipboard();
+            final ClipboardContent content = new ClipboardContent();
+            content.putString(sHTML);            
+            clipboard.setContent(content);                                
+            /**------ End Debug --------- */
+            viewMap.getEngine().loadContent(sHTML,"text/html");
+            StackPane subRoot = new StackPane();
+            subRoot.getChildren().add(anchorPane);
+            Scene secondScene = null;
+            if (myConfig.getOS() == osType.LINUX) {
+                // With this code for Linux, this is not OK with Win and Mac 
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                secondScene = new Scene(subRoot, screenBounds.getWidth(), screenBounds.getHeight());
+            } else {
+                // With this code, subStage.setMaximized(true) don't run under Linux
+                secondScene = new Scene(subRoot, 500, 400);
+            }
+            Stage subStage = new Stage();
+            // On veut que cette fenêtre soit modale
+            subStage.initModality(Modality.APPLICATION_MODAL);
+            subStage.setScene(secondScene); 
+            subStage.setMaximized(true);
+            subStage.show();
+        }  else {
+            alertbox aErrMap = new alertbox(myConfig.getLocale()); 
+            aErrMap.alertError(i18n.tr("Une erreur est survenue pendant la génération de la carte"));     // Error during map generation
+        }        
+    }    
+    
+    @FXML
+    private void handleVisu() {
+        if(tableImp.getSelectionModel().getSelectedItem() != null)  {
+            int idx;
+            Import currLineSelection = tableImp.getSelectionModel().getSelectedItem();
+            String trackPath = currLineSelection.getFilePath();
+            if (trackPath != null && !trackPath.equals("")) {
+                try {
+                    // track file is read
+                    File fTrack = new File(trackPath);
+                    textio fread = new textio();   
+                    String pFichier = fread.readTxt(fTrack);
+                    if (pFichier != null && !pFichier.isEmpty())  {
+                        traceGPS reqIGC = new traceGPS(pFichier, "", true, myConfig);
+                        if (reqIGC.isDecodage()) { 
+                            showOneTrack(reqIGC);
+                        } else {
+                            displayErrDwnl(reqIGC);
+                        }
+                    }                    
+                } catch (Exception e) {
+                    
+                }                    
+            }
+        } else {
+            alertbox aInfo = new alertbox(myConfig.getLocale());
+            aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
+        }        
+    }
+    
     @FXML
     private void handleClean() {
         ObservableList<Import> data = tableImp.getItems();
@@ -398,6 +506,7 @@ public class ImportViewController {
         btnDecocher.setText(i18n.tr("Décocher"));
         btnMaj.setText(i18n.tr("Mise à jour Carnet"));
         btnNettoyage.setText(i18n.tr("Nettoyage dossier"));        
+        btnVisu.setText(i18n.tr("Visualisation trace"));
     }
     
 }
