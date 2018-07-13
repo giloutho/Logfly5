@@ -93,6 +93,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
 import littlewins.winGlider;
+import littlewins.winMail;
 import littlewins.winSiteChoice;
 import model.Sitemodel;
 import photo.imgmanip;
@@ -722,6 +723,28 @@ public class CarnetViewController  {
         
     }
     
+    private void sendMail() {
+        if (myConfig.isValidConfig()) {
+            try {
+                String fileName = currTrace.suggestName()+".igc";
+                File tempIGC = systemio.tempacess.getAppFile("Logfly", fileName);
+                FileWriter fileWriter = new FileWriter(tempIGC);
+                fileWriter.write(currTrace.getFicIGC());
+                fileWriter.close();
+                winMail showMail = new winMail(myConfig,tempIGC.getAbsolutePath(), false);  
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                  
+            }
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(20);   // Invalid configuration            
+        }        
+    }
+    
     /**
      * Track export
      */
@@ -914,6 +937,14 @@ public class CarnetViewController  {
             }
         });
         cm.getItems().add(cmItemEx);
+        
+        MenuItem cmMail = new MenuItem(i18n.tr("Mail"));
+        cmMail.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                sendMail();
+            }
+        });
+        cm.getItems().add(cmMail);        
         
         MenuItem cmItemFic = new MenuItem(i18n.tr("Fichier trace"));
         cmItemFic.setOnAction(new EventHandler<ActionEvent>() {
