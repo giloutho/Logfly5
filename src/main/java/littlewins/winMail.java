@@ -178,7 +178,10 @@ public class winMail {
         lbDest.setText(i18n.tr("Destinataire "));
         txtDest = new TextField();
         txtDest.setPrefWidth(250);
-        if (supportMsg) txtDest.setText(privateData.mailSupport.toString());
+        if (supportMsg) {
+            txtDest.setText(privateData.mailSupport.toString());
+            txtDest.setDisable(true);
+        }
         // récup nom pilote
         hbDest.getChildren().addAll(lbDest, txtDest);
 
