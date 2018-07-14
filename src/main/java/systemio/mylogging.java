@@ -30,10 +30,19 @@ public class mylogging {
         //instance the logger
         logger = Logger.getLogger(mylogging.class.getName());
         //instance the filehandler
-        configProg myConfig = new configProg();
-        myConfig.readSettings();   
-        if (myConfig.isValidConfig()) {
-            fileHandler = new FileHandler(myConfig.getPathW()+ File.separator +"logfly.log",true);    
+        String logPath;
+        String OS = System.getProperty("os.name").toLowerCase();
+        if (OS.indexOf("win") >= 0) {
+            logPath = System.getProperty("user.home")+"\\AppData\\Roaming"; 
+        } else if (OS.indexOf("mac")>= 0) {
+            logPath = System.getProperty("user.home")+"/Library/Preferences";
+        } else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 ) {
+            logPath = System.getProperty("user.home")+"/.logfly";   
+        } else {
+            logPath = null;
+        }                 
+        if (logPath != null && !logPath.isEmpty()) {
+            fileHandler = new FileHandler(logPath+ File.separator +"logfly.log",true);    
         } else {
             fileHandler = new FileHandler("logfly.log",true);
         }
@@ -58,5 +67,33 @@ public class mylogging {
         getLogger().log(level, msg);
         System.out.println(msg);
     }
+    
+    public static String readLogFile() {
+        String logTxt;
+        textio currLog = new textio();     
+        String logPath;
+        String OS = System.getProperty("os.name").toLowerCase();
+        if (OS.indexOf("win") >= 0) {
+            logPath = System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.log"; 
+        } else if (OS.indexOf("mac")>= 0) {
+            logPath = System.getProperty("user.home")+"/Library/Preferences/logfly.log";
+        } else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 ) {
+            logPath = System.getProperty("user.home")+"/.logfly/logfly.log";   
+        } else {
+            logPath = null;
+        }                                    
+        File fileLog = new File(logPath);
+        if (fileLog.exists()) 
+            logTxt = currLog.readTxt(fileLog); 
+        else {
+            fileLog = new File("logfly.log");
+            if (fileLog.exists()) 
+                logTxt = currLog.readTxt(fileLog); 
+            else
+                logTxt = "Log file not found";
+        }
+        
+        return logTxt;
+    }    
     
 }
