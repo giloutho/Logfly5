@@ -18,10 +18,16 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import Logfly.Main;
+import dialogues.alertbox;
 import dialogues.dialogbox;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -30,12 +36,15 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import littlewins.winLog;
 import littlewins.winMail;
 import littlewins.winWeb;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import systemio.mylogging;
 
 /**
  *
@@ -88,6 +97,7 @@ public class RootLayoutController {
     public Main mainApp;
     
     private configProg myConfig;
+    private StringBuilder sbError;
         
     @FXML
     private void initialize() {           
@@ -347,7 +357,7 @@ public class RootLayoutController {
         MenuItem cmItem1 = new MenuItem(i18n.tr("Copie carnet"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-               comingSoon();
+               copyDb();
             }
         });
         cm.getItems().add(cmItem1);
@@ -393,6 +403,31 @@ public class RootLayoutController {
     
     private void displayLog() {
         winLog myLog = new winLog(myConfig,0);        
+    }
+    
+    private void copyDb() {
+        
+        if (myConfig.isValidConfig()) {
+            try {                
+                DirectoryChooser directoryChooser = new DirectoryChooser();
+                File selectedDirectory = directoryChooser.showDialog(null);        
+                if(selectedDirectory != null){
+                    Path srcPath = Paths.get(myConfig.getFullPathDb());
+                    Path dstPath = Paths.get(selectedDirectory.getAbsolutePath()+File.separator+myConfig.getDbName());
+                    Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);                    
+                }
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                  
+            }
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(20);   // Invalid configuration            
+        }           
+        
     }
     
     private void sendMailSupport() {
