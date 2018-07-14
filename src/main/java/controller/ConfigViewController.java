@@ -7,30 +7,34 @@
 package controller;
 
 import dialogues.alertbox;
+import dialogues.dialogbox;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URL;
-import java.util.ResourceBundle;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.paint.Paint;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.IntegerStringConverter;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -39,6 +43,7 @@ import settings.listGPS;
 import settings.listLangues;
 import settings.listLeague;
 import systemio.filesmove;
+import systemio.mylogging;
 
 /**
  * FXML Controller class
@@ -59,6 +64,8 @@ public class ConfigViewController {
     private Button btMoveLog;    
     @FXML
     private Button btSelectLog;    
+    @FXML
+    private Button btRestore;     
     @FXML
     private Button btCarnetClose;    
     @FXML
@@ -198,7 +205,15 @@ public class ConfigViewController {
     @FXML
     private Button btWebAnnuler;
     @FXML
-    private Button btWebOk;            
+    private Button btWebOk;      
+    @FXML
+    private Tab tabLog;     
+    @FXML
+    private TextArea txLog;
+    @FXML
+    private Button btLogAnnuler;
+    @FXML
+    private Button btLogOk; 
     
     // Reference to the main application.
     private RootLayoutController rootController;
@@ -211,6 +226,7 @@ public class ConfigViewController {
     private Paint colorGoodValue = Paint.valueOf("FFFFFF");    
     
     private static I18n i18n;
+    private StringBuilder sbError;
             
 
     @FXML
@@ -357,6 +373,9 @@ public class ConfigViewController {
         txMailPass.setText(myConfig.getMailPass());
         txUrlContest.setText(myConfig.getUrlContest());
         lbContestPath.setText(myConfig.getPathContest());     
+        
+        // Log Tab
+        txLog.setText(systemio.mylogging.readLogFile());
     }
     
     /**
@@ -373,35 +392,41 @@ public class ConfigViewController {
      */
     @FXML
     private void handleOk() {
-        // Onglet Pilote
-        myConfig.setDefaultPilote(txPilote.getText());
-        myConfig.setDefaultVoile(txVoile.getText());
-        myConfig.setIdxGPS(chbGPS.getSelectionModel().getSelectedIndex()); 
-        myConfig.setIntegration(Integer.parseInt(txIntegration.getText()));
-        myConfig.setGpsLimit(Integer.parseInt(txLimite.getText()));
-        myConfig.setPiloteMail(txMailPilote.getText());
-        myConfig.setIdxLeague(chbLeague.getSelectionModel().getSelectedIndex());
-        myConfig.setPiloteID(txIdentif.getText());
-        myConfig.setPilotePass(txPass.getText());
-        // Onglet Cartes
-        myConfig.setVisuGPSinNav(checkBrowser.isSelected());
-        myConfig.setIdxMap(chbCarte.getSelectionModel().getSelectedIndex()); 
-        myConfig.setFinderLat(txFinderLat.getText());
-        myConfig.setFinderLong(txFinderLong.getText());
-        myConfig.setSeuilAberrants(Integer.parseInt(txSeuilAb.getText()));
-        // Onglet Divers
-        myConfig.setIdxLang(chbLang.getSelectionModel().getSelectedIndex());
-        myConfig.setLocale(chbLang.getSelectionModel().getSelectedIndex());
-        myConfig.setPathImport(lbImpFolder.getText());
-        myConfig.setPhotoAuto(checkPhoto.isSelected());
-        myConfig.setUpdateAuto(checkUpdate.isSelected());
-        // Onglet Internet
-        myConfig.setUrlLogfly(txUrlSite.getText());
-        myConfig.setUrlIcones(txUrlIcones.getText());
-        myConfig.setUrlLogflyIGC(txVisuUpload.getText());
-        myConfig.setUrlVisu(txVisuGPS.getText());
-        myConfig.setMailPass(txMailPass.getText());
-        myConfig.setUrlContest(txUrlContest.getText());             
+        if (myConfig.isValidConfig()) {                
+            // Onglet Pilote
+            myConfig.setDefaultPilote(txPilote.getText());
+            myConfig.setDefaultVoile(txVoile.getText());
+            myConfig.setIdxGPS(chbGPS.getSelectionModel().getSelectedIndex()); 
+            myConfig.setIntegration(Integer.parseInt(txIntegration.getText()));
+            myConfig.setGpsLimit(Integer.parseInt(txLimite.getText()));
+            myConfig.setPiloteMail(txMailPilote.getText());
+            myConfig.setIdxLeague(chbLeague.getSelectionModel().getSelectedIndex());
+            myConfig.setPiloteID(txIdentif.getText());
+            myConfig.setPilotePass(txPass.getText());
+            // Onglet Cartes
+            myConfig.setVisuGPSinNav(checkBrowser.isSelected());
+            myConfig.setIdxMap(chbCarte.getSelectionModel().getSelectedIndex()); 
+            myConfig.setFinderLat(txFinderLat.getText());
+            myConfig.setFinderLong(txFinderLong.getText());
+            myConfig.setSeuilAberrants(Integer.parseInt(txSeuilAb.getText()));
+            // Onglet Divers
+            myConfig.setIdxLang(chbLang.getSelectionModel().getSelectedIndex());
+            myConfig.setLocale(chbLang.getSelectionModel().getSelectedIndex());
+            myConfig.setPathImport(lbImpFolder.getText());
+            myConfig.setPhotoAuto(checkPhoto.isSelected());
+            myConfig.setUpdateAuto(checkUpdate.isSelected());
+            // Onglet Internet
+            myConfig.setUrlLogfly(txUrlSite.getText());
+            myConfig.setUrlIcones(txUrlIcones.getText());
+            myConfig.setUrlLogflyIGC(txVisuUpload.getText());
+            myConfig.setUrlVisu(txVisuGPS.getText());
+            myConfig.setMailPass(txMailPass.getText());
+            myConfig.setUrlContest(txUrlContest.getText());             
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Problème de paramètrage non résolu"));  
+            System.exit(0);
+        }
         
         dialogStage.close();
     }
@@ -411,7 +436,13 @@ public class ConfigViewController {
      */
     @FXML
     private void handleCancel() {
-        dialogStage.close();
+        if (myConfig.isValidConfig()) {
+            dialogStage.close();
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Problème de paramètrage non résolu"));  
+            System.exit(0);
+        }
     }
     
     /**
@@ -483,6 +514,83 @@ public class ConfigViewController {
             myConfig.setPathImport(selectedDirectory.getAbsolutePath());
         }        
     }  
+    
+    private void copyInNewFolder(Path srcPath, File selectedFile) {
+        
+        alertbox aError = new alertbox(myConfig.getLocale());
+        aError.alertInfo(i18n.tr("Sélectionner un dossier pour le carnet")); 
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(dialogStage);
+        if(selectedDirectory != null){
+            try {
+                Path dstPath = Paths.get(selectedDirectory.getAbsolutePath()+File.separator+selectedFile.getName());
+                Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);  
+                myConfig.setPathDb(selectedDirectory.getAbsolutePath()+File.separator);  
+                myConfig.setFullPathDb(selectedDirectory.getAbsolutePath()+File.separator+selectedFile.getName());
+                myConfig.setDbName(selectedFile.getName());    
+                if (myConfig.dbVerif(myConfig.getFullPathDb())) {
+                    myConfig.setValidConfig(true);
+                    rootController.changeCarnetView();
+                    dialogStage.close();
+                } else {                   
+                    aError.alertNumError(100); // db connection problem
+                }                
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                 
+            }                    
+        }        
+    }
+    
+    @FXML
+    private void restoreBackup() {
+        alertbox aError = new alertbox(myConfig.getLocale());
+        aError.alertInfo(i18n.tr("Sélectionner le carnet à restaurer"));  
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter(i18n.tr("Carnet "), "*.db")                
+        );              
+        fileChooser.setTitle(i18n.tr("Sélectionner le carnet"));
+        File selectedFile = fileChooser.showOpenDialog(null);        
+        if(selectedFile != null){
+            Path srcPath = Paths.get(selectedFile.getAbsolutePath());
+            File folderDb = new File(myConfig.getPathDb());
+            if (folderDb.exists() && folderDb.isDirectory() ) {
+                dialogbox dConfirm = new dialogbox();
+                StringBuilder sbMsg = new StringBuilder(); 
+                sbMsg.append(i18n.tr("Copier dans :")).append(myConfig.getPathDb());
+                int myChoice = dConfirm.twoChoices(i18n.tr("Restauration carnet"), sbMsg.toString(), i18n.tr("Oui"), i18n.tr("Autre dossier"), i18n.tr("Annuler"));
+                switch (myChoice) {
+                    case  0:
+                        System.exit(0);
+                        break;
+                    case 1 :
+                        try {
+                            Path dstPath = Paths.get(myConfig.getPathDb()+File.separator+selectedFile.getName());
+                            Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);            
+                            changeDb(selectedFile.getName());
+                            dialogStage.close();
+                        } catch (Exception ex) {
+                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                            sbError.append("\r\n").append(ex.toString());
+                            mylogging.log(Level.SEVERE, sbError.toString());  
+                            aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                          
+                        }
+                        break;
+                    case 2 :
+                        copyInNewFolder(srcPath, selectedFile);
+                        break;
+                }          
+            } else {
+                // Folder db no longer exists
+                copyInNewFolder(srcPath, selectedFile);
+            }          
+            
+            
+        }        
+    }
     
     /**
      * Path for online contest is modified 
@@ -698,12 +806,14 @@ public class ConfigViewController {
         tabCarte.setText(i18n.tr("Carte"));
         tabDivers.setText(i18n.tr("Divers"));
         tabInternet.setText(i18n.tr("Internet"));
+        tabLog.setText(i18n.tr("Fichier log"));        
         lbWorkingPath.setText(i18n.tr("Chemin du dossier de travail"));
         btCarnetEdit.setText(i18n.tr("Modifier"));
         lbWorkingLog.setText(i18n.tr("Chemin carnet(s)"));
         btNewLog.setText(i18n.tr("Créer un nouveau carnet"));
         btMoveLog.setText(i18n.tr("Déplacer le(s) carnet(s) vers un autre dossier"));
         btSelectLog.setText(i18n.tr("Choisir un nouveau dossier de carnets"));
+        btRestore.setText(i18n.tr("Restaurer une sauvegarde"));
         btCarnetClose.setText(i18n.tr("Fermer"));
         tabPilote.setText(i18n.tr("Pilote"));
         lbPilote.setText(i18n.tr("Nom pilote"));
@@ -738,6 +848,8 @@ public class ConfigViewController {
         lbDeclaration.setText(i18n.tr("Url Déclaration"));
         lbExport.setText(i18n.tr("Dossier Export IGC"));
         btWebAnnuler.setText(i18n.tr("Annuler"));
-        btWebOk.setText(i18n.tr("Valider"));               
+        btWebOk.setText(i18n.tr("Valider"));    
+        btLogAnnuler.setText(i18n.tr("Annuler"));
+        btLogOk.setText(i18n.tr("Valider"));            
     }
 }
