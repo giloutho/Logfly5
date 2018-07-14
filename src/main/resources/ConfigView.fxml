@@ -7,6 +7,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -23,17 +24,18 @@
                      <children>
                         <Label fx:id="lbWorkingPath" layoutX="94.0" layoutY="46.0" prefHeight="17.0" prefWidth="249.0" text="fDossier de travail" />
                         <Label fx:id="lbWorkingLog" layoutX="94.0" layoutY="100.0" text="fDossier Carnet(s)" />
-                        <Button fx:id="btNewLog" layoutX="94.0" layoutY="168.0" mnemonicParsing="false" onAction="#displayTextCarnet" text="fCréer un nouveau carnet" />
-                        <Button fx:id="btSelectLog" layoutX="94.0" layoutY="270.0" mnemonicParsing="false" onAction="#selectNewFolderDb" text="fSélectionner un nouveau dossier de carnets" />
-                        <Button fx:id="btMoveLog" layoutX="94.0" layoutY="219.0" mnemonicParsing="false" onAction="#moveDb" text="Déplacer le(s) carnet(s) vers un autre dossier" />
+                        <Button fx:id="btNewLog" layoutX="94.0" layoutY="155.0" mnemonicParsing="false" onAction="#displayTextCarnet" text="fCréer un nouveau carnet" />
+                        <Button fx:id="btSelectLog" layoutX="96.0" layoutY="248.0" mnemonicParsing="false" onAction="#selectNewFolderDb" text="fSélectionner un nouveau dossier de carnets" />
+                        <Button fx:id="btMoveLog" layoutX="94.0" layoutY="201.0" mnemonicParsing="false" onAction="#moveDb" text="Déplacer le(s) carnet(s) vers un autre dossier" />
+                        <Button fx:id="btRestore" layoutX="96.0" layoutY="296.0" mnemonicParsing="false" onAction="#restoreBackup" text="fRestaurer une sauvegarde" />
                         <Label fx:id="lbCurrFolder" layoutX="94.0" layoutY="63.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
                         <Label fx:id="lbCurrDbPath" layoutX="94.0" layoutY="122.0" prefHeight="17.0" prefWidth="296.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
                         <Button fx:id="btCarnetEdit" layoutX="411.0" layoutY="49.0" mnemonicParsing="false" onAction="#changePathW" text="Modifier" />
                         <Button fx:id="btCarnetClose" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="Fermer" />
                         <ChoiceBox fx:id="chbCarnet" layoutX="411.0" layoutY="108.0" prefHeight="27.0" prefWidth="146.0" />
-                        <TextField fx:id="txnewdb" layoutX="397.0" layoutY="168.0" prefHeight="27.0" prefWidth="132.0" visible="false" />
-                        <Button fx:id="btnewcarnetcancel" layoutX="408.0" layoutY="201.0" mnemonicParsing="false" onAction="#annulNewCarnet" text="Annuler" visible="false" />
-                        <Button fx:id="btnewcarnetok" layoutX="493.0" layoutY="201.0" mnemonicParsing="false" onAction="#createNewCarnet" text="Ok" visible="false" />
+                        <TextField fx:id="txnewdb" layoutX="397.0" layoutY="155.0" prefHeight="27.0" prefWidth="132.0" visible="false" />
+                        <Button fx:id="btnewcarnetcancel" layoutX="408.0" layoutY="191.0" mnemonicParsing="false" onAction="#annulNewCarnet" text="Annuler" visible="false" />
+                        <Button fx:id="btnewcarnetok" layoutX="493.0" layoutY="191.0" mnemonicParsing="false" onAction="#createNewCarnet" text="Ok" visible="false" />
                      </children>
                   </AnchorPane>
             </content>
@@ -161,6 +163,17 @@
                         <Button fx:id="btWebAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
                         <Button layoutX="526.0" layoutY="200.0" mnemonicParsing="false" onAction="#changePathContest" text="..." />
                      </children></AnchorPane>
+               </content>
+            </Tab>
+            <Tab fx:id="tabLog" text="fFichier Log">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TextArea fx:id="txLog" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
+                        <Button fx:id="btLogOk" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
+                        <Button fx:id="btLogAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+                     </children>
+                  </AnchorPane>
                </content>
             </Tab>
         </tabs>
