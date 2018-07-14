@@ -69,16 +69,7 @@ public class winLog {
     }
        
     private void readLogFile() {
-        textio currLog = new textio();         
-        if (myConfig.isValidConfig()) {
-            File fileLog = new File(myConfig.getPathW()+"logfly.log");
-            if (fileLog.exists()) 
-                logTxt = currLog.readTxt(fileLog); 
-            else
-                logTxt = i18n.tr("fichier log non trouvé");
-        } else {
-            logTxt = i18n.tr("fichier log non trouvé");
-        }
+        logTxt = systemio.mylogging.readLogFile();
     }
        
     private void showText() {
