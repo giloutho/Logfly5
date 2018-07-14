@@ -84,6 +84,9 @@ public class alertbox {
             case 20:    
                 msg = i18n.tr("La configuration n'est pas valide");                          
                 break;                
+            case 100:    
+                msg = i18n.tr("Connection base de données impossible");                          
+                break;
             case 102:    
                 msg = i18n.tr("Problème de lecture sur le carnet de vol");                          
                 break;
