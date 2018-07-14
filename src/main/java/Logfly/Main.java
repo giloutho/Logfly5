@@ -90,21 +90,24 @@ public class Main extends Application {
             alertbox aError = new alertbox(java.util.Locale.ENGLISH);            
             StringBuilder errMsg = new StringBuilder();
             
+            errMsg.append("myConfig.isValidConfig() = false\n");
             if (myConfig.isReadConfig())  {
-                errMsg.append("Logfly.properties read\n");
+                errMsg.append("Logfly.properties file OK\n");
+                if (myConfig.isConfigDefault())  {
+                    errMsg.append("Default settings applied\n");
+                } else {
+                    errMsg.append("Custom settings applied\n");
+                }
+                errMsg.append("Working path : "+myConfig.getPathW()).append("\n");
+                errMsg.append("Logbook path : "+myConfig.getFullPathDb()).append("\n");
             } else {
                 errMsg.append("Logfly.properties not read\n");
-            }
-            if (myConfig.isConfigDefault())  {
-                errMsg.append("Default settings\n");
-            } else {
-                errMsg.append("custom settings\n");
-            }
-            errMsg.append("Logbook path : "+myConfig.getFullPathDb());               
+            }              
             mylogging.log(Level.SEVERE, errMsg.toString());
-            aError.alertNumError(1000);   // Error in reading the parameters
-            aError.alertError(errMsg.toString());  
-            System.exit(0);                            
+            aError.alertError(errMsg.toString());              
+            initRootLayout();  
+            rootLayoutController.showConfigDialog();
+           // System.exit(0);                            
         }
     }
     
@@ -334,7 +337,8 @@ public class Main extends Application {
                         scene = new Scene(waypOverview, screenBounds.getWidth(), screenBounds.getHeight());
                     } else {
                         // With this code, subStage.setMaximized(true) don't run under Linux
-                        scene = new Scene(waypOverview, 500, 400);
+                        // PROVISOIREMENT scene = new Scene(waypOverview, 500, 400);
+                        scene = new Scene(waypOverview, 1100, 600);
                     }                                    
                     fullWayp.setScene(scene);
                    
@@ -343,7 +347,7 @@ public class Main extends Application {
                     controlWayp.setWaypStage(fullWayp);  
                     controlWayp.setRootBridge(rootLayoutController);
                     controlWayp.setMainApp(this); 
-                    controlWayp.setWinMax();
+                  // PROVISOIREMENT  controlWayp.setWinMax();
                     fullWayp.showAndWait();
 
 
