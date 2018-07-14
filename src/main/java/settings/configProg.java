@@ -92,6 +92,10 @@ public class configProg {
     public static boolean isValidConfig() {
         return validConfig;
     }
+
+    public static void setValidConfig(boolean validConfig) {
+        configProg.validConfig = validConfig;
+    }        
     
     public static String getPathConfig() {
         return pathConfig;
