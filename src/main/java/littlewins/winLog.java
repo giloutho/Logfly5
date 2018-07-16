@@ -87,6 +87,7 @@ public class winLog {
         txtLog = new TextArea();
         txtLog.setWrapText(true);
         txtLog.setText(logTxt);
+        txtLog.setEditable(false);
         // for buttons
         HBox buttonBar = new HBox();
         buttonBar.setPadding(new Insets(6));
