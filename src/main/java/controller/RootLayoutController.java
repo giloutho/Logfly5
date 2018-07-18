@@ -72,6 +72,8 @@ public class RootLayoutController {
     @FXML
     private Label mnBalises;    
     @FXML
+    private Label mnXcplanner;
+    @FXML
     private Label mnEspaces;    
     @FXML
     private Label mnPhotos;    
@@ -139,7 +141,11 @@ public class RootLayoutController {
         mnBalises.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(9);
             mainApp.showWaypOverview();
-        });      
+        });  
+        mnXcplanner.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(13);
+            mainApp.showXcplannerview();
+        });           
         mnEspaces.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(10);
             comingSoon();
@@ -256,6 +262,7 @@ public class RootLayoutController {
         mnStat.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnSites.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnBalises.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
+        mnXcplanner.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         mnEspaces.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnPhotos.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnCarto.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
@@ -295,7 +302,10 @@ public class RootLayoutController {
                 break;
             case 12:    
                 mnCarto.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
-                break;           
+                break;    
+            case 13:    
+                mnXcplanner.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                break;                    
             default:
                 throw new AssertionError();
         }        
