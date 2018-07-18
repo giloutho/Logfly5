@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.web.WebView?>
+
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.XcpViewController">
+   <children>
+      <HBox prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: black;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <ToolBar prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: black;" HBox.hgrow="ALWAYS">
+               <items>
+                  <Label fx:id="lbSecteur" text="fSecteur" textFill="WHITE">
+                     <padding>
+                        <Insets right="10.0" />
+                     </padding>
+                  </Label>
+                  <TextField fx:id="txLocality" />
+                  <Button fx:id="btGo" mnemonicParsing="false" onAction="#handleGo" text="Go.." />
+                  <Button fx:id="btRead" layoutX="181.0" layoutY="11.0" mnemonicParsing="false" text="fLire" />
+               </items>
+            </ToolBar>
+            <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: black;" HBox.hgrow="ALWAYS">
+               <items>
+                  <Button fx:id="btClose" mnemonicParsing="false" onAction="#handleClose" text="Fermer" />
+                  <Button fx:id="btSave" mnemonicParsing="false" onAction="#handleSave" text="Enregistrer" />
+               </items>
+            </ToolBar>
+         </children>
+      </HBox>
+      <WebView prefWidth="1100.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0" fx:id="xcView" />
+   </children>
+</AnchorPane>
