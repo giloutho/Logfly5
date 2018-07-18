@@ -16,7 +16,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import controller.CarnetViewController;
 import controller.DashViewController;
-import controller.FullMapController;
 import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.ManualViewController;
@@ -25,6 +24,7 @@ import controller.SitesViewController;
 import controller.StatViewController;
 import controller.TraceViewController;
 import controller.WaypViewController;
+import controller.XcpViewController;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import javafx.geometry.Rectangle2D;
@@ -32,7 +32,6 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import liveUpdate.checkUpdate;
 import liveUpdate.objects.Release;
-import model.Carnet;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -48,6 +47,7 @@ public class Main extends Application {
     private GPSViewController controlGPS;
     private SitesViewController controlSites;
     private WaypViewController controlWayp;
+    private XcpViewController controlXcp;
     private StringBuilder sbError;
     
     
@@ -308,7 +308,7 @@ public class Main extends Application {
     }
     
     /**
-     * Display logbook inside root window
+     * Display waypoint form inside root window
      */
     public void showWaypOverview() {
         try {
@@ -347,7 +347,7 @@ public class Main extends Application {
                     controlWayp.setWaypStage(fullWayp);  
                     controlWayp.setRootBridge(rootLayoutController);
                     controlWayp.setMainApp(this); 
-                  // PROVISOIREMENT  controlWayp.setWinMax();
+                    controlWayp.setWinMax();
                     fullWayp.showAndWait();
 
 
@@ -385,6 +385,32 @@ public class Main extends Application {
             mylogging.log(Level.SEVERE, sbError.toString());
         }
     }        
+    
+    /**
+     * Display Sites form inside root window
+     */
+    public void showXcplannerview() {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/XcplannerView.fxml"));
+            AnchorPane xcpview = (AnchorPane) loader.load();            
+            
+            // Initialization of a communication bridge between Xccontroller an RootLayout
+            controlXcp = loader.getController();  
+            // Controller needs an access to main app
+            // with this, we avoid a NullPointerException with a call to
+            // mainApp.getPrimaryStage() in RootLayoutController     
+            controlXcp.setMainApp(this);
+            
+            // Place logbook window in center of RootLayout.
+            rootLayout.setCenter(xcpview);                                                      
+            
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }          
     
     
     /**
