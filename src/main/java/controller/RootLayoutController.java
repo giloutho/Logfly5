@@ -442,12 +442,8 @@ public class RootLayoutController {
     
     private void sendMailSupport() {
         if (myConfig.isValidConfig()) {
-            File fileLog = new File(myConfig.getPathW()+"logfly.log");
-            if (fileLog.exists()) {   
-                winMail showMail = new winMail(myConfig,fileLog.getAbsolutePath(), true);            
-            } else {
-                winMail showMail = new winMail(myConfig, null, true);   
-            }
+            // Finalement on n'envoie pas le fichier log systématiquement
+            winMail showMail = new winMail(myConfig,null, true);            
         } else {
             winMail showMail = new winMail(myConfig, null, true); 
         }
