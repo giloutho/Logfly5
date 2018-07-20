@@ -7,17 +7,26 @@
 package controller;
 
 import Logfly.Main;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.logging.Level;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.Stage;
+import javafx.stage.FileChooser;
+import littlewins.winSaveXcp;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.privateData;
+import systemio.mylogging;
+import waypio.pointRecord;
 
 /**
  *
@@ -34,8 +43,6 @@ public class XcpViewController {
     @FXML
     private Button btSave;
     @FXML
-    private Button btClose;
-    @FXML
     private TextField txLocality;
     @FXML
     private WebView xcView;    
@@ -45,48 +52,111 @@ public class XcpViewController {
     private Main mainApp;
     
     // Localization
-    private I18n i18n; 
+    private I18n i18n;    
     
     // Settings
     configProg myConfig;
     StringBuilder sbError;
     String RC = "\n";
     
+    private Paint colorBadValue = Paint.valueOf("FA6C04");
+    private Paint colorGoodValue = Paint.valueOf("FFFFFF");
+    
     private String urlBaseXC;
     private String urlCircuit;
     private String urlXC;    
-
+    private String usedPrefix = null;
+    
+    
     @FXML
     private void initialize() {
+        urlBaseXC = privateData.xcplannerUrl.toString();
         
+        eng = xcView.getEngine();
+        eng.setUserAgent(" Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0");              
+
+        eng.titleProperty().addListener( (observable, oldValue, newValue) -> {
+            if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
+                showRecord(newValue);
+        });        
     }   
     
     @FXML
     private void handleGo(ActionEvent event) {
         String locality = txLocality.getText().trim();
-        if (locality != null && !locality.equals("")) {       
+        if (locality != null && !locality.equals("")) { 
+            txLocality.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
             xcView.setVisible(true);
             StringBuilder sbUrl = new StringBuilder();
             sbUrl.append(urlBaseXC);
             sbUrl.append("?location=").append(locality);
-            // Dépendra de la choice box
+            // Au départ on pensait mettre une choicebox mais cela fait double emploi avec le script
+            // donc on opte pour un triangle par défaut
             urlCircuit = "cfd3c";
             sbUrl.append("&flightType=").append(urlCircuit);                       
             urlXC = sbUrl.toString();
             eng.load(urlXC);   
+            btSave.setVisible(true);
+        } else {
+            btSave.setVisible(false);
+            txLocality.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+            txLocality.requestFocus();  
         }
     }    
     
     @FXML
-    private void handleClose() {
-        // get a handle to the stage
-        Stage stage = (Stage) btClose.getScene().getWindow();
-        stage.close();          
+    private void handleRead() {
+        // il faudra ajouter http://alpidev.com/xcplanner/  et le symbole ?
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter xcpFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.xcp)"), "*.xcp");
+        fileChooser.getExtensionFilters().addAll(xcpFilter);
+        File selectedFile = fileChooser.showOpenDialog(null);        
+        if(selectedFile != null){    
+            try {
+                Scanner sc = new Scanner(selectedFile);
+                do {                   
+                    String s = sc.nextLine();
+                    if (s.contains("turnpoints")) {                                   
+                        xcView.setVisible(true);
+                        StringBuilder sbUrl = new StringBuilder();
+                        sbUrl.append(urlBaseXC).append("?").append(s);
+                        eng.load(sbUrl.toString());
+                        btSave.setVisible(true);                        
+                    } 
+                    if (s.contains("prefix=")) {    
+                        String[]ar = s.split("=");
+                        if (ar.length > 1) {
+                            usedPrefix = ar[1];
+                        }                        
+                    }
+                } while (sc.hasNextLine());
+            } catch (Exception e) {
+                btSave.setVisible(false);
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("eng is null\r\n");
+                mylogging.log(Level.SEVERE, sbError.toString());                
+            }
+        }         
     }
-    
+        
     @FXML
     private void handleSave() {
-        
+        if (eng != null) {   
+            // we want to update title at each clic
+            // We put a timestamp to modify title at each request
+            // even if there has been no change in position
+            eng.executeScript("updateTile()");
+        } else {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("eng is null\r\n");
+            mylogging.log(Level.SEVERE, sbError.toString());  
+        }        
+    }    
+    
+    private void showRecord(String sUrl) {
+        if (sUrl.contains("turnpoints")) {
+            winSaveXcp saveWin = new winSaveXcp(i18n, sUrl, usedPrefix);        
+        }
     }    
     
     /**
@@ -108,7 +178,6 @@ public class XcpViewController {
     private void winTraduction() {  
         lbSecteur.setText(i18n.tr("Secteur"));
         btRead.setText(i18n.tr("Lire"));
-        btSave.setText(i18n.tr("Enregistrer"));
-        btClose.setText(i18n.tr("Fermer"));        
+        btSave.setText(i18n.tr("Enregistrer"));        
     }
 }
