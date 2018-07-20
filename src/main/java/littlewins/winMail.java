@@ -260,7 +260,8 @@ public class winMail {
         
     }
     
-    private void sendMail() {        
+    private void sendMail() {   
+        StringBuilder sbTxFile = new StringBuilder();
         try {
             URL url = new URL(privateData.phpMail.toString());
             final MultipartUtility http = new MultipartUtility(url);            
@@ -268,7 +269,15 @@ public class winMail {
             http.addFormField("fromemail", txtAdress.getText());
             http.addFormField("toemail", txtDest.getText());
             http.addFormField("subject", txtSubject.getText());
-            http.addFormField("msgtext", txFile.getText());
+            sbTxFile.append(txFile.getText());
+            if (supportMsg) {
+                sbTxFile.append("\r\n").append("\r\n");
+                sbTxFile.append("------------------------------------------").append("\r\n");
+                sbTxFile.append("   ").append(myConfig.getOS().toString());
+                sbTxFile.append("   ").append(myConfig.getVersion()).append("\r\n");
+                sbTxFile.append("------------------------------------------");
+            }
+            http.addFormField("msgtext", sbTxFile.toString());
             if (filePath != null && chPJ.isSelected()) {
                 http.addFilePart("Fichier", uploadFile);
             }
