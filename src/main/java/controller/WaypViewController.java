@@ -412,7 +412,7 @@ public class WaypViewController {
                 ficType = "CUP";
             } else if (pFichier.indexOf("Code,Country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
                 ficType = "CUP";                  
-            } else if (pFichier.indexOf("XCPlanner") > -1) {
+            } else if (pFichier.indexOf("Timestamp=") > -1) {
                 ficType = "XCP";
             } else if (testCompeGPS(pFichier)) {
                 ficType = "COM"; 
@@ -448,7 +448,11 @@ public class WaypViewController {
             case "COM":
                 goodRead = waypFile.litComp(pFichier);
                 sbInfo.append(i18n.tr("Format")).append(" CompeGPS   "); 
-                break;                     
+                break;     
+            case "XCP":
+                goodRead = waypFile.litXcp(pFichier);
+                sbInfo.append(i18n.tr("Format")).append(" XC Planner   "); 
+                break;                   
         }            
         if (goodRead) {
             displayWpFile(waypFile.getWpreadList(), sbInfo.toString());
@@ -660,9 +664,30 @@ public class WaypViewController {
     }
     
     private void displayWpFile(ArrayList<pointRecord> wpreadList, String infoFile) {
-        int sizeList = wpreadList.size();
+        
+        ArrayList<pointRecord> wpTot = new ArrayList<>();
+        if (pointList.size() > 0) {
+            dialogbox dConfirm = new dialogbox();
+            StringBuilder sbMsg = new StringBuilder(); 
+            sbMsg.append(i18n.tr("Fusionner l'affichage et le nouveau fichier"));
+            if (dConfirm.YesNo(i18n.tr("Affichage des balises"), sbMsg.toString()))   {
+                for (int i = 0; i < pointList.size(); i++) {
+                    pointRecord pl = pointList.get(i);
+                    wpTot.add(pl);    
+                }
+                for (int j = 0; j < wpreadList.size(); j++) {
+                    pointRecord pr = wpreadList.get(j);
+                    wpTot.add(pr);    
+                }                                
+            } else {
+                wpTot = wpreadList;
+            }
+        } else {
+            wpTot = wpreadList;
+        }
+        int sizeList = wpTot.size();
         tablePoints.getItems().clear();
-        pointList = FXCollections.observableArrayList(wpreadList);
+        pointList = FXCollections.observableArrayList(wpTot);
         tablePoints.setItems(pointList);
         showMapPoints();
         hbMenu.setVisible(true);
