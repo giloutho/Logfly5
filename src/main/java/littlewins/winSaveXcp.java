@@ -8,6 +8,8 @@ package littlewins;
 
 import geoutils.googlegeo;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
@@ -28,6 +30,8 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.xnap.commons.i18n.I18n;
 import settings.privateData;
 import systemio.mylogging;
@@ -259,6 +263,8 @@ public class winSaveXcp {
                 String googCoord = sLat+","+sLong;  
                 if (myGoog.googleElevation(sCoord) == 0) {
                     currPoint.setFAlt(myGoog.getGeoAlt().trim());
+                } else {
+                    currPoint.setFAlt("");
                 } 
                 pointList.add(currPoint);            
         }
@@ -356,17 +362,38 @@ public class winSaveXcp {
         try {
             File fName = new File(selFolder.getAbsolutePath()+File.separator+txFile.getText().trim()+".xcp");
             if (fName.exists()) fName.delete();
-            StringBuilder sbFile = new StringBuilder();
-            sbFile.append(xcpUrl).append("\r\n");
-            sbFile.append("prefix=").append(currPrefix).append("\r\n");
-            textio.writeTxtFile(fName, sbFile.toString());               
-            writeWaypFiles(selFolder.getAbsolutePath()+File.separator+txFile.getText().trim());
-            subStage.close();
+            JSONObject obj = new JSONObject();		
+            obj.put("url", xcpUrl);
+            obj.put("prefix", currPrefix);
+            JSONArray waypoints = new JSONArray();
+            for (int i = 0; i < pointList.size(); i++) {
+                StringBuilder sbWayp = new StringBuilder();
+                sbWayp.append(pointList.get(i).getFBalise()).append(",");
+                sbWayp.append(pointList.get(i).getFLat()).append(",").append(pointList.get(i).getFLong()).append(",");
+                sbWayp.append(pointList.get(i).getFAlt());
+                waypoints.add(sbWayp.toString());
+            }
+            obj.put("waypoints", waypoints);
+
+            FileWriter file = new FileWriter(fName.getAbsolutePath());
+            file.write(obj.toJSONString());
+            file.flush();
+            file.close();                
+                
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());             
         }
+    }
+    
+    private void saveOnDisk(File selFolder) {
+        
+        if (chXcp.isSelected()) {
+            saveXcp(selFolder);           
+        }
+        writeWaypFiles(selFolder.getAbsolutePath()+File.separator+txFile.getText().trim());
+        subStage.close();        
     }
     
     private void checkAndSave() {
@@ -376,7 +403,7 @@ public class winSaveXcp {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory = directoryChooser.showDialog(null);
             if(selectedDirectory != null) {
-                saveXcp(selectedDirectory);
+                saveOnDisk(selectedDirectory);
             }            
         } else {
             txFile.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
