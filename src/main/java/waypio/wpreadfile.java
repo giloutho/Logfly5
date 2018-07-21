@@ -16,9 +16,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -429,6 +434,36 @@ public class wpreadfile {
         } catch (Exception e) {
             res = false;
         }
+        return res;
+    }
+    
+    public boolean litXcp(String strFichier) {    
+        boolean res = false;
+        wpreadList = new ArrayList<pointRecord>();
+        
+        try {
+            JSONParser parser = new JSONParser();
+            Object jsonObj = parser.parse(strFichier);
+            JSONObject jsonObject = (JSONObject) jsonObj;
+            
+            JSONArray waypoints = (JSONArray) jsonObject.get("waypoints");
+
+            @SuppressWarnings("unchecked")
+            Iterator<String> it = waypoints.iterator();
+            while (it.hasNext()) {
+                String[] partWp = it.next().split(",");
+                if (partWp.length == 4) {
+                    pointRecord pr = new pointRecord(partWp[0], partWp[3], partWp[0]);
+                    pr.setFLat(partWp[1]);
+                    pr.setFLong(partWp[2]);
+                    wpreadList.add(pr);
+                }
+            }            
+            res = true;             
+        } catch (Exception e) {
+            res = false;
+        }
+        
         return res;
     }
     
