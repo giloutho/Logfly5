@@ -8,6 +8,8 @@ package controller;
 
 import Logfly.Main;
 import java.io.File;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -21,6 +23,8 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import littlewins.winSaveXcp;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -113,23 +117,24 @@ public class XcpViewController {
         File selectedFile = fileChooser.showOpenDialog(null);        
         if(selectedFile != null){    
             try {
-                Scanner sc = new Scanner(selectedFile);
-                do {                   
-                    String s = sc.nextLine();
-                    if (s.contains("turnpoints")) {                                   
-                        xcView.setVisible(true);
-                        StringBuilder sbUrl = new StringBuilder();
-                        sbUrl.append(urlBaseXC).append("?").append(s);
-                        eng.load(sbUrl.toString());
-                        btSave.setVisible(true);                        
-                    } 
-                    if (s.contains("prefix=")) {    
-                        String[]ar = s.split("=");
-                        if (ar.length > 1) {
-                            usedPrefix = ar[1];
-                        }                        
-                    }
-                } while (sc.hasNextLine());
+                JSONParser parser = new JSONParser();
+                Reader reader = new FileReader(selectedFile.getAbsolutePath());
+
+                Object jsonObj = parser.parse(reader);
+
+                JSONObject jsonObject = (JSONObject) jsonObj;
+
+                String sUrl = (String) jsonObject.get("url");
+                String sPrefix = (String) jsonObject.get("prefix");              
+
+                if (sUrl != null && sUrl.contains("turnpoints")) {
+                    xcView.setVisible(true);
+                    StringBuilder sbUrl = new StringBuilder();
+                    sbUrl.append(urlBaseXC).append("?").append(sUrl);
+                    eng.load(sbUrl.toString());
+                    btSave.setVisible(true);                     
+                }
+                if (sPrefix != null) usedPrefix = sPrefix;
             } catch (Exception e) {
                 btSave.setVisible(false);
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
