@@ -583,7 +583,7 @@ public class map_visu {
                 jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Distance 1 point")).append("</b><br>';").append(RC);    
                 break;
             case "Free flight 3 wpt":
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Distance 2 points")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Distance 3 points")).append("</b><br>';").append(RC);    
                 break;
             default:
                 jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(legShape).append("</b><br>';").append(RC);    
