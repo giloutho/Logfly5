@@ -144,7 +144,7 @@ public class trackScore {
                 res = i18n.tr("Distance 1 point"); 
                 break;
             case "Free flight 3 wpt":
-                res = i18n.tr("Distance 2 points");
+                res = i18n.tr("Distance 3 points");
                 break;
             default:
                 res = codeShape;
