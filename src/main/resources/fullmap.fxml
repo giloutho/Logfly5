@@ -18,7 +18,8 @@
             <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="27.0" prefWidth="60.0" />
             <Button fx:id="btScoring" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showLeague" prefHeight="27.0" prefWidth="80.0" text="fScoring" />
             <ChoiceBox fx:id="chbLeague" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="75.0" />
-            <Pane layoutX="390.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="27.0" prefWidth="60.0" />
+            <Button fx:id="btXcplanner" layoutX="410.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="90.0" mnemonicParsing="false" onAction="#handleXcp" prefHeight="27.0" prefWidth="90.0" text="XC Planner" />
+            <Pane layoutX="390.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="27.0" prefWidth="40.0" />
             <Button fx:id="btClose" layoutX="278.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#closeMap" prefHeight="27.0" prefWidth="80.0" text="fClose" />
         </items>
       </ToolBar>
