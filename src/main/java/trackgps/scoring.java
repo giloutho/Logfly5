@@ -364,6 +364,7 @@ public class scoring {
         String res;
         switch (idxLeague) {
             case 0:
+                // Il semlble que la CFD française adopte les règles XC
                 res = "FR";
                 break;                    
             case 1:
