@@ -519,7 +519,7 @@ public class winSaveXcp {
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
         
-        Scene secondScene = new Scene(subRoot, 370, 600);
+        Scene secondScene = new Scene(subRoot, 470, 600);
 
         // modal mode
         subStage.initModality(Modality.APPLICATION_MODAL);        
