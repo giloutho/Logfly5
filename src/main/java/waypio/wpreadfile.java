@@ -440,6 +440,7 @@ public class wpreadfile {
     public boolean litXcp(String strFichier) {    
         boolean res = false;
         wpreadList = new ArrayList<pointRecord>();
+        int cpt = -1;
         
         try {
             JSONParser parser = new JSONParser();
@@ -453,9 +454,11 @@ public class wpreadfile {
             while (it.hasNext()) {
                 String[] partWp = it.next().split(",");
                 if (partWp.length == 4) {
+                    cpt++;
                     pointRecord pr = new pointRecord(partWp[0], partWp[3], partWp[0]);
                     pr.setFLat(partWp[1]);
                     pr.setFLong(partWp[2]);
+                    pr.setFIndex(cpt);
                     wpreadList.add(pr);
                 }
             }            
