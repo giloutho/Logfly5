@@ -9,6 +9,7 @@ package dialogues;
 import java.util.Locale;
 import java.util.Optional;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import org.xnap.commons.i18n.I18n;
@@ -21,6 +22,12 @@ import org.xnap.commons.i18n.I18nFactory;
  */
 public class dialogbox {    
     
+    private I18n i18n; 
+
+    public dialogbox(I18n pI18n) {
+        this.i18n = pI18n;
+    }
+    
     /**
      * Dialog box with Yes or No
      * @param msgH
@@ -28,6 +35,30 @@ public class dialogbox {
      * @return 
      */
     public boolean YesNo(String msgH, String msgT )  {
+        
+        boolean answer = false;
+        ButtonType myOk = new ButtonType(i18n.tr("Oui"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType myCancel = new ButtonType(i18n.tr("Non"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"",myOk,myCancel);        
+        alert.setHeaderText(msgH);
+        alert.setContentText(msgT);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == myOk){
+            answer = true;                                  
+        } else {
+            answer = false;
+        }
+        
+        return answer;
+    }    
+    
+    /**
+     * Dialog box with Yes or Cancel
+     * @param msgH
+     * @param msgT
+     * @return 
+     */
+    public boolean YesCancel(String msgH, String msgT )  {
         
         boolean answer = false;
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -42,7 +73,8 @@ public class dialogbox {
         }
         
         return answer;
-    }
+    }    
+    
     
     /**
      * Dialogbox with two choices and cancel option
