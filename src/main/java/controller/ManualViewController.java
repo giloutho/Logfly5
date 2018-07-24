@@ -245,7 +245,7 @@ public class ManualViewController  {
             }
         }
         if (saisieEnCours) {
-            dialogbox dConfirm = new dialogbox();    
+            dialogbox dConfirm = new dialogbox(i18n);    
             if (dConfirm.YesNo("", i18n.tr("Abandon saisie ?")))  { 
                 saisieEnCours = false;
             }            
