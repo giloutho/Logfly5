@@ -394,7 +394,7 @@ public class ImportViewController {
             }
         }
         if (nbVols > 0) {
-            dialogbox dConfirm = new dialogbox();
+            dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder();
             sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("traces à supprimer dans le dossier")).append(" ?");
             if (dConfirm.YesNo("", sbMsg.toString()))   {       
@@ -439,7 +439,7 @@ public class ImportViewController {
             }
         }
         if (nbVols > 0) {
-            dialogbox dConfirm = new dialogbox();
+            dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder();
             sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
             if (dConfirm.YesNo("", sbMsg.toString()))   {       
