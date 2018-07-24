@@ -378,7 +378,7 @@ public class FullMapController {
             } else if (firstLeagueIdx != newLeagueIdx)  {
                 String stFirstLeague = allLeagues.get(firstLeagueIdx);
                 String stNewLeague = allLeagues.get(newLeagueIdx);
-                dialogbox dConfirm = new dialogbox();
+                dialogbox dConfirm = new dialogbox(i18n);
                 StringBuilder sbMsg = new StringBuilder(); 
                 sbMsg.append(i18n.tr("Mettre à jour le score : ")).append(stFirstLeague).append(" -> ").append(stNewLeague);
                 if (dConfirm.YesNo(i18n.tr("Scoring"), sbMsg.toString())) { 
