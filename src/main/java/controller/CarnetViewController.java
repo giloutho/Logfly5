@@ -467,7 +467,7 @@ public class CarnetViewController  {
         int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
-            dialogbox dConfirm = new dialogbox();
+            dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder(); 
             sbMsg.append(selectedVol.getDate()).append(" ").append(i18n.tr("Durée")).append(" : ").append(selectedVol.getDuree());                 
             if (dConfirm.YesNo(i18n.tr("Suppression du vol"), sbMsg.toString()))   {                
@@ -1211,7 +1211,7 @@ public class CarnetViewController  {
     }
     
     private void askMergingIGC() {
-        dialogbox dConfirm = new dialogbox();                        
+        dialogbox dConfirm = new dialogbox(i18n);                        
         if (dConfirm.YesNo("",i18n.tr("Fusionner les traces IGC ?")))   {    
             mergeIGC();
         }
@@ -1623,7 +1623,7 @@ public class CarnetViewController  {
      */
     private void gestionComment() {
         if (tableVols.getSelectionModel().getSelectedItem().Comment.getValue()) {
-            dialogbox actionReq = new dialogbox();
+            dialogbox actionReq = new dialogbox(i18n);
             int actionType = actionReq.twoChoices(i18n.tr("Commentaire"), i18n.tr("Que voulez- vous faire ?"), i18n.tr("Supprimer"), i18n.tr("Changer"), i18n.tr("Annuler"));
             switch (actionType) {
                 case 1:
@@ -1702,7 +1702,7 @@ public class CarnetViewController  {
      */
     private void gestionPhoto() {
         if (tableVols.getSelectionModel().getSelectedItem().Photo.getValue()) {
-            dialogbox actionReq = new dialogbox();
+            dialogbox actionReq = new dialogbox(i18n);
             int actionType = actionReq.twoChoices(i18n.tr("Photo du jour"), i18n.tr("Que voulez- vous faire ?"), i18n.tr("Supprimer"), i18n.tr("Changer"), i18n.tr("Annuler"));
             switch (actionType) {
                 case 1:
