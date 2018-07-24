@@ -666,15 +666,19 @@ public class WaypViewController {
     private void displayWpFile(ArrayList<pointRecord> wpreadList, String infoFile) {
         
         ArrayList<pointRecord> wpTot = new ArrayList<>();
+        int nbPoints = 0;
         if (pointList.size() > 0) {
             dialogbox dConfirm = new dialogbox(i18n);
             if (dConfirm.YesNo(i18n.tr("Affichage des balises"), i18n.tr("Fusionner l'affichage et le nouveau fichier"))) {
                 for (int i = 0; i < pointList.size(); i++) {
                     pointRecord pl = pointList.get(i);
                     wpTot.add(pl);    
+                    nbPoints++;
                 }
                 for (int j = 0; j < wpreadList.size(); j++) {
+                    nbPoints++;
                     pointRecord pr = wpreadList.get(j);
+                    pr.setFIndex(nbPoints - 1);
                     wpTot.add(pr);    
                 }                                
             } else {
