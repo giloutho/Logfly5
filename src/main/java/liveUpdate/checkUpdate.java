@@ -70,7 +70,7 @@ public class checkUpdate {
             if (current.compareTo(release) < 1000) {
                 if (current.compareTo(release) > 0) {
                     if (!myConfig.isUpdateAuto())  {
-                        dialogbox dInfo = new dialogbox();
+                        dialogbox dInfo = new dialogbox(i18n);
                         String dHeader = i18n.tr("Une nouvelle version {0}.{1} est disponible",current.getpkgver(),current.getPkgrel());
                         String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
                         answer = dInfo.YesNo(dHeader,dText); 
@@ -87,7 +87,7 @@ public class checkUpdate {
                 } 
             } else {
                 // major update ->  bundle download required 
-                dialogbox dInfo = new dialogbox();
+                dialogbox dInfo = new dialogbox(i18n);
                 String dHeader = i18n.tr("Une mise à jour majeure est disponible [version {0}]",current.getseverity());
                 String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
                 answer = dInfo.YesNo(dHeader,dText); 
