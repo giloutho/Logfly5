@@ -42,6 +42,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Tooltip;
@@ -93,6 +94,10 @@ public class DashViewController {
     Label lbSyntheseDate;
     @FXML
     DatePicker dpDate;
+    @FXML
+    Label lbComparaison;    
+    @FXML
+    ChoiceBox chYear;
     @FXML
     Label lbMonth1;
     @FXML
@@ -217,19 +222,53 @@ public class DashViewController {
     private StringBuilder sbError;
     
     private List<monthData> currYearList = new ArrayList<>();
+    private List<monthData> compYearList = new ArrayList<>();
     private ObservableList<String> monthNames = FXCollections.observableArrayList();
     private ObservableList<PieChart.Data> glidersData;
     private ObservableList<PieChart.Data> sitesData;
+    private ObservableList <String> dataYear; 
     String bestSite = null;
     String bestFlightId = null;
     LocalDate endDate;
+    String compDate;
+    StringBuilder compTitle;
     
     @FXML
     private void initialize() {
+        
+        endDate = LocalDate.now();
+        // ChYear initialization
+        dataYear = FXCollections.observableArrayList();
+        dataYear.clear();
+        dataYear.add("...");
+        chYear.setItems(dataYear);
+        // It will be completed by dpDate event
+        chYear.setOnAction((event) -> {
+            int idx = chYear.getSelectionModel().getSelectedIndex();
+            if (idx == 0) {
+                compDate = null;
+                setDisplay(false);                  
+            } else if (idx > 0) {
+                String selectedYear = (String) chYear.getSelectionModel().getSelectedItem();          
+                DateTimeFormatter dtMonth = DateTimeFormatter.ofPattern("MM");
+                String lastMonth = endDate.format(dtMonth);
+                compDate = lastMonth+"-"+selectedYear;
+                setDisplay(true);                                                       
+            }        
+        }); 
+        
         dpDate.valueProperty().addListener((ov, oldValue, newValue) -> {
             endDate = newValue;
-            setDisplay();
+            compDate = null;
+            fillingYear();
+            chYear.getSelectionModel().selectFirst();
+            setDisplay(false);
         });
+        
+
+
+         
+        
         // we had many problems to refresh xAxis with new data
         // after hours inspired by http://code.makery.ch/library/javafx-8-tutorial/part6/ 
         // we try this
@@ -237,19 +276,35 @@ public class DashViewController {
         ac_xAxis.setCategories(monthNames);
     }    
     
-    private void getLastMonths() {        
+    private void getLastMonths(boolean isCompared) {        
         
+        compTitle = new StringBuilder();        
+        String compDebTitle = "";
+        String compFinTitle = "";
         try {
             SimpleDateFormat monthDate = new SimpleDateFormat("MM-yyyy");
             SimpleDateFormat yearMonth = new SimpleDateFormat("yyyy MM");
             SimpleDateFormat monthYear = new SimpleDateFormat("MM-yyyy");            
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-yyyy");            
             String maxDate = endDate.format(dtf);
-            Calendar cal = Calendar.getInstance();
+            Calendar cal = Calendar.getInstance(); 
+            Calendar calComp = Calendar.getInstance();
             cal.setTime(monthDate.parse(maxDate));
+            if (isCompared && compDate != null) {                
+                calComp.setTime(monthDate.parse(compDate));
+            }
             for (int i = 1; i <= 12; i++) {
                 getDbData(yearMonth.format(cal.getTime()),monthYear.format(cal.getTime()));
+                if (isCompared) {
+                    if (i== 1) compFinTitle = monthYear.format(calComp.getTime());
+                    if (i== 12) compDebTitle = monthYear.format(calComp.getTime());
+                    getCompareData(yearMonth.format(calComp.getTime()),monthYear.format(cal.getTime()));
+                    calComp.add(Calendar.MONTH, -1);
+                }
                 cal.add(Calendar.MONTH, -1);
+            }
+            if (isCompared) {
+                compTitle.append(compDebTitle).append("  ").append(compFinTitle);
             }
             // Top label updated                 
            // lbSyntheseDate.setText(monthDate.format(cal.getTime())+" "+endDate.format(dtf));
@@ -258,6 +313,81 @@ public class DashViewController {
             System.out.println(e.getMessage());
         }
     }     
+    
+    
+    private void fillingYear() {
+        PreparedStatement pstmt = null;
+        ResultSet rsYear = null;     
+        DateTimeFormatter dtyear = DateTimeFormatter.ofPattern("yyyy"); 
+        String lastYear = endDate.format(dtyear);
+        dataYear.clear();
+        dataYear.add("...");
+        String sReq = "SELECT strftime('%Y',V_date) FROM Vol WHERE strftime('%Y',V_date) < ? GROUP BY strftime('%Y',V_date) ORDER BY strftime('%Y',V_date) DESC ";
+        try {
+            pstmt = myConfig.getDbConn().prepareStatement(sReq);   
+            pstmt.setString(1, lastYear);                    
+            // We search years in the logbook
+            rsYear = pstmt.executeQuery();
+            if (rsYear != null)  {             
+                while (rsYear.next()) {
+                    dataYear.add(rsYear.getString(1));
+                }                                                                                           
+            }
+        } catch ( Exception e ) {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet")); 
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append(sReq).append(" -> ").append(lastYear);
+            mylogging.log(Level.SEVERE, sbError.toString());             
+        }  finally {
+            try{
+                rsYear.close(); 
+                pstmt.close();
+            } catch(Exception e) { 
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                
+            } 
+        }             
+    }
+            
+    private void getCompareData(String reqMonth, String labelMonth) {
+        PreparedStatement pstmt = null;
+        ResultSet rsMonth = null;   
+        int count;
+        int totSec;
+        String sReq = "SELECT strftime('%m',V_date),Count(V_ID),Sum(V_Duree) FROM Vol WHERE strftime('%Y %m',V_date) = ?";
+        try {
+            pstmt = myConfig.getDbConn().prepareStatement(sReq);   
+            pstmt.setString(1, reqMonth); 
+            rsMonth = pstmt.executeQuery();
+            if (rsMonth.next()) {  
+                count = rsMonth.getInt("Count(V_ID)");
+                totSec = rsMonth.getInt("Sum(V_Duree)");
+            } else {
+                count = 0;
+                totSec = 0;
+            }
+            compYearList.add(new monthData(labelMonth, count, totSec)); 
+        } catch ( Exception e ) {     
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet"));             
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append(sReq).append(" -> ").append(reqMonth);
+            mylogging.log(Level.SEVERE, sbError.toString());                  
+        }  finally {
+            try{
+                rsMonth.close(); 
+                pstmt.close();
+            } catch(Exception e) { 
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                
+            } 
+        }                
+    }    
     
     private void getDbData(String reqMonth, String labelMonth) {
         
@@ -278,13 +408,13 @@ public class DashViewController {
                 totSec = 0;
             }
             currYearList.add(new monthData(labelMonth, count, totSec)); 
-        } catch ( Exception e ) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture dans le carnet"));            
-            String s = e.getClass().getName() + ": " + e.getMessage();
-            alert.setContentText(s);
-            alert.showAndWait();                      
-            System.exit(0);          
+        } catch ( Exception e ) {     
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet"));             
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append(sReq).append(" -> ").append(reqMonth);
+            mylogging.log(Level.SEVERE, sbError.toString());                  
         }  finally {
             try{
                 rsMonth.close(); 
@@ -321,11 +451,12 @@ public class DashViewController {
                 res = i18n.tr("Meilleur vol : ")+dtf.format(ca.getDate())+" "+dtfDuree.format(ca.getDuree())+" "+ca.getSite();
             }
         } catch ( Exception e ) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture dans le carnet"));            
-            String s = e.getClass().getName() + ": " + e.getMessage();
-            alert.setContentText(s);
-            alert.showAndWait();                                
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet"));             
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append(sbReq);
+            mylogging.log(Level.SEVERE, sbError.toString());                            
         }  finally {
             try{
                 rs.close(); 
@@ -547,16 +678,19 @@ public class DashViewController {
         }                
     }    
     
-    private void setDisplay() { 
+    private void setDisplay(boolean isCompared) { 
         
         XYChart.Series lastFlightSerie = new XYChart.Series();
+        XYChart.Series compFlightSerie = new XYChart.Series();
         XYChart.Series lastHoursSerie = new XYChart.Series();
+        XYChart.Series compHoursSerie = new XYChart.Series();
         // Necessary to refresh xAxis, without refresh does not work
         CategoryAxis bc_xAxis = new CategoryAxis();
         
-        currYearList.clear();  
+        currYearList.clear();       
+        compYearList.clear();
         monthNames.clear();
-        getLastMonths();
+        getLastMonths(isCompared);             
         getLastGliders(dpDate.getValue().toString());
         bestSite = null;
         getLastSites(dpDate.getValue().toString());
@@ -564,12 +698,11 @@ public class DashViewController {
         int lbVolsField;
         String lbHoursField;
         Double dHours;
+        Double oldHours;
         int h;
         int mn;
         StringBuilder myTitle = new StringBuilder();
         if (currYearList.size() > 0) {
-           // lastFlightSerie = new XYChart.Series();
-           // lastHoursSerie = new XYChart.Series();
             for (int i=currYearList.size()-1; i>-1; i-=1) {
                 lbMonthField = currYearList.get(i).getFieldMonth();
                 lbVolsField = currYearList.get(i).getFieldFlights(); 
@@ -579,7 +712,12 @@ public class DashViewController {
                 lbHoursField = String.format("%02d", h)+"h"+String.format("%02d", mn);
                 lastFlightSerie.getData().add(new XYChart.Data(lbMonthField.substring(0,2), lbVolsField));
                 monthNames.add(lbMonthField.substring(0,2));
-                lastHoursSerie.getData().add(new XYChart.Data(lbMonthField.substring(0,2), dHours));
+                lastHoursSerie.getData().add(new XYChart.Data(lbMonthField.substring(0,2), dHours));                
+                if (isCompared) {
+                    compFlightSerie.getData().add(new XYChart.Data(lbMonthField.substring(0,2), compYearList.get(i).getFieldFlights()));
+                    oldHours = (double) compYearList.get(i).getFieldDuration()/3600;
+                    compHoursSerie.getData().add(new XYChart.Data(lbMonthField.substring(0,2), oldHours));    
+                }
                 switch (i) {
                     case 0:                        
                         lbMonth12.setText(lbMonthField);
@@ -661,13 +799,26 @@ public class DashViewController {
             lastHoursSerie.setName(myTitle.toString());
             
             barChart1.getData().add(new XYChart.Series(FXCollections.observableArrayList(new XYChart.Data("",0))));
-            barChart1.getData().clear();            
-            barChart1.getData().addAll(lastFlightSerie);
-            barChart1.setLegendVisible(false);
+            barChart1.getData().clear();        
+            if (isCompared) {
+                compFlightSerie.setName(compTitle.toString());
+                barChart1.getData().addAll(lastFlightSerie,compFlightSerie);
+                barChart1.setLegendVisible(true);
+            } else {
+                barChart1.getData().addAll(lastFlightSerie);
+                barChart1.setLegendVisible(false);
+            }    
+                        
             bc_xAxis.setAutoRanging(true);
             areaChart1.getData().clear();
-            areaChart1.getData().add(lastHoursSerie);
-            areaChart1.setLegendVisible(false);
+            if (isCompared) {
+                compHoursSerie.setName(compTitle.toString());
+                areaChart1.getData().addAll(lastHoursSerie, compHoursSerie);
+                areaChart1.setLegendVisible(true);
+            } else {
+                areaChart1.getData().addAll(lastHoursSerie);
+                areaChart1.setLegendVisible(false);
+            }
             pieChart1.getData().clear();
             pieChart1.setData(glidersData);
             glidersData.forEach(d -> {
@@ -713,8 +864,10 @@ public class DashViewController {
         this.myConfig = mainConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         rootController.updateMsgBar("", false,50); 
-        endDate = LocalDate.now();
+     //   endDate = LocalDate.now();
         dpDate.setValue(LocalDate.now());
+        //fillYearComparison();
+       // setDisplay(false);
         winTraduction();    
     }
     /**
@@ -733,6 +886,7 @@ public class DashViewController {
     private void winTraduction() {
         lbVols.setText(i18n.tr("Vols"));
         lbDur.setText(i18n.tr("Heures"));
+        lbComparaison.setText(i18n.tr("Comparaison"));
         lbSyntheseDate.setText(i18n.tr("Douze derniers mois depuis le "));
     }    
  
