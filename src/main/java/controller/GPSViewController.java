@@ -238,7 +238,7 @@ public class GPSViewController {
                 nbVols++;
             }
         }
-        dialogbox dConfirm = new dialogbox();
+        dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder();
         sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
         if (dConfirm.YesNo("", sbMsg.toString()))   {     
@@ -837,7 +837,7 @@ public class GPSViewController {
                 // Display number of flights inserted
                 aInsFlights.alertInfo(resInsertion);                
             } else {
-                dialogbox dConfirm = new dialogbox(); 
+                dialogbox dConfirm = new dialogbox(i18n); 
                 // Display number of flights inserted and for moving tracks in archives folder
                 if (dConfirm.YesNo(resInsertion,i18n.tr("Procéder à l'archivage ?"))) {
                     archiveSyride();
