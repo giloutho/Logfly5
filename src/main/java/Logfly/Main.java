@@ -347,7 +347,7 @@ public class Main extends Application {
                     controlWayp.setWaypStage(fullWayp);  
                     controlWayp.setRootBridge(rootLayoutController);
                     controlWayp.setMainApp(this); 
-                    controlWayp.setWinMax();
+               //     controlWayp.setWinMax();
                     fullWayp.showAndWait();
 
 
