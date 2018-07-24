@@ -479,7 +479,7 @@ public class SitesViewController {
         int selectedIndex = tableSites.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             Sitemodel selSite = tableSites.getSelectionModel().getSelectedItem();
-            dialogbox dConfirm = new dialogbox();
+            dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder();             
             sbMsg.append(selSite.getNom());
             sbMsg.append(" ");
@@ -649,7 +649,7 @@ public class SitesViewController {
         for(Sitemodel oneSite : selSites){   
             nbSites++;
         }
-        dialogbox dConfirm = new dialogbox();
+        dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
         sbMsg.append(String.valueOf(nbSites)).append(" ").append(i18n.tr(" sites sélectionnés- Exporter ?"));
         if (dConfirm.YesNo("", sbMsg.toString()))   { 
