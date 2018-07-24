@@ -221,7 +221,7 @@ public class RootLayoutController {
     }
     
     private void originalSize() {
-        dialogbox dConfirm = new dialogbox();
+        dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sb = new StringBuilder();
         sb.append("Largeur : ").append(String.valueOf(mainApp.getPrimaryStage().getWidth()));
         sb.append(" - > 1100").append(System.getProperty("line.separator"));
