@@ -667,10 +667,8 @@ public class WaypViewController {
         
         ArrayList<pointRecord> wpTot = new ArrayList<>();
         if (pointList.size() > 0) {
-            dialogbox dConfirm = new dialogbox();
-            StringBuilder sbMsg = new StringBuilder(); 
-            sbMsg.append(i18n.tr("Fusionner l'affichage et le nouveau fichier"));
-            if (dConfirm.YesNo(i18n.tr("Affichage des balises"), sbMsg.toString()))   {
+            dialogbox dConfirm = new dialogbox(i18n);
+            if (dConfirm.YesNo(i18n.tr("Affichage des balises"), i18n.tr("Fusionner l'affichage et le nouveau fichier"))) {
                 for (int i = 0; i < pointList.size(); i++) {
                     pointRecord pl = pointList.get(i);
                     wpTot.add(pl);    
@@ -842,7 +840,7 @@ public class WaypViewController {
 
     
     private void writeToGpsProgress() {
-        dialogbox dConfirm = new dialogbox();
+        dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
         sbMsg.append(i18n.tr("Anciens waypoints éventuellement effacés ?"));
         StringBuilder sbTitle = new StringBuilder(); 
@@ -1088,7 +1086,7 @@ public class WaypViewController {
             case FlymSD:               
             case Flytec15:
             case Flytec20:
-                dialogbox dConfirm = new dialogbox();        
+                dialogbox dConfirm = new dialogbox(i18n);        
                 if (dConfirm.YesNo(i18n.tr("Vérifier le contenu du GPS"), sbMsg.toString())) { 
                     readFromGPS();
                 }                  
@@ -1563,7 +1561,7 @@ public class WaypViewController {
                 }
             }
         } else {
-            dialogbox dConfirm = new dialogbox();
+            dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder(); 
             sbMsg.append(i18n.tr("Abandonner la liste en cours"));
             if (dConfirm.YesNo(sbMsg.toString(),""))  { 
