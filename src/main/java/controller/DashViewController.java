@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,11 +19,8 @@ import java.time.format.DateTimeFormatterBuilder;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -37,7 +33,6 @@ import javafx.scene.control.Label;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -46,12 +41,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Border;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -305,10 +295,7 @@ public class DashViewController {
             }
             if (isCompared) {
                 compTitle.append(compDebTitle).append("  ").append(compFinTitle);
-            }
-            // Top label updated                 
-           // lbSyntheseDate.setText(monthDate.format(cal.getTime())+" "+endDate.format(dtf));
-            
+            }            
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
