@@ -558,7 +558,7 @@ public class ConfigViewController {
             Path srcPath = Paths.get(selectedFile.getAbsolutePath());
             File folderDb = new File(myConfig.getPathDb());
             if (folderDb.exists() && folderDb.isDirectory() ) {
-                dialogbox dConfirm = new dialogbox();
+                dialogbox dConfirm = new dialogbox(i18n);
                 StringBuilder sbMsg = new StringBuilder(); 
                 sbMsg.append(i18n.tr("Copier dans :")).append(myConfig.getPathDb());
                 int myChoice = dConfirm.twoChoices(i18n.tr("Restauration carnet"), sbMsg.toString(), i18n.tr("Oui"), i18n.tr("Autre dossier"), i18n.tr("Annuler"));
