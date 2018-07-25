@@ -544,13 +544,6 @@ public class TraceViewController {
         // StatusBar is cleaned
         mainApp.rootLayoutController.updateMsgBar("", false, 60);
         winTraduction();
-        try {
-            selectTrackFolder();
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }
     }
 
     /**
