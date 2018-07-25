@@ -16,6 +16,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.xnap.commons.i18n.I18n;
 
 /**
  *
@@ -27,6 +28,8 @@ public class winPoint {
     private String wAlt;
     private String wBalise;
     private String wDesc;
+    // Localization
+    private I18n i18n;    
     
     public boolean isModif() {
         return Modif;
@@ -48,10 +51,9 @@ public class winPoint {
         return wDesc;
     }        
     
-    // AJOUTER en production : I18n pI18n
-    public winPoint(String pAlt, String pDesc, String pBalise) {
+    public winPoint(I18n pI18n, String pAlt, String pDesc, String pBalise) {
         setModif(false);          
-        //i18n = pI18n;
+        i18n = pI18n;
         wAlt = pAlt;
         wDesc = pDesc;
         wBalise = pBalise;
@@ -61,7 +63,7 @@ public class winPoint {
     public void showWin() {
         Stage subStage = new Stage();
         
-        Label lbAlt = new Label("zAltitude ");
+        Label lbAlt = new Label(i18n.tr("Altitude "));
         lbAlt.setMinWidth(100);        
         TextField txAlt = new TextField ();
         txAlt.setMinWidth(60);
@@ -75,7 +77,7 @@ public class winPoint {
         hBox1.setAlignment(Pos.CENTER_LEFT);
         hBox1.getChildren().addAll(lbAlt, txAlt);
         
-        Label lbDesc = new Label("fDescription ");
+        Label lbDesc = new Label(i18n.tr("Description "));
         lbDesc.setMinWidth(100);
         TextField txDesc = new TextField ();
         txDesc.setMinWidth(150);
@@ -87,7 +89,7 @@ public class winPoint {
         hBox2.setMinWidth(290);
         hBox2.setAlignment(Pos.CENTER_LEFT);
 
-        Label lbBal = new Label("fNom court ");
+        Label lbBal = new Label(i18n.tr("Nom court "));
         lbBal.setMinWidth(100);
         TextField txBalise = new TextField ();
         txBalise.setMinWidth(80);
@@ -109,7 +111,7 @@ public class winPoint {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btValid = new Button("fValider");
+        Button btValid = new Button(i18n.tr("Valider"));
          btValid.setOnAction((event) -> {
             wBalise = txBalise.getText();            
             wDesc = txDesc.getText();
@@ -117,7 +119,7 @@ public class winPoint {
             setModif(true);
             subStage.close();
         });
-        Button btCancel = new Button("fAnnuler");
+        Button btCancel = new Button(i18n.tr("Annuler"));
         btCancel.setOnAction((event) -> {
             setModif(false);
             subStage.close();
