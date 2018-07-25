@@ -1624,7 +1624,7 @@ public class WaypViewController {
         int selectedIndex = tablePoints.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             currPoint = tablePoints.getSelectionModel().getSelectedItem(); 
-            winPoint winNewPoint = new winPoint(currPoint.getFAlt(), currPoint.getFDesc(), currPoint.getFBalise());   
+            winPoint winNewPoint = new winPoint(i18n,currPoint.getFAlt(), currPoint.getFDesc(), currPoint.getFBalise());   
             if (winNewPoint.isModif()) {  
                 currPoint.setFBalise(winNewPoint.getBalise());
                 currPoint.setFDesc(winNewPoint.getDesc());
