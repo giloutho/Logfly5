@@ -252,14 +252,13 @@ public class TraceViewController {
                 if (myUpload.testURL(uploadUrl) == 200)  {
                     byte[] igcBytes = extTrace.exportBytes();
                     if (igcBytes.length > 100)  {
-                        System.out.println("Lg avant transfert : "+igcBytes.length);
                         String webFicIGC = myUpload.httpUploadIgc(igcBytes, uploadUrl);
                         if (webFicIGC != null) {
                             showVisuGPS(webFicIGC);
                         } else {
-                            Alert alert = new Alert(Alert.AlertType.ERROR);           
-                            alert.setContentText(i18n.tr("Echec du téléchargement de la trace"));
-                            alert.showAndWait();                                                        
+                            myUpload.getDlError();
+                            alertbox aError = new alertbox(myConfig.getLocale());     
+                            aError.alertNumError(myUpload.getDlError());                                                          
                         }
                     }                                        
                 } else {
