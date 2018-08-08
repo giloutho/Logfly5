@@ -1492,10 +1492,10 @@ public class CarnetViewController  {
                                 showVisuInBrowser(webFicIGC);
                             else
                                 showVisuDirect(webFicIGC);
-                        } else {
-                            Alert alert = new Alert(Alert.AlertType.ERROR);           
-                            alert.setContentText(i18n.tr("Echec du téléchargement de la trace"));
-                            alert.showAndWait();                                                        
+                        } else {                            
+                            myUpload.getDlError();
+                            alertbox aError = new alertbox(myConfig.getLocale());     
+                            aError.alertNumError(myUpload.getDlError());                                                    
                         }
                     }                                        
                 } else {
