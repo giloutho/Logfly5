@@ -161,7 +161,17 @@ public class alertbox {
                 break;
             case 1201:
                 msg = i18n.tr("Module GpsDump non trouvé...");                          
-                break;                
+                break;             
+            // upload igc file for VisuGPS    
+            case 1301:
+                msg = i18n.tr("Quota affichage VisuGPS dépassé...");                          
+                break;        
+            case 1305:
+                msg = i18n.tr("Le fichier est trop volumineux...");                          
+                break;     
+            case 1310:
+                msg = i18n.tr("Erreur pendant le transfert du fichier...");                          
+                break;                 
             default:
                 msg = i18n.tr("Erreur indéterminée");
         }        
