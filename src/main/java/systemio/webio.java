@@ -27,6 +27,14 @@ import java.time.format.DateTimeFormatter;
  */
 public class webio {
     
+    private int dlError;
+
+    public int getDlError() {
+        return dlError;
+    }
+    
+    
+    
     /**
      * url checking 
      * return code is : status HTTP_OK = 200
@@ -139,7 +147,6 @@ public class webio {
                 os.write(txtData, index, size);
                 index += size;
             } while (index < txtData.length);
-            System.out.println("written:" + index);
             
             os.write(message2.getBytes());
             os.flush();
@@ -149,28 +156,36 @@ public class webio {
             char buff = 512;
             int len;
             byte[] data = new byte[buff];
+            StringBuilder sbRep = new StringBuilder();
             do {
-                len = is.read(data);                
+                len = is.read(data);
+                if (len > 0) {
+                    sbRep.append(new String(data, 0, len));
+                }               
             } while (len > 0);
-
-            res = tempFicName;
+            
+            if (sbRep.toString().contains("Download")) {
+                dlError = 0;
+                res = tempFicName;
+            } else if (sbRep.toString().contains("Error = quota")) { 
+                dlError = 1301;                
+            } if (sbRep.toString().contains("Error = size")) { 
+                dlError = 1305; 
+            }
+            
             
         } catch (Exception e) {
-            //e.printStackTrace();
-            System.out.println("C'est la mémé...");  // It's all crap...
+            dlError = 1310;
         } finally {
-            System.out.println("Close connection");
             try {
                 os.close();
             } catch (Exception e) {
+                dlError = 1310;
             }
             try {
                 is.close();
             } catch (Exception e) {
-            }
-            try {
-
-            } catch (Exception e) {
+                dlError = 1310;
             }
         }
         
