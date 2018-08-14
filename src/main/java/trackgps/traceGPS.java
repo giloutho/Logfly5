@@ -1851,5 +1851,18 @@ public class traceGPS {
   
         return finalName;        
     }
-
+    
+    /**
+     * With previous procedure, we can obtain very long name
+     * in his case, php script in failed to enclose the file
+     * @return 
+     */
+    public String suggestShortName() {        
+         
+        String suggName1 = Date_Vol_SQL.replaceAll("-","_");
+        String suggName2 = suggName1.replaceAll(":","_");
+        String suggName = suggName2.replaceAll(" ","_");              
+  
+        return suggName;        
+    }    
 }
