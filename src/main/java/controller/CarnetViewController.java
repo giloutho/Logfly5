@@ -726,7 +726,7 @@ public class CarnetViewController  {
     private void sendMail() {
         if (myConfig.isValidConfig()) {
             try {
-                String fileName = currTrace.suggestName()+".igc";
+                String fileName = currTrace.suggestShortName()+".igc";
                 File tempIGC = systemio.tempacess.getAppFile("Logfly", fileName);
                 FileWriter fileWriter = new FileWriter(tempIGC);
                 fileWriter.write(currTrace.getFicIGC());
