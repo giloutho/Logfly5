@@ -474,7 +474,7 @@ public class FullMapController {
 
         // code from http://java-buddy.blogspot.fr/2012/12/save-writableimage-to-file.html
         try {
-            String fileName = mapTrace.suggestName()+".png";
+            String fileName = mapTrace.suggestShortName()+".png";
             snapFile = systemio.tempacess.getAppFile("Logfly", fileName);
             RenderedImage renderedImage = SwingFXUtils.fromFXImage(snapImage, null);
             ImageIO.write(renderedImage, "png",snapFile);
