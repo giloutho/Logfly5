@@ -35,6 +35,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
+import littlewins.winCoord;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -168,6 +169,8 @@ public class ConfigViewController {
     private Label lbLongitude;
     @FXML
     private Label lbAberrants;
+    @FXML
+    private Button btMapMap;    
     @FXML
     private Button btMapOK;
     @FXML
@@ -386,7 +389,7 @@ public class ConfigViewController {
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
-     
+             
     /**
      * Validate changes
      */
@@ -514,6 +517,32 @@ public class ConfigViewController {
             myConfig.setPathImport(selectedDirectory.getAbsolutePath());
         }        
     }  
+    
+    @FXML
+    private void handleMapMap() {
+        
+        String sLat = txFinderLat.getText();
+        String sLong = txFinderLong.getText();
+        if (sLat != null && sLong != null) {
+            try {
+                double testLat = Double.parseDouble(sLat);     
+                double testLong = Double.parseDouble(sLong);                 
+            } catch (Exception e) {
+                // settings not valid, we put Annecy Lake
+                sLat = "45.863";
+                sLong = "6.1725";                       
+            } finally {
+                winCoord myWinCoord = new winCoord(myConfig, sLat, sLong);
+                System.out.println("lat retour "+myWinCoord.getMapLat());
+                if (myWinCoord.getMapLat() != null) {
+                    txFinderLat.setText(myWinCoord.getMapLat());
+                }
+                if (myWinCoord.getMapLong() != null) {
+                    txFinderLong.setText(myWinCoord.getMapLong());
+                }
+            }                         
+        }
+    }
     
     private void copyInNewFolder(Path srcPath, File selectedFile) {
         
@@ -831,6 +860,7 @@ public class ConfigViewController {
         lbDefaultMap.setText(i18n.tr("Carte par défaut"));
         lbLatitude.setText(i18n.tr("Latitude"));
         lbLongitude.setText(i18n.tr("Longitude"));
+        btMapMap.setText(i18n.tr("Carte"));
         lbAberrants.setText(i18n.tr("Seuil points aberrants"));
         btMapOK.setText(i18n.tr("Valider"));
         btMapAnnuler.setText(i18n.tr("Annuler"));
