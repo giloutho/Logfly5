@@ -103,6 +103,7 @@
                         <Label fx:id="lbAberrants" layoutX="110.0" layoutY="216.0" text="fSeuil points aberrants" />
                         <Button fx:id="btMapOK" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
                         <Button fx:id="btMapAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
+                        <Button fx:id="btMapMap" layoutX="495.0" layoutY="155.0" mnemonicParsing="false" onAction="#handleMapMap" text="fCarte" />
                      </children></AnchorPane>
                </content>
             </Tab>
