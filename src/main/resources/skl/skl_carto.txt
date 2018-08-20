@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+    <script src="http://www.logfly.org/download/gmap/leaflet.awesome-markers.js"></script>
+
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <script src="http://www.logfly.org/download/gmap/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/Control.Geocoder.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.measurecontrol.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.measurecontrol.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.mousecoordinate.min.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.mousecoordinate.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.elevation-0.0.4.min.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.elevation-0.0.4.css" />
+
+    <style>
+        html, body, #map {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+        .leaflet-google-layer{
+            z-index: 0 !important;
+        }
+        .leaflet-map-pane{
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script type='text/javascript'>
+    // create a map in the "map" div, set the view to a given place and zoom
+    var map = L.map('map').setView([%CoordIni%], 12);
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    var outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+    // Démarre la mesure
+    function startMeasure() {
+        document.getElementById('measure').click();
+    }
+
+%layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+        "Outdoor" : outdoorlayer
+    };
+
+    L.control.layers(baseMaps).addTo(map);
+
+    L.Control.measureControl().addTo(map);
+
+    geocoder = L.Control.Geocoder.nominatim();
+    L.Control.geocoder({
+        position : 'topleft'
+    }).addTo(map);
+
+    L.control.mouseCoordinate({position : 'bottomleft', gpsLong : false, utm:true,utmref:false}).addTo(map);
+
+    var  marker;
+
+    map.on('click', function(e) {
+        geocoder.reverse(e.latlng, map.options.crs.scale(map.getZoom()), function(results) {
+            var r = results[0];
+            if (r) {
+                if (marker) {
+                    marker.
+                    setLatLng(r.center).
+                    setPopupContent(r.html || r.name).
+                    openPopup();
+                } else {
+                    marker = L.marker(r.center).bindPopup(r.name).addTo(map).openPopup();
+                }
+            }
+        })
+    });
+
+</script>
+</body>
+</html>
+
+
