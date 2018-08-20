@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+     <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
+     <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
+
+
+
+    <style>
+        html, body, #map {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script type='text/javascript'>
+
+    var map = L.map('map').setView([%CoordIni%], 12);
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer
+    };
+
+    osmlayer.addTo(map);
+
+    L.control.layers(baseMaps).addTo(map);
+
+    var drawnItems = new L.FeatureGroup();
+
+    map.addLayer(drawnItems);
+
+    var drawControl = new L.Control.Draw({
+        draw: {
+            position: 'topleft',
+            polygon: {
+                allowIntersection: false,
+                drawError: {
+                    color: '#b00b00',
+                    timeout: 1000
+                },
+                shapeOptions: {
+                    color: '#2949FF'
+                },
+                showArea: true
+            },
+            polyline: false,
+            marker: false,
+            circle: {
+                shapeOptions: {
+                    color: '#662d91'
+                }
+            }
+        },
+        edit: {
+            featureGroup: drawnItems
+        }
+    });
+    map.addControl(drawControl);
+
+    map.on('draw:created', function (e) {
+        var type = e.layerType,
+                layer = e.layer,
+                coords;
+        console.log(e);
+        if (type === 'marker') {
+            coords = JSON.stringify(layer._latlng);
+        }
+        if (type === 'circle') {
+            coords = JSON.stringify(layer._latlng) + " " + layer._mRadius;            
+        }
+        if (type === 'rectangle') {
+            coords = JSON.stringify(layer._latlngs);
+        }
+        if (type === 'polygon') {
+            coords = JSON.stringify(layer._latlngs);
+        }
+        if (type === 'polyline') {
+            coords = JSON.stringify(layer._latlngs);
+        }
+        drawnItems.addLayer(layer);
+    });
+
+    function How_Shapes() {
+        var shapes = getShapes(drawnItems);
+        var ListCoord = "";
+        ListCoord = shapes.join("%");
+        document.title = ListCoord;
+        //var res = ListCoord;
+        //java.returnShapes(res); 
+    }
+
+
+    var getShapes = function(drawnItems) {
+
+        var shapes = [];
+
+        drawnItems.eachLayer(function(layer) {
+
+            // Note: Rectangle extends Polygon. Polygon extends Polyline.
+            // Therefore, all of them are instances of Polyline
+            if (layer instanceof L.Polyline) {
+                shapes.push(JSON.stringify(layer._latlngs))
+            }
+
+            if (layer instanceof L.Circle) {
+                //   shapes.push([layer.getLatLng()])
+                //shapes.push(JSON.stringify(layer._latlng) + " " + layer._mRadius);
+                shapes.push("{\"rad\": "+layer._mRadius+",\"coord\": "+JSON.stringify(layer._latlng)+"}");
+            }
+
+            if (layer instanceof L.Marker) {
+                shapes.push(JSON.stringify(layer._latlng));
+            }
+
+        });
+
+        return shapes;
+    };
+
+</script>
+</body>
+</html>
