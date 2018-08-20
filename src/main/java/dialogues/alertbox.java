@@ -171,7 +171,13 @@ public class alertbox {
                 break;     
             case 1310:
                 msg = i18n.tr("Erreur pendant le transfert du fichier...");                          
-                break;                 
+                break;             
+            case 1350:
+                msg = i18n.tr("Erreur de décodage du fichier Open Air...");                          
+                break;         
+            case 1370:
+                msg = i18n.tr("Erreur de génération GeoJson");                          
+                break;                  
             default:
                 msg = i18n.tr("Erreur indéterminée");
         }        
