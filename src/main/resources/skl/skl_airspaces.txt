@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="http://www.logfly.org/download/gmap/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.awesome-markers.css">
+
+    <script src="http://www.logfly.org/download/gmap/easy-button.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/easy-button.css">   
+    <link rel="stylesheet" href="https://use.fontawesome.com/5bf41b06af.css">
+
+
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet-areaselect.css" />
+    <script src="http://www.logfly.org/download/gmap/leaflet-areaselect.js"></script>
+    <style>
+        html, body, #map {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px
+        }
+
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
+        }         
+    </style>
+
+</head>
+<body>
+<div id="map"></div>
+    <script type='text/javascript'>
+
+%ZAgeojson%
+
+    var map = null;
+
+    map = new L.Map('map');
+    
+    var osmlayer = L.tileLayer('http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a             href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+
+    var Aff_Zone = new L.geoJson(zoneReg,{style:styleReg, onEachFeature : evenement});
+
+    osmlayer.addTo(map);
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+    };
+
+
+    function popup(feature, layer) {
+        if (feature.properties) {
+            layer.bindPopup('<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name+'<BR/>Floor : '+feature.properties.Floor+'<BR/>Ceiling : '+feature.properties.Ceiling);
+        }
+    }
+
+    var areaSelect = null;
+
+    function Add_Rect() {
+        areaSelect = L.areaSelect({width:200, height:200});
+        areaSelect.addTo(map);
+    }
+
+    function Remove_Rect() {
+        var bounds = areaSelect.getBounds();
+        document.title = [bounds.getSouthWest().lat.toFixed(4),bounds.getSouthWest().lng.toFixed(4),bounds.getNorthEast().lat.toFixed(4),bounds.getNorthEast().lng.toFixed(4)].join(', '); 
+        areaSelect.remove();
+    }
+
+    function styleReg(feature){
+        return{
+            fillColor: getColor(feature.properties.Cat),
+            weight: 1,
+            opacity: 1,
+            color: 'white',
+            fillOpacity: 0.4
+        };
+    }
+
+    function getColor(a){
+        return  a>22 ? '#999999':   
+                a>21 ? '#999999':
+                a>20 ? '#FFCC00':
+                a>19 ? '#5B900A':
+                a>18 ? '#00FF00':
+                a>17 ? '#66CCFF':
+                a>16 ? '#FF9999':            
+                a>15 ? '#FF00FF':
+                a>14 ? '#000000':
+                a>13 ? '#9999CC':
+                a>12 ? '#99FFFF':
+                a>11 ? '#FFFF00':
+                a>10 ? '#19BFBF':   
+                a>9 ? '#7FBC58':
+                a>8 ? '#A47A11':
+                a>7 ? '#900A68':
+                a>6 ? '#4B0A90':
+                a>5 ? '#FFCCCC':
+                a>4 ? '#FF0000':            
+                a>3 ? '#0000FF':
+                a>2 ? '#1971BF':
+                a>1 ? '#FFCCCC':
+                a>0 ? '#FE9A2E':                                                 
+                  '#9999CC'; 
+    }    
+
+    function evenement(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: zoomToFeature
+            });
+    }    
+
+    function javahighlightFeature(e) {
+        var layer = e.target;
+        layer.setStyle({
+            weight: 3,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.5
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera) {
+            layer.bringToFront();
+        }        
+
+        var txtLegende = '<h4>'+layer.feature.properties.Name+'</h4>';
+        txtLegende +=  'Floor : '+ layer.feature.properties.Floor + '<br />';
+        txtLegende +=  'Ceiling : '+ layer.feature.properties.Ceiling;
+        info.update(txtLegende);            
+    }
+
+    function highlightFeature(e) {
+        var layer = e.target;
+        layer.setStyle({
+            weight: 3,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera) {
+            layer.bringToFront();
+        }        
+
+        var txtLegende = '<h4>'+layer.feature.properties.Name+'</h4>';
+        txtLegende +=  'Class : '+ layer.feature.properties.Class + '<br />';
+        txtLegende +=  'Floor : '+ layer.feature.properties.Floor + ' m<br />';
+        txtLegende +=  'Ceiling : '+ layer.feature.properties.Ceiling+' m';
+        info.update(txtLegende);
+    }
+
+    function resetHighlight(e) {
+        Aff_Zone.resetStyle(e.target);
+        info.update('Passez la souris sur un espace');
+    }    
+
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds());
+    }
+
+    function spaceCenter(latMini,latMaxi,LongMini,LongMaxi,txtLegende) {
+        var southWest = L.latLng(latMini, LongMini);
+        northEast = L.latLng(latMaxi, LongMaxi);
+        bounds = L.latLngBounds(southWest, northEast);
+        map.fitBounds(bounds,{maxZoom : 13});
+        info.update(txtLegende);
+    }
+
+    function debugCenter() {
+        var southWest = L.latLng(45.5237470, 5.83329656);
+        northEast = L.latLng(45.74817625, 5.949166666);
+        bounds = L.latLngBounds(southWest, northEast);
+        map.fitBounds(bounds,{maxZoom : 13});
+    }
+
+    // http://danielmontague.com/projects/easyButton.js/v1/examples/
+
+    var toggle = L.easyButton({
+    states: [{
+        stateName: 'add-rect',
+        icon: 'fa-square',
+        title: 'Afficher le rectangle de selection',
+        onClick: function(control) {
+            Add_Rect();
+            control.state('remove-rect');
+        }
+    }, {
+        icon: 'fa-check',
+        stateName: 'remove-rect',
+        onClick: function(control) {
+            Remove_Rect();
+            control.state('add-rect');
+        },
+        title: 'Ferme le rectangle de selection'
+    }]
+    });
+
+    toggle.addTo(map);    
+
+    var info = L.control({position: 'bottomleft'});
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info'); 
+        this.update();
+        return this._div;
+    };
+
+    info.update = function (txtLegende) {
+        if (txtLegende === undefined) { txtLegende = 'Passez la souris sur un espace'; }
+        this._div.innerHTML = txtLegende;
+    };
+
+    info.addTo(map); 
+   
+    map.addLayer(Aff_Zone);
+    var boundMap = Aff_Zone.getBounds();
+    map.fitBounds(boundMap,{maxZoom : 15});    
+
+    L.control.layers(baseMaps).addTo(map);
+
+    document.title = "Leaflet";
+
+</script>
+</body>
+</html>
