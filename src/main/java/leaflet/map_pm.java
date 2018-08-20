@@ -29,17 +29,17 @@ public class map_pm {
     private boolean map_OK;
     private int errorCode;
     private String map_HTML;
-    private static boolean reduction;    
-    private static final String RC = "\n";
-    private static StringBuilder jsTabPoints;
-    private static String jsLayer;
-    private static StringBuilder jsInfo;
-    private static StringBuilder btnComment;
-    private static StringBuilder txtComment;
-     private static StringBuilder btnPhoto;
-    private static StringBuilder txtPhoto;
-    private static int idxMap;
-    private static I18n i18n;
+    private boolean reduction;    
+    private final String RC = "\n";
+    private StringBuilder jsTabPoints;
+    private String jsLayer;
+    private StringBuilder jsInfo;
+    private StringBuilder btnComment;
+    private StringBuilder txtComment;
+    private StringBuilder btnPhoto;
+    private StringBuilder txtPhoto;
+    private int idxMap;
+    private I18n i18n;
         
 
     public boolean isMap_OK() {
@@ -76,7 +76,7 @@ public class map_pm {
      * @param tracePM
      * @return 
      */    
-    private static boolean genData(traceGPS tracePM)  {
+    private boolean genData(traceGPS tracePM)  {
         
         Boolean res = false;
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
