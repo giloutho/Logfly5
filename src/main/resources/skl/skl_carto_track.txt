@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coordinate viewing test page</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style>
+        html, body, #map {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+    </style>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.ie.css" /><![endif]-->
+    <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.measurecontrol.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.measurecontrol.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.elevation-0.0.4.min.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.elevation-0.0.4.css" />
+</head>
+<body>
+
+<div id="map"></div>
+
+<script type="text/javascript">
+    var map = new L.Map('map');
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    var outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+    // Démarre la mesure
+    function startMeasure() {
+        document.getElementById('measure').click();
+    }
+
+%layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+        "Outdoor" : outdoorlayer
+    };
+
+    L.control.layers(baseMaps).addTo(map);
+
+    L.Control.measureControl().addTo(map);
+
+%geojson%
+
+    var el = L.control.elevation({
+        position: "bottomleft",
+        theme: "steelblue-theme", //default: lime-theme
+        width: 800,
+        height: 125,
+        margins: {
+            top: 10,
+            right: 20,
+            bottom: 30,
+            left: 50}
+        });
+    el.addTo(map);
+    var gjl = L.geoJson(geojson,{
+        onEachFeature: el.addData.bind(el)
+    }).addTo(map);
+
+    map.fitBounds(gjl.getBounds());
+
+
+</script>
+</body>
+</html>
+
