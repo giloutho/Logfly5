@@ -148,7 +148,7 @@ public class RootLayoutController {
         });           
         mnEspaces.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(10);
-            comingSoon();
+            mainApp.showAirspaceView();
         });       
         mnPhotos.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(11);
@@ -156,7 +156,7 @@ public class RootLayoutController {
         });    
         mnCarto.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(12);
-            comingSoon();
+            mainApp.showCartoOverview();
         });            
         btnSupport.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
