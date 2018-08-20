@@ -47,6 +47,8 @@ import java.time.ZoneOffset;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import settings.configProg;
 import systemio.mylogging;
 import systemio.textio;
@@ -116,6 +118,11 @@ public class traceGPS {
     private String photo;
     private int nbGpxPoint;
     private int totGpxPoint;
+    private double latMini;
+    private double latMaxi;
+    private double longMini;
+    private double longMaxi;
+    
     
     public List<pointIGC> Tb_Tot_Points = new ArrayList<pointIGC>();
     public List<pointIGC> Tb_Good_Points = new ArrayList<pointIGC>();
@@ -167,8 +174,7 @@ public class traceGPS {
             {
                 FicGPX = pFichier;
                 Origine = "GPX";
-                InputStream stream = new ByteArrayInputStream(pFichier.getBytes(StandardCharsets.UTF_8));
-                DecodeGPX(stream);
+                DecodeGPX();
             } else {
                 numErrDecodage = 1060;    // unknown file extension 
             }                 
@@ -205,8 +211,7 @@ public class traceGPS {
             if (pFichier.indexOf("topografix.com") > 0 ) {
                 FicGPX = pFichier;
                 Origine = "GPX";
-                InputStream stream = new ByteArrayInputStream(pFichier.getBytes(StandardCharsets.UTF_8));
-                DecodeGPX(stream);
+                DecodeGPX();
             } else {
                 FicIGC = pFichier;
                 Origine = "IGC";
@@ -1140,12 +1145,13 @@ public class traceGPS {
            
     private void Verif_Tb_Tot_Points(boolean MissTime, boolean WithAberrant)
     {
-        /* this specific methos was introduced after a nightmare track file (barbare.igc)
+        /* this specific method was introduced after a nightmare track file (barbare.igc)
         * first point is not good, therefore at point 2 we had a big speed
         * and point 2 was tagged like an outlier
         * this is why point 2 is now the first point of Tb_Good_Points
         * Problem : speed must be zero. If not, point is tagged OK and this big speed becomes the reference for max and average computing
         */
+        
         int i, ii, TotPoints, TotGoodPoints;
         int BadVitesse;
         int BadAlti;
@@ -1163,6 +1169,10 @@ public class traceGPS {
         pointIGC VarioMini = new pointIGC();  
         int DebugVit;
         double Vz;
+        latMini = 90;
+        latMaxi = -90;
+        longMini = 180;
+        longMaxi = -180;
         
         
         BadVitesse = 99;
@@ -1289,6 +1299,11 @@ public class traceGPS {
                                     AltMiniBaro = PcdtPoint;
                                 if (PcdtPoint.AltiGPS < AltMiniGps.AltiGPS && PcdtPoint.AltiGPS > 0)
                                     AltMiniGps = PcdtPoint;
+                                
+                                if (CurrPoint.Latitude > latMaxi) latMaxi = CurrPoint.Latitude;
+                                if (CurrPoint.Longitude > longMaxi) longMaxi = CurrPoint.Longitude;
+                                if (CurrPoint.Latitude < latMini) latMini = CurrPoint.Latitude;
+                                if (CurrPoint.Longitude < longMini) longMini = CurrPoint.Longitude;                                
 
                                 // average vario with min period 20 seconds                                
                                 DeltaTime = PcdtPoint.PeriodePtPcdt;
@@ -1369,7 +1384,7 @@ public class traceGPS {
         TrackLen = TrackLen / 1000;   // meters converted to km
     }
          
-    private void DecodeGPX(InputStream in) {
+    private void DecodeGPX() {
         
         int nbPoint = 0;   
         int nbWp;
@@ -1864,5 +1879,57 @@ public class traceGPS {
         String suggName = suggName2.replaceAll(" ","_");              
   
         return suggName;        
-    }    
+    } 
+    
+    public String getGeoJson () {
+        String res = null;
+        
+        JSONObject trackJsonObjectbuilder = new JSONObject();
+        trackJsonObjectbuilder.put("type", "FeatureCollection");   
+        JSONArray trackArray = new JSONArray();
+        trackArray.add(pointsToGeoJson());
+        trackJsonObjectbuilder.put("features", trackArray);
+        res = trackJsonObjectbuilder.toJSONString();        
+        return res;
+    }
+    
+    public String getUnitJson() {
+        String res = null;
+        
+        res = pointsToGeoJson().toJSONString();
+        
+        return res;
+    }
+    
+    private JSONObject pointsToGeoJson() {
+        
+        JSONObject feature = new JSONObject();
+        feature.put("type", "Feature");
+        
+        // Actually we don't put properties
+        // If we want we can add 
+        // JSONObject properties = new JSONObject();
+        // properties.put("stroke", "#FF0000");
+        // etc.. etc...
+        // Properties even null is required
+        feature.put("properties", null);
+        
+        JSONObject geometry = new JSONObject();
+        geometry.put("type", "LineString");
+        int fin = Tb_Good_Points.size();  
+        JSONArray coordinates = new JSONArray();        
+        for (int i = 0; i < fin; i++) {
+            JSONArray coordinate = new JSONArray();
+            pointIGC currPoint = Tb_Good_Points.get(i);
+            coordinate.add(0, currPoint.getLongitude());
+            coordinate.add(1, currPoint.getLatitude());
+            coordinate.add(2, currPoint.AltiGPS);
+            coordinates.add(coordinate);                        
+        }
+
+        geometry.put("coordinates", coordinates);
+        feature.put("geometry",geometry);
+                            
+        return feature;
+    }
 }
