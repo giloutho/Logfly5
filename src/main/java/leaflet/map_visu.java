@@ -691,7 +691,7 @@ public class map_visu {
                         String scoreLinesHTML = balisesHTML.replace("//%ScoreLines%", jsScore.toString());
                         StringBuilder scoreOptions = new StringBuilder();
                         scoreOptions.append("\"Score\" : ScoreMarkers,").append(RC); 
-                        scoreOptions.append("\"Balises\" : LayerBal");
+                        scoreOptions.append("\"Balises\" : LayerBal,");                    
                         String scoreOptHTML = scoreLinesHTML.replace("//%ScoreOptions%", scoreOptions.toString());
                         String scoreLayer = "    map.addLayer(ScoreMarkers);";
                         String scoreLayerHTML =scoreOptHTML.replace("//%AddScoreMarkers%", scoreLayer);
@@ -700,6 +700,24 @@ public class map_visu {
                     } else {
                         endHTML = balisesHTML;
                     }  
+                }
+                if (traceVisu.getAirPoints() > 0 && traceVisu.getGeoJsonAirsp() != null) {
+                    String beginAirHTML = endHTML;
+                    String zoneRegHTML = beginAirHTML.replace("//%zoneReg%", traceVisu.getGeoJsonAirsp());
+                    String badPtHTML = zoneRegHTML.replace("//%badPoints%", traceVisu.getGeoJsonBadPts());
+                    StringBuilder sbAff = new StringBuilder();
+                    sbAff.append("var Aff_Zone = new L.geoJson.css(zoneReg, { onEachFeature: popup});").append(RC);
+                    sbAff.append("    map.addLayer(Aff_Zone);").append(RC);
+                    String affZoneHTML = badPtHTML.replace("//%Aff_Zones%", sbAff.toString());
+                    sbAff.setLength(0);
+                    sbAff.append("var Aff_BadPoints = new L.geoJson.css(badPoints, {pointToLayer: function(f, latlng) {return L.circleMarker(latlng,geojsonMarkerOptions);}});");
+                    sbAff.append(RC).append("    map.addLayer(Aff_BadPoints);").append(RC);
+                    String affBadHTML = affZoneHTML.replace("//%Aff_BadPoints%", sbAff.toString());
+                    StringBuilder checkOptions = new StringBuilder();
+                    checkOptions.append("\"Litige : zones\" : Aff_Zone,").append(RC); 
+                    checkOptions.append("\"Litige : points\" : Aff_BadPoints,").append(RC); 
+                    String checkOpHTML = affBadHTML.replace("//%CheckOption%",checkOptions.toString());
+                    endHTML = checkOpHTML;
                 }
                 String Code_HTML = endHTML.replace("%legende%", jsLegende.toString());
                 map_HTML = Code_HTML;      
