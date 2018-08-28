@@ -77,4 +77,20 @@ public class textio {
         }
     }        
     
+    /**
+     * Gets the base name, without extension, of given file name.
+     * e.g. getBaseName("file.txt") will return "file"
+     *
+     * @param fileName
+     * @return the base name
+     */
+    public static String getBaseName(String fileName) {
+        int index = fileName.lastIndexOf('.');
+        if (index == -1) {
+            return fileName;
+        } else {
+            return fileName.substring(0, index);
+        }
+    }    
+    
 }
