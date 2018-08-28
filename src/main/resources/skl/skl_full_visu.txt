@@ -28,6 +28,9 @@
     <script src="http://www.logfly.org/download/gmap/easy-button.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <script src="http://rawgit.com/albburtsev/Leaflet.geojsonCSS/master/leaflet.geojsoncss.min.js"></script>
+
     <style>
         html, body {
             height:100%;
@@ -92,6 +95,10 @@
 
     var Heure = [%Heure%];
 
+    //%zoneReg%
+
+    //%badPoints%
+
     function GrillePos(i) {
         if (mousemarker != null) {
             map.removeLayer(mousemarker);
@@ -100,6 +107,12 @@
         mousemarker = new L.marker(tabPoints[i]).addTo(map);
         map.panTo(tabPoints[i]);
         info.update(altiLg[i]+'<br/>Alt : '+altiVal[i]+'m<br/>Vz : '+Vario[i]+'m/s<br/>Vit : '+Speed[i]+' km/h');
+    }
+
+    function popup(feature, layer) {
+        if (feature.properties) {
+            layer.bindPopup('<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name+'<BR/>Floor : '+feature.properties.Floor+'<BR/>Ceiling : '+feature.properties.Ceiling);
+        }
     }
 
     // Efface la légende
@@ -199,6 +212,19 @@
 
     var track = new L.Polyline(tabPoints, trackOptions);
 
+    //%Aff_Zones%
+
+    var geojsonMarkerOptions = {
+        radius: 3,
+        fillColor: "#ff7800",
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    };
+
+    //%Aff_BadPoints%
+
     var Affichage = {
         "Airspaces" : openaip_cached_basemap,
         "Shadow" : hillslayer,
@@ -206,6 +232,7 @@
         "Thermiques": THmarkers
         ,
         //%ScoreOptions%
+        //%CheckOption%
     };
 
     L.control.layers(baseMaps,Affichage).addTo(map);
