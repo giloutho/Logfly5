@@ -10,9 +10,11 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import settings.osType;
+import systemio.mylogging;
 import systemio.textio;
 
 /**
@@ -22,18 +24,23 @@ import systemio.textio;
 public class reversale {
     
     private boolean connected = false;
+    private boolean airspConnected = false;
     private File fLog;
     private File fCompet;
     private File fWayp;      
     private boolean wpExist = false;
     private File fGoog;      
     private boolean googExist = false;    
+    private File fAirsp;
+    private boolean airspExist = false;
     private File fDrive;
     private int idxDrive;
+    private String pathReverbin;
     private ObservableList <String> driveList;
     private String closingDate;
     private String msgClosingDate;
     private ArrayList<String> wpPathList;     
+    private StringBuilder sbError;
     
     public boolean isConnected() {
         return connected;
@@ -43,6 +50,14 @@ public class reversale {
         this.connected = connected;
     }
 
+    public void setAirspConnected(boolean airspConnected) {
+        this.airspConnected = airspConnected;
+    }
+
+    public boolean isAirspConnected() {
+        return airspConnected;
+    }
+            
     public File getfLog() {
         return fLog;
     }
@@ -75,6 +90,10 @@ public class reversale {
         return fGoog;
     }
 
+    public File getfAirsp() {
+        return fAirsp;
+    }
+        
     public boolean isWpExist() {
         return wpExist;
     }
@@ -82,6 +101,10 @@ public class reversale {
     public boolean isGoogExist() {
         return googExist;
     }
+
+    public String getPathReverbin() {
+        return pathReverbin;
+    }        
     
     public ArrayList<String> getWpPathList() {
         return wpPathList;
@@ -170,7 +193,11 @@ public class reversale {
                             if (listFile[i].getName().equals("WPTS") && listFile[i].isDirectory()) {
                                 fWayp = listFile[i];
                                 wpExist = true;
-                            }                             
+                            }  
+                            if (listFile[i].getName().equals("AIRSP") && listFile[i].isDirectory()) {
+                                fAirsp = listFile[i];
+                                airspExist = true;
+                            }                                  
                         }
                         if (cond1 == true && cond2 == true) {
                             fDrive = aDrive;
@@ -187,6 +214,85 @@ public class reversale {
             }
         }                                    
         return res;                
+    }
+    
+    public int airspaceReady(osType currOs) {
+        int res = -1;
+        boolean airspFolderOK = false;   
+        boolean reverbinOK = false;
+        pathReverbin = "";
+
+        if (!airspExist) {
+            try{
+                String airspPath = fDrive.getAbsolutePath()+File.separator+"AIRSP";
+                File f = new File(airspPath);
+                if(f.mkdir()) { 
+                    fAirsp = f;
+                    airspFolderOK = true;
+                } else {
+                    res = 202;   // Impossible de créer le dossier AIRSP
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append("Unable to create Reversale airspace folder ");
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }              
+            }catch (Exception e) {//Catch exception if any
+                res = 202;   // Impossible de créer le dossier AIRSP
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());
+            }             
+        } else {
+            airspFolderOK = true;
+        }
+        
+        if (airspFolderOK) {
+            String executionPath = System.getProperty("user.dir");
+            switch (currOs) {
+                case WINDOWS :
+                    // to do windows path testing
+                    pathReverbin = executionPath+File.separator+"Wreverbins.exe";    // Windows
+                    File fwReverbin = new File(pathReverbin);
+                    if(fwReverbin.exists()) reverbinOK = true;  
+                    break;
+                case MACOS :
+                    pathReverbin = executionPath+File.separator+"Reverbin";
+                    File fReverbin = new File(pathReverbin);
+                    if(fReverbin.exists()) reverbinOK = true;                        
+                    break;
+            } 
+            if (!reverbinOK) 
+                res = 204;   // Module Reverbin introuvable
+        }
+        
+        if (airspFolderOK && reverbinOK) res = 0;
+                           
+        return res;                        
+        
+    }
+    
+    
+    private boolean createAirSpFolder() {
+        
+        boolean res = false;
+        
+        try{
+            String airspPath = fDrive.getAbsolutePath()+File.separator+"AIRSP";
+            File f = new File(airspPath);
+            if(f.mkdir()) { 
+                fAirsp = f;
+                res = true;
+            } else {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append("Unable to create Reversale airspace folder ");
+                mylogging.log(Level.SEVERE, sbError.toString());
+            }              
+        }catch (Exception e) {//Catch exception if any
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }  
+        
+        return res;
     }
     
     private void exploreFolder(File dir, ArrayList<String> trackPathList) throws Exception {  
