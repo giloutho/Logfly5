@@ -25,13 +25,16 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import leaflet.map_carto;
-import leaflet.map_carto_track;
+import leaflet.map_carto_gpx;
+import leaflet.map_carto_igc;
 import littlewins.winMail;
 import littlewins.winTrackFile;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.mylogging;
+import systemio.textio;
+import trackgps.simpleGPX;
 import trackgps.traceGPS;
 
 /**
@@ -67,7 +70,10 @@ public class CartoViewController {
     configProg myConfig;
     StringBuilder sbError;
     String RC = "\n";    
-    traceGPS extTrace;
+    traceGPS igcTrack;
+    simpleGPX gpxTrack;
+    String trackFileName;
+    int typeTrack;     // 1 IGC  2 GPX
     private File snapFile;  
     private String screenHtml;
     
@@ -75,10 +81,7 @@ public class CartoViewController {
     @FXML
     public void initialize() {
    
-    }    
-
-     
-    
+    }             
     
     @FXML
     private void showMeasure(ActionEvent event) {
@@ -90,17 +93,30 @@ public class CartoViewController {
         FileChooser fileChooser = new FileChooser();
 
         //Set extension filter
+        fileChooser.setTitle(i18n.tr("Fichier GPX ou IGC"));
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.gpx)", "*.gpx");
-        FileChooser.ExtensionFilter igcFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.igc)"), "*.igc");
-        fileChooser.getExtensionFilters().add(extFilter);
+        FileChooser.ExtensionFilter igcFilter = new FileChooser.ExtensionFilter("IGC files (*.igc)", "*.igc");
+        fileChooser.getExtensionFilters().addAll(extFilter,igcFilter);
 
         //Show open file dialog
         File selectedFile = fileChooser.showOpenDialog(null);        
         if (selectedFile != null){    
-            extTrace = new traceGPS(selectedFile,true, myConfig);
-            if (extTrace.isDecodage()) {  
-                showExtTrack();
-            }  
+            String fileExt = textio.getFileExtension(selectedFile).toUpperCase(); 
+            trackFileName = textio.getBaseName(selectedFile.getName());
+            switch (fileExt) {
+                case "IGC":
+                    igcTrack = new traceGPS(selectedFile,true, myConfig);   
+                    if (igcTrack.isDecodage()) {  
+                        showIGC();
+                    }                     
+                    break;
+                case "GPX":
+                    gpxTrack = new simpleGPX(selectedFile,myConfig);   
+                    if (gpxTrack.isDecodage()) {  
+                        showGPX();
+                    }                     
+                    break;
+            } 
         }
     }      
     
@@ -134,6 +150,7 @@ public class CartoViewController {
         
         String sCoord = null;       
         int idxMap = 0;
+        trackFileName = null;
         
         if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
             try {
@@ -160,9 +177,12 @@ public class CartoViewController {
         }       
     }
     
-    private void showExtTrack() {
-        
-        map_carto_track  mapTrack = new map_carto_track(extTrace, myConfig.getIdxMap(), i18n); 
+    private void showIGC() {
+        System.out.println(igcTrack.getLatMini());
+        System.out.println(igcTrack.getLongMini());
+        System.out.println(igcTrack.getLatMaxi());
+        System.out.println(igcTrack.getLongMaxi());
+        map_carto_igc  mapTrack = new map_carto_igc(igcTrack, myConfig.getIdxMap(), i18n); 
         if (mapTrack.isMap_OK()) {       
             screenHtml = mapTrack.getMap_HTML();
             viewMap.getEngine().loadContent(screenHtml);         
@@ -170,6 +190,19 @@ public class CartoViewController {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertNumError(mapTrack.getErrorCode());            
         }
+    }
+    
+    private void showGPX() {
+        
+        map_carto_gpx  mapTrack = new map_carto_gpx(gpxTrack, myConfig.getIdxMap(), i18n); 
+        if (mapTrack.isMap_OK()) {       
+            screenHtml = mapTrack.getMap_HTML();
+            viewMap.getEngine().loadContent(screenHtml);         
+        } else {            
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(mapTrack.getErrorCode());            
+        }        
+        
     }
     
     private boolean snapshot() {
@@ -180,8 +213,9 @@ public class CartoViewController {
         WritableImage snapImage = viewMap.snapshot(new SnapshotParameters(), null);
 
         // code from http://java-buddy.blogspot.fr/2012/12/save-writableimage-to-file.html
-        try {
-            String fileName = extTrace.suggestShortName()+".png";
+        try {     
+            String fileName = "logfly.png";;
+            if (trackFileName != null) fileName = trackFileName+".png";                    
             snapFile = systemio.tempacess.getAppFile("Logfly", fileName);
             RenderedImage renderedImage = SwingFXUtils.fromFXImage(snapImage, null);
             ImageIO.write(renderedImage, "png",snapFile);
