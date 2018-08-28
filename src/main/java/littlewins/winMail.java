@@ -10,6 +10,7 @@ import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.concurrent.Task;
@@ -264,10 +265,13 @@ public class winMail {
         StringBuilder sbTxFile = new StringBuilder();
         try {
             URL url = new URL(privateData.phpMail.toString());
-            final MultipartUtility http = new MultipartUtility(url);            
+            final MultipartUtility http = new MultipartUtility(url);             
             http.addFormField("full_name", "");
             http.addFormField("fromemail", txtAdress.getText());
             http.addFormField("toemail", txtDest.getText());
+            //byte[] b = txtSubject.getText().getBytes(StandardCharsets.UTF_8);
+           // String utfSubject = new String(b);
+            //http.addFormField("subject", utfSubject);
             http.addFormField("subject", txtSubject.getText());
             sbTxFile.append(txFile.getText());
             if (supportMsg) {
