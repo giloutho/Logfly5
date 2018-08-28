@@ -196,15 +196,26 @@ public class SitesViewController {
             @Override
             public void updateItem(Sitemodel item, boolean empty) {
                 super.updateItem(item, empty) ;
-                if (item == null) {
+                try {
+                    if (item == null) {
+                        setStyle("");
+                    } else if (item.getType() != null) {
+                            if (item.getType().equals("D")) {
+                            setStyle("-fx-text-background-color: darkslateblue;");
+                        } else if (item.getType().equals("A")) {                  
+                            setStyle("-fx-text-background-color: darkolivegreen;");   
+                        } else {
+                            setStyle("-fx-text-background-color: darksalmon;");
+                        }                    
+                    } else {
+                        setStyle("");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Erreur : "+item.getNom());
                     setStyle("");
-                } else if (item.getType().equals("D")) {
-                    setStyle("-fx-text-background-color: darkslateblue;");
-                } else if (item.getType().equals("A")) {                  
-                    setStyle("-fx-text-background-color: darkolivegreen;");   
-                } else {
-                    setStyle("-fx-text-background-color: darksalmon;");
                 }
+                        
+
             }
         });        
        
