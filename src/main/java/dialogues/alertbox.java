@@ -90,6 +90,30 @@ public class alertbox {
             case 102:    
                 msg = i18n.tr("Problème de lecture sur le carnet de vol");                          
                 break;
+            case 202:    
+                msg = i18n.tr("Impossible de créer le dossier AIRSP");                          
+                break;   
+            case 204:    
+                msg = i18n.tr("Module Reverbin introuvable");                          
+                break;           
+            case 206:    
+                msg = i18n.tr("Reversale non connecté");                          
+                break;                    
+            case 208:    
+                msg = i18n.tr("FRIDX.bin non généré");                          
+                break;
+            case 210:    
+                msg = i18n.tr("FRDATA.bin non généré");                          
+                break;    
+            case 212:    
+                msg = i18n.tr("Erreur pendant la copie de FRDATA.bin et FRIDX.bin");                          
+                break;                   
+            case 214:    
+                msg = i18n.tr("Génération des fichiers FRDATA.bin et FRIDX.bin réussie");                          
+                break;           
+            case 220:    
+                msg = i18n.tr("Impossible de créer la sélection d'espaces aériens");                          
+                break;                     
             case 1000:
                 // Error in reading the parameters
                 msg = i18n.tr("Problème de lecture sur le fichier des paramètres");                          
@@ -177,7 +201,10 @@ public class alertbox {
                 break;         
             case 1370:
                 msg = i18n.tr("Erreur de génération GeoJson");                          
-                break;                  
+                break;             
+            case 1380 :
+                msg = i18n.tr("Génération GPX impossible : lsTracks vide");                          
+                break;                
             default:
                 msg = i18n.tr("Erreur indéterminée");
         }        
