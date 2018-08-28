@@ -24,7 +24,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.WritableImage;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import leaflet.map_visu;
@@ -39,6 +43,7 @@ import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.listLeague;
 import systemio.mylogging;
+import trackgps.checkAirspace;
 import trackgps.scoring;
 import trackgps.traceGPS;
 
@@ -63,6 +68,9 @@ public class FullMapController {
     
     @FXML
     private Button btXcplanner;
+    
+    @FXML
+    private Button btCheck;    
     
     @FXML
     private Button btHtml;    
@@ -140,7 +148,12 @@ public class FullMapController {
     @FXML
     private void handleXcp(ActionEvent event) {
         xcpTranslation();
-    }     
+    }
+    
+    @FXML
+    private void handleCheck(ActionEvent event) {
+        airChecking();
+    }
     
     private void askScoring() {
         scoring currScore = new scoring(this,myConfig);  
@@ -343,6 +356,60 @@ public class FullMapController {
         }
     }
     
+    private void airChecking() {
+        int res = -1;
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(i18n.tr("Format OpenAir"), "*.txt"));              
+        File selectedFile = fileChooser.showOpenDialog(null);            
+        if(selectedFile != null) {
+            checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile);
+            if (trackCheck.isAirDbLoad()) {               
+                if (mapTrace.isDecodage()) {  
+                    res = trackCheck.prepareCheck(mapTrace);
+                    if (res == 1) {
+                        System.out.println(trackCheck.getAirToCheck()+" airspaces sélectionnés");
+                        System.out.println(trackCheck.getAirPolygons()+" polygones créés");
+                        int badPoints = trackCheck.checkPoints();
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        StringBuilder sbInfo = new StringBuilder();
+                        sbInfo.append(i18n.tr("Fichier")).append(" : ").append(selectedFile.getName()).append("\r\n");
+                        sbInfo.append("    ").append(String.valueOf(badPoints)).append(" ").append(i18n.tr("violation(s)"));                       
+                        if (badPoints == 0) {
+                            aError.alertInfo(sbInfo.toString());                        
+                        } else {
+                            aError.alertError(sbInfo.toString());   
+                            mapTrace.setAirPoints(badPoints);
+                            mapTrace.setGeoJsonAirsp(trackCheck.getViGeoJson());
+                            mapTrace.setGeoJsonBadPts(trackCheck.getPtGeoJson());  
+                            try {
+                                map_visu visuFullMap = new map_visu(mapTrace, myConfig);
+                                if (visuFullMap.isMap_OK()) {                                
+                                    carnetHTML = visuFullMap.getMap_HTML();
+                            /** ----- Debut Debug --------*/ 
+                            final Clipboard clipboard = Clipboard.getSystemClipboard();
+                            final ClipboardContent content = new ClipboardContent();
+                            content.putString(carnetHTML);            
+                            clipboard.setContent(content);
+                            /** ----- Fin Debug --------*/                                     
+                                    viewMap.getEngine().loadContent(carnetHTML,"text/html");
+                                }
+
+                            } catch (Exception e) {                                
+                                aError.alertError(e.getMessage());                 
+                            }                                                        
+                        }
+                    } else {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertNumError(res);
+                    }
+                }
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(res);
+            }                          
+        }        
+    }
+    
     private String askLocationName(double dLat, double dLong) {
         String res = i18n.tr("Inconnu");
         
@@ -494,9 +561,22 @@ public class FullMapController {
     private void winTraduction() {
         btInfo.setText(i18n.tr("Infos"));
         btMesure.setText(i18n.tr("Mesurer"));
+        Tooltip msToolTip = new Tooltip();
+        msToolTip.setStyle(myConfig.getDecoToolTip());
+        msToolTip.setText(i18n.tr("Mesurer sur la carte"));
+        btMesure.setTooltip(msToolTip);          
         btScoring.setText(i18n.tr("Scoring"));
+        Tooltip scToolTip = new Tooltip();
+        scToolTip.setStyle(myConfig.getDecoToolTip());
+        scToolTip.setText(i18n.tr("Calculer le score de la trace"));        
+        btScoring.setTooltip(scToolTip);          
         btHtml.setText(i18n.tr("HTML"));
         btMail.setText(i18n.tr("Mail"));
+        btCheck.setText(i18n.tr("Vérification"));
+        Tooltip checkToolTip = new Tooltip();
+        checkToolTip.setStyle(myConfig.getDecoToolTip());
+        checkToolTip.setText(i18n.tr("Vérifier les espaces aériens"));
+        btCheck.setTooltip(checkToolTip);        
         btClose.setText(i18n.tr("Fermer"));                
     }    
 }
