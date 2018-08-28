@@ -4,7 +4,6 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.web.WebView?>
 
 <AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.FullMapController">
@@ -15,11 +14,10 @@
             <Button fx:id="btMesure" layoutX="10.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showMeasure" prefHeight="27.0" prefWidth="80.0" text="fMesure" />
             <Button fx:id="btHtml" layoutX="140.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#recHTML" prefHeight="27.0" prefWidth="80.0" text="fHTML" />
             <Button fx:id="btMail" layoutX="214.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#sendMail" prefHeight="27.0" prefWidth="80.0" text="fMail" />
-            <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="27.0" prefWidth="60.0" />
             <Button fx:id="btScoring" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showLeague" prefHeight="27.0" prefWidth="80.0" text="fScoring" />
             <ChoiceBox fx:id="chbLeague" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="75.0" />
             <Button fx:id="btXcplanner" layoutX="410.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="90.0" mnemonicParsing="false" onAction="#handleXcp" prefHeight="27.0" prefWidth="90.0" text="XC Planner" />
-            <Pane layoutX="390.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="27.0" prefWidth="40.0" />
+            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="100.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="100.0" text="fVérification" />
             <Button fx:id="btClose" layoutX="278.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#closeMap" prefHeight="27.0" prefWidth="80.0" text="fClose" />
         </items>
       </ToolBar>
