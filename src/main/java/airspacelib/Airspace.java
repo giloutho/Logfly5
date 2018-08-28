@@ -32,6 +32,11 @@ public class Airspace {
         AltLimit_Bottom_Ref = AltitudeReference.STD;
         AltLimit_Bottom_Unit = AltitudeUnit.F;
         originalText = new StringBuilder();
+        latMini = 0 ;
+        latMaxi = 0;
+        longMini = 0;
+        longMaxi = 0;
+        violations = 0;        
     }
 
     public AirspaceCategory Category;
@@ -59,10 +64,12 @@ public class Airspace {
     private org.locationtech.jts.geom.Geometry Geometry;
     private org.locationtech.jts.geom.LineString Line;
     public ArrayList<Coordinate> coordinates;
-    public double latMini;
-    public double latMaxi;
-    public double longMini;
-    public double longMaxi;
+    private double latMini;
+    private double latMaxi;
+    private double longMini;
+    private double longMaxi;
+    private int violations;
+    private String dbGeoJson;
     
     public double getLatMini() {
         return latMini;
@@ -79,8 +86,23 @@ public class Airspace {
     public double getLongMaxi() {
         return longMaxi;
     }
-        
 
+    public int getViolations() {
+        return violations;
+    }
+
+    public void setViolations(int violations) {
+        this.violations = violations;
+    }
+
+    public String getDbGeoJson() {
+        return dbGeoJson;
+    }
+
+    public void setDbGeoJson(String dbGeoJson) {
+        this.dbGeoJson = dbGeoJson;
+    }
+            
     public Boolean checkGeometry()
     {
         if (coordinates == null) return false;
