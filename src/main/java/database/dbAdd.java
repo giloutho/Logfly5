@@ -100,10 +100,13 @@ public class dbAdd {
                     // Track offset is stored in a double
                     // Cast in long type is for eliminate decimals
                     preparedStatement.setString(10,String.format("%d",(long)pTrace.getUtcOffset()*60));
-                    preparedStatement.setString(11,pTrace.getsVoile());
+                    String sVoile = pTrace.getsVoile();
+                    if (sVoile == null || sVoile.trim().equals("")) {
+                        sVoile = myConfig.getDefaultVoile();
+                    }
+                    preparedStatement.setString(11,sVoile);
                     try {
-			preparedStatement.executeUpdate();  
-                        System.out.println("Insertion OK");  
+			preparedStatement.executeUpdate();   
                         res = 0;
                     } catch ( Exception e ) {
                         res = 1104;   // Insertion error in flights file                                           
