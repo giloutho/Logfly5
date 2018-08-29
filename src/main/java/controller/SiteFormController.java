@@ -7,6 +7,7 @@
 package controller;
 
 import dialogues.alertbox;
+import geoutils.geonominatim;
 import geoutils.googlegeo;
 import geoutils.position;
 import igc.pointIGC;
@@ -26,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -45,6 +47,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import leaflet.map_markers_coord;
+import littlewins.winOsmCities;
 import model.Sitemodel;
 import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
@@ -197,6 +200,7 @@ public class SiteFormController {
     private position displayPos;
     private boolean updateProgress;
     private boolean googleUpdating = false;
+    private boolean initialDisplay = true;
     
     //START | SQLITE
     private static Statement stat;
@@ -564,7 +568,13 @@ public class SiteFormController {
         googCP = null;
         googVille = null;
         googPays = null;
-        googAlt =  null;        
+        googAlt =  null;      
+        // to avoid an unnecessary call for nomatim service
+        initialDisplay = true;
+        // editMode = 0  edit an existing form   from SiteViewC
+        // editMode = 1 new site                 from SiteViewC
+        // editMode = 2 edit an existing form    from CarnetViewC
+        // editMode = 3 new site                 from CarnetViewC
         if (editMode == 0 || editMode == 2) {
             String sReq = "SELECT * FROM Site WHERE S_ID = "+idSite;
             try {        
@@ -668,9 +678,17 @@ public class SiteFormController {
         txDMSLongSec.setText(df2.format(displayPos.getLongSec_ms()));
         txDMSLongMer.setText(displayPos.getMeridien());
         
-        findTown();
-        if (googleUpdating) handleGeoloc();
-        
+        if (googleUpdating) 
+            handleGeoloc();
+        else {
+            if (initialDisplay)
+                initialDisplay = false;
+            else {
+                if (displayPos.getLatitude() != 0 && displayPos.getLongitude() != 0) 
+                    findTown();
+            }
+        }
+                
         updateProgress = false;
     }
     /**
@@ -711,18 +729,52 @@ public class SiteFormController {
     
     @FXML
     private void findCoord() {       
-        googlegeo myGoog = new googlegeo();
-        if (myGoog.googleLatLong(txLocalite.getText()) == 0) {
-            googleUpdating = true;   // to avoid a findTown in updateFieldPos;
-            txLat.setText(myGoog.getGeoLat());
-            txLong.setText(myGoog.getGeoLong());
-            iniMap(Double.parseDouble(txLat.getText()), Double.parseDouble(txLong.getText()));
+        searchOsmName(txLocalite.getText().trim());
+    }
+     
+    private void searchOsmName(String pSearch) {
+        geonominatim debGeo = new geonominatim();         
+        debGeo.askGeo(pSearch.trim());
+        ObservableList<Sitemodel> osmCities = debGeo.getOsmTowns(); 
+        int lsSize = osmCities.size();         
+        if (lsSize > 0) {
+            winOsmCities wCities = new winOsmCities(i18n, osmCities, this);  
         } else {
-            //txLocalite.setText(null);
-            txLocalite.setPromptText(myGoog.getGeoStatus());
+            displayDefault(debGeo.getGeoError());
         }
     }
+    
+    public void returnFromOsmCities(Sitemodel pSelectedCity) {
         
+        df2 = new DecimalFormat("#0.0000", decimalFormatSymbols);
+        df3 = new DecimalFormat("##0.0000", decimalFormatSymbols);
+        
+        try {
+            if (pSelectedCity.getLatitude() != null && pSelectedCity.getLongitude() != null) {
+                googleUpdating = true;   // to avoid a findTown in updateFieldPos;
+                txLat.setText(df2.format(pSelectedCity.getLatitude()));
+                txLong.setText(df3.format(pSelectedCity.getLongitude()));
+                googVille = pSelectedCity.getVille();
+                googCP = pSelectedCity.getCp();
+                googPays = pSelectedCity.getPays();
+                txLocalite.setText(googVille);
+                txPays.setText(googPays);
+                txCP.setText(googCP);
+                iniMap(pSelectedCity.getLatitude(), pSelectedCity.getLongitude());                
+            } else {
+                displayDefault(i18n.tr("Non trouvé..."));
+            }
+        } catch ( Exception e) {
+            displayDefault(i18n.tr("Problème de geolocalisation"));
+        }            
+    }    
+        
+    private void displayDefault(String sMsg) {    
+        
+            txLocalite.clear();
+            txLocalite.setPromptText(sMsg); 
+    }    
+    
     private void findTown() {
         String finalSiteDeco = "";
         
@@ -736,28 +788,56 @@ public class SiteFormController {
             // Best results with a low precision in coordinates
             if (sLat.length() > 6) sLat = sLat.substring(0, 6);
             if (sLong.length() > 6) sLong = sLong.substring(0, 6);
-            String sCoord = sLat+","+sLong;  
-            googlegeo myGoog = new googlegeo();
-            if (myGoog.googleReverseGeo(sCoord) == 0) {
-                googCP = myGoog.getGeoCP();
-                googVille = myGoog.getGeoVille();
-                googPays = myGoog.getGeoPays();
+            
+            geonominatim nom = new geonominatim();
+            nom.askReverseGeo(sLat, sLong);
+            if (nom.getGeoStatus().equals("OK")) {
+                System.out.println("Ville : "+nom.getGeoVille());
+                googCP = nom.getGeoCP();
+                googVille = nom.getGeoVille();
+                googPays = nom.getGeoCodepays();
                 StringBuilder sb = new StringBuilder();
                 sb.append(googCP).append(" ").append(googVille).append(" ").append(googPays);                
-                finalSiteDeco = sb.toString();
+                finalSiteDeco = sb.toString();  
                 // elevation request
+                googlegeo myGoog = new googlegeo();
+                String sCoord = sLat+","+sLong;
                 if (myGoog.googleElevation(sCoord) == 0) {
                     System.out.println("myGoog.getGeoAlt() "+myGoog.getGeoAlt());
                     googAlt = myGoog.getGeoAlt();
                     System.out.println("googalt "+googAlt);
-                }
-            } else {
+                }                
+            }  else {
                 googCP = null;
                 googVille = null;
                 googPays = null;
             }
-        }
+        }            
+            
+//            String sCoord = sLat+","+sLong;  
+//            googlegeo myGoog = new googlegeo();
+//            if (myGoog.googleReverseGeo(sCoord) == 0) {
+//                googCP = myGoog.getGeoCP();
+//                googVille = myGoog.getGeoVille();
+//                googPays = myGoog.getGeoPays();
+//                StringBuilder sb = new StringBuilder();
+//                sb.append(googCP).append(" ").append(googVille).append(" ").append(googPays);                
+//                finalSiteDeco = sb.toString();
+//                // elevation request
+//                if (myGoog.googleElevation(sCoord) == 0) {
+//                    System.out.println("myGoog.getGeoAlt() "+myGoog.getGeoAlt());
+//                    googAlt = myGoog.getGeoAlt();
+//                    System.out.println("googalt "+googAlt);
+//                }
+//            } else {
+//                googCP = null;
+//                googVille = null;
+//                googPays = null;
+//            }
+//        }
         btGeoloc.setText(finalSiteDeco);
+        java.awt.Toolkit.getDefaultToolkit().beep();
+        btGeoloc.requestFocus();
     }
     
     private void iniMap(double dLatitude, double dLongitude) {
@@ -967,7 +1047,7 @@ public class SiteFormController {
         if (googCP != null) txCP.setText(googCP);
         if (googVille != null) txLocalite.setText(googVille);
         if (googPays != null) txPays.setText(googPays);
-        txAlt.setText(googAlt);
+        //txAlt.setText(googAlt);
     }    
     
     /**
@@ -1025,13 +1105,14 @@ public class SiteFormController {
         Tooltip longToolTip = new Tooltip();
         longToolTip.setStyle(myConfig.getDecoToolTip());
         longToolTip.setText(i18n.tr("Caractères acceptés : W E"));   
+        btGeoloc.setText("");
         Tooltip geoLocToolTip = new Tooltip();
         geoLocToolTip.setStyle(myConfig.getDecoToolTip());
         geoLocToolTip.setText(i18n.tr("Remplit les champs avec les valeurs du bouton"));
         btGeoloc.setTooltip(geoLocToolTip);
         Tooltip geocodeToolTip = new Tooltip();
         geocodeToolTip.setStyle(myConfig.getDecoToolTip());
-        geocodeToolTip.setText(i18n.tr("Recherche Google sur le nom"));        
+        geocodeToolTip.setText(i18n.tr("Recherche OpenStreetMap sur le nom"));        
         btGoogle.setTooltip(geocodeToolTip);        
         txLat.setTooltip(caracToolTip);
         txDMLatDeg.setTooltip(caracToolTip);
