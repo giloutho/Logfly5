@@ -7,6 +7,7 @@
 package leaflet;
 
 import database.dbSearch;
+import geoutils.geonominatim;
 import geoutils.googlegeo;
 import igc.pointIGC;
 import java.io.BufferedReader;
@@ -475,16 +476,27 @@ public class map_visu {
             DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
             decimalFormatSymbols.setDecimalSeparator('.');        
             DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
-            String sCoord = decimalFormat.format(traceVisu.getLatDeco())+","+decimalFormat.format(traceVisu.getLongDeco());
-            googlegeo myGoog = new googlegeo();
-            if (myGoog.googleReverseGeo(sCoord) == 0) {
+            
+            geonominatim nom = new geonominatim();
+            nom.askReverseGeo(decimalFormat.format(traceVisu.getLatDeco()), decimalFormat.format(traceVisu.getLongDeco()));
+            if (nom.getGeoStatus().equals("OK")) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
-                System.out.println("Déco sb : "+sb.toString());
+                sb.append(nom.getGeoCodepays()).append(" ").append(nom.getGeoVille());
                 siteDeco = sb.toString();                
             } else {
                 siteDeco = "";
-            }
+            }       
+            
+//            String sCoord = decimalFormat.format(traceVisu.getLatDeco())+","+decimalFormat.format(traceVisu.getLongDeco());
+//            googlegeo myGoog = new googlegeo();
+//            if (myGoog.googleReverseGeo(sCoord) == 0) {
+//                StringBuilder sb = new StringBuilder();
+//                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
+//                siteDeco = sb.toString();                
+//            } else {
+//                siteDeco = "";
+//            }
+            
             if (siteDeco.length() > 25) 
                 finalSiteDeco = siteDeco.substring(0,25);
             else
@@ -511,16 +523,28 @@ public class map_visu {
             DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
             decimalFormatSymbols.setDecimalSeparator('.');        
             DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
-            String sCoord = decimalFormat.format(lastPoint.Latitude)+","+decimalFormat.format(lastPoint.Longitude);
-            googlegeo myGoog = new googlegeo();
-            if (myGoog.googleReverseGeo(sCoord) == 0) {
+            
+            geonominatim nom = new geonominatim();
+            nom.askReverseGeo(decimalFormat.format(lastPoint.Latitude), decimalFormat.format(lastPoint.Longitude));
+            if (nom.getGeoStatus().equals("OK")) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
-                System.out.println("Atterro sb "+sb.toString());
-                siteAtterro = sb.toString();               
+                sb.append(nom.getGeoCodepays()).append(" ").append(nom.getGeoVille());
+                siteAtterro = sb.toString();                
             } else {
                 siteAtterro = "";
-            }           
+            }               
+            
+//            String sCoord = decimalFormat.format(lastPoint.Latitude)+","+decimalFormat.format(lastPoint.Longitude);            
+//            googlegeo myGoog = new googlegeo();
+//            if (myGoog.googleReverseGeo(sCoord) == 0) {
+//                StringBuilder sb = new StringBuilder();
+//                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
+//                System.out.println("Atterro sb "+sb.toString());
+//                siteAtterro = sb.toString();               
+//            } else {
+//                siteAtterro = "";
+//            }           
+            
             if (siteAtterro.length() > 25) 
                 finalSiteAtterro = siteAtterro.substring(0,25);
             else
