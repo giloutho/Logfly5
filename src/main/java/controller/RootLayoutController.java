@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import Logfly.Main;
 import dialogues.alertbox;
 import dialogues.dialogbox;
+import geoutils.geonominatim;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -40,7 +42,9 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import littlewins.winLog;
 import littlewins.winMail;
+import littlewins.winOsmCities;
 import littlewins.winWeb;
+import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -438,7 +442,7 @@ public class RootLayoutController {
             aError.alertNumError(20);   // Invalid configuration            
         }           
         
-    }
+    }        
     
     private void sendMailSupport() {
         if (myConfig.isValidConfig()) {
