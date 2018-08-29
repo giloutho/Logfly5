@@ -6,6 +6,7 @@
  */
 package Logfly;
 
+import controller.AirspaceController;
 import dialogues.alertbox;
 import java.io.IOException;
 import javafx.application.Application;
@@ -15,6 +16,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import controller.CarnetViewController;
+import controller.CartoViewController;
 import controller.DashViewController;
 import controller.GPSViewController;
 import controller.ImportViewController;
@@ -48,6 +50,8 @@ public class Main extends Application {
     private SitesViewController controlSites;
     private WaypViewController controlWayp;
     private XcpViewController controlXcp;
+    private AirspaceController controlAirSp;
+    private CartoViewController controlCarto;
     private StringBuilder sbError;
     
     
@@ -62,9 +66,9 @@ public class Main extends Application {
         // Current version
         Release release = new Release();
         release.setpkgver("5.0");        
-        release.setPkgrel("15");
+        release.setPkgrel("17");
         // last bundle
-        release.setseverity("5.15");
+        release.setseverity("5.17");
         
         String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel();
         this.primaryStage.setTitle(currVersion);
@@ -78,7 +82,8 @@ public class Main extends Application {
             i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
                                     
             initRootLayout();        
-            showCarnetOverview();    
+            showCarnetOverview();  
+                        
             try {
                 checkUpdate checkUpgrade = new checkUpdate(release, myConfig);
             } catch (Exception e) {
@@ -307,6 +312,8 @@ public class Main extends Application {
         }
     }
     
+    
+    
     /**
      * Display waypoint form inside root window
      */
@@ -349,9 +356,94 @@ public class Main extends Application {
                     controlWayp.setMainApp(this); 
                     controlWayp.setWinMax();
                     fullWayp.showAndWait();
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }
 
+    /**
+     * Display airspaces utilities form inside root window
+     */
+    public void showAirspaceView() {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/airspace.fxml"));
+            AnchorPane openAirOverview = (AnchorPane) loader.load();            
+// ==========       Litlle window            
+//                    controlAirSp = loader.getController();  
+//                    rootLayout.setCenter(openAirOverview);                                                      
+// =========== Full window
+            Stage fullAirSp = new Stage();            
+            fullAirSp.initModality(Modality.WINDOW_MODAL);       
+            fullAirSp.initOwner(this.getPrimaryStage());
+            Scene scene = null;
+            if (myConfig.getOS() == osType.LINUX) {
+                // With this code for Linux, this is not OK with Win and Mac 
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                scene = new Scene(openAirOverview, screenBounds.getWidth(), screenBounds.getHeight());
+            } else {
+                // With this code, subStage.setMaximized(true) don't run under Linux
+                // PROVISOIREMENT scene = new Scene(waypOverview, 500, 400);
+                scene = new Scene(openAirOverview, 1100, 600);
+            }                                    
+            fullAirSp.setScene(scene);
 
+            // Initialization of a communication bridge between CarnetView and KmlView
+            controlAirSp = loader.getController();
+            controlAirSp.setAirStage(fullAirSp);  
+            controlAirSp.setWinMax();
+            
+            controlAirSp.setRootBridge(rootLayoutController);
+            controlAirSp.setMainApp(this); 
 
+            fullAirSp.showAndWait();
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }    
+    
+    
+    /**
+     * Display mùap utilities form inside root window
+     */
+    public void showCartoOverview() {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/CartoView.fxml"));
+            AnchorPane cartoOverview = (AnchorPane) loader.load();            
+// ==========       Litlle window            
+            //controlCarto = loader.getController();  
+            //rootLayout.setCenter(cartoOverview);                                                  
+// Full window
+            Stage fullCarto = new Stage();            
+            fullCarto.initModality(Modality.WINDOW_MODAL);       
+            fullCarto.initOwner(this.getPrimaryStage());
+            Scene scene = null;
+            if (myConfig.getOS() == osType.LINUX) {
+                // With this code for Linux, this is not OK with Win and Mac 
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                scene = new Scene(cartoOverview, screenBounds.getWidth(), screenBounds.getHeight());
+            } else {
+                // With this code, subStage.setMaximized(true) don't run under Linux
+                // PROVISOIREMENT scene = new Scene(waypOverview, 500, 400);
+                scene = new Scene(cartoOverview, 1100, 600);
+            }                                    
+            fullCarto.setScene(scene);
+
+            // Initialization of a communication bridge between CarnetView and KmlView
+            controlCarto = loader.getController();
+            controlCarto.setCartoStage(fullCarto);                
+            controlCarto.setWinMax();
+                   
+            controlCarto.setRootBridge(rootLayoutController);
+            controlCarto.setMainApp(this);         
+            fullCarto.showAndWait();
 
         } catch (IOException e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -393,17 +485,31 @@ public class Main extends Application {
         try {
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/XcplannerView.fxml"));
-            AnchorPane xcpview = (AnchorPane) loader.load();            
+            AnchorPane xcpview = (AnchorPane) loader.load();     
+            
+            Stage fullXcp = new Stage();            
+            fullXcp.initModality(Modality.WINDOW_MODAL);       
+            fullXcp.initOwner(this.getPrimaryStage());
+            Scene scene = null;
+            if (myConfig.getOS() == osType.LINUX) {
+                // With this code for Linux, this is not OK with Win and Mac 
+                // This code found on http://java-buddy.blogspot.fr/2012/02/javafx-20-full-screen-scene.html
+                Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                scene = new Scene(xcpview, screenBounds.getWidth(), screenBounds.getHeight());
+            } else {
+                // With this code, subStage.setMaximized(true) don't run under Linux
+                // PROVISOIREMENT scene = new Scene(waypOverview, 500, 400);
+                scene = new Scene(xcpview, 1100, 600);
+            }                                    
+            fullXcp.setScene(scene);            
             
             // Initialization of a communication bridge between Xccontroller an RootLayout
             controlXcp = loader.getController();  
-            // Controller needs an access to main app
-            // with this, we avoid a NullPointerException with a call to
-            // mainApp.getPrimaryStage() in RootLayoutController     
+            controlXcp.setXcpStage(fullXcp);                
+            controlXcp.setWinMax();  
+            controlXcp.setRootBridge(rootLayoutController);
             controlXcp.setMainApp(this);
-            
-            // Place logbook window in center of RootLayout.
-            rootLayout.setCenter(xcpview);                                                      
+            fullXcp.showAndWait();                                                      
             
         } catch (IOException e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
