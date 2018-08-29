@@ -8,7 +8,7 @@ package controller;
 
 import dialogues.alertbox;
 import dialogues.dialogbox;
-import geoutils.googlegeo;
+import geoutils.geonominatim;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -416,11 +416,16 @@ public class FullMapController {
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
-        String sCoord = decimalFormat.format(dLat)+","+decimalFormat.format(dLong);
-        googlegeo myGoog = new googlegeo();
-        if (myGoog.googleReverseGeo(sCoord) == 0) {
-            res = myGoog.getGeoVille();
-             
+//        String sCoord = decimalFormat.format(dLat)+","+decimalFormat.format(dLong);
+//        googlegeo myGoog = new googlegeo();
+//        if (myGoog.googleReverseGeo(sCoord) == 0) {
+//            res = myGoog.getGeoVille();
+//             
+//        } 
+        geonominatim nom = new geonominatim();
+        nom.askReverseGeo(decimalFormat.format(dLat), decimalFormat.format(dLong));
+        if (nom.getGeoStatus().equals("OK")) {
+            res = nom.getGeoVille();             
         } 
         
         return res;
