@@ -58,7 +58,7 @@
                      <graphic>
                         <ImageView fx:id="top_Score" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@images/search.png" />
+                              <Image url="@images/loupe.png" />
                            </image>
                         </ImageView>
                      </graphic>
