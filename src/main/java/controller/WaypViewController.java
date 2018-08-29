@@ -10,6 +10,7 @@ import Logfly.Main;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
+import geoutils.geonominatim;
 import geoutils.googlegeo;
 import geoutils.position;
 import gps.compass;
@@ -67,11 +68,13 @@ import javafx.stage.Stage;
 import leaflet.map_waypoints;
 import littlewins.winGPS;
 import littlewins.winMail;
+import littlewins.winOsmCities;
 import littlewins.winPoint;
 import littlewins.winTrackFile;
 import littlewins.winUsbWWayp;
 import littlewins.winUsbWayp;
 import model.Balisemodel;
+import model.Sitemodel;
 import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -1531,38 +1534,9 @@ public class WaypViewController {
     private void handleGo() {
         if (pointList.size() == 0) {
             if (txLocality.getText() != null && !txLocality.getText().equals("")) {
-                try {
-                    googlegeo myGoog = new googlegeo();
-                    if (myGoog.googleLatLong(txLocality.getText().trim()) == 0) {
-                        defaultPos.setLatitudeDd(Double.parseDouble(myGoog.getGeoLat()));     
-                        defaultPos.setLongitudeDd(Double.parseDouble(myGoog.getGeoLong())); 
-
-                        // an empty list is required for correct initialization of tableview
-                        ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
-                        String infoFile = i18n.tr("Nouveau fichier")+"   ";
-                        displayWpFile(emptyList, infoFile);                    
-                    } else {
-                        txLocality.clear();
-                        txLocality.setPromptText(i18n.tr("Lieu non trouvé..."));                    
-                    }
-                } catch (Exception e) {
-                    txLocality.clear();
-                    txLocality.setPromptText(i18n.tr("Problème de geolocalisation"));                                            
-                }                      
+                searchOsmName(txLocality.getText().trim());
             } else {
-                if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
-                    try {
-                        defaultPos.setLatitudeDd(Double.parseDouble(myConfig.getFinderLat()));     
-                        defaultPos.setLongitudeDd(Double.parseDouble(myConfig.getFinderLong())); 
-                        // an empty list is required for correct initialization of tableview
-                        ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
-                        String infoFile = i18n.tr("Nouveau fichier")+"   ";
-                        displayWpFile(emptyList, infoFile);                           
-                    } catch (Exception e) {
-                        txLocality.clear();
-                        txLocality.setPromptText(i18n.tr("Problème sur paramètres"));                             
-                    }                         
-                }
+                displayDefault(i18n.tr("Par défaut..."));
             }
         } else {
             dialogbox dConfirm = new dialogbox(i18n);
@@ -1573,7 +1547,60 @@ public class WaypViewController {
                 handleGo();
             }            
         }
-    }    
+    }  
+    
+    private void searchOsmName(String pSearch) {
+        geonominatim debGeo = new geonominatim();         
+        debGeo.askGeo(pSearch.trim());
+        ObservableList<Sitemodel> osmCities = debGeo.getOsmTowns(); 
+        int lsSize = osmCities.size();         
+        if (lsSize > 0) {
+            winOsmCities wCities = new winOsmCities(i18n, osmCities, this);  
+        } else {
+            displayDefault(debGeo.getGeoError());
+        }
+    }
+    
+    public void returnFromOsmCities(Sitemodel pSelectedCity) {
+        
+        try {
+            if (pSelectedCity.getLatitude() != null && pSelectedCity.getLongitude() != null) {
+                defaultPos.setLatitudeDd(pSelectedCity.getLatitude());     
+                defaultPos.setLongitudeDd(pSelectedCity.getLongitude()); 
+                // an empty list is required for correct initialization of tableview
+                ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
+                String infoFile = i18n.tr("Nouveau fichier")+"   ";
+                displayWpFile(emptyList, infoFile); 
+            } else {
+                displayDefault(i18n.tr("Lieu non trouvé..."));
+            }
+        } catch ( Exception e) {
+            displayDefault(i18n.tr("Problème de geolocalisation"));
+        }            
+    }
+    
+    private void displayDefault(String sMsg) {    
+        
+        try {
+            txLocality.clear();
+            txLocality.setPromptText(sMsg);     
+            if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
+                defaultPos.setLatitudeDd(Double.parseDouble(myConfig.getFinderLat()));     
+                defaultPos.setLongitudeDd(Double.parseDouble(myConfig.getFinderLong()));  
+            } else {
+                defaultPos.setLatitudeDd(45.00);
+                defaultPos.setLongitudeDd(6.00);
+            }                        
+        } catch (Exception e) {
+            defaultPos.setLatitudeDd(45.00);
+            defaultPos.setLongitudeDd(6.00);                                        
+        } finally {
+            // an empty list is required for correct initialization of tableview
+            ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
+            String infoFile = i18n.tr("Nouveau fichier")+"   ";
+            displayWpFile(emptyList, infoFile);                                           
+        }   
+    }
     
     /**
      * after trying many solutions in javascript, this solution seems the simplest 
