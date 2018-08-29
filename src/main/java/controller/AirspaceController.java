@@ -73,6 +73,7 @@ import org.json.simple.parser.ParseException;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.osType;
 import systemio.mylogging;
 import systemio.tempacess;
 import trackgps.checkAirspace;
@@ -987,20 +988,24 @@ public class AirspaceController {
     private boolean reversaleCheck() {
         
         boolean res = false;
-        usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
-        if (usbRever.isConnected()) {
-            int airspOk = usbRever.airspaceReady(myConfig.getOS());
-            if (airspOk != 0) {
-                alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertNumError(airspOk);
-            } else {
-                res = true;
-            }
+        if (myConfig.getOS() == osType.LINUX) {
+            alertbox aInfo = new alertbox(myConfig.getLocale());
+            aInfo.alertInfo(i18n.tr("Transfert vers Reversale non supporté sous Linux"));
         } else {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertNumError(206);    // Reversale non connecté
-        } 
-        
+            usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
+            if (usbRever.isConnected()) {
+                int airspOk = usbRever.airspaceReady(myConfig.getOS());
+                if (airspOk != 0) {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertNumError(airspOk);
+                } else {
+                    res = true;
+                }
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(206);    // Reversale non connecté
+            } 
+        }        
         return res;
     }
     
