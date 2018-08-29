@@ -22,6 +22,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import littlewins.winSaveXcp;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -62,6 +63,8 @@ public class XcpViewController {
     configProg myConfig;
     StringBuilder sbError;
     String RC = "\n";
+    private Stage xcpStage;   
+    private RootLayoutController rootController; 
     
     private Paint colorBadValue = Paint.valueOf("FA6C04");
     private Paint colorGoodValue = Paint.valueOf("FFFFFF");
@@ -163,6 +166,28 @@ public class XcpViewController {
             winSaveXcp saveWin = new winSaveXcp(i18n, sUrl, usedPrefix);        
         }
     }    
+    
+    
+    /**
+     * Sets the stage of this Viewer.
+     *
+     * @param pXcpStage
+     */
+    public void setXcpStage(Stage pXcpStage) {
+        this.xcpStage = pXcpStage;
+    }        
+    
+    public void setWinMax()  {           
+        xcpStage.setMaximized(true);
+    }       
+    
+    /**
+     * Set a communication bridge with RootViewController 
+     * @param callExterne 
+     */
+    public void setRootBridge(RootLayoutController callRoot)  {
+        this.rootController = callRoot;     
+    }       
     
     /**
      * Is called by the main application to give a reference back to itself.
