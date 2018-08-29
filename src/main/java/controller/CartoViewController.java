@@ -232,7 +232,7 @@ public class CartoViewController {
     /**
      * Sets the stage of this Viewer.
      *
-     * @param pWaypStage
+     * @param pCartoStage
      */
     public void setCartoStage(Stage pCartoStage) {
         this.cartoStage = pCartoStage;
