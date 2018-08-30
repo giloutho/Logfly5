@@ -75,8 +75,8 @@ public class RootLayoutController {
     private Label mnSites;    
     @FXML
     private Label mnBalises;    
-    @FXML
-    private Label mnXcplanner;
+    //@FXML
+    //private Label mnXcplanner;
     @FXML
     private Label mnEspaces;    
     @FXML
@@ -146,10 +146,10 @@ public class RootLayoutController {
             switchMenu(9);
             mainApp.showWaypOverview();
         });  
-        mnXcplanner.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(13);
-            mainApp.showXcplannerview();
-        });           
+//        mnXcplanner.setOnMouseClicked((MouseEvent event) -> {
+//            switchMenu(13);
+//            mainApp.showXcplannerview();
+//        });           
         mnEspaces.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(10);
             mainApp.showAirspaceView();
@@ -266,7 +266,7 @@ public class RootLayoutController {
         mnStat.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnSites.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnBalises.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
-        mnXcplanner.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
+        //mnXcplanner.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         mnEspaces.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnPhotos.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnCarto.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
@@ -308,7 +308,7 @@ public class RootLayoutController {
                 mnCarto.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;    
             case 13:    
-                mnXcplanner.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+               // mnXcplanner.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
                 break;                    
             default:
                 throw new AssertionError();
