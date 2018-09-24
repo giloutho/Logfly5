@@ -256,6 +256,10 @@ public class CartoViewController {
         i18n = I18nFactory.getI18n("","lang/Messages",CartoViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         iniMap();
+        cartoStage.setOnHiding( event -> {
+            rootController.switchMenu(1);
+            rootController.mainApp.showCarnetOverview();
+        });          
     }     
     
     private void winTraduction() {
