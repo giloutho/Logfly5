@@ -66,7 +66,7 @@ public class winMail {
      */
     public winMail(configProg currConfig, String pFilePath, boolean pSupport) {
         myConfig = currConfig;
-        supportMsg = pSupport;
+        supportMsg = pSupport;  
         i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);   
         if (pFilePath != null)  {
             filePath = pFilePath;
@@ -205,7 +205,7 @@ public class winMail {
         // Pour aller à la ligne et il y a plein d'autres possibilités
         txFile.setWrapText(true);
         txFile.setPrefSize(480, 250);
-        //txFile.setPadding(new Insets(10, 20, 10, 20));
+        //txFile.setPadding(new Insets(10, 20, 10, 20)); 
         
         // Boutons
         HBox buttonBar = new HBox();
