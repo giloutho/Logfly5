@@ -137,7 +137,7 @@ public class winGPS {
                 
     private void showWin() {
         subStage = new Stage();   
-        subStage.setTitle(i18n.tr("Coucou"));
+        subStage.setTitle(i18n.tr("Choix GPS"));
         subStage.initModality(Modality.APPLICATION_MODAL);
         Label lbGPS = new Label("GPS ");
         lbGPS.setMinWidth(50);
