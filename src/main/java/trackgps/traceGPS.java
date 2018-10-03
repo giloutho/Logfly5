@@ -1449,7 +1449,8 @@ public class traceGPS {
         }
         InputStream stream = new ByteArrayInputStream(FicGPX.getBytes(StandardCharsets.UTF_8));
         try {           
-            GPX mygpx = GPX.read(stream);
+            boolean lenient = true;
+            GPX mygpx = GPX.read(stream,lenient); 
             List<Track> lTrack = mygpx.getTracks();
             if (lTrack.size() > 0) {                
                 List<WayPoint> lWayp = mygpx.tracks().flatMap(Track::segments).flatMap(TrackSegment::points).collect(Collectors.toList());                       
