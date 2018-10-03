@@ -93,8 +93,9 @@ public class simpleGPX {
             if (strGPX.indexOf("creator=\"\"") > 0 ) {
                 strGPX = strGPX.replace("creator=\"\"", "creator=\"Logfly\"");
             }
-            InputStream stream = new ByteArrayInputStream(strGPX.getBytes(StandardCharsets.UTF_8));            
-            GPX mygpx = GPX.read(stream);           
+            InputStream stream = new ByteArrayInputStream(strGPX.getBytes(StandardCharsets.UTF_8));    
+            boolean lenient = true;
+            GPX mygpx = GPX.read(stream,lenient);          
             List<Track> lTrack = mygpx.getTracks();
             nbTracks = lTrack.size();
             for (int i = 0; i < lTrack.size(); i++) {
