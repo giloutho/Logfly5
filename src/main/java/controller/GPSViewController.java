@@ -950,11 +950,7 @@ public class GPSViewController {
                                 strTrack = gpsd.directFlight(1,idxTable);  
                                 break;
                             case FlymOld :
-                                if (fmold.getIGC(item.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {                            
-                                    strTrack = fmold.getFinalIGC();
-                                } else {
-                                    strTrack = null;
-                                }
+                                strTrack = gpsd.directFlight(2,idxTable);
                                 break;
                             case Rever :
                                 strTrack = usbRever.getTrackFile(item.getCol5());
