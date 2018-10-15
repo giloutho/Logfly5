@@ -243,7 +243,8 @@ public class GPSViewController {
         sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
         if (dConfirm.YesNo("", sbMsg.toString()))   {     
             nbToInsert = nbVols;
-            insertWithProgress();            
+           // insertWithProgress();        
+           gpsInsertion();
         }              
     }
    
@@ -807,61 +808,12 @@ public class GPSViewController {
         Thread thread = new Thread(task);
         thread.start();        
     }
-    
-    /**
-     * Insertion of checked flights in the logbook with a different thread
-     */
-    private void insertWithProgress() {
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
-            @Override
-            public Void call() throws InterruptedException { 
-                // actually we can use a common method
-                // if necessary, we put a switch (currGPS) here
-                insertFromGPS();
-                
-                return null ;                
-            }
         
-        };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
-
-        // when task ended, return to logbook view
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            String resInsertion = nbInserted+" / "+nbToInsert+i18n.tr(" vol(s) inséré(s) dans le carnet");
-            alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
-            if (currGPS != winGPS.gpsType.Syride)  {
-                // Display number of flights inserted
-                aInsFlights.alertInfo(resInsertion);                
-            } else {
-                dialogbox dConfirm = new dialogbox(i18n); 
-                // Display number of flights inserted and for moving tracks in archives folder
-                if (dConfirm.YesNo(resInsertion,i18n.tr("Procéder à l'archivage ?"))) {
-                    archiveSyride();
-                }
-            }
-            if(errInsertion != null && !errInsertion.isEmpty())  {
-                aInsFlights.alertInfo(i18n.tr(" Traces non insérées dans le carnet")+"\r\n"+errInsertion);
-            }
-            rootController.changeCarnetView();
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
-    }
-        
-
     /**
     * For each flight to insert, specific download GPS instruction is called
     * IGC file is inserted in database
     */
-    private void insertFromGPS() {                        
-        int nbFlightIn = 0;
+    private void gpsInsertion() {                        
         boolean gpsOK = false;
         StringBuilder errMsg = new StringBuilder();         
         
@@ -931,87 +883,145 @@ public class GPSViewController {
                         gpsOK = usbXctracer.isConnected();
                         break;                        
             }            
-            if (gpsOK){      
-                int idxTable = 0;
-                for (Gpsmodel item : checkedData){                    
-                    strTrack = null;   
-                    idxTable++;
-                    if (item.getChecked())  { 
-                        try {
-                            // Download instruction of the flight is stored in column 5
-                            switch (currGPS) {
-                            case Flytec20 :
-                                strTrack = gpsd.directFlight(3,idxTable); 
-                                break;
-                            case Flytec15 :
-                                strTrack = fliq.getIGC(item.getCol5());
-                                break;    
-                            case FlymSD :
-                                strTrack = gpsd.directFlight(1,idxTable);  
-                                break;
-                            case FlymOld :
-                                strTrack = gpsd.directFlight(2,idxTable);
-                                break;
-                            case Rever :
-                                strTrack = usbRever.getTrackFile(item.getCol5());
-                                break;
-                            case Sky :
-                                strTrack = usbSky.getTrackFile(item.getCol5());
-                                break;  
-                            case Sky3 :
-                                strTrack = usbSky3.getTrackFile(item.getCol5());
-                                break;   
-                            case Flynet :
-                                strTrack = usbFlynet.getTrackFile(item.getCol5());
-                                break;  
-                            case Sensbox :
-                                strTrack = usbSensbox.getTrackFile(item.getCol5());
-                                break;                                   
-                            case Oudie :
-                                strTrack = usbOudie.getTrackFile(item.getCol5());
-                                break;     
-                            case Syride :
-                                strTrack = diskSyr.getTrackFile(item.getCol5());
-                                break;                                  
-                            case Connect :
-                                strTrack = usbConnect.getTrackFile(item.getCol5());
-                                break;    
-                            case Element :
-                                strTrack = usbElem.getTrackFile(item.getCol5());
-                                break;                                   
-                            case CPilot :
-                                strTrack = usbCompass.getTrackFile(item.getCol5());
-                                break;                                  
-                            case XCTracer :
-                                strTrack = usbXctracer.getTrackFile(item.getCol5());
-                                break;                                 
-                            }                                  
-                            if (strTrack != null ) {                                
-                                traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
-                                if (downTrack.isDecodage()) { 
-                                    dbAdd myDbAdd = new dbAdd(myConfig,i18n);
-                                    int resAdd = myDbAdd.addVolCarnet(downTrack);
-                                    if (resAdd == 0) nbFlightIn++;
-                                } else {
-                                    errMsg.append(item.getDate()+" "+item.getHeure()+"\r\n");
-                                }                            
-                            } else {
-                                errMsg.append(item.getDate()+" "+item.getHeure()+"\r\n");
+            if (gpsOK){                      
+   
+                ProgressForm pForm = new ProgressForm();
+                
+                Task<Void> task = new Task<Void>() {
+                    
+                    @Override
+                    public Void call() throws InterruptedException { 
+                        int idxTable = 0;
+                        int nbFlightIn = 0;
+                        int nbFlightRead = 0;
+                        int totalInsert = 0;
+                        for (Gpsmodel itemCount : checkedData){                    
+                            if (itemCount.getChecked()) totalInsert++;                    
+                        }                                
+                        for (Gpsmodel item : checkedData){                    
+                            strTrack = null;   
+                            idxTable++;
+                            if (item.getChecked())  { 
+                                nbFlightRead++;
+                                try {
+                                    // Download instruction of the flight is stored in column 5
+                                    switch (currGPS) {
+                                    case Flytec20 :
+                                        strTrack = gpsd.directFlight(3,idxTable); 
+                                        break;
+                                    case Flytec15 :
+                                        strTrack = fliq.getIGC(item.getCol5());
+                                        break;    
+                                    case FlymSD :
+                                        strTrack = gpsd.directFlight(1,idxTable);  
+                                        break;
+                                    case FlymOld :
+                                        strTrack = gpsd.directFlight(2,idxTable);
+                                        break;
+                                    case Rever :
+                                        strTrack = usbRever.getTrackFile(item.getCol5());
+                                        break;
+                                    case Sky :
+                                        strTrack = usbSky.getTrackFile(item.getCol5());
+                                        break;  
+                                    case Sky3 :
+                                        strTrack = usbSky3.getTrackFile(item.getCol5());
+                                        break;   
+                                    case Flynet :
+                                        strTrack = usbFlynet.getTrackFile(item.getCol5());
+                                        break;  
+                                    case Sensbox :
+                                        strTrack = usbSensbox.getTrackFile(item.getCol5());
+                                        break;                                   
+                                    case Oudie :
+                                        strTrack = usbOudie.getTrackFile(item.getCol5());
+                                        break;     
+                                    case Syride :
+                                        strTrack = diskSyr.getTrackFile(item.getCol5());
+                                        break;                                  
+                                    case Connect :
+                                        strTrack = usbConnect.getTrackFile(item.getCol5());
+                                        break;    
+                                    case Element :
+                                        strTrack = usbElem.getTrackFile(item.getCol5());
+                                        break;                                   
+                                    case CPilot :
+                                        strTrack = usbCompass.getTrackFile(item.getCol5());
+                                        break;                                  
+                                    case XCTracer :
+                                        strTrack = usbXctracer.getTrackFile(item.getCol5());
+                                        break;                                 
+                                    }                                  
+                                    if (strTrack != null ) {                                
+                                        traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
+                                        if (downTrack.isDecodage()) { 
+                                            dbAdd myDbAdd = new dbAdd(myConfig,i18n);
+                                            int resAdd = myDbAdd.addVolCarnet(downTrack);
+                                            if (resAdd == 0) nbFlightIn++;
+                                        } else {
+                                            sbError = new StringBuilder("GPS download problem for track : ");
+                                            sbError.append(item.getDate()+" "+item.getHeure()+"\r\n");
+                                            sbError.append("Unable to decode track before database insertion\r\n");
+                                            mylogging.log(Level.SEVERE, sbError.toString());                                         
+                                        }                            
+                                    } else {
+                                        sbError = new StringBuilder("GPS download problem for track : ");
+                                        sbError.append(item.getDate()+" "+item.getHeure()+"\r\n");
+                                        sbError.append("track is null\r\n");
+                                        mylogging.log(Level.SEVERE, sbError.toString());    
+                                    }
+                                    updateProgress(nbFlightRead, totalInsert);
+                                } catch (Exception e) {
+                                    sbError = new StringBuilder("GPS download problem for track : ");
+                                    sbError.append(item.getDate()+" "+item.getHeure()+"\r\n");
+                                    sbError.append(e.toString()).append("\r\n");
+                                    mylogging.log(Level.SEVERE, sbError.toString());    
+                                }                    
                             }
-                        } catch (Exception e) {
-                            errMsg.append(item.getDate()+" "+item.getHeure()+"\r\n");
-                        }                    
+                        }  
+                        
+                        nbInserted = nbFlightIn;
+                        
+                        return null ;                 
+                    }                
+                };
+                
+                // binds progress of progress bars to progress of task:
+                pForm.activateProgressBar(task);
+                
+                // when task ended, return to logbook view
+                task.setOnSucceeded(event -> {
+                    pForm.getDialogStage().close();
+                    String resInsertion = nbInserted+" / "+nbToInsert+i18n.tr(" vol(s) inséré(s) dans le carnet");
+                    alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
+                    if (currGPS != winGPS.gpsType.Syride)  {
+                        // Display number of flights inserted
+                        aInsFlights.alertInfo(resInsertion);                
+                    } else {
+                        dialogbox dConfirm = new dialogbox(i18n); 
+                        // Display number of flights inserted and for moving tracks in archives folder
+                        if (dConfirm.YesNo(resInsertion,i18n.tr("Procéder à l'archivage ?"))) {
+                            archiveSyride();
+                        }
                     }
-                }                   
-                nbInserted = nbFlightIn;
-                errInsertion = errMsg.toString();
+                    if(errInsertion != null && !errInsertion.isEmpty())  {
+                        aInsFlights.alertInfo(i18n.tr(" Traces non insérées dans le carnet")+"\r\n"+errInsertion);
+                    }
+                    rootController.changeCarnetView();
+                });   
+                
+                pForm.getDialogStage().show();
+
+                Thread thread = new Thread(task);
+                thread.start(); 
+                
             }
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
         } 
-    }
+    }    
     
     private void archiveSyride() {
         
