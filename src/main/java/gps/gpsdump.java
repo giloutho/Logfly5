@@ -275,6 +275,10 @@ public class gpsdump {
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
+                // Sometimes, a flight is missing
+                // Log report temp.igc missing
+                // We try to wait one second 
+                
                 String ligne = ""; 
                 if (res == 0) {
                     BufferedReader output = getOutput(p);                    
@@ -313,7 +317,9 @@ public class gpsdump {
         String res = null;
         try {
             int resDown = getFlight(idGPS,idFlight);
-            if (resDown == 0) {
+            if (resDown == 0 && igcFile.exists()) {
+                // We want to check GPSDump communication
+                mylogging.log(Level.INFO, strLog.toString());
                 textio fread = new textio();                                    
                 res = fread.readTxt(igcFile);
             } else {
