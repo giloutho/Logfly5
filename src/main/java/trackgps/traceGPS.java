@@ -167,13 +167,13 @@ public class traceGPS {
         if (pFichier != null && !pFichier.isEmpty())  {
             pathFichier = pFile.getAbsolutePath();
             String fileExt = textio.getFileExtension(pFile).toUpperCase();     
-            if (fileExt.equals("IGC"))
+            if (fileExt.equals("IGC") || fileExt.equals("igc"))
             {
                 FicIGC = pFichier;
                 Origine = "IGC";
                 decode_IGC();
             }
-            else if (fileExt.equals("GPX"))
+            else if (fileExt.equals("GPX") || fileExt.equals("gpx"))
             {
                 FicGPX = pFichier;
                 Origine = "GPX";
