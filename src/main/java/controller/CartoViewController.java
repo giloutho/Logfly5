@@ -94,29 +94,31 @@ public class CartoViewController {
 
         //Set extension filter
         fileChooser.setTitle(i18n.tr("Fichier GPX ou IGC"));
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.gpx)", "*.gpx");
-        FileChooser.ExtensionFilter igcFilter = new FileChooser.ExtensionFilter("IGC files (*.igc)", "*.igc");
-        fileChooser.getExtensionFilters().addAll(extFilter,igcFilter);
 
         //Show open file dialog
         File selectedFile = fileChooser.showOpenDialog(null);        
         if (selectedFile != null){    
             String fileExt = textio.getFileExtension(selectedFile).toUpperCase(); 
-            trackFileName = textio.getBaseName(selectedFile.getName());
-            switch (fileExt) {
-                case "IGC":
-                    igcTrack = new traceGPS(selectedFile,true, myConfig);   
-                    if (igcTrack.isDecodage()) {  
-                        showIGC();
-                    }                     
-                    break;
-                case "GPX":
-                    gpxTrack = new simpleGPX(selectedFile,myConfig);   
-                    if (gpxTrack.isDecodage()) {  
-                        showGPX();
-                    }                     
-                    break;
-            } 
+            if (fileExt.equals("IGC") || fileExt.equals("GPX")) {
+                trackFileName = textio.getBaseName(selectedFile.getName());
+                switch (fileExt) {
+                    case "IGC":
+                        igcTrack = new traceGPS(selectedFile,true, myConfig);   
+                        if (igcTrack.isDecodage()) {  
+                            showIGC();
+                        }                     
+                        break;
+                    case "GPX":
+                        gpxTrack = new simpleGPX(selectedFile,myConfig);   
+                        if (gpxTrack.isDecodage()) {  
+                            showGPX();
+                        }                     
+                        break;
+                } 
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(i18n.tr("Fichiers acceptés : IGC ou GPX"));                
+            }    
         }
     }      
     
