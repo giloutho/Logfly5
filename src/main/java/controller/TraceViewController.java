@@ -48,6 +48,7 @@ import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
+import static systemio.textio.getFileExtension;
 import systemio.webio;
 import trackgps.scoring;
 import trackgps.traceGPS;
@@ -104,39 +105,42 @@ public class TraceViewController {
     @FXML
     private void selectTrackFolder() throws Exception {
         FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter igcFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.igc)"), "*.igc");
-        FileChooser.ExtensionFilter gpxFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.gpx)"), "*.gpx");
-        fileChooser.getExtensionFilters().addAll(igcFilter,gpxFilter);
         File selectedFile = fileChooser.showOpenDialog(dialogStage);        
-        if(selectedFile != null){            
-            extTrace = new traceGPS(selectedFile,true, myConfig);
-            if (extTrace.isDecodage()) {                 
-                map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
-                StringBuilder sbInfo = new StringBuilder();
-                sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
-                sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(" ").append(i18n.tr("points"));
-                this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
-                if (visuMap.isMap_OK()) {
-                    mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
-                }
-                webAnchor.setVisible(true);
-                buttonBar.setVisible(true);   
-                top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                new EventHandler<MouseEvent>() {
-                    @Override public void handle(MouseEvent e) {                        
-                        clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+        if(selectedFile != null){ 
+            String extension = getFileExtension(selectedFile);
+            if (extension.equals("IGC") || extension.equals("igc") || extension.equals("GPX") || extension.equals("gpx")) {
+                extTrace = new traceGPS(selectedFile,true, myConfig);
+                if (extTrace.isDecodage()) {                 
+                    map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
+                    StringBuilder sbInfo = new StringBuilder();
+                    sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
+                    sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(" ").append(i18n.tr("points"));
+                    this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
+                    if (visuMap.isMap_OK()) {
+                        mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
                     }
-                });  
-            }  else {
+                    webAnchor.setVisible(true);
+                    buttonBar.setVisible(true);   
+                    top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                    new EventHandler<MouseEvent>() {
+                        @Override public void handle(MouseEvent e) {                        
+                            clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+                        }
+                    });  
+                }  else {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    String errMsg;
+                    if (extTrace.Tb_Tot_Points.size() > 0)  {             
+                        errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
+                    } else {                            
+                        errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+                    }
+                    aError.alertError(errMsg);
+                }   
+            } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                String errMsg;
-                if (extTrace.Tb_Tot_Points.size() > 0)  {             
-                    errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
-                } else {                            
-                    errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
-                }
-                aError.alertError(errMsg);
-            }                            
+                aError.alertError(i18n.tr("Fichiers acceptés : IGC ou GPX"));
+            }
         }
     }
     
