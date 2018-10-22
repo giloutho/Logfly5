@@ -67,6 +67,8 @@ import littlewins.winPhoto;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import database.DbUpdate;
+import database.dbSearch;
 import igc.mergingIGC;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -169,6 +171,8 @@ public class CarnetViewController  {
     private MenuItem cmManual;
     private BooleanProperty manualMenu = new SimpleBooleanProperty(false);
     private ContextMenu tableContextMenu;
+    
+    private dbSearch search;
     
     @FXML
     private void initialize() {
@@ -451,6 +455,7 @@ public class CarnetViewController  {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp; 
         myConfig = mainApp.myConfig;
+        search = new dbSearch(myConfig);
         i18n = I18nFactory.getI18n("","lang/Messages",CarnetViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
@@ -488,6 +493,24 @@ public class CarnetViewController  {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(i18n.tr("Aucun vol sélectionné..."));                       
         }        
+    }
+    
+    private void updateSite()
+    {    
+      for (Carnet flight : tableVols.getSelectionModel().getSelectedItems())
+      {
+      	System.out.println("selected : " + flight);
+
+      	String newSite = search.rechSiteCorrect(Double.parseDouble(flight.getLatDeco()), Double.parseDouble(flight.getLongDeco()), true);
+      	if (newSite != null)
+      	{
+      		if (DbUpdate.updateFlightSite(Integer.parseInt(flight.getIdVol()), newSite))
+      			flight.setSite(newSite);
+      	}
+      	//TODO confirm update with dialog box
+      }
+      
+      tableVols.refresh();
     }
     
     /**
@@ -869,6 +892,15 @@ public class CarnetViewController  {
             }
         });
         tableContextMenu.getItems().add(cmItemEx);
+        
+        MenuItem cmItemFindSite = new MenuItem(i18n.tr("Mettre à jour le site"));
+        cmItemFindSite.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                updateSite();
+            }
+        });
+        tableContextMenu.getItems().add(cmItemFindSite);
+        
         
         cmManual.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
