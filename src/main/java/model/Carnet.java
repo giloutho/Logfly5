@@ -181,5 +181,11 @@ public class Carnet {
 
     public void setCamera(String cameraStr) {
         camera.set(cameraStr); 
-    }              
+    }   
+    
+    @Override
+    public String toString()
+    {
+    	return getIdVol() + " (" + getDate() + " " + getHeure() + ")";
+    }
 }

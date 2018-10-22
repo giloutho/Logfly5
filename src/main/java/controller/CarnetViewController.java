@@ -173,7 +173,7 @@ public class CarnetViewController  {
     private ContextMenu tableContextMenu;
     
     private dbSearch search;
-    
+        
     @FXML
     private void initialize() {
         // We need to intialize i18n before TableView building
@@ -496,21 +496,34 @@ public class CarnetViewController  {
     }
     
     private void updateSite()
-    {    
-      for (Carnet flight : tableVols.getSelectionModel().getSelectedItems())
-      {
-      	System.out.println("selected : " + flight);
+    {
+    	String dialogHeader = i18n.tr("Mise à jour du site");
+    	int nbSelected = tableVols.getSelectionModel().getSelectedItems().size();
+    	String s = nbSelected > 2 ? "s" : ""; 
+    	
+    	dialogbox dialog = new dialogbox(i18n);
+    	if (dialog.YesNo(dialogHeader, i18n.tr("Voulez-vous mettre à jour le site pour ") + nbSelected + i18n.tr(" vol"+s+" sélectionné"+s+" ?")))
+    	{
+    		int nbUpdated = 0;
+        for (Carnet flight : tableVols.getSelectionModel().getSelectedItems())
+        {
+        		mylogging.log(Level.FINEST, "Check flight " + flight);
 
-      	String newSite = search.rechSiteCorrect(Double.parseDouble(flight.getLatDeco()), Double.parseDouble(flight.getLongDeco()), true);
-      	if (newSite != null)
-      	{
-      		if (DbUpdate.updateFlightSite(Integer.parseInt(flight.getIdVol()), newSite))
-      			flight.setSite(newSite);
-      	}
-      	//TODO confirm update with dialog box
-      }
-      
-      tableVols.refresh();
+        	String newSite = search.rechSiteCorrect(Double.parseDouble(flight.getLatDeco()), Double.parseDouble(flight.getLongDeco()), true);
+        	if (newSite != null)
+        	{
+       			mylogging.log(Level.FINE, "Update flight " + flight + " with site '" + newSite + "'");
+        		if (DbUpdate.updateFlightSite(Integer.parseInt(flight.getIdVol()), newSite))
+        		{
+        			flight.setSite(newSite);
+        			nbUpdated++;
+        		}
+        	}
+        }
+        
+      	dialog.info(dialogHeader, nbUpdated + i18n.tr(" vol"+ (nbUpdated>1 ? "s" : "") +" mis à jour"));
+        tableVols.refresh();        
+			}
     }
     
     /**

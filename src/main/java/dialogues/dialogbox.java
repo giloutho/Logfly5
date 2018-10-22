@@ -12,6 +12,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.layout.Region;
+
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 
@@ -21,6 +23,8 @@ import org.xnap.commons.i18n.I18nFactory;
  * from http://code.makery.ch/blog/javafx-dialogs-official/
  */
 public class dialogbox {    
+    private static final int MIN_HEIGHT=100;
+    private static final int MIN_WIDTH=200;
     
     private I18n i18n; 
 
@@ -42,6 +46,7 @@ public class dialogbox {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"",myOk,myCancel);        
         alert.setHeaderText(msgH);
         alert.setContentText(msgT);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == myOk){
             answer = true;                                  
@@ -50,7 +55,17 @@ public class dialogbox {
         }
         
         return answer;
-    }    
+    }
+    
+    public void info(String header, String msg) 
+    {  
+      ButtonType btnOk = new ButtonType(i18n.tr("Ok"), ButtonBar.ButtonData.OK_DONE);
+      Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, btnOk);        
+      alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+      alert.setHeaderText(header);
+      alert.showAndWait();
+  }
+
     
     /**
      * Dialog box with Yes or Cancel
@@ -108,4 +123,5 @@ public class dialogbox {
         return res;
     }
     
+     
 }
