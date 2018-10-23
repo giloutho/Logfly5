@@ -23,3 +23,7 @@ hs_err_pid*
 /licenseheader.txt
 /.nb-gradle/
 /build/
+/.gradle/
+/.settings/
+/.classpath
+/.project
