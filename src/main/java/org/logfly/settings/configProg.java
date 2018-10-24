@@ -774,14 +774,16 @@ public class configProg {
             case WINDOWS :
                 File fWin = new File(System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.prf");
                 if (fWin.exists() && fWin.isFile()) {
-                    res = litOldPrf(fWin);
-                }  
+                  res = litOldPrf(fWin);
+                }
+                break;
             case MACOS :
                 File fMac = new File(System.getProperty("user.home")+"/Library/Preferences/logfly.prf");
                 if(fMac.exists() && fMac.isFile()) {
-                res = litOldPrf(fMac);
-            }   
-                                                    
+                	res = litOldPrf(fMac);
+                }                  
+                break;
+            default:
         }
                         
         return res;        
