@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="580.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.KmlViewController">
+<AnchorPane id="AnchorPane" prefHeight="580.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.logfly.controller.KmlViewController">
    <children>
       <RadioButton fx:id="rdAltGPS" layoutX="35.0" layoutY="52.0" mnemonicParsing="false" text="fAlt GPS">
          <toggleGroup>

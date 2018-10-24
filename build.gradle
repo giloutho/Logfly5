@@ -21,7 +21,7 @@ buildscript {
 // prefer. In this case NetBeans will not add these tasks but you may rely on
 // your own implementation.
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'Logfly.Main'
+    ext.mainClass = 'org.logfly.Main'
 }
 
 repositories {
@@ -39,12 +39,16 @@ dependencies {
     //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
     compile fileTree(dir: 'src/lib', include: '*.jar')
     testCompile group: 'junit', name: 'junit', version: '4.10'
+    
+    // Why don't we use depencies instead of copying libs ??? 
+    // https://mvnrepository.com/artifact/org.locationtech.jts/jts-core
+		//compile group: 'org.locationtech.jts', name: 'jts-core', version: '1.16.0'
 }
 
 apply plugin: 'javafx-gradle-plugin'
 
 jfx {
-    mainClass = 'Logfly.Main'
+    mainClass = 'org.logfly.Main'
     jfxMainAppJarName = "Logfly.jar"
     vendor = 'Logfly'
     appName = 'Logfly5'
