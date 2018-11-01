@@ -482,7 +482,8 @@ public class ConfigViewController {
                 rootController.changeCarnetView();
                 txnewdb.setVisible(false);
                 btnewcarnetok.setVisible(false);
-                btnewcarnetcancel.setVisible(false);  
+                btnewcarnetcancel.setVisible(false); 
+                myConfig.setValidConfig(true);
             }                      
         } else {
             // No beep with JavaFX, awt is necessary            
@@ -560,6 +561,7 @@ public class ConfigViewController {
                 if (myConfig.dbVerif(myConfig.getFullPathDb())) {
                     myConfig.setValidConfig(true);
                     rootController.changeCarnetView();
+                    myConfig.setValidConfig(true);
                     dialogStage.close();
                 } else {                   
                     aError.alertNumError(100); // db connection problem
@@ -600,6 +602,7 @@ public class ConfigViewController {
                             Path dstPath = Paths.get(myConfig.getPathDb()+File.separator+selectedFile.getName());
                             Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);            
                             changeDb(selectedFile.getName());
+                            myConfig.setValidConfig(true);
                             dialogStage.close();
                         } catch (Exception ex) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -823,8 +826,10 @@ public class ConfigViewController {
      * @param selectedDb 
      */
     private void changeDb(String selectedDb) {
-        if (myConfig.dbSwitch(selectedDb))
-        rootController.changeCarnetView();
+        if (myConfig.dbSwitch(selectedDb)) {
+            rootController.changeCarnetView();
+            myConfig.setValidConfig(true);
+        }
     }
     
     /**
