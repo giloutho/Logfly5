@@ -838,7 +838,10 @@ public class traceGPS {
                             // the next line is temporarily escaped
                             //if (Point1.AltiGPS <= 0) Point1.setComment("ZERO");
                             // make a comparison of GPS lat and baro alt
-                            if (Point1.AltiBaro > 0 && Point1.AltiGPS > 0 && Math.abs(Point1.AltiGPS -  Point1.AltiBaro) > 500) Point1.setComment("BAD");
+                            
+                            // Cf Jeremy track with difference of more 500m between GPS and baro
+                            // We removed comparison of alt
+                          //  if (Point1.AltiBaro > 0 && Point1.AltiGPS > 0 && Math.abs(Point1.AltiGPS -  Point1.AltiBaro) > 500) Point1.setComment("BAD");
                             // Cf. track 02/08/11 where GPS alt = 46500...
                             if (Point1.AltiGPS > BadAlti) Point1.setComment("BAD");
                             // air speed
