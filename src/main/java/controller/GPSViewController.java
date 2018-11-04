@@ -891,7 +891,7 @@ public class GPSViewController {
                     
                     @Override
                     public Void call() throws InterruptedException { 
-                        int idxTable = 0;
+                        int idxTable = -1;
                         int nbFlightIn = 0;
                         int nbFlightRead = 0;
                         int totalInsert = 0;
@@ -910,8 +910,8 @@ public class GPSViewController {
                                         strTrack = gpsd.directFlight(3,idxTable); 
                                         break;
                                     case Flytec15 :
-                                        //strTrack = gpsd.directFlight(8,idxTable);
-                                        strTrack = fliq.getIGC(item.getCol5());
+                                        strTrack = gpsd.directFlight(8,idxTable);
+                                        //strTrack = fliq.getIGC(item.getCol5());
                                         break;    
                                     case FlymSD :
                                         strTrack = gpsd.directFlight(1,idxTable);  
@@ -1375,24 +1375,22 @@ public class GPSViewController {
             switch (currGPS) {                    
                     case Flytec20 :
                         //oneFlightWithProgress(currLineSelection);
-                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
                         // 3 is id of Flytec
                         oneFlightWithGpsDump(3,idx);                        
                         break;
                     case Flytec15 :
-                        //oneFlightWithProgress(currLineSelection);
-                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
-                        // 3 is id of Flytec
-                        oneFlightWithGpsDump(3,idx);                          
+                        // 8 is id of Flytec 6015
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
+                        oneFlightWithGpsDump(8,idx);                          
                         break;
                     case FlymSD :
-                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
                         // 1 is id of Flymaster SD for GPSDump
                         oneFlightWithGpsDump(1,idx);
                         break;
                     case FlymOld :
-                        //oneFlightWithProgress(currLineSelection);
-                        idx = tableImp.getSelectionModel().getSelectedIndex()+1;
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
                         // 2 is id of Flymaster Old
                         oneFlightWithGpsDump(2,idx);                          
                         break;
