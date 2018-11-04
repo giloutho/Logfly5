@@ -910,6 +910,7 @@ public class GPSViewController {
                                         strTrack = gpsd.directFlight(3,idxTable); 
                                         break;
                                     case Flytec15 :
+                                        //strTrack = gpsd.directFlight(8,idxTable);
                                         strTrack = fliq.getIGC(item.getCol5());
                                         break;    
                                     case FlymSD :
