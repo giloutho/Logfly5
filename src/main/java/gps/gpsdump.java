@@ -233,7 +233,27 @@ public class gpsdump {
                 numberIGC = "/track="+String.valueOf(idFlight);
                 break;
             case LINUX :
-                numberIGC = "-f"+String.valueOf(idFlight);
+                    switch (idGPS) {
+                        case 1 :
+                            // Flymaster
+                            numberIGC = "-f"+String.valueOf(idFlight+1);       
+                            break;
+                        case 2 :
+                            // Flymaster Old
+                            numberIGC = "-f"+String.valueOf(idFlight+1);       
+                            break;    
+                        case 3 :
+                            // 6020 6030
+                            numberIGC = "-f"+String.valueOf(idFlight+1);       
+                            break;
+                        case 8: 
+                            // 6015 
+                            // Non résolu pour le premier vol qui est numéroté 0 
+                            // donc on obtient la liste et une attente clavier
+                            numberIGC = "-f"+String.valueOf(idFlight); 
+                            break;
+                    }
+                    numberIGC = "-f"+String.valueOf(idFlight+1);                
                 break;
         }
 
