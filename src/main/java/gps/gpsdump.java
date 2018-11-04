@@ -152,7 +152,7 @@ public class gpsdump {
                         sTypeGps = "/gps=flymasterold";
                         break;
                     case WINDOWS :                     
-                        sTypeGps = "/gps=flymaster";
+                        sTypeGps = "/gps=flymasterold";
                         break;
                     case LINUX : 
                         sTypeGps = "-gy";    // A vérifier
@@ -224,8 +224,11 @@ public class gpsdump {
         igcFile = systemio.tempacess.getAppFile("Logfly", "temp.igc");
         if (igcFile.exists())  igcFile.delete();              
         String numberIGC = null;
+        // Index track is different in Mac 
         switch (myConfig.getOS()) {
             case MACOS :
+                numberIGC = "/track="+String.valueOf(idFlight+1);
+                break;
             case WINDOWS :
                 numberIGC = "/track="+String.valueOf(idFlight);
                 break;
