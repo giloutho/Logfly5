@@ -149,6 +149,8 @@ public class gpsdump {
             case 2:
                  switch (myConfig.getOS()) {
                     case MACOS :
+                        sTypeGps = "/gps=flymasterold";
+                        break;
                     case WINDOWS :                     
                         sTypeGps = "/gps=flymaster";
                         break;
