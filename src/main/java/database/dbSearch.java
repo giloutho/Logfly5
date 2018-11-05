@@ -163,7 +163,7 @@ public class dbSearch {
                         // in a 6020 we find differences of 85 sec between real duration (first point - last point)
                         // and duration displayed in the flight list of the GPS
                         totalSec = gpsTotalSec - iDiffSec;
-                        if (Math.abs(totalSec - dbDuree) < 120 && diffSecOK) {
+                        if (Math.abs(totalSec - dbDuree) < 180 && diffSecOK) {
                             errSearch = null;
                             res = true;
                             break;
