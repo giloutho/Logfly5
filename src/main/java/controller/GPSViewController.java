@@ -828,24 +828,29 @@ public class GPSViewController {
                     case Flytec20 :
                         if (fls.isPresent(currNamePort)) {
                             gpsOK = true;
+                            // We release the port for GPSDump
                             fls.closePort();
                         }  
                         break;
                     case Flytec15 :
                         if (fliq.isPresent(currNamePort)) {
                             gpsOK = true;
-                            fliq.closePort();
+                            // if GPSDump used, we must release the port 
+                            // Otherwise, port must stay open
+                            //  fliq.closePort();
                         }  
                         break;    
                     case FlymSD :
                         if (fms.isPresent(currNamePort)) {
                             gpsOK = true;  
+                            // We release the port for GPSDump
                             fms.closePort();
                         }
                         break;
                     case FlymOld :
                         if (fmold.isPresent(currNamePort)) {
                             gpsOK = true;
+                            // We release the port for GPSDump
                             fmold.closePort();
                         }
                         break;  
@@ -910,8 +915,8 @@ public class GPSViewController {
                                         strTrack = gpsd.directFlight(3,idxTable); 
                                         break;
                                     case Flytec15 :
-                                        strTrack = gpsd.directFlight(8,idxTable);
-                                        //strTrack = fliq.getIGC(item.getCol5());
+                                        //strTrack = gpsd.directFlight(8,idxTable);
+                                        strTrack = fliq.getIGC(item.getCol5());
                                         break;    
                                     case FlymSD :
                                         strTrack = gpsd.directFlight(1,idxTable);  
@@ -1380,9 +1385,10 @@ public class GPSViewController {
                         oneFlightWithGpsDump(3,idx);                        
                         break;
                     case Flytec15 :
-                        // 8 is id of Flytec 6015
                         idx = tableImp.getSelectionModel().getSelectedIndex();
-                        oneFlightWithGpsDump(8,idx);                          
+                        // 8 is id of Flytec 6015
+                        oneFlightWithProgress(currLineSelection);
+                        //oneFlightWithGpsDump(8,idx);                          
                         break;
                     case FlymSD :
                         idx = tableImp.getSelectionModel().getSelectedIndex();
