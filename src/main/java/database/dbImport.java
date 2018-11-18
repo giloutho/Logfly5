@@ -85,6 +85,14 @@ public class dbImport {
         }        
     }
     
+    private Double parseDouble(String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return Double.NaN;
+        } 
+    }    
+    
     private void csvImportFile(File importFile)  {
         
         addNb = 0;
@@ -102,20 +110,24 @@ public class dbImport {
                 String[] partLine = oneLine.split(";");
                 if (partLine.length > 3 && !partLine[0].equals("POINT_ID")) {
                    dbSearch rechSite = new dbSearch(myConfig);
-                   //String siteExist = rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]));
-                   String siteExist = null;
-                   if (siteExist == null) {
-                       dbAdd addSite = new dbAdd(myConfig, i18n);
-                       boolean addRes = addSite.importSite(partLine);
-                       if (addRes) {
-                           addSitesOK++;                                                                        
-                       } else {
-                           addSitesBad++;
-                           System.out.println("bad : "+partLine[1]+" "+partLine[2]+" "+partLine[3]);
-                       }
-                    } else {
-                       sbDoublons.append(partLine[1]).append(" ").append(siteExist).append(RC);   
-                       sbRejected.append(oneLine).append(RC);
+                   double dLat = parseDouble(partLine[2]);
+                   double dLong = parseDouble(partLine[3]);
+                   if (!Double.isNaN(dLat) && !Double.isNaN(dLong)) {
+                        //String siteExist = rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]));
+                        String siteExist = null;
+                        if (siteExist == null) {
+                            dbAdd addSite = new dbAdd(myConfig, i18n);
+                            boolean addRes = addSite.importSite(partLine);
+                            if (addRes) {
+                                addSitesOK++;                                                                        
+                            } else {
+                                addSitesBad++;
+                                System.out.println("bad : "+partLine[1]+" "+partLine[2]+" "+partLine[3]);
+                            }
+                         } else {
+                            sbDoublons.append(partLine[1]).append(" ").append(siteExist).append(RC);   
+                            sbRejected.append(oneLine).append(RC);
+                        }
                    }
                 }
             } 
