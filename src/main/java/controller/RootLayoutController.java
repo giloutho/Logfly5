@@ -18,6 +18,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import Logfly.Main;
+import database.dbParawing;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.geonominatim;
@@ -376,10 +377,10 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem1);
         
-        MenuItem cmItem2 = new MenuItem(i18n.tr("Envoi carnet"));        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Import csv"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                comingSoon();
+                importCsv();
             }
         });
         cm.getItems().add(cmItem2);          
@@ -443,6 +444,17 @@ public class RootLayoutController {
         }           
         
     }        
+    
+    private void importCsv() {
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers vols (*.csv)"), "*.csv");        
+        fileChooser.getExtensionFilters().add(csvFilter);
+        File selectedFile = fileChooser.showOpenDialog(null);  
+        if(selectedFile != null){   
+            dbParawing impParawing = new dbParawing(myConfig, i18n, this);
+            impParawing.importCsv(selectedFile);
+        }        
+    }
     
     private void sendMailSupport() {
         if (myConfig.isValidConfig()) {
