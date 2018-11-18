@@ -204,7 +204,7 @@ public class dbAdd {
     
     public boolean importSite(String[] partImport)  {
         boolean res = false;
-        StringBuilder sReq = new StringBuilder();
+        StringBuilder insertTableSQL = new StringBuilder();
         LocalDateTime ldtNow = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String sQuote ="'";
@@ -251,7 +251,6 @@ public class dbAdd {
         if (partImport.length > 15) p_Commentaire = partImport[16];        
             
         try {            
-            StringBuilder insertTableSQL = new StringBuilder();
             insertTableSQL.append("INSERT INTO Site (S_Nom,S_Localite,S_CP,S_Pays,S_Type,S_Orientation,S_Alti,S_Latitude,S_Longitude,S_Commentaire,S_Maj) VALUES");
             insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?)");
             preparedStatement = myConfig.getDbConn().prepareStatement(insertTableSQL.toString());
@@ -271,7 +270,7 @@ public class dbAdd {
         } catch ( Exception e ) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.getMessage());
-            sbError.append("\r\n").append("requête : ").append(sReq);
+            sbError.append("\r\n").append("requête : ").append(insertTableSQL.toString());
             sbError.append("\r\n").append(partImport[1]).append(";").append(partImport[2]).append(";").append(partImport[3]);
             mylogging.log(Level.SEVERE, sbError.toString());                                   
         } finally {
@@ -283,5 +282,120 @@ public class dbAdd {
         }                
         
         return res;        
+    }
+    
+    
+    public boolean importCsvFlight(String[] partCsv)  {
+        
+        boolean res = false;
+        StringBuilder insertReq = new StringBuilder();
+        LocalDateTime ldtFlight;  
+        DateTimeFormatter formatterSQL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
+        String sQuote ="'";
+        Statement stmt = null;
+        ResultSet rs = null;
+        PreparedStatement preparedStatement = null;  
+        
+        try {
+            int iYear = 2000;
+            int iMonth = 1;
+            int iDay = 1;
+            int iHour = 12;
+            int iMn = 0;
+            int iSec = 0;
+            String duration;
+            String strDuration;
+            String sSite;
+            StringBuilder sbComment = new StringBuilder();
+            String sGlider; 
+
+            // if date separator is . instead of  /
+            String sDate = partCsv[0].replaceAll("\\.","/");
+            String[] arrDate = sDate.split("/");
+            // To continue, date must be valid
+            if (arrDate.length > 2) {
+                if (arrDate[2].length() > 2) {
+                    iYear = Integer.valueOf(arrDate[2]); 
+            } else {
+                    iYear = Integer.valueOf(arrDate[2]);                      
+                    if (iYear > 70)
+                        iYear = 1900+iYear;
+                    else
+                        iYear = 2000+iYear;               
+                }                    
+            }     
+            iMonth = Integer.valueOf(arrDate[1]);
+            iDay = Integer.valueOf(arrDate[0]);
+            // if file is coming from Parawing, launch time is empty
+            if (partCsv.length < 18 ) {
+                iHour = 12;
+                iMn = 0;
+                iSec = 0;                                              
+            } else {
+                String arrTime[] = partCsv[17].split(":");
+                if (arrTime.length > 2) {
+                    iHour = Integer.valueOf(arrTime[0]);
+                    iMn = Integer.valueOf(arrTime[1]);
+                    iSec = Integer.valueOf(arrTime[2]);
+                } else if (arrTime.length > 1) {
+                    iHour = Integer.valueOf(arrTime[0]);
+                    iMn = Integer.valueOf(arrTime[1]);
+                    iSec = 0;
+                } else {
+                    iHour = 12;
+                    iMn = 0;
+                    iSec = 0;    
+                }
+            }
+            ldtFlight = LocalDateTime.of(iYear, iMonth, iDay, iHour, iMn, iSec);
+            int iPeriod = Integer.valueOf(partCsv[5]);
+            // Duration must be less than 1399 (23h59)
+            if (iPeriod > 1399) iPeriod = 1399;
+            duration =  String.valueOf(iPeriod * 60);
+            int iDurHour = iPeriod / 60;
+            int iDurMin = iPeriod - (iDurHour*60);
+            strDuration = String.valueOf(iDurHour)+"h"+String.valueOf(iDurMin)+"mn";      
+            sSite = partCsv[1].trim();
+            sbComment.append(partCsv[7]);
+            if (partCsv[8] != null && !partCsv[8].trim().equals("")) {
+                if (sbComment.length() > 1) 
+                    sbComment.append(". ").append(partCsv[8]);
+                else
+                    sbComment.append(partCsv[8]);
+            }
+            if (partCsv[9] != null && !partCsv[9].trim().equals("")) {
+                if (sbComment.length() > 1) 
+                    sbComment.append(". ").append(partCsv[9]);
+                else
+                    sbComment.append(partCsv[9]);
+            }
+            sGlider = partCsv[3].trim();    
+            try {
+                insertReq.append("INSERT INTO Vol (V_Date, V_Duree, V_sDuree, V_Site, V_Commentaire, UTC, V_Engin) VALUES");                            insertReq.append("(?,?,?,?,?,?,?)");
+                preparedStatement = myConfig.getDbConn().prepareStatement(insertReq.toString());
+                preparedStatement.setString(1,ldtFlight.format(formatterSQL));
+                preparedStatement.setString(2, duration);
+                preparedStatement.setString(3, strDuration);
+                preparedStatement.setString(4, sSite);
+                preparedStatement.setString(5, sbComment.toString());
+                preparedStatement.setString(6, "0");
+                preparedStatement.setString(7, sGlider); 
+                preparedStatement.executeUpdate();                
+                res = true;
+            } catch (Exception e) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.getMessage());
+                sbError.append("\r\n").append("requête : ").append(insertReq.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                 
+            }                                                
+        } catch (Exception e) {
+            sbError = new StringBuilder("Error during csv decoding");
+            sbError.append("\r\n").append(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }
+        
+        return res;        
+                    
     }
 }
