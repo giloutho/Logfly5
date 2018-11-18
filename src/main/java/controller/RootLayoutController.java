@@ -350,7 +350,7 @@ public class RootLayoutController {
         MenuItem cmItem2 = new MenuItem(i18n.tr("Notes de publication"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                winWeb myWeb = new winWeb(myConfig,"http://logfly.org/logfly5/historique");
+                winWeb myWeb = new winWeb(myConfig,"http://www.logfly.org/doku.php?id=historique:historique");
             }
         });
         cm.getItems().add(cmItem2);          
