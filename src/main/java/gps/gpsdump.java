@@ -230,7 +230,24 @@ public class gpsdump {
                 numberIGC = "/track="+String.valueOf(idFlight+1);
                 break;
             case WINDOWS :
-                numberIGC = "/track="+String.valueOf(idFlight);
+                switch (idGPS) {
+                        case 1 :
+                            // Flymaster
+                            numberIGC = "/track="+String.valueOf(idFlight+1);     
+                            break;
+                        case 2 :
+                            // Flymaster Old
+                            numberIGC = "/track="+String.valueOf(idFlight+1);    
+                            break;    
+                        case 3 :
+                            // 6020 6030
+                            numberIGC = "/track="+String.valueOf(idFlight+1);   
+                            break;
+                        case 8: 
+                            // 6015 
+                            numberIGC = "/track="+String.valueOf(idFlight);
+                            break;
+                    }                      
                 break;
             case LINUX :
                     switch (idGPS) {
@@ -252,8 +269,7 @@ public class gpsdump {
                             // donc on obtient la liste et une attente clavier
                             numberIGC = "-f"+String.valueOf(idFlight); 
                             break;
-                    }
-                    numberIGC = "-f"+String.valueOf(idFlight+1);                
+                    }              
                 break;
         }
 
