@@ -589,13 +589,12 @@ public class SiteFormController {
                     txOrien.setText(rs.getString(7));
                     txAlt.setText(rs.getString(8));
                     txComment.setText(rs.getString(11));
-                    switch (rs.getString(6)) {
-                        case "A":
+                    String typeSite = rs.getString(6);
+                    if (typeSite != null && typeSite.equals("A")) {
                             rdAttero.setSelected(true);
-                            break;
-                        case "D":
+                    }
+                    if (typeSite != null && typeSite.equals("D")) {                     
                             rdDeco.setSelected(true);
-                            break;
                     }
                     // First release stored a date like YYYY-MM-dd HH:MM:SS
                     // We avoid a parsing error
