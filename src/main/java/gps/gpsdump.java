@@ -142,7 +142,7 @@ public class gpsdump {
                         sTypeGps = "/gps=flymaster";
                         break;
                     case LINUX : 
-                        sTypeGps = "-gy"; 
+                        sTypeGps = "-gyn"; 
                         break;
                 }
                 break;
@@ -267,7 +267,7 @@ public class gpsdump {
                             // 6015 
                             // Non résolu pour le premier vol qui est numéroté 0 
                             // donc on obtient la liste et une attente clavier
-                            numberIGC = "-f"+String.valueOf(idFlight); 
+                            numberIGC = "-f"+String.valueOf(idFlight+1); 
                             break;
                     }              
                 break;
