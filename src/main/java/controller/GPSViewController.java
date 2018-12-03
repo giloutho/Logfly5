@@ -915,8 +915,8 @@ public class GPSViewController {
                                         strTrack = gpsd.directFlight(3,idxTable); 
                                         break;
                                     case Flytec15 :
-                                        //strTrack = gpsd.directFlight(8,idxTable);
-                                        strTrack = fliq.getIGC(item.getCol5());
+                                        strTrack = gpsd.directFlight(8,idxTable);
+                                        //strTrack = fliq.getIGC(item.getCol5());
                                         break;    
                                     case FlymSD :
                                         strTrack = gpsd.directFlight(1,idxTable);  
@@ -1387,8 +1387,8 @@ public class GPSViewController {
                     case Flytec15 :
                         idx = tableImp.getSelectionModel().getSelectedIndex();
                         // 8 is id of Flytec 6015
-                        oneFlightWithProgress(currLineSelection);
-                        //oneFlightWithGpsDump(8,idx);                          
+                        //oneFlightWithProgress(currLineSelection);
+                        oneFlightWithGpsDump(8,idx);                          
                         break;
                     case FlymSD :
                         idx = tableImp.getSelectionModel().getSelectedIndex();
