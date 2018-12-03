@@ -67,6 +67,7 @@ import littlewins.winPhoto;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import database.dbSearch;
 import igc.mergingIGC;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -95,6 +96,7 @@ import javafx.stage.Screen;
 import littlewins.winGlider;
 import littlewins.winMail;
 import littlewins.winSiteChoice;
+import model.Import;
 import model.Sitemodel;
 import photo.imgmanip;
 import settings.osType;
@@ -169,6 +171,7 @@ public class CarnetViewController  {
     private MenuItem cmManual;
     private BooleanProperty manualMenu = new SimpleBooleanProperty(false);
     private ContextMenu tableContextMenu;
+    private boolean dispAllFlights;
     
     @FXML
     private void initialize() {
@@ -382,8 +385,10 @@ public class CarnetViewController  {
         String sReq = null;
         String dbSqlDate;
         if (yearFiltre != null) {
+            dispAllFlights = false;
             sReq = "SELECT * from Vol WHERE V_Date >= '"+yearFiltre+"-01-01 00:01' AND V_Date <= '"+yearFiltre+"-12-31 23:59' ORDER BY V_Date DESC";
         } else {
+            dispAllFlights = true;
             sReq = "SELECT * from Vol ORDER BY V_Date DESC";
         }
         try {
@@ -970,6 +975,14 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemMerging);
         
+        MenuItem cmItemSitesUpdate = new MenuItem(i18n.tr("Actualiser les sites"));
+        cmItemSitesUpdate.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                totalUpdateSites();
+            }
+        });
+        cm.getItems().add(cmItemSitesUpdate);        
+        
         return cm;
     }
     
@@ -1208,6 +1221,131 @@ public class CarnetViewController  {
                 }   
             }
         }        
+    }
+    
+    private void totalUpdateSites() {
+        
+        ObservableList<Carnet> selFlights = tableVols.getItems();
+            for(Carnet flight : selFlights){  
+                String sName = flight.getSite();
+                String sLat = flight.getLatDeco();
+                String sLong = flight.getLongDeco();
+                String sId = flight.getIdVol();
+                String sReq = null;
+                try {
+                    if (sLat != null && !sLat.equals("") && sLong != null && !sLong.equals("")) {
+                        ResultSet rs = null;
+                        sReq = "SELECT V_IGC FROM Vol WHERE V_ID = ?";
+                        PreparedStatement pstmt = null;
+                        try {
+                            pstmt = myConfig.getDbConn().prepareStatement(sReq);                      
+                            pstmt.setString(1, sId); 
+                            rs = pstmt.executeQuery();
+                            if (rs.next()) {  
+                                traceGPS myTrace = new traceGPS(rs.getString("V_IGC"),null,false, myConfig);
+                                if (myTrace.isDecodage()) { 
+                                    dbSearch myRech = new dbSearch(myConfig);
+                                    String siteDeco = myRech.rechSiteCorrect(myTrace.getLatDeco(),myTrace.getLongDeco(),true);   
+                                    if (siteDeco != null && !siteDeco.isEmpty())  {
+                                    // Warning java split founded on regular expressions
+                                    // * is part of 12 characters must be escaped
+                                        String[] siteComplet = siteDeco.split("\\*");
+                                        String siteNom = null;
+                                        String sitePays = null;
+                                        if (siteComplet.length > 0) {
+                                            siteNom = siteComplet[0];
+                                            if (siteComplet.length > 1) {
+                                                sitePays = siteComplet[1];
+                                            } else {
+                                               sitePays = "..."; 
+                                            }
+                                        }
+                                        PreparedStatement updPstmt = null;
+                                        String updReq = "UPDATE Vol SET V_Site = ?, V_Pays = ? WHERE V_ID = ?"; 
+                                        try {                                           
+                                            updPstmt = myConfig.getDbConn().prepareStatement(updReq);
+                                            updPstmt.setString(1,siteNom); 
+                                            updPstmt.setString(2,sitePays);
+                                            updPstmt.setString(3,sId);
+                                            updPstmt.executeUpdate();                      
+                                            flight.setSite(siteNom);
+                                        } catch (Exception e) {
+                                            alertbox aError = new alertbox(myConfig.getLocale());
+                                            aError.alertError(e.getMessage()+"\r\n"+updReq); 
+                                        } finally {
+                                            try{                    
+                                                updPstmt.close();
+                                            } catch(Exception e) { 
+                                                alertbox aError = new alertbox(myConfig.getLocale());
+                                                aError.alertError(e.getMessage()+"\r\n"+updReq);                                             
+                                            } 
+                                        }                                                             
+                                    }
+                                }            
+                                   
+                            }                            
+                        } catch (Exception e) {
+                            alertbox aError = new alertbox(myConfig.getLocale());
+                            aError.alertError(e.getMessage()+"\r\n"+sReq); 
+                        }
+                    } else {
+                        if (sName != null && !sName.equals("")) {
+                            ResultSet rs = null;
+                            sReq = "SELECT S_Nom, S_Latitude, S_Longitude, S_Alti, S_Pays FROM Site WHERE S_Nom LIKE ?";
+                            PreparedStatement pstmt = null;
+                            try {
+                                pstmt = myConfig.getDbConn().prepareStatement(sReq);                      
+                                pstmt.setString(1, sName+"%"); 
+                                rs = pstmt.executeQuery();
+                                if (rs.next()) {  
+                                    PreparedStatement updPstmt = null;
+                                    String updReq = "UPDATE Vol SET V_LatDeco = ?, V_LongDeco = ?, V_AltDeco = ?, V_Site = ?, V_Pays = ? WHERE V_ID = ?";                     
+                                    try {                                           
+                                        updPstmt = myConfig.getDbConn().prepareStatement(updReq);
+                                        updPstmt.setString(1,rs.getString("S_Latitude")); 
+                                        updPstmt.setString(2,rs.getString("S_Longitude"));
+                                        updPstmt.setString(3,rs.getString("S_Alti"));
+                                        updPstmt.setString(4,rs.getString("S_Nom"));
+                                        updPstmt.setString(5,rs.getString("S_Pays")); 
+                                        updPstmt.setString(6,sId);
+                                        updPstmt.executeUpdate();                      
+                                        flight.setSite(rs.getString("S_Nom"));
+                                    } catch (Exception e) {
+                                        alertbox aError = new alertbox(myConfig.getLocale());
+                                        aError.alertError(e.getMessage()+"\r\n"+updReq); 
+                                    } finally {
+                                        try{                    
+                                            updPstmt.close();
+                                        } catch(Exception e) { 
+                                            alertbox aError = new alertbox(myConfig.getLocale());
+                                            aError.alertError(e.getMessage()+"\r\n"+updReq);                                         
+                                        } 
+                                    }                                     
+                                }                             
+                            } catch (Exception e) {
+                                alertbox aError = new alertbox(myConfig.getLocale());
+                                aError.alertError(e.getMessage()+"\r\n"+sReq); 
+                            } finally {
+                                try{                    
+                                    pstmt.close();
+                                } catch(Exception e) { 
+                                    alertbox aError = new alertbox(myConfig.getLocale());
+                                    aError.alertError(e.getMessage()+"\r\n"+sReq);                                 
+                                } 
+                            } 
+                        }
+                    }
+                } catch (Exception e) {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(e.getMessage()+"\r\n"+sReq);   
+                }                          
+            }
+            if (dispAllFlights) {
+                newVolsContent(null);                  
+            } else {
+                String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
+                newVolsContent(selectedYear);     
+            }
     }
     
     private void askMergingIGC() {
