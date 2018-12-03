@@ -213,7 +213,7 @@ public class gpsdump {
                         sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=flytec";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
+                        sTypeGps = "/gps=iqbasic";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
                         break;
                     case LINUX :
                         sTypeGps = "-giq";
