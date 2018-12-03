@@ -413,7 +413,7 @@ public class SitesViewController {
     @FXML
     private void pushNondef() {
         if (rdNondef.isSelected()) {
-            String sReq = "SELECT * FROM Site WHERE S_Type <> 'D' AND S_Type <> 'A' ORDER BY S_Nom";
+            String sReq = "SELECT * FROM Site WHERE  (S_Type is null or S_Type = '') OR (S_Type <> 'D' AND S_Type <> 'A') ORDER BY S_Nom";
             dataSites.clear(); 
             mapViewer.getEngine().load("about:blank");  
             fillTable(sReq);
