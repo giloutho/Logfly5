@@ -844,7 +844,9 @@ public class GPSViewController {
                         if (fms.isPresent(currNamePort)) {
                             gpsOK = true;  
                             // We release the port for GPSDump
-                            fms.closePort();
+                            // if GPSDump used, we must release the port 
+                            // Otherwise, port must stay open
+                            //fms.closePort();
                         }
                         break;
                     case FlymOld :
@@ -919,7 +921,18 @@ public class GPSViewController {
                                         //strTrack = fliq.getIGC(item.getCol5());
                                         break;    
                                     case FlymSD :
-                                        strTrack = gpsd.directFlight(1,idxTable);  
+                                        //strTrack = gpsd.directFlight(1,idxTable); 
+                                        // On veut tester Alessandro
+                                        // Old code
+                                            // Download instruction of the flight is stored in column 5
+                                            // IGC date is compsed with column 1
+                                            // Col 1 [26.04.17] -> [260417]
+                                            String sDate = item.getDate().replaceAll("\\.", "");
+                                            if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
+                                                strTrack = fms.getFinalIGC();
+                                            } else {
+                                                strTrack = null;
+                                            }                                        
                                         break;
                                     case FlymOld :
                                         strTrack = gpsd.directFlight(2,idxTable);
@@ -984,8 +997,17 @@ public class GPSViewController {
                                     mylogging.log(Level.SEVERE, sbError.toString());    
                                 }                    
                             }
-                        }  
+                        }
                         
+                        try {
+                            switch (currGPS) {  
+                                case FlymSD :
+                                    fms.closePort();
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            
+                        }                        
                         nbInserted = nbFlightIn;
                         
                         return null ;                 
@@ -1391,9 +1413,10 @@ public class GPSViewController {
                         oneFlightWithGpsDump(8,idx);                          
                         break;
                     case FlymSD :
-                        idx = tableImp.getSelectionModel().getSelectedIndex();
-                        // 1 is id of Flymaster SD for GPSDump
-                        oneFlightWithGpsDump(1,idx);
+                        oneFlightWithProgress(currLineSelection);
+//                        idx = tableImp.getSelectionModel().getSelectedIndex();
+//                        // 1 is id of Flymaster SD for GPSDump
+//                        oneFlightWithGpsDump(1,idx);
                         break;
                     case FlymOld :
                         idx = tableImp.getSelectionModel().getSelectedIndex();
