@@ -1066,7 +1066,12 @@ public class WaypViewController {
                 writeToGpsSimple();
                 break;  
             case Syride :
-                aError.alertInfo(i18n.tr("Sauvegarder sur le disque et\r\nutiliser GPSDump pour transférer les waypoints")); 
+                StringBuilder sbAlert = new StringBuilder();
+                // For i18n, it's forbidden to put /r/n in the string
+                sbAlert.append(i18n.tr("Sauvegarder sur le disque"));
+                sbAlert.append("\r\n");
+                sbAlert.append(i18n.tr("utiliser GPSDump pour transférer les waypoints"));
+                aError.alertInfo(sbAlert.toString()); 
                 break;                            
             case Connect :
                 writeToGpsSimple();
