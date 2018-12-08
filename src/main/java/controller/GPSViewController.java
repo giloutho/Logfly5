@@ -750,6 +750,7 @@ public class GPSViewController {
                     case Flytec15 :
                         readFlytec15();
                         break;
+                    case FlymPlus:
                     case FlymSD :
                         readFlymaster();
                         break;
@@ -844,11 +845,18 @@ public class GPSViewController {
                         if (fms.isPresent(currNamePort)) {
                             gpsOK = true;  
                             // We release the port for GPSDump
+                            fms.closePort();
+                        }
+                        break;
+                    case FlymPlus :
+                        if (fms.isPresent(currNamePort)) {
+                            gpsOK = true;  
+                            // We release the port for GPSDump
                             // if GPSDump used, we must release the port 
                             // Otherwise, port must stay open
                             //fms.closePort();
                         }
-                        break;
+                        break;                        
                     case FlymOld :
                         if (fmold.isPresent(currNamePort)) {
                             gpsOK = true;
@@ -921,19 +929,19 @@ public class GPSViewController {
                                         //strTrack = fliq.getIGC(item.getCol5());
                                         break;    
                                     case FlymSD :
-                                        //strTrack = gpsd.directFlight(1,idxTable); 
-                                        // On veut tester Alessandro
-                                        // Old code
-                                            // Download instruction of the flight is stored in column 5
-                                            // IGC date is compsed with column 1
-                                            // Col 1 [26.04.17] -> [260417]
-                                            String sDate = item.getDate().replaceAll("\\.", "");
-                                            if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                                strTrack = fms.getFinalIGC();
-                                            } else {
-                                                strTrack = null;
-                                            }                                        
+                                        strTrack = gpsd.directFlight(1,idxTable);                                       
                                         break;
+                                    case FlymPlus :
+                                        // Download instruction of the flight is stored in column 5
+                                        // IGC date is compsed with column 1
+                                        // Col 1 [26.04.17] -> [260417]
+                                        String sDate = item.getDate().replaceAll("\\.", "");
+                                        if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
+                                            strTrack = fms.getFinalIGC();
+                                        } else {
+                                            strTrack = null;
+                                        }                                        
+                                        break;                                        
                                     case FlymOld :
                                         strTrack = gpsd.directFlight(2,idxTable);
                                         break;
@@ -1202,7 +1210,7 @@ public class GPSViewController {
                             errorComMsg = fliq.getError();
                         }
                         break;
-                    case FlymSD :
+                    case FlymPlus :
                         flymaster fms = new flymaster();
                         if (fms.isPresent(currNamePort)) {
                             // Download instruction of the flight is stored in column 5
@@ -1413,10 +1421,12 @@ public class GPSViewController {
                         oneFlightWithGpsDump(8,idx);                          
                         break;
                     case FlymSD :
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
+                        // 1 is id of Flymaster SD for GPSDump
+                        oneFlightWithGpsDump(1,idx);
+                        break;
+                    case FlymPlus :
                         oneFlightWithProgress(currLineSelection);
-//                        idx = tableImp.getSelectionModel().getSelectedIndex();
-//                        // 1 is id of Flymaster SD for GPSDump
-//                        oneFlightWithGpsDump(1,idx);
                         break;
                     case FlymOld :
                         idx = tableImp.getSelectionModel().getSelectedIndex();
