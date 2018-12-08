@@ -80,7 +80,7 @@ public class winGPS {
     private I18n i18n; 
     private configProg myConfig;   
     
-    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer}    
+    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus}    
     private ObservableList <listGPS.idGPS> allGPS;
     // current GPS
     private gpsType currGPS;
@@ -351,7 +351,7 @@ public class winGPS {
                 testGPS(); 
                 break;
             case 11:
-                // Flymaster SD 
+                // Flymaster SD will be read with GPSDump
                 currGPS = currGPS = gpsType.FlymSD;  
                 if (wpCall) hBox3.setVisible(true);
                 listSerialPort();
@@ -379,7 +379,13 @@ public class winGPS {
                 hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
-                break;                
+                break;   
+            case 16:
+                // Flymaster will be read with Flymaster.java
+                currGPS = gpsType.FlymPlus;  
+                if (wpCall) hBox3.setVisible(true);
+                listSerialPort();
+                break;                 
         }                
     }    
     
@@ -518,6 +524,7 @@ public class winGPS {
                     }
                     break;
                 case FlymSD :
+                case FlymPlus :
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {
                             flymaster fms = new flymaster();
