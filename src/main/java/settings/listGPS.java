@@ -73,7 +73,8 @@ public class listGPS {
         GPS_List.add("Connect");
         GPS_List.add("Skytraxx 3");
         GPS_List.add("C-Pilot Evo");
-        GPS_List.add("XC Tracer II");        
+        GPS_List.add("XC Tracer II"); 
+        GPS_List.add("Flymaster +"); 
         
         return GPS_List;
         
@@ -104,7 +105,8 @@ public class listGPS {
             new idGPS("Connect",12),
             new idGPS("Skytraxx 3",13),
             new idGPS("C-Pilot Evo",14),
-            new idGPS("XC Tracer II",15)    
+            new idGPS("XC Tracer II",15),  
+            new idGPS("Flymaster +",16)
         ); 
         
         Comparator<? super idGPS> comparatorAlpha = new Comparator<idGPS>() {
