@@ -605,7 +605,7 @@ public class CarnetViewController  {
         StringBuilder sbMsg = new StringBuilder();
         //sbMsg.append(statusStart).append("  ").append(String.valueOf(countSelFlights));
         //sbMsg.append(i18n.tr(" vols sélectionnés"));
-        sbMsg.append(statusStart).append("     ").append(i18n.tr("Sélection [")).append(String.valueOf(countSelFlights)).append("]");
+        sbMsg.append(statusStart).append("     ").append(i18n.tr("Sélection")).append("[").append(String.valueOf(countSelFlights)).append("]");
         sbMsg.append(i18n.tr(" temps de vol : ")).append(String.valueOf(nbHour)).append("h");
         sbMsg.append(String.format("%02d", nbMn)).append("mn");
         mainApp.rootLayoutController.updateMsgBar(sbMsg.toString(), true, 60);
