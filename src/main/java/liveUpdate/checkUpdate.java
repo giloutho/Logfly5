@@ -150,7 +150,7 @@ public class checkUpdate {
                 Updater update = new Updater();               
                 update.update("update.inf", tmpUpdateFiles, Modes.FILE);
                 StringBuilder sbMsg = new StringBuilder();              
-                sbMsg.append(i18n.tr("Logfly a été mis à jour correctement.\n"));  //"The update was completed successfuly.\n"
+                sbMsg.append(i18n.tr("Logfly a été mis à jour\n"));  //"The update was completed successfuly.\n"
                 sbMsg.append(i18n.tr("Vous devez redémarrer le programme... "));  // "Please restart the application in order the changes take effect."         
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertInfo(i18n.tr(sbMsg.toString()));     
