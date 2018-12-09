@@ -222,7 +222,7 @@ public class GPSViewController {
         } 
         StringBuilder sbMsg = new StringBuilder();
         sbMsg.append(idGPS).append(i18n.tr("   Traces dans le GPS : ")).append(String.valueOf(nbTracks));
-        sbMsg.append("   ").append(i18n.tr("Traces à incorporer : ")).append(String.valueOf(nbNewTracks));
+        sbMsg.append("   ").append(i18n.tr("Traces à incorporer")).append(" : ").append(String.valueOf(nbNewTracks));
         rootController.updateMsgBar(sbMsg.toString(), true, 60);
     }
    
