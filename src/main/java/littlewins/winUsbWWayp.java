@@ -130,7 +130,7 @@ public class winUsbWWayp {
                  break;                         
              case CPilot :
                  wWidth = 320;
-                 btWptLabel = i18n.tr("Envoi format compeGPS");
+                 btWptLabel = i18n.tr("Envoi format CompeGPS");
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                  
                  break;                 
