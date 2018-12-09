@@ -575,7 +575,7 @@ public class FullMapController {
         scToolTip.setStyle(myConfig.getDecoToolTip());
         scToolTip.setText(i18n.tr("Calculer le score de la trace"));        
         btScoring.setTooltip(scToolTip);          
-        btHtml.setText(i18n.tr("HTML"));
+        btHtml.setText("HTML");
         btMail.setText(i18n.tr("Mail"));
         btCheck.setText(i18n.tr("Vérification"));
         Tooltip checkToolTip = new Tooltip();
