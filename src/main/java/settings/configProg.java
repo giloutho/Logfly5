@@ -14,9 +14,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
+import java.util.logging.Level;
+import systemio.mylogging;
 
 
 public class configProg {
@@ -70,6 +73,7 @@ public class configProg {
     private static int gpsLimit;            // new in V5 date track search depth for usb GPS
     private static String version;
     private static Connection dbConn;
+    private StringBuilder sbError;
     
     public void whichOS()  {
         String OS = System.getProperty("os.name").toLowerCase();
@@ -422,6 +426,67 @@ public class configProg {
         configProg.version = version;
     }
 
+    
+    private boolean dbCheckField(Connection con, String fieldName) {
+        boolean res = false;       
+        
+        try {
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            String sReq = "SELECT * FROM sqlite_master where sql like ?";   
+            pstmt = con.prepareStatement(sReq);                      
+            pstmt.setString(1, "%"+fieldName+"%"); 
+            rs = pstmt.executeQuery();
+            if (rs.next()) {  
+                res = true;   
+            } else {
+                res = false;             
+            }
+        } catch ( Exception e ) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                sbError.append("\r\n").append(fieldName).append(" ").append(" is not present");
+                mylogging.log(Level.SEVERE, sbError.toString());                       
+            return false;    
+        }         
+        
+        return res;
+    }
+    
+    private boolean dbAdd_V_Eng(Connection con)  {
+        
+        try {
+            PreparedStatement ps = con.prepareStatement("ALTER TABLE Vol ADD V_Engin Varchar(10)");                                  
+            ps.executeUpdate();
+            ps.close();  
+            return true;
+        } catch ( Exception e ) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append("\r\n").append("Unable to alter table Vol with V_Engin");
+            mylogging.log(Level.SEVERE, sbError.toString());                           
+            return false;    
+        }            
+    }
+    
+    private boolean dbAdd_V_Scoring(Connection con)  {
+        
+        try {
+            PreparedStatement ps1 = con.prepareStatement("ALTER TABLE Vol ADD V_League integer");                                  
+            ps1.executeUpdate();
+            ps1.close();  
+            PreparedStatement ps2 = con.prepareStatement("ALTER TABLE Vol ADD V_Score Long Text");                                  
+            ps2.executeUpdate();
+            ps2.close();              
+            return true;
+        } catch ( Exception e ) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append("\r\n").append("Unable to alter table Vol with V_League and V_Score");
+            mylogging.log(Level.SEVERE, sbError.toString());                             
+            return false;    
+        }            
+    }    
                   
     /**
      * Check db connection
@@ -430,6 +495,7 @@ public class configProg {
      */      
     public boolean dbVerif(String dbCheckName) {
         Connection con;
+        boolean res = false;
         
         try {
             Class.forName("org.sqlite.JDBC");
@@ -445,14 +511,40 @@ public class configProg {
             }
             if (count > 0)  {  
                 dbConn = con;
-                return true;
+                // Version of database is checked
+                boolean v_Eng_OK;
+                if (!dbCheckField(con, "V_Eng")) {
+                    if (!dbAdd_V_Eng(con))
+                        v_Eng_OK = false;
+                    else
+                        v_Eng_OK = true;
+                } else {
+                    v_Eng_OK = true;
+                }
+                if (v_Eng_OK) {
+                    if (dbCheckField(con, "V_League"))
+                        res = true;
+                    else {
+                        if (dbAdd_V_Scoring(con))
+                            res = true;
+                        else
+                            res = false;
+                    } 
+                } else {
+                    res = false;
+                }
             }
             else
-                return false;
+                res = false;
         } catch ( Exception e ) {
-            System.out.println("Db error : "+e.getMessage());                         
-            return false;    
-        }       
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append("\r\n").append("Problem to connect and check database");
+            mylogging.log(Level.SEVERE, sbError.toString());                         
+            res = false;    
+        }      
+        
+        return res;
     }
     
     /**
