@@ -91,6 +91,7 @@ public class winSiteChoice {
     private void showWin() {
         subStage = new Stage();
                 
+        subStage.setTitle(i18n.tr("Double clic pour sélectionner un site dans la liste"));
         HBox hbSearch = new HBox();
         hbSearch.setPadding(new Insets(5, 12, 5, 12));
         hbSearch.setSpacing(100);
