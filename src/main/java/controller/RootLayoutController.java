@@ -404,7 +404,7 @@ public class RootLayoutController {
         MenuItem cmItem5 = new MenuItem(i18n.tr("Traduction"));        
         cmItem5.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                comingSoon();
+                winWeb myWeb = new winWeb(myConfig,"http://www.logfly.org/doku.php?id=trad:tradinprog");
             }
         });
         cm.getItems().add(cmItem5);         
