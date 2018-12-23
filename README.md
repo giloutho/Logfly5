@@ -7,7 +7,7 @@ Flymaster and Flytec communication are made with ***GPSDump*** writen by [Stein 
 They are free but not open source programs. It's necessary to put the binaries of your platform at the right place. Folder runlib-win contains the windows exexutables, runlib_mac the mac versions and runlib_linux the 32 bits binaries. To run the code in an IDE, you must place points and GpsDump at the root of the project. To build the project with gradle, you must place the binaries of your platform in folder src/main/runlib. In the final bundle, points and GPSDump will be placed at the same level than logfly.jar.
 
 **Thanks :**  
-Logfly was made possible by many Github contributors. Special thanks to [Tom Payne](https://github.com/twpayne) for his great job on paragliding tracks, to [Victor Berchet](https://github.com/vicb) for VisuGPS and [Rishi Gupta](https://github.com/RishiGupta12) for the serial SDK SerialPundit and Alessandro Faillace for Flymaster Plus. 
+Logfly was made possible by many Github contributors. Special thanks to [Tom Payne](https://github.com/twpayne) for his great job on paragliding tracks, to [Victor Berchet](https://github.com/vicb) for VisuGPS,  to [Rishi Gupta](https://github.com/RishiGupta12) for the serial SDK SerialPundit and Alessandro Faillace for Flymaster Plus. 
 
 
 [License](LICENSE)
