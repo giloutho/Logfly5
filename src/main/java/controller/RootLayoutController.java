@@ -91,6 +91,8 @@ public class RootLayoutController {
     @FXML
     private Button btnSupport;
     @FXML
+    private Button btnInfo;    
+    @FXML
     private Label LbMsg; 
     @FXML
     private HBox hbMenu;
@@ -169,6 +171,12 @@ public class RootLayoutController {
                             clicTop_Menu().show(btnSupport, e.getScreenX(), e.getScreenY());
                     }
             });  
+        btnInfo.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override public void handle(MouseEvent e) {                        
+                            clicInfo_Menu().show(btnSupport, e.getScreenX(), e.getScreenY());
+                    }
+            });          
         btnTools.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override public void handle(MouseEvent e) {                        
@@ -345,18 +353,32 @@ public class RootLayoutController {
                displaySystem();
             }
         });
-        cm.getItems().add(cmItem11);        
+        cm.getItems().add(cmItem11);                       
+                                    
+        return cm;
+    }
+    
+    private ContextMenu clicInfo_Menu()   {
+        final ContextMenu cm = new ContextMenu();                      
         
-        MenuItem cmItem2 = new MenuItem(i18n.tr("Notes de publication"));        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Notes de publication"));        
+        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=historique:historique");
+            }
+        });
+        cm.getItems().add(cmItem1);          
+        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Credits"));
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                winWeb myWeb = new winWeb(myConfig,"http://www.logfly.org/doku.php?id=historique:historique");
+               winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=credits");
             }
         });
         cm.getItems().add(cmItem2);          
                                     
         return cm;
-    }
+    }    
     
     private ContextMenu clicTool_Menu()   {
         final ContextMenu cm = new ContextMenu();
