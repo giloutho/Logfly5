@@ -159,6 +159,15 @@
                   </ImageView>
                </graphic>
             </Button>
+            <Button fx:id="btnInfo" contentDisplay="GRAPHIC_ONLY" layoutX="82.0" layoutY="15.0" mnemonicParsing="false" style="-fx-background-color: transparent;" text="Button">
+               <graphic>
+                  <ImageView fx:id="icoSupport1" fitHeight="16.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/info2.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
             <Label fx:id="LbMsg" text="Espace de message" textFill="WHITE">
                <padding>
                   <Insets left="50.0" />
