@@ -32,9 +32,9 @@ public class listLangues {
         
         Lang_List = FXCollections.observableArrayList();       
                  
-        Lang_List.add(i18n.tr("Allemand"));
-        Lang_List.add(i18n.tr("Anglais"));
-        Lang_List.add(i18n.tr("Français"));        
+        Lang_List.add(i18n.tr("German"));
+        Lang_List.add(i18n.tr("English"));
+        Lang_List.add(i18n.tr("French"));        
         
         return Lang_List;
     }
