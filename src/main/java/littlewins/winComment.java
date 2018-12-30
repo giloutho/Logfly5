@@ -73,13 +73,13 @@ public class winComment {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btSave = new Button(i18n.tr("Valider"));
+        Button btSave = new Button(i18n.tr("OK"));
         btSave.setOnAction((event) -> {
             setModif(true);
             setCommentTxt(txtComment.getText());
             subStage.close();
         });
-        Button btCancel = new Button(i18n.tr("Annuler"));
+        Button btCancel = new Button(i18n.tr("Cancel"));
         btCancel.setOnAction((event) -> {
             setModif(false);
             subStage.close();
