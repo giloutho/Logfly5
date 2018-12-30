@@ -37,8 +37,8 @@ public class dialogbox {
     public boolean YesNo(String msgH, String msgT )  {
         
         boolean answer = false;
-        ButtonType myOk = new ButtonType(i18n.tr("Oui"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType myCancel = new ButtonType(i18n.tr("Non"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType myOk = new ButtonType(i18n.tr("Yes"), ButtonBar.ButtonData.OK_DONE);
+        ButtonType myCancel = new ButtonType(i18n.tr("No"), ButtonBar.ButtonData.CANCEL_CLOSE);
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"",myOk,myCancel);        
         alert.setHeaderText(msgH);
         alert.setContentText(msgT);
