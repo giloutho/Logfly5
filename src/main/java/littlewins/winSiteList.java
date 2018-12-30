@@ -85,17 +85,17 @@ public class winSiteList {
         tableView.prefHeightProperty().bind(subStage.heightProperty());
         tableView.prefWidthProperty().bind(subStage.widthProperty());
 
-        colPays = new TableColumn(i18n.tr("Pays"));
+        colPays = new TableColumn(i18n.tr("Country"));
         tableView.getColumns().add(colPays);
         colPays.setCellValueFactory(
                     new PropertyValueFactory<sitedownl, String>("pays"));  
                 
-        colRegion = new TableColumn(i18n.tr("Region"));
+        colRegion = new TableColumn(i18n.tr("Area"));
         tableView.getColumns().add(colRegion);
         colRegion.setCellValueFactory(
                     new PropertyValueFactory<sitedownl, String>("region"));  
         
-        colOrigine = new TableColumn(i18n.tr("Origine"));
+        colOrigine = new TableColumn(i18n.tr("Source"));
         tableView.getColumns().add(colOrigine);
         colOrigine.setCellValueFactory(
                     new PropertyValueFactory<sitedownl, String>("origine")); 
@@ -145,7 +145,7 @@ public class winSiteList {
     
     //Define the button cell
     private class ButtonCell extends TableCell<sitedownl, Boolean> {
-        final Button cellButton = new Button(i18n.tr("Télécharger"));
+        final Button cellButton = new Button(i18n.tr("Download"));
          
         ButtonCell(){
              
