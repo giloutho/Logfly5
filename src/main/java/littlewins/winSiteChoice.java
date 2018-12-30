@@ -91,13 +91,13 @@ public class winSiteChoice {
     private void showWin() {
         subStage = new Stage();
                 
-        subStage.setTitle(i18n.tr("Double clic pour sélectionner un site dans la liste"));
+        subStage.setTitle(i18n.tr("Double click to select a site in the list"));
         HBox hbSearch = new HBox();
         hbSearch.setPadding(new Insets(5, 12, 5, 12));
         hbSearch.setSpacing(100);
         txtSearch = new TextField();        
         txtSearch.setPrefWidth(200);
-        Button btCreation = new Button(i18n.tr("Nouveau"));
+        Button btCreation = new Button(i18n.tr("New"));
         btCreation.setOnAction((event) -> {
             newSite();
         });
@@ -111,12 +111,12 @@ public class winSiteChoice {
         colNom.setCellValueFactory(
             new PropertyValueFactory<Sitemodel, String>("nom"));
         
-        colVille = new TableColumn(i18n.tr("Localité"));
+        colVille = new TableColumn(i18n.tr("City"));
         tableView.getColumns().add(colVille);
         colVille.setCellValueFactory(
             new PropertyValueFactory<Sitemodel, String>("ville"));  
         
-        colCp = new TableColumn(i18n.tr("CP"));
+        colCp = new TableColumn(i18n.tr("ZIP"));
         tableView.getColumns().add(colCp);
         colCp.setCellValueFactory(
             new PropertyValueFactory<Sitemodel, String>("cp"));     
