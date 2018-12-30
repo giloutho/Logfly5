@@ -63,7 +63,7 @@ public class trackThermals {
         try {
             res.append("     <Folder>").append(RC); 
             res.append("          <open>1</open>").append(RC); 
-            res.append("          <name>").append(i18n.tr("Analyse")).append("</name>").append(RC); 
+            res.append("          <name>").append(i18n.tr("Analyze")).append("</name>").append(RC); 
             res.append(anaThermals());
             res.append(anaBestGain());
             res.append(anaTransitions());
@@ -95,7 +95,7 @@ public class trackThermals {
             minGain = (int) (KmlTrace.getBestGain() * 0.10);     // Mini gain is 10% of best gain
             res.append("              <Folder>").append(RC); 
             res.append("                     <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
-            res.append("                     <name>").append(i18n.tr("Thermiques")).append("</name>").append(RC); 
+            res.append("                     <name>").append(i18n.tr("Thermals")).append("</name>").append(RC); 
             res.append("                     <visibility>0</visibility>").append(RC); 
             for (int i = 0; i <= TotalPoints; i++) {
                 // For instance only positive values
@@ -135,7 +135,7 @@ public class trackThermals {
   
         res.append("              <Folder>").append(RC); 
         res.append("                     <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
-        res.append("                     <name>").append(i18n.tr("Meilleur gain")).append("</name>").append(RC); 
+        res.append("                     <name>").append(i18n.tr("Best gain")).append("</name>").append(RC); 
         res.append("                     <visibility>0</visibility>").append(RC); 
                 
         pointIGC bestPointA = KmlTrace.Tb_Good_Points.get(KmlTrace.getBestGainIndice1());
@@ -280,7 +280,7 @@ public class trackThermals {
        
         res.append("              <Folder>").append(RC); 
         res.append("                     <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
-        res.append("                     <name>").append(i18n.tr("Meilleure transition")).append("</name>").append(RC); 
+        res.append("                     <name>").append(i18n.tr("Best transition")).append("</name>").append(RC); 
         res.append("                     <visibility>0</visibility>").append(RC); 
   
         pointIGC bestPointA = KmlTrace.Tb_Good_Points.get(KmlTrace.getBestTransIndice1());
