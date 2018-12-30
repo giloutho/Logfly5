@@ -58,8 +58,8 @@ public class dbImport {
         
         alertbox aInfo = new alertbox(myConfig.getLocale());
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(String.valueOf(addSitesOK)).append(" ").append(i18n.tr("sites importés")).append(" / ").append(String.valueOf(addNb)).append(" ").append("lignes");
-        if (addSitesBad > 0) sbMsg.append(RC).append(String.valueOf(addSitesBad)).append(" ").append(i18n.tr("sites rejetés"));
+        sbMsg.append(String.valueOf(addSitesOK)).append(" ").append(i18n.tr("imported sites")).append(" / ").append(String.valueOf(addNb)).append(" ").append("lignes");
+        if (addSitesBad > 0) sbMsg.append(RC).append(String.valueOf(addSitesBad)).append(" ").append(i18n.tr("rejected sites"));
         aInfo.alertInfo(sbMsg.toString());
         if (addSitesOK < addNb) {    
             if (myConfig.isValidConfig()) {
@@ -78,7 +78,7 @@ public class dbImport {
                 }
             }
             if (writeReject) {
-                String msg = i18n.tr("Liste enregistrée dans <rejectedsites.csv>")+RC+RC;
+                String msg = i18n.tr("List saved in")+" <rejectedsites.csv>"+RC+RC;
                 sbDoublons.insert(0,msg);
             }
             winTrackFile displayDoub = new winTrackFile(sbDoublons.toString());             
