@@ -61,11 +61,11 @@ public class webdown {
         this.i18n = pI18n;
         downSuccess = false;
         if (reqSuccessMsg.equals("IMPORT CSV")) {
-            textButton = i18n.tr("Importer");
-            this.strSuccessMsg = i18n.tr("Le fichier a été téléchargé"); 
+            textButton = i18n.tr("Import");
+            this.strSuccessMsg = i18n.tr("The file has been downloaded"); 
         } else {
             this.strSuccessMsg = reqSuccessMsg; 
-            textButton = i18n.tr("Fermer");
+            textButton = i18n.tr("Close");
         }
         winDisplay();        
     }
@@ -106,13 +106,13 @@ public class webdown {
         });
         btnClose.setVisible(false);
         
-        Button btnCancel = new Button(i18n.tr("Annuler"));
+        Button btnCancel = new Button(i18n.tr("Cancel"));
         btnCancel.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent t) {
                // labelState.setText(myService.getState().toString());
                myService.cancel();
-               labelSucceeded.setText(i18n.tr("Le téléchargement est interrompu"));
+               labelSucceeded.setText(i18n.tr("Download stop"));
                btnCancel.setVisible(false);
                btnClose.setVisible(true);
                downSuccess = false;
@@ -122,7 +122,7 @@ public class webdown {
         myService.setOnFailed(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent t) {
-                labelSucceeded.setText(i18n.tr("Le téléchargement a échoué"));
+                labelSucceeded.setText(i18n.tr("Download failed"));
                 btnCancel.setVisible(false);
                 btnClose.setVisible(true);
                 downSuccess = false;
@@ -168,7 +168,7 @@ public class webdown {
         subStage.setScene(secondScene);     
         
         progressBar.setVisible(true);
-        labelSucceeded.setText(i18n.tr("Téléchargement en cours..."));
+        labelSucceeded.setText(i18n.tr("Loading in progress"));
         myService.start();
         
         subStage.showAndWait();
