@@ -177,9 +177,11 @@ public class reversale {
                             //System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].isDirectory());
                             if (listFile[i].getName().equals("COMPET") && listFile[i].isDirectory()) {
                                 fCompet = listFile[i];
+                                // In some cases, we found only COMPET
+                                cond1 = true;
                             }
                             if (listFile[i].getName().equals("LOG") && listFile[i].isDirectory()) {
-                                //System.out.println("Fichier : "+listFile[i].getName()+" "+listFile[i].getAbsolutePath());
+                                // LOG is in principle, the default folder for tracks
                                 fLog = listFile[i];
                                 cond1 = true;
                             }
