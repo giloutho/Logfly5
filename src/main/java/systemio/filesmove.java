@@ -69,7 +69,7 @@ public class filesmove {
         vBox.setPadding(new Insets(5, 5, 5, 5));
         vBox.setSpacing(5);
         btClose.setVisible(false);
-        btClose.setText(i18n.tr("Fermer"));  // Close
+        btClose.setText(i18n.tr("Close"));  // Close
         btClose.setOnAction(new EventHandler<ActionEvent>() {            
             @Override
             public void handle(ActionEvent event) {
@@ -87,7 +87,7 @@ public class filesmove {
         myService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent t) {
-                labelSucceeded.setText(i18n.tr("Transfert terminé..."));    // File transfer finished
+                labelSucceeded.setText(i18n.tr("Transfer completed"));   
                 taskOK = true;                
                 btClose.setVisible(true);
             }
@@ -97,7 +97,7 @@ public class filesmove {
             @Override
             public void handle(WorkerStateEvent t) {
                 taskOK = false; 
-                labelSucceeded.setText(i18n.tr("Problème pendant le transfert..."));   // Problem during file transfer
+                labelSucceeded.setText(i18n.tr("Problem during transfer"));   
             }
         });
         
