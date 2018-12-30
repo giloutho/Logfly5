@@ -63,7 +63,7 @@ public class trackColor {
         res.append("     <Folder>").append(RC); 
         res.append("          <styleUrl>#Liste_Radio</styleUrl>").append(RC); 
         res.append("          <open>1</open>").append(RC); 
-        res.append("          <name>").append(i18n.tr("Traces colorées")).append("</name>").append(RC); 
+        res.append("          <name>").append(i18n.tr("Colored tracks")).append("</name>").append(RC); 
         
         return res.toString();
     }
@@ -108,7 +108,7 @@ public class trackColor {
 
             res.append("          <Folder>").append(RC);  
             res.append("               <styleUrl>#Liste_Coche</styleUrl>").append(RC);  
-            res.append("               <name>").append(i18n.tr("Selon le vario")).append("</name>").append(RC);  
+            res.append("               <name>").append(i18n.tr("By climb")).append("</name>").append(RC);  
             res.append("               <visibility>0</visibility>").append(RC);  
             res.append("               <description><![CDATA[<b><span style=\" color:#0000FF\">").append(fmtsigne.format(ptVarioMax.Vario));
             res.append("m/s   </span><span style=\"color:#FF0000\">").append(fmtsigne.format(ptVarioMini.Vario)).append("m/s</span></b>]]></description>").append(RC);  
@@ -186,7 +186,7 @@ public class trackColor {
             
             res.append("          <Folder>").append(RC); 
             res.append("               <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
-            res.append("               <name>").append(i18n.tr("Selon l'altitude")).append("</name>").append(RC); 
+            res.append("               <name>").append(i18n.tr("By altitude")).append("</name>").append(RC); 
             res.append("               <visibility>0</visibility>").append(RC); 
             res.append("               <description><![CDATA[<b><span style=\" color:#0000FF\">").append(String.valueOf(aMaxi));
             res.append("m    </span><span style=\"color:#FF0000\">").append(String.valueOf(aMini)).append("m</span></b>]]></description>").append(RC);             
@@ -262,7 +262,7 @@ public class trackColor {
                          
             res.append("          <Folder>").append(RC); 
             res.append("               <styleUrl>#Liste_Coche</styleUrl>").append(RC); 
-            res.append("               <name>").append(i18n.tr("Selon la vitesse")).append("</name>").append(RC); 
+            res.append("               <name>").append(i18n.tr("By speed")).append("</name>").append(RC); 
             res.append("               <visibility>0</visibility>").append(RC); 
             res.append("               <description><![CDATA[<b><span style=\" color:#0000FF\">").append(String.format("%2.2f",pMaxi.Vitesse));
             res.append("km/h    </span><span style=\"color:#FF0000\">").append(String.format("%2.2f",pMini.Vitesse)).append("km/h</span></b>]]></description>").append(RC);             
