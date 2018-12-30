@@ -159,7 +159,7 @@ public class dbAdd {
                 rs.next();
                 int totSiteNo = rs.getInt(1);  
                 rs.close();
-                String sNom = "Site No "+String.valueOf(totSiteNo + 1)+"  ("+i18n.tr("A renommer")+")";
+                String sNom = "Site No "+String.valueOf(totSiteNo + 1)+"  ("+i18n.tr("To rename")+")";
                 StringBuilder insertTableSQL = new StringBuilder();
                 insertTableSQL.append("INSERT INTO Site (S_Nom,S_CP,S_Type,S_Alti,S_Latitude,S_Longitude,S_Maj) VALUES");
                 insertTableSQL.append("(?,?,?,?,?,?,?)");
