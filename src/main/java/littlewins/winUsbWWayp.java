@@ -6,7 +6,6 @@
  */
 package littlewins;
 
-import gps.skytraax;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -54,7 +53,7 @@ public class winUsbWWayp {
         String btGoogLabel = "";
 
         Stage subStage = new Stage();
-        Label lbFile = new Label(i18n.tr("Nom du fichier"));
+        Label lbFile = new Label(i18n.tr("File name"));
         lbFile.setMinWidth(100);               
         lbFile.setPadding(new Insets(5, 0, 0, 0));
         TextField txFile = new TextField ();        
@@ -72,7 +71,7 @@ public class winUsbWWayp {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btCancel = new Button(i18n.tr("Annuler"));
+        Button btCancel = new Button(i18n.tr("Cancel"));
         btCancel.setOnAction((event) -> {
             subStage.close();
         });    
@@ -90,26 +89,26 @@ public class winUsbWWayp {
         switch (currGPS) {
              case Rever :  
                  wWidth = 400;
-                 btGoogLabel = i18n.tr("Envoi format Google");                 
-                 btWptLabel = i18n.tr("Envoi format wpt");
+                 btGoogLabel = i18n.tr("Send in Google format");                 
+                 btWptLabel = i18n.tr("Send in wpt format");
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel, btSendGoog, btSendWpt);
                  break;
              case Sky :
                  wWidth = 320;
-                 btWptLabel = i18n.tr("Envoi format wpt");
+                 btWptLabel = i18n.tr("Send in wpt format");
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                 
                  break;
              case Sky3 :
                  wWidth = 320;
-                 btWptLabel = i18n.tr("Envoi format wpt");
+                 btWptLabel = i18n.tr("Send in wpt format");
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                   
                  break;                              
              case Oudie :
                  wWidth = 320;
-                 btWptLabel = i18n.tr("Envoi format cup");
+                 btWptLabel = i18n.tr("Send in cup format");
                  fileExt = ".cup";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                                                        
                  break;  
@@ -118,19 +117,19 @@ public class winUsbWWayp {
              case Connect :
                  wWidth = 320;
                  // No specifications in Flytec site, I have a backup with CompeGPS format
-                 btWptLabel = i18n.tr("Envoi format CompeGPS");     
+                 btWptLabel = i18n.tr("Send in compeGPS format");     
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                    
                  break;   
              case Element :
                  wWidth = 320;
-                 btWptLabel = i18n.tr("Envoi format OZI");
+                 btWptLabel = i18n.tr("Send in OZI format");
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                  
                  break;                         
              case CPilot :
                  wWidth = 320;
-                 btWptLabel = i18n.tr("Envoi format CompeGPS");
+                 btWptLabel = i18n.tr("Send in compeGPS format");
                  fileExt = ".wpt";
                  buttonBar.getChildren().addAll(btCancel,btSendWpt);                  
                  break;                 
