@@ -238,14 +238,14 @@ public class StatViewController {
             lb_Last.setText(totalDtf.format(dateFin));
             // Compute duration in years and months
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("%2d", intervalPeriod.getYears())).append(" ").append(i18n.tr("ans"));
-            sb.append(String.format("%2d", intervalPeriod.getMonths())).append(" ").append(i18n.tr("mois"));
+            sb.append(String.format("%2d", intervalPeriod.getYears())).append(" ").append(i18n.tr("years"));
+            sb.append(String.format("%2d", intervalPeriod.getMonths())).append(" ").append(i18n.tr("monthes"));
             lb_Period.setText(sb.toString());                               
             // Mise à jour libellé Totaux et Moyennes
             sb.setLength(0);
             sb.append(" ").append(yearDtf.format(dateDeb)).append("-").append(yearDtf.format(dateFin));
-            label1.setText(i18n.tr("Totaux")+sb.toString());
-            label7.setText(i18n.tr("Moyennes")+sb.toString());
+            label1.setText(i18n.tr("Totals")+sb.toString());
+            label7.setText(i18n.tr("Averages")+sb.toString());
             if (firstGetDate) buildChbYear();   
             String date1 = (String) chbYear1.getSelectionModel().getSelectedItem();
             String date2 = (String) chbYear2.getSelectionModel().getSelectedItem();            
@@ -259,7 +259,7 @@ public class StatViewController {
             chbVols.getSelectionModel().selectFirst();
             chbHours.getSelectionModel().selectFirst();            
         } else {
-            sbError = new StringBuilder(i18n.tr("date début et date fin non définies"));  
+            sbError = new StringBuilder(i18n.tr("undefined start and end date"));  
             mylogging.log(Level.SEVERE, sbError.toString());   
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertError(sbError.toString());                                                                                   
@@ -979,48 +979,52 @@ public class StatViewController {
         lineChart1.setVisible(false);
         barChart1.setVisible(false);     
         btList.setVisible(true);
-        mainApp.rootLayoutController.updateMsgBar(i18n.tr("Survoler une barre pour afficher la valeur     << et >> pour afficher les différentes parties du graphe     Liste : affichage en clair"), true, 120);
+        StringBuilder sbMsg = new StringBuilder();
+        sbMsg.append(i18n.tr("Move the mouse over the bar to display the value")).append("      << ").append(i18n.tr("and"));
+        sbMsg.append(" >>   ").append(i18n.tr("to display the different parts of the graph"));
+        sbMsg.append("     ").append(i18n.tr("List")).append(" : ").append(i18n.tr("plaintext visualization"));        
+        mainApp.rootLayoutController.updateMsgBar(sbMsg.toString(), true, 120);
     }    
     
     /**
     * Translate labels of the window
     */
     private void winTraduction() {
-        label2.setText(i18n.tr("Heures de vol"));
-        label3.setText(i18n.tr("Nombre vols total"));
-        label4.setText(i18n.tr("Période de vol affichée"));
-        label5.setText(i18n.tr("Premier vol de la période"));
-        label6.setText(i18n.tr("Dernier vol de la période"));
-        label8.setText(i18n.tr("Nbre de vols moyen par an"));
-        label9.setText(i18n.tr("Durée moyenne vol annuelle"));
-        label10.setText(i18n.tr("Durée moyenne vol"));
-        label11.setText(i18n.tr("Nbre de vols moyen par mois"));
-        label12.setText(i18n.tr("Durée moyenne mensuelle"));
-        label14.setText(i18n.tr("Heures de vol"));
-        label15.setText(i18n.tr("Nombre vols total"));
-        label16.setText(i18n.tr("Durée moyenne vol"));
-        label17.setText(i18n.tr("Nbre de vols moyen par mois"));
-        label18.setText(i18n.tr("Durée moyenne mensuelle"));
-        btGliders.setText(i18n.tr("Voiles"));
+        label2.setText(i18n.tr("Flight hours"));
+        label3.setText(i18n.tr("Total number of flights"));
+        label4.setText(i18n.tr("Flight period displayed"));
+        label5.setText(i18n.tr("First flight of the period"));
+        label6.setText(i18n.tr("Last flight of the period"));
+        label8.setText(i18n.tr("Average number of flights per year"));
+        label9.setText(i18n.tr("Average annual flight time"));
+        label10.setText(i18n.tr("Average flight time"));
+        label11.setText(i18n.tr("Average number of flights per month"));
+        label12.setText(i18n.tr("Average monthly duration"));
+        label14.setText(i18n.tr("Flight hours"));
+        label15.setText(i18n.tr("Total number of flights"));
+        label16.setText(i18n.tr("Average flight time"));
+        label17.setText(i18n.tr("Average number of flights per month"));
+        label18.setText(i18n.tr("Average monthly duration"));
+        btGliders.setText(i18n.tr("Gliders"));
         btSites.setText(i18n.tr("Sites"));
-        btList.setText(i18n.tr("Liste"));
+        btList.setText(i18n.tr("List"));
         sMonth[0] = i18n.tr("Jan");
-        sMonth[1] = i18n.tr("Fév");
+        sMonth[1] = i18n.tr("Feb");
         sMonth[2] = i18n.tr("Mar");
-        sMonth[3] = i18n.tr("Avr");
-        sMonth[4] = i18n.tr("Mai");
+        sMonth[3] = i18n.tr("Apr");
+        sMonth[4] = i18n.tr("May");
         sMonth[5] = i18n.tr("Jun");
-        sMonth[6] = i18n.tr("Jui");
-        sMonth[7] = i18n.tr("Aou");
+        sMonth[6] = i18n.tr("Jul");
+        sMonth[7] = i18n.tr("Aug");
         sMonth[8] = i18n.tr("Sep");
         sMonth[9] = i18n.tr("Oct");
         sMonth[10] = i18n.tr("Nov");
-        sMonth[11] = i18n.tr("Déc");        
+        sMonth[11] = i18n.tr("Dec");        
         // Choicebox initialization
-        statVols = FXCollections.observableArrayList(i18n.tr("Stats vols"), i18n.tr("Cumul mensuel"), i18n.tr("Cumul annuel"));        
+        statVols = FXCollections.observableArrayList(i18n.tr("Flights stats"), i18n.tr("Monthly mean"), i18n.tr("Year-to-date"));        
         chbVols.setItems(statVols);
         chbVols.getSelectionModel().selectFirst();
-        statHours = FXCollections.observableArrayList(i18n.tr("Stats heures de vol"), i18n.tr("Cumul mensuel"), i18n.tr("Cumul annuel"));        
+        statHours = FXCollections.observableArrayList(i18n.tr("Flights hours stat"), i18n.tr("Monthly mean"), i18n.tr("Year-to-date"));        
         chbHours.setItems(statHours);
         chbHours.getSelectionModel().selectFirst();        
     }       
