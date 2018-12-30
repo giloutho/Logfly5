@@ -126,8 +126,8 @@ public class dbParawing {
         
         alertbox aInfo = new alertbox(myConfig.getLocale());
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(String.valueOf(addFlightsOK)).append(" ").append(i18n.tr("vols importés")).append(" / ").append(String.valueOf(addNb)).append(" ").append("lignes");
-        if (addFlightsBad > 0) sbMsg.append(RC).append(String.valueOf(addFlightsBad)).append(" ").append(i18n.tr("vols rejetés"));
+        sbMsg.append(String.valueOf(addFlightsOK)).append(" ").append(i18n.tr("imported flights")).append(" / ").append(String.valueOf(addNb)).append(" ").append("lignes");
+        if (addFlightsBad > 0) sbMsg.append(RC).append(String.valueOf(addFlightsBad)).append(" ").append(i18n.tr("rejected flights"));
         aInfo.alertInfo(sbMsg.toString());
         if (addFlightsOK < addNb-1) {    
             if (myConfig.isValidConfig()) {
@@ -146,7 +146,7 @@ public class dbParawing {
                 }
             }
             if (writeReject) {
-                String msg = i18n.tr("Liste enregistrée dans <rejectedflights.csv>")+RC+RC;
+                String msg = i18n.tr("List saved in")+" <rejectedflights.csv>"+RC+RC;
                 sbRejected.insert(0,msg);
                 winTrackFile displayDoub = new winTrackFile(sbRejected.toString());    
             }
