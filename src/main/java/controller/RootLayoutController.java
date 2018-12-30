@@ -212,7 +212,7 @@ public class RootLayoutController {
             AnchorPane page = (AnchorPane) loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle(i18n.tr("Configuration"));
+            dialogStage.setTitle(i18n.tr("Settings"));
             dialogStage.initModality(Modality.WINDOW_MODAL);       
             dialogStage.initOwner(mainApp.getPrimaryStage());
             Scene scene = new Scene(page);
@@ -225,6 +225,9 @@ public class RootLayoutController {
             controller.setMyConfig(myConfig);
             // This window will be modal
             dialogStage.showAndWait();
+            // If language changed, translation is needed
+            i18n = I18nFactory.getI18n("","lang/Messages",RootLayoutController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+            winTraduction();
             
             return true;
         } catch (IOException e) {
@@ -240,7 +243,7 @@ public class RootLayoutController {
         sb.append(" - > 1100").append(System.getProperty("line.separator"));
         sb.append(" Hauteur : ").append(String.valueOf(mainApp.getPrimaryStage().getHeight()));
         sb.append(" - > 600");
-        if (dConfirm.YesNo(i18n.tr("Retour à la taille originale"), sb.toString()))   {         
+        if (dConfirm.YesNo(i18n.tr("Back to original size"), sb.toString()))   {         
             mainApp.getPrimaryStage().setWidth(1102);
             mainApp.getPrimaryStage().setHeight(650);
         }      
@@ -255,7 +258,7 @@ public class RootLayoutController {
     
     private void comingSoon() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);                       
-        alert.setContentText(i18n.tr("C'est pour bientôt..."));
+        alert.setContentText(i18n.tr("Coming soon"));
         alert.showAndWait();   
     }
     
@@ -331,7 +334,7 @@ public class RootLayoutController {
     private ContextMenu clicTop_Menu()   {
         final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Envoyer un mail"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Send an e-mail"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 sendMailSupport();
@@ -339,7 +342,7 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Fichier log"));
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Log file"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                displayLog();
@@ -347,7 +350,7 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem1);
         
-        MenuItem cmItem11 = new MenuItem(i18n.tr("Rapport système"));
+        MenuItem cmItem11 = new MenuItem(i18n.tr("System report"));
         cmItem11.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                displaySystem();
@@ -361,7 +364,7 @@ public class RootLayoutController {
     private ContextMenu clicInfo_Menu()   {
         final ContextMenu cm = new ContextMenu();                      
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Notes de publication"));        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Release notes"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=historique:historique");
@@ -383,7 +386,7 @@ public class RootLayoutController {
     private ContextMenu clicTool_Menu()   {
         final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Affichage original"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Original display"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 originalSize();
@@ -391,7 +394,7 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Copie carnet"));
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Logbook copy"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                copyDb();
@@ -399,7 +402,7 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem1);
         
-        MenuItem cmItem2 = new MenuItem(i18n.tr("Import csv"));        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Csv import"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 importCsv();
@@ -407,7 +410,7 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem2);          
         
-        MenuItem cmItem3 = new MenuItem(i18n.tr("Export csv"));        
+        MenuItem cmItem3 = new MenuItem(i18n.tr("Csv export"));        
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 comingSoon();
@@ -415,7 +418,7 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem3);  
         
-        MenuItem cmItem4 = new MenuItem(i18n.tr("Export sql"));        
+        MenuItem cmItem4 = new MenuItem(i18n.tr("Sql export"));        
         cmItem4.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 comingSoon();
@@ -423,10 +426,10 @@ public class RootLayoutController {
         });
         cm.getItems().add(cmItem4);    
         
-        MenuItem cmItem5 = new MenuItem(i18n.tr("Traduction"));        
+        MenuItem cmItem5 = new MenuItem(i18n.tr("Translation"));        
         cmItem5.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                winWeb myWeb = new winWeb(myConfig,"http://www.logfly.org/doku.php?id=trad:tradinprog");
+                winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=trad:tradinprog");
             }
         });
         cm.getItems().add(cmItem5);         
@@ -469,7 +472,7 @@ public class RootLayoutController {
     
     private void importCsv() {
         FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers vols (*.csv)"), "*.csv");        
+        FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("Flight files (*.csv)"), "*.csv");        
         fileChooser.getExtensionFilters().add(csvFilter);
         File selectedFile = fileChooser.showOpenDialog(null);  
         if(selectedFile != null){   
@@ -496,27 +499,27 @@ public class RootLayoutController {
     * Translate labels of the window
     */
     private void winTraduction() {         
-        mnCarnet.setText(i18n.tr("Carnet"));
-        mnGPS.setText(i18n.tr("Import GPS")); 
-        mnImport.setText(i18n.tr("Import disque"));
-        mnManuel.setText(i18n.tr("Import manuel"));
-        mnTrace.setText(i18n.tr("Trace externe"));
+        mnCarnet.setText(i18n.tr("Logbook"));
+        mnGPS.setText(i18n.tr("GPS import")); 
+        mnImport.setText(i18n.tr("Disk import"));
+        mnManuel.setText(i18n.tr("Manual import"));
+        mnTrace.setText(i18n.tr("External track"));
         LocalDate today = LocalDate.now();
         DateTimeFormatter dtfYear = DateTimeFormatter.ofPattern(" yyyy");
-        mnSynthese.setText(i18n.tr("Synthèse")+today.format(dtfYear));
-        mnStat.setText(i18n.tr("Statistiques"));
+        mnSynthese.setText(i18n.tr("Overview")+" "+today.format(dtfYear));
+        mnStat.setText(i18n.tr("Statistics"));
         mnSites.setText(i18n.tr("Sites"));
-        mnBalises.setText(i18n.tr("Balises"));
-        mnEspaces.setText(i18n.tr("Espaces aériens"));
+        mnBalises.setText(i18n.tr("Waypoints"));
+        mnEspaces.setText(i18n.tr("Airspaces"));
         mnPhotos.setText(i18n.tr("Photos"));
-        mnCarto.setText(i18n.tr("Cartographie"));        
+        mnCarto.setText(i18n.tr("Cartography"));        
         Tooltip confToolTip = new Tooltip();
         confToolTip.setStyle(myConfig.getDecoToolTip());
-        confToolTip.setText(i18n.tr("Configuration"));
+        confToolTip.setText(i18n.tr("Settings"));
         btnConfig.setTooltip(confToolTip);
         Tooltip toolsToolTip = new Tooltip();
         toolsToolTip.setStyle(myConfig.getDecoToolTip());        
-        toolsToolTip.setText(i18n.tr("Outils"));
+        toolsToolTip.setText(i18n.tr("Tools"));
         btnTools.setTooltip(toolsToolTip);
         Tooltip supToolTip = new Tooltip();
         supToolTip.setStyle(myConfig.getDecoToolTip());        
