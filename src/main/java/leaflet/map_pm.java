@@ -138,10 +138,10 @@ public class map_pm {
      //   jsInfo.append("this._div.innerHTML += '").append(i18n.tr("Voile")).append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
         jsInfo.append("            this._div.innerHTML += '").append("Voile").append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
         pointIGC ptAltMax = tracePM.getAlt_Maxi_GPS();    
-        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Alt max GPS")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
+        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Max GPS Alt")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
          pointIGC ptVarioMax = tracePM.getVario_Max();
-        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Vario max")).append(" : ").append(String.format("%2.2f",ptVarioMax.Vario)).append("m/s<br>';").append(RC);
-        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Gain max")).append(" : ").append(String.valueOf(tracePM.getBestGain())).append("m<br>';").append(RC);
+        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Max climb")).append(" : ").append(String.format("%2.2f",ptVarioMax.Vario)).append("m/s<br>';").append(RC);
+        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Max gain")).append(" : ").append(String.valueOf(tracePM.getBestGain())).append("m<br>';").append(RC);
         
     }
     
