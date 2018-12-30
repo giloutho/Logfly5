@@ -10,7 +10,6 @@ import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.File;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.concurrent.Task;
@@ -161,7 +160,7 @@ public class winMail {
         Label lbMail = new Label();
         lbMail.setPrefSize(100, 15);
         lbMail.setPadding(new Insets(5, 0, 0, 0));
-        lbMail.setText(i18n.tr("Expéditeur "));
+        lbMail.setText(i18n.tr("Sender")+" ");
         txtAdress = new TextField();
         txtAdress.setPrefWidth(250);    
         txtAdress.setText(myConfig.getPiloteMail());    
@@ -176,7 +175,7 @@ public class winMail {
         Label lbDest = new Label();
         lbDest.setPrefSize(100, 15);
         lbDest.setPadding(new Insets(5, 0, 0, 0));
-        lbDest.setText(i18n.tr("Destinataire "));
+        lbDest.setText(i18n.tr("Recipient")+" ");
         txtDest = new TextField();
         txtDest.setPrefWidth(250);
         if (supportMsg) {
@@ -195,7 +194,7 @@ public class winMail {
         Label lbSubject = new Label();
         lbSubject.setPrefSize(100, 15);
         lbSubject.setPadding(new Insets(5, 0, 0, 0));
-        lbSubject.setText(i18n.tr("Sujet "));
+        lbSubject.setText(i18n.tr("Subject")+" ");
         txtSubject = new TextField();
         txtSubject.setPrefWidth(300);
         hbSubject.getChildren().addAll(lbSubject, txtSubject);        
@@ -212,11 +211,11 @@ public class winMail {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btSend = new Button(i18n.tr("Envoyer"));
+        Button btSend = new Button(i18n.tr("Send"));
         btSend.setOnAction((event) -> {
             checkAndSend();
         });
-        Button btClose = new Button(i18n.tr("Annuler"));
+        Button btClose = new Button(i18n.tr("Cancel"));
         btClose.setOnAction((event) -> {            
             subStage.close();
         });
@@ -299,7 +298,7 @@ public class winMail {
             subStage.close();
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Erreur pendant l'envoi du mail"));  
+            aError.alertInfo(i18n.tr("Error sending mail"));  
         }
     }
     
