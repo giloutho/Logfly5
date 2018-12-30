@@ -58,7 +58,7 @@ public class listGPS {
         
         GPS_List = FXCollections.observableArrayList();
         
-        GPS_List.add(i18n.tr("Sélection GPS"));
+        GPS_List.add(i18n.tr("Select GPS"));
         GPS_List.add("6020/6030");
         GPS_List.add("6015");
         GPS_List.add("Flynet");
@@ -90,7 +90,7 @@ public class listGPS {
         ObservableList <idGPS> GPS_List;
         
         GPS_List = FXCollections.observableArrayList(                
-            new idGPS(" "+i18n.tr("Sélection GPS"),0),  // space necessary to keep this option as first element
+            new idGPS(" "+i18n.tr("Select GPS"),0),  // space necessary to keep this option as first element
             new idGPS("6020/6030",1),
             new idGPS("6015",2),
             new idGPS("Flynet",3),
