@@ -359,7 +359,7 @@ public class FullMapController {
     private void airChecking() {
         int res = -1;
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(i18n.tr("Format OpenAir"), "*.txt"));              
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(i18n.tr("OpenAir format"), "*.txt"));              
         File selectedFile = fileChooser.showOpenDialog(null);            
         if(selectedFile != null) {
             checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile);
@@ -372,7 +372,7 @@ public class FullMapController {
                         int badPoints = trackCheck.checkPoints();
                         alertbox aError = new alertbox(myConfig.getLocale());
                         StringBuilder sbInfo = new StringBuilder();
-                        sbInfo.append(i18n.tr("Fichier")).append(" : ").append(selectedFile.getName()).append("\r\n");
+                        sbInfo.append(i18n.tr("File")).append(" : ").append(selectedFile.getName()).append("\r\n");
                         sbInfo.append("    ").append(String.valueOf(badPoints)).append(" ").append(i18n.tr("violation(s)"));                       
                         if (badPoints == 0) {
                             aError.alertInfo(sbInfo.toString());                        
@@ -411,7 +411,7 @@ public class FullMapController {
     }
     
     private String askLocationName(double dLat, double dLong) {
-        String res = i18n.tr("Inconnu");
+        String res = i18n.tr("Unknown");
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');        
@@ -452,7 +452,7 @@ public class FullMapController {
                 String stNewLeague = allLeagues.get(newLeagueIdx);
                 dialogbox dConfirm = new dialogbox(i18n);
                 StringBuilder sbMsg = new StringBuilder(); 
-                sbMsg.append(i18n.tr("Mettre à jour le score : ")).append(stFirstLeague).append(" -> ").append(stNewLeague);
+                sbMsg.append(i18n.tr("Update Score")).append(" : ").append(stFirstLeague).append(" -> ").append(stNewLeague);
                 if (dConfirm.YesNo(i18n.tr("Scoring"), sbMsg.toString())) { 
                     updateDb();
                 }
@@ -565,23 +565,23 @@ public class FullMapController {
      */
     private void winTraduction() {
         btInfo.setText(i18n.tr("Infos"));
-        btMesure.setText(i18n.tr("Mesurer"));
+        btMesure.setText(i18n.tr("Measure"));
         Tooltip msToolTip = new Tooltip();
         msToolTip.setStyle(myConfig.getDecoToolTip());
-        msToolTip.setText(i18n.tr("Mesurer sur la carte"));
+        msToolTip.setText(i18n.tr("Measure on map"));
         btMesure.setTooltip(msToolTip);          
         btScoring.setText(i18n.tr("Scoring"));
         Tooltip scToolTip = new Tooltip();
         scToolTip.setStyle(myConfig.getDecoToolTip());
-        scToolTip.setText(i18n.tr("Calculer le score de la trace"));        
+        scToolTip.setText(i18n.tr("Score evaluation"));        
         btScoring.setTooltip(scToolTip);          
         btHtml.setText("HTML");
         btMail.setText(i18n.tr("Mail"));
-        btCheck.setText(i18n.tr("Vérification"));
+        btCheck.setText(i18n.tr("Checking"));
         Tooltip checkToolTip = new Tooltip();
         checkToolTip.setStyle(myConfig.getDecoToolTip());
-        checkToolTip.setText(i18n.tr("Vérifier les espaces aériens"));
+        checkToolTip.setText(i18n.tr("Airspaces checking"));
         btCheck.setTooltip(checkToolTip);        
-        btClose.setText(i18n.tr("Fermer"));                
+        btClose.setText(i18n.tr("Close"));                
     }    
 }
