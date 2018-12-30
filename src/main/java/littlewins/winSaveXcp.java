@@ -421,11 +421,11 @@ public class winSaveXcp {
         Text lbScore = new Text(sbScore.toString()); 
         lbScore.setFont(Font.font ("Verdana", 14));        
         
-        Text lbWayp = new Text(i18n.tr("Liste balises")); 
+        Text lbWayp = new Text(i18n.tr("Turnpoints List")+" "); 
         lbWayp.setFont(Font.font ("Verdana", 14));
         lbWayp.setFill(Color.BLUE);
         
-        Text lbPrefix = new Text(i18n.tr("Prefixe balise "));
+        Text lbPrefix = new Text(i18n.tr("Turnpoint prefix")+" ");
         lbPrefix.setFont(Font.font ("Verdana", 14));
         lbPrefix.setFill(Color.BLUE);
         
@@ -452,7 +452,7 @@ public class winSaveXcp {
         fillText();
         hbWayp.getChildren().addAll(txWayp);       
         
-        Text lbSave = new Text(i18n.tr("Enregistrement"));
+        Text lbSave = new Text(i18n.tr("Saving"));
         lbSave.setFont(Font.font ("Verdana", 14));
         lbSave.setFill(Color.BLUE); 
         
@@ -466,31 +466,31 @@ public class winSaveXcp {
         
         Label lbFile = new Label();
         lbFile.setPrefSize(100, 15);
-        lbFile.setText(i18n.tr("Nom fichier "));
+        lbFile.setText(i18n.tr("File name")+" ");
         lbFile.setPadding(new Insets(5, 0, 0, 0));
         txFile = new TextField();        
         txFile.setPrefWidth(100);        
         hbFile.getChildren().addAll(lbFile, txFile);         
          
-        chXcp.setText(i18n.tr("Format Logfly Xcp"));
+        chXcp.setText(i18n.tr("Logfly Xcp format"));
         chXcp.setSelected(true);
          
-        chOzi.setText(i18n.tr("Format Ozi"));
+        chOzi.setText(i18n.tr("Ozi format"));
         chOzi.setSelected(false);  
         
-        chCompe.setText(i18n.tr("Format CompeGPS"));
+        chCompe.setText(i18n.tr("CompeGPS format"));
         chCompe.setSelected(false);
           
-        chPcx.setText(i18n.tr("Format PCX5"));
+        chPcx.setText(i18n.tr("PCX5 format"));
         chPcx.setSelected(false);
           
-        chKml.setText(i18n.tr("Format Kml"));
+        chKml.setText(i18n.tr("Kml format"));
         chKml.setSelected(false);
          
-        chGpx.setText(i18n.tr("Format Gpx"));
+        chGpx.setText(i18n.tr("Gpx format"));
         chGpx.setSelected(false);
          
-        chCup.setText(i18n.tr("Format Cup"));
+        chCup.setText(i18n.tr("Cup format"));
         chCup.setSelected(false);
         
         vbCheck.getChildren().addAll(hbFile,chXcp,chOzi,chCompe,chPcx,chKml,chGpx,chCup);
@@ -500,11 +500,11 @@ public class winSaveXcp {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btSend = new Button(i18n.tr("Enregistrer"));
+        Button btSend = new Button(i18n.tr("Save"));
         btSend.setOnAction((event) -> {
             checkAndSave();
         });
-        Button btClose = new Button(i18n.tr("Annuler"));
+        Button btClose = new Button(i18n.tr("Cancel"));
         btClose.setOnAction((event) -> {            
             subStage.close();
         });
