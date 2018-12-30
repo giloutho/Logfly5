@@ -161,7 +161,7 @@ public class ImportViewController {
             } else {
                 clearData();
                 StringBuilder sbMsg = new StringBuilder();
-                sbMsg.append(i18n.tr("Traces dans le dossier")).append(" ");
+                sbMsg.append(i18n.tr("Tracks in folder")).append(" ");
                 sbMsg.append(fImport.getAbsolutePath()).append(" : ") .append("0");
                 rootController.updateMsgBar(sbMsg.toString(), true, 60);
             }               
@@ -272,9 +272,9 @@ public class ImportViewController {
             });
             // Update status message
             StringBuilder sbMsg = new StringBuilder();
-            sbMsg.append(i18n.tr("Traces dans le dossier")).append(" ").append(importDirectory.getAbsolutePath());
+            sbMsg.append(i18n.tr("Tracks in folder")).append(" ").append(importDirectory.getAbsolutePath());
             sbMsg.append(" : ").append(String.valueOf(nbTracks));
-            sbMsg.append("   ").append(i18n.tr("Traces à incorporer")).append(" : ").append(String.valueOf(nbNewTracks));
+            sbMsg.append("   ").append(i18n.tr("Tracks to be added")).append(" : ").append(String.valueOf(nbNewTracks));
             rootController.updateMsgBar(sbMsg.toString(), true, 60);
         }
         
@@ -297,9 +297,12 @@ public class ImportViewController {
         String errMsg;
         if (badTrack.Tb_Tot_Points.size() > 0)  { 
             // "Unvalid track - Gross points : "+instance.Tb_Tot_Points.size()+" valid points : "+instance.Tb_Good_Points.size());
-            errMsg = i18n.tr("Trace invalide - Points bruts : "+badTrack.Tb_Tot_Points.size()+" points valides : "+badTrack.Tb_Good_Points.size()); 
+            StringBuilder sbMsg = new StringBuilder();
+            sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
+            sbMsg.append(badTrack.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(badTrack.Tb_Good_Points.size());
+            errMsg = sbMsg.toString(); 
         } else {                            
-            errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+            errMsg = i18n.tr("No valid points in this track file");
         }
         aError.alertError(errMsg);
     }
@@ -348,7 +351,7 @@ public class ImportViewController {
             subStage.show();
         }  else {
             alertbox aErrMap = new alertbox(myConfig.getLocale()); 
-            aErrMap.alertError(i18n.tr("Une erreur est survenue pendant la génération de la carte"));     // Error during map generation
+            aErrMap.alertError(i18n.tr("An error occurred during the map generation"));     // Error during map generation
         }        
     }    
     
@@ -378,7 +381,7 @@ public class ImportViewController {
             }
         } else {
             alertbox aInfo = new alertbox(myConfig.getLocale());
-            aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
+            aInfo.alertInfo(i18n.tr("Left-click to select a flight"));
         }        
     }
     
@@ -396,7 +399,7 @@ public class ImportViewController {
         if (nbVols > 0) {
             dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder();
-            sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("traces à supprimer dans le dossier")).append(" ?");
+            sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("tracks to delete in the folder")).append(" ?");
             if (dConfirm.YesNo("", sbMsg.toString()))   {       
                 for (Import item : data){
                     if (!item.getChecked())  {     
@@ -441,7 +444,7 @@ public class ImportViewController {
         if (nbVols > 0) {
             dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder();
-            sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
+            sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("flights to insert")).append(" ?");
             if (dConfirm.YesNo("", sbMsg.toString()))   {       
                 for (Import item : data){
                     if (item.getChecked())  {     
@@ -497,16 +500,16 @@ public class ImportViewController {
     * Translate labels of the window
     */
     private void winTraduction() {
-        checkCol.setText(i18n.tr("Carnet"));
+        checkCol.setText(i18n.tr("Logbook"));
         dateCol.setText(i18n.tr("Date"));
-        heureCol.setText(i18n.tr("Heure"));
-        nomFichierCol.setText(i18n.tr("Nom Fichier"));
-        nomPiloteCol.setText(i18n.tr("Nom pilote"));
-        btnSelect.setText(i18n.tr("Sélectionner un dossier"));
-        btnDecocher.setText(i18n.tr("Décocher"));
-        btnMaj.setText(i18n.tr("Mise à jour Carnet"));
-        btnNettoyage.setText(i18n.tr("Nettoyage dossier"));        
-        btnVisu.setText(i18n.tr("Visualisation trace"));
+        heureCol.setText(i18n.tr("Time"));
+        nomFichierCol.setText(i18n.tr("File name"));
+        nomPiloteCol.setText(i18n.tr("Pilot name"));
+        btnSelect.setText(i18n.tr("Select a folder"));
+        btnDecocher.setText(i18n.tr("Unselect"));
+        btnMaj.setText(i18n.tr("Logbook update"));
+        btnNettoyage.setText(i18n.tr("Cleaning folder"));        
+        btnVisu.setText(i18n.tr("Track visualization"));
     }
     
 }
