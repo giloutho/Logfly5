@@ -495,7 +495,7 @@ public class SitesViewController {
             sbMsg.append(selSite.getNom());
             sbMsg.append(" ");
             sbMsg.append(selSite.getVille());                        
-            if (dConfirm.YesNo(i18n.tr("Suppression du site"), sbMsg.toString()))   {                
+            if (dConfirm.YesNo(i18n.tr("Delete site"), sbMsg.toString()))   {                
                 String sReq = "DELETE FROM Site WHERE S_ID = ?";
                 try {
                     pstmt = myConfig.getDbConn().prepareStatement(sReq);
@@ -515,7 +515,7 @@ public class SitesViewController {
         } else {
             // no site selected
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(i18n.tr("Aucun site sélectionné..."));                       
+            aError.alertError(i18n.tr("No site selected"));                       
         }        
     }    
     
@@ -585,7 +585,7 @@ public class SitesViewController {
                 sHTML = mapSite.getMap_HTML();               
             } else {
                 Alert alert = new Alert(Alert.AlertType.ERROR);                       
-                alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
+                alert.setContentText(i18n.tr("An error occurred during the map generation"));
                 alert.showAndWait();   
             }            
         } else if (sitesList.size() == 1)  {
@@ -596,7 +596,7 @@ public class SitesViewController {
                 sHTML = mapSite.getMap_HTML();               
             } else {
                 Alert alert = new Alert(Alert.AlertType.ERROR);                       
-                alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
+                alert.setContentText(i18n.tr("An error occurred during the map generation"));
                 alert.showAndWait();   
             }
         } 
@@ -662,12 +662,12 @@ public class SitesViewController {
         }
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
-        sbMsg.append(String.valueOf(nbSites)).append(" ").append(i18n.tr(" sites sélectionnés- Exporter ?"));
+        sbMsg.append(String.valueOf(nbSites)).append(" ").append(" ").append(i18n.tr("selected sites")).append(" - ").append(i18n.tr("Export")).append(" ?");
         if (dConfirm.YesNo("", sbMsg.toString()))   { 
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(i18n.tr("Format csv"), "*.csv"),
-                new FileChooser.ExtensionFilter(i18n.tr("Format texte"), "*.txt")
+                new FileChooser.ExtensionFilter(i18n.tr("Csv format"), "*.csv"),
+                new FileChooser.ExtensionFilter(i18n.tr("Text format"), "*.txt")
             );  
             File selectedFile = fileChooser.showSaveDialog(null);        
             if(selectedFile != null){
@@ -717,7 +717,7 @@ public class SitesViewController {
                     }
                     writer.close();
                     alertbox aInfo = new alertbox(myConfig.getLocale());
-                    aInfo.alertInfo(i18n.tr("Export terminé")); 
+                    aInfo.alertInfo(i18n.tr("Exported")); 
                 } catch (Exception e) {
                     res = 2;
                 }
@@ -764,7 +764,7 @@ public class SitesViewController {
     private ContextMenu clicTop_Menu()   {
         final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Modifier"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Modify"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 siteFormEdit();
@@ -772,7 +772,7 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Ajouter"));        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Add"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 siteFormAdd();
@@ -780,7 +780,7 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem1);
         
-        MenuItem cmItem2 = new MenuItem(i18n.tr("Supprimer"));        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Delete"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 siteDelete();
@@ -788,7 +788,7 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem2);
         
-        MenuItem cmItem22 = new MenuItem(i18n.tr("Doublons"));        
+        MenuItem cmItem22 = new MenuItem(i18n.tr("Duplicates"));        
         cmItem22.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 searchDuplicate();
@@ -796,16 +796,16 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem22);   
         
-        MenuItem cmItem23 = new MenuItem(i18n.tr("Export waypoints"));        
+        MenuItem cmItem23 = new MenuItem(i18n.tr("Waypoints export"));        
         cmItem23.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 alertbox aMsg = new alertbox(myConfig.getLocale());
-                aMsg.alertInfo(i18n.tr("Non implémenté...")); 
+                aMsg.alertInfo(i18n.tr("Not implemented")); 
             }            
         });
         cm.getItems().add(cmItem23);  
 
-        MenuItem cmItem24 = new MenuItem(i18n.tr("Télécharger"));        
+        MenuItem cmItem24 = new MenuItem(i18n.tr("Download"));        
         cmItem24.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 winSiteList myWin = new winSiteList(myConfig,i18n);
@@ -816,7 +816,7 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem24);         
         
-        MenuItem cmItem3 = new MenuItem(i18n.tr("Importer"));        
+        MenuItem cmItem3 = new MenuItem(i18n.tr("Import"));        
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 fileImportCsv();
@@ -824,7 +824,7 @@ public class SitesViewController {
         });
         cm.getItems().add(cmItem3);        
         
-        MenuItem cmItem4 = new MenuItem(i18n.tr("Exporter"));        
+        MenuItem cmItem4 = new MenuItem(i18n.tr("Export"));        
         cmItem4.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 exportCsv();
@@ -840,7 +840,7 @@ public class SitesViewController {
         
         tableContextMenu = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Modifier"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Modify"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 siteFormEdit();
@@ -848,7 +848,7 @@ public class SitesViewController {
         });
         tableContextMenu.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Ajouter"));        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Add"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 siteFormAdd();
@@ -856,7 +856,7 @@ public class SitesViewController {
         });
         tableContextMenu.getItems().add(cmItem1);
         
-        MenuItem cmItem2 = new MenuItem(i18n.tr("Supprimer"));        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Delete"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 siteDelete();
@@ -864,7 +864,7 @@ public class SitesViewController {
         });
         tableContextMenu.getItems().add(cmItem2);
         
-        MenuItem cmPlus = new MenuItem(i18n.tr("Plus..."));
+        MenuItem cmPlus = new MenuItem(i18n.tr("More")+"...");
         cmPlus.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 Bounds boundsInScreen = top_Menu.localToScreen(top_Menu.getBoundsInLocal());
@@ -880,19 +880,19 @@ public class SitesViewController {
     */
     private void winTraduction() {        
         
-        nomCol.setText(i18n.tr("Nom"));
-        villeCol.setText(i18n.tr("Localité"));
-        cpCol.setText(i18n.tr("CP"));
+        nomCol.setText(i18n.tr("Name"));
+        villeCol.setText(i18n.tr("Locality"));
+        cpCol.setText(i18n.tr("ZIP code"));
         altCol.setText(i18n.tr("Alt"));
         orientCol.setText(i18n.tr("Orientation"));
-        rdAll.setText(i18n.tr("Tous"));
-        rdDeco.setText(i18n.tr("Décollage"));
-        rdAttero.setText(i18n.tr("Atterissage"));
-        rdNondef.setText(i18n.tr("Non défini"));     
+        rdAll.setText(i18n.tr("All"));
+        rdDeco.setText(i18n.tr("Take off"));
+        rdAttero.setText(i18n.tr("Landing"));
+        rdNondef.setText(i18n.tr("Not defined"));     
         btnMap.setStyle("-fx-background-color: transparent;");
         Tooltip mapToolTip = new Tooltip();
         mapToolTip.setStyle(myConfig.getDecoToolTip());
-        mapToolTip.setText(i18n.tr("Carte plein écran"));
+        mapToolTip.setText(i18n.tr("Full screen map"));
         btnMap.setTooltip(mapToolTip);        
     }    
     
