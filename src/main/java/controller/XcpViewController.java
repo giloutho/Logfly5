@@ -115,7 +115,7 @@ public class XcpViewController {
     private void handleRead() {
         // il faudra ajouter http://alpidev.com/xcplanner/  et le symbole ?
         FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter xcpFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers traces (*.xcp)"), "*.xcp");
+        FileChooser.ExtensionFilter xcpFilter = new FileChooser.ExtensionFilter(i18n.tr("Track files (*.xcp)"), "*.xcp");
         fileChooser.getExtensionFilters().addAll(xcpFilter);
         File selectedFile = fileChooser.showOpenDialog(null);        
         if(selectedFile != null){    
@@ -206,8 +206,8 @@ public class XcpViewController {
     * Translate labels of the window
     */
     private void winTraduction() {  
-        lbSecteur.setText(i18n.tr("Secteur"));
-        btRead.setText(i18n.tr("Lire"));
-        btSave.setText(i18n.tr("Enregistrer"));        
+        lbSecteur.setText(i18n.tr("Sector"));
+        btRead.setText(i18n.tr("Read"));
+        btSave.setText(i18n.tr("Save"));        
     }
 }
