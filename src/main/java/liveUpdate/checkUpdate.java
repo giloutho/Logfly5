@@ -71,8 +71,8 @@ public class checkUpdate {
                 if (current.compareTo(release) > 0) {
                     if (!myConfig.isUpdateAuto())  {
                         dialogbox dInfo = new dialogbox(i18n);
-                        String dHeader = i18n.tr("Une nouvelle version {0}.{1} est disponible",current.getpkgver(),current.getPkgrel());
-                        String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
+                        String dHeader = i18n.tr("A new version {0}. {1} is available",current.getpkgver(),current.getPkgrel());
+                        String dText = current.getMessage()+"\n"+i18n.tr("Do you want to install it")+" ?";
                         answer = dInfo.YesNo(dHeader,dText); 
                     } else {
                         answer = true;
@@ -88,12 +88,12 @@ public class checkUpdate {
             } else {
                 // major update ->  bundle download required 
                 dialogbox dInfo = new dialogbox(i18n);
-                String dHeader = i18n.tr("Une mise à jour majeure est disponible [version {0}]",current.getseverity());
-                String dText = current.getMessage()+"\n"+i18n.tr("Voulez vous l'installer ?");
+                String dHeader = i18n.tr("A major update is available [version {0}]",current.getseverity());
+                String dText = current.getMessage()+"\n"+i18n.tr("Do you want to install it")+" ?";
                 answer = dInfo.YesNo(dHeader,dText); 
                 if (answer == true) {
                     tmpUpdateFiles = tempacess.getTemPath(null);
-                    String msg = i18n.tr("Vous devez redémarrer Logfly...");
+                    String msg = i18n.tr("You need to restart the program")+"...";
                     String sUrl=null;
                     // Get bundle.xml with download url
                     bundleXMLParser bParser = new bundleXMLParser();
@@ -126,7 +126,7 @@ public class checkUpdate {
             
         } catch (SAXException ex) {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(i18n.tr("Le bulletin de mise à jour n'a pas pu être chargé"));                      
+            aError.alertError(i18n.tr("Update info could not be loaded"));                      
             answer = false;
         } catch (FileNotFoundException ex) {            
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -150,8 +150,8 @@ public class checkUpdate {
                 Updater update = new Updater();               
                 update.update("update.inf", tmpUpdateFiles, Modes.FILE);
                 StringBuilder sbMsg = new StringBuilder();              
-                sbMsg.append(i18n.tr("Logfly a été mis à jour\n"));  //"The update was completed successfuly.\n"
-                sbMsg.append(i18n.tr("Vous devez redémarrer le programme... "));  // "Please restart the application in order the changes take effect."         
+                sbMsg.append(i18n.tr("Logfly has been updated")).append("\n");  
+                sbMsg.append(i18n.tr("You need to restart the program")).append("...");  
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertInfo(i18n.tr(sbMsg.toString()));     
                 System.exit(0);
