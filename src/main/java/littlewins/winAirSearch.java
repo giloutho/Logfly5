@@ -9,7 +9,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -46,7 +45,7 @@ public class winAirSearch {
     private void showWin() {
         Stage subStage = new Stage();
         
-        Label lbName = new Label(i18n.tr("Recherche "));
+        Label lbName = new Label(i18n.tr("Search")+" ");
         lbName.setMinWidth(80);        
         final TextField txName = new TextField ();
         txName.setMinWidth(190);        
@@ -66,7 +65,7 @@ public class winAirSearch {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btValid = new Button(i18n.tr("Valider"));
+        Button btValid = new Button(i18n.tr("OK"));
          btValid.setOnAction((event) -> {
             searchName = txName.getText().trim();
             if (searchName != null && !searchName.equals("")) {
@@ -77,7 +76,7 @@ public class winAirSearch {
              System.out.println(searchName+"  "+runSearch);
             subStage.close();
         });
-        Button btCancel = new Button(i18n.tr("Annuler"));
+        Button btCancel = new Button(i18n.tr("Cancel"));
         btCancel.setOnAction((event) -> {
             runSearch = false;
             subStage.close();
