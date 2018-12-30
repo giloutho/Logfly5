@@ -6,7 +6,6 @@
  */
 package littlewins;
 
-import java.util.ArrayList;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -75,7 +74,7 @@ public class winGlider {
     private void showWin() {
         Stage subStage = new Stage();
         
-        Label lbPilote = new Label(i18n.tr("Pilote "));
+        Label lbPilote = new Label(i18n.tr("Pilot")+" ");
         lbPilote.setMinWidth(80);        
         final TextField txPilot = new TextField ();
 //          if Uppercase wanted...
@@ -98,7 +97,7 @@ public class winGlider {
         hBox1.setAlignment(Pos.CENTER_LEFT);
         hBox1.getChildren().addAll(lbPilote, txPilot);
         
-        Label lbVoile = new Label(i18n.tr("Voile "));
+        Label lbVoile = new Label(i18n.tr("Glider")+" ");
         lbVoile.setMinWidth(80);
         
         ComboBox cbGliders = new ComboBox();
@@ -125,14 +124,14 @@ public class winGlider {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btValid = new Button(i18n.tr("Valider"));
+        Button btValid = new Button(i18n.tr("OK"));
          btValid.setOnAction((event) -> {
             setwPilot(txPilot.getText());
             setwGlider((String) cbGliders.getValue());
             setModif(true);
             subStage.close();
         });
-        Button btCancel = new Button(i18n.tr("Annuler"));
+        Button btCancel = new Button(i18n.tr("Cancel"));
         btCancel.setOnAction((event) -> {
             setModif(false);
             subStage.close();
