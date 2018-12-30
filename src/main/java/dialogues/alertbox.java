@@ -30,7 +30,7 @@ public class alertbox {
      */
     public void alertError (String msg)  {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(i18n.tr("Erreur programme"));
+        alert.setTitle(i18n.tr("Program error"));
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
@@ -48,168 +48,170 @@ public class alertbox {
         Alert.AlertType typeAlert = Alert.AlertType.ERROR;
         switch (noError) {
             case -1 :
-                msg = i18n.tr("Erreur indéterminée");
+                msg = i18n.tr("Undefined error");
                 break;
             case 0 :
                 typeAlert = Alert.AlertType.INFORMATION;
-                msg = i18n.tr("Opération réussie");
+                msg = i18n.tr("Successful operation");
                 break;
             case 1 :
-                msg = i18n.tr("Fichier non trouvé");
+                msg = i18n.tr("File not found");
                 break;
             case 2:    
-                msg = i18n.tr("Problème d'entrée sortie sur fichier");                          
+                msg = i18n.tr("File Output Input Problem");                          
                 break;
             case 3:    
-                msg = i18n.tr("Fichier non trouvé");                          
+                msg = i18n.tr("File not found");                          
                 break;
             case 4:    
-                msg = i18n.tr("Erreur de parsing");                          
+                msg = i18n.tr("Parsing error");                          
                 break;
             case 5:    
-                msg = i18n.tr("Erreur NullPointerException");                          
+                msg = i18n.tr("NullPointerException error");                          
                 break;
             case 6:    
-                msg = i18n.tr("Erreur InterruptedException");                          
+                msg = i18n.tr("InterruptedException error");                          
                 break;
             case 8:    
-                msg = i18n.tr("Problème de chargement de la ressource");                          
+                msg = i18n.tr("Loading resource failed");                          
                 break;
             case 9:    
-                msg = i18n.tr("Impossible de créer le ficher temporaire");                          
+                msg = i18n.tr("Unable to create temporary file");                          
                 break;
             case 10:    
-                msg = i18n.tr("Pas de connection internet");                          
+                msg = i18n.tr("No Internet connection");                          
                 break;
             case 20:    
-                msg = i18n.tr("La configuration n'est pas valide");                          
+                msg = i18n.tr("Settings are not valid");                          
                 break;                
             case 100:    
-                msg = i18n.tr("Connection base de données impossible");                          
+                msg = i18n.tr("Database connection failed");                          
                 break;
             case 102:    
-                msg = i18n.tr("Problème de lecture sur le carnet de vol");                          
+                msg = i18n.tr("Reading problem in logbook");                          
                 break;
             case 202:    
-                msg = i18n.tr("Impossible de créer le dossier AIRSP");                          
+                msg = i18n.tr("Unable to create AIRSP folder");                          
                 break;   
             case 204:    
-                msg = i18n.tr("Module Reverbin introuvable");                          
+                msg = i18n.tr("Reverbin program not found");                          
                 break;           
             case 206:    
-                msg = i18n.tr("Reversale non connecté");                          
+                msg = i18n.tr("Reversale not connected");                          
                 break;                    
             case 208:    
-                msg = i18n.tr("FRIDX.bin non généré");                          
+                msg = i18n.tr("FRIDX.Bin not generated");                          
                 break;
             case 210:    
-                msg = i18n.tr("FRDATA.bin non généré");                          
+                msg = i18n.tr("FRDATA.Bin not generated");                          
                 break;    
             case 212:    
-                msg = i18n.tr("Erreur pendant la copie de FRDATA.bin et FRIDX.bin");                          
+                msg = i18n.tr("Error copying FRDATA. bin and FRIDX. bin");                          
                 break;                   
             case 214:    
-                msg = i18n.tr("Génération des fichiers FRDATA.bin et FRIDX.bin réussie");                          
+                msg = i18n.tr("FRDATA.bin and FRIDX.bin generation successful");                          
                 break;           
             case 220:    
-                msg = i18n.tr("Impossible de créer la sélection d'espaces aériens");                          
+                msg = i18n.tr("Unable to create airspaces selection");                          
                 break;                     
             case 1000:
                 // Error in reading the parameters
-                msg = i18n.tr("Problème de lecture sur le fichier des paramètres");                          
+                msg = i18n.tr("Reading settings failed");                          
                 break;
             case 1001:
-                msg = i18n.tr("Module Points non trouvé...");                          
+                msg = i18n.tr("Points program not found");                          
                 break;
             case 1002:
-                msg = i18n.tr("JSON Score incorrect...");                          
+                msg = i18n.tr("Wrong JSON score");                          
                 break;
             case 1012:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace simple");                          
+                msg = i18n.tr("Error during generation of simple track");                          
                 break;
             case 1014:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace colorée par vario");                          
+                msg = i18n.tr("Error during generation of colored track by climb");                          
                 break;
             case 1016:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace colorée par altitude");                          
+                msg = i18n.tr("Error during generation of colored track by altitude");                          
                 break;
             case 1018:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace colorée par vitesse");                          
+                msg = i18n.tr("Error during generation of colored track by speed");                          
                 break;
             case 1020:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace du score");                          
+                msg = i18n.tr("Error during generation of scoring track");                          
                 break;
             case 1022:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace des thermiques");                          
+                msg = i18n.tr("Error during generation of thermals track");                          
                 break;
             case 1024:
                 // Kml generation
-                msg = i18n.tr("Erreur pendant la génération de la trace du replay");                          
+                msg = i18n.tr("Error during generation of track replay");                          
                 break;
             case 1030:                
-                msg = i18n.tr("Impossible de lancer Google Earth");                          
+                msg = i18n.tr("Unable to run Google Earth");                          
                 break;
             case 1042:                
-                msg = i18n.tr("Problème sur le décodage de la photo");                          
+                msg = i18n.tr("Decoding picture failed");                          
                 break;    
             case 1052:                
-                msg = i18n.tr("Pas de réponse du GPS");                          
+                msg = i18n.tr("No GPS response");                          
                 break;  
             case 1054:                
-                msg = i18n.tr("Le fichier trace est vide");                          
+                msg = i18n.tr("Track file is empty");                          
                 break;  
             case 1056:                
-                msg = i18n.tr("Pas de traces dans le GPS");                          
+                msg = i18n.tr("No tracks in the GPS");                          
                 break; 
             // Trace GPS decoding    
             case 1060 :
-                 msg = i18n.tr("Extension de fichier non reconnue");                          
+                 msg = i18n.tr("File Extension not recognized");                          
                 break; 
             case 1102:                
-                msg = i18n.tr("Problème de lecture sur le fichier des vols");                          
+                msg = i18n.tr("Reading problem in flights file");                          
                 break; 
             case 1104:                
-                msg = i18n.tr("Problème d'insertion dans le fichier des vols");                          
+                msg = i18n.tr("Inserting in the flights file failed");                          
                 break; 
             case 1110 :                
-                msg = i18n.tr("Les vols doivent être du même jour");                          
+                msg = i18n.tr("Flights must be on the same day");                          
                 break;
             case 1112 :                
-                msg = i18n.tr("Un seul vol sélectionné");                          
+                msg = i18n.tr("Only one flight selected");                          
                 break;
             case 1201:
-                msg = i18n.tr("Module GpsDump non trouvé...");                          
+                msg = i18n.tr("GpsDump program not found");                          
                 break;             
             // upload igc file for VisuGPS    
             case 1301:
-                msg = i18n.tr("Quota affichage VisuGPS dépassé...");                          
+                msg = i18n.tr("Quota displaying VisuGPS exceeded");                          
                 break;        
             case 1305:
-                msg = i18n.tr("Le fichier est trop volumineux...");                          
+                msg = i18n.tr("The file is too large");                          
                 break;     
             case 1310:
-                msg = i18n.tr("Erreur pendant le transfert du fichier...");                          
+                msg = i18n.tr("Error while transferring file");                          
                 break;             
             case 1350:
-                msg = i18n.tr("Erreur de décodage du fichier Open Air...");                          
+                msg = i18n.tr("Decoding problem in Open Air file");                          
                 break;         
             case 1370:
-                msg = i18n.tr("Erreur de génération GeoJson");                          
+                msg = i18n.tr("Error during GeoJSON generation");                          
                 break;             
             case 1380 :
-                msg = i18n.tr("Génération GPX impossible : lsTracks vide");                          
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.append(i18n.tr("Unable to generate GPX")).append(" : ").append("lsTracks ").append(i18n.tr("empty"));
+                msg = i18n.tr(sbMsg.toString());                          
                 break;                
             default:
-                msg = i18n.tr("Erreur indéterminée");
+                msg = i18n.tr("Undefined error");
         }        
         Alert alert = new Alert(typeAlert);        
-        alert.setTitle(i18n.tr("Tâche terminée"));
+        alert.setTitle(i18n.tr("Completed task"));
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
@@ -221,7 +223,7 @@ public class alertbox {
      */
     public void alertInfo (String msg)  {       
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(i18n.tr("Information importante"));
+        alert.setTitle(i18n.tr("Important information"));
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
