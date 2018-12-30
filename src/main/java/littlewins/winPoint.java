@@ -63,7 +63,7 @@ public class winPoint {
     public void showWin() {
         Stage subStage = new Stage();
         
-        Label lbAlt = new Label(i18n.tr("Altitude "));
+        Label lbAlt = new Label(i18n.tr("Altitude")+" ");
         lbAlt.setMinWidth(100);        
         TextField txAlt = new TextField ();
         txAlt.setMinWidth(60);
@@ -77,7 +77,7 @@ public class winPoint {
         hBox1.setAlignment(Pos.CENTER_LEFT);
         hBox1.getChildren().addAll(lbAlt, txAlt);
         
-        Label lbDesc = new Label(i18n.tr("Description "));
+        Label lbDesc = new Label(i18n.tr("Description")+" ");
         lbDesc.setMinWidth(100);
         TextField txDesc = new TextField ();
         txDesc.setMinWidth(150);
@@ -89,7 +89,7 @@ public class winPoint {
         hBox2.setMinWidth(290);
         hBox2.setAlignment(Pos.CENTER_LEFT);
 
-        Label lbBal = new Label(i18n.tr("Nom court "));
+        Label lbBal = new Label(i18n.tr("Short name")+" ");
         lbBal.setMinWidth(100);
         TextField txBalise = new TextField ();
         txBalise.setMinWidth(80);
@@ -111,7 +111,7 @@ public class winPoint {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btValid = new Button(i18n.tr("Valider"));
+        Button btValid = new Button(i18n.tr("OK"));
          btValid.setOnAction((event) -> {
             wBalise = txBalise.getText();            
             wDesc = txDesc.getText();
@@ -119,7 +119,7 @@ public class winPoint {
             setModif(true);
             subStage.close();
         });
-        Button btCancel = new Button(i18n.tr("Annuler"));
+        Button btCancel = new Button(i18n.tr("Cancel"));
         btCancel.setOnAction((event) -> {
             setModif(false);
             subStage.close();
