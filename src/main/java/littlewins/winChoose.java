@@ -94,7 +94,7 @@ public class winChoose {
     
     private void selectFile() {
         FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers sites (*.csv)"), "*.csv");        
+        FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("Sites files (*.csv)"), "*.csv");        
         fileChooser.getExtensionFilters().add(csvFilter);
         File selectedFile = fileChooser.showOpenDialog(null);  
         if(selectedFile != null){   
