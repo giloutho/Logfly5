@@ -221,8 +221,8 @@ public class GPSViewController {
             }
         } 
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(idGPS).append(i18n.tr("   Traces dans le GPS : ")).append(String.valueOf(nbTracks));
-        sbMsg.append("   ").append(i18n.tr("Traces à incorporer")).append(" : ").append(String.valueOf(nbNewTracks));
+        sbMsg.append(idGPS).append("   ").append(i18n.tr("GPS tracks")).append(" : ").append(String.valueOf(nbTracks));
+        sbMsg.append("   ").append(i18n.tr("Tracks to be added")).append(" : ").append(String.valueOf(nbNewTracks));
         rootController.updateMsgBar(sbMsg.toString(), true, 60);
     }
    
@@ -240,7 +240,7 @@ public class GPSViewController {
         }
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("vols à insérer")).append(" ?");
+        sbMsg.append(String.valueOf(nbVols)).append(" ").append(i18n.tr("flights to insert")).append(" ?");
         if (dConfirm.YesNo("", sbMsg.toString()))   {     
             nbToInsert = nbVols;
            // insertWithProgress();        
@@ -477,7 +477,7 @@ public class GPSViewController {
                 dateCol.setMinWidth(80);
                 heureCol.setMinWidth(80);
                 Column4.setMinWidth(80);
-                Column4.setText(i18n.tr("Durée"));
+                Column4.setText(i18n.tr("Duration"));
                 Column5.setVisible(false);
                 Column6.setVisible(false);
                 tableImp.setMaxWidth(300);
@@ -711,9 +711,9 @@ public class GPSViewController {
             } else {
                 // No alert box possible in this thread
                 if (currGPS == winGPS.gpsType.Syride) {
-                    errorComMsg = i18n.tr("Pas de traces dans le dossier");
+                    errorComMsg = i18n.tr("No tracks in the selected folder");
                 } else {
-                    errorComMsg = i18n.tr("Pas de traces depuis le ")+limitMsg;
+                    errorComMsg = i18n.tr("No tracks since the")+"  "+limitMsg;
                 }
                 resCom = 6;  
             }
@@ -1028,7 +1028,7 @@ public class GPSViewController {
                 // when task ended, return to logbook view
                 task.setOnSucceeded(event -> {
                     pForm.getDialogStage().close();
-                    String resInsertion = nbInserted+" / "+nbToInsert+i18n.tr(" vol(s) inséré(s) dans le carnet");
+                    String resInsertion = nbInserted+" / "+nbToInsert+" "+i18n.tr("flights inserted in logbook");
                     alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
                     if (currGPS != winGPS.gpsType.Syride)  {
                         // Display number of flights inserted
@@ -1036,12 +1036,12 @@ public class GPSViewController {
                     } else {
                         dialogbox dConfirm = new dialogbox(i18n); 
                         // Display number of flights inserted and for moving tracks in archives folder
-                        if (dConfirm.YesNo(resInsertion,i18n.tr("Procéder à l'archivage ?"))) {
+                        if (dConfirm.YesNo(resInsertion,i18n.tr("Start archiving")+" ?")) {
                             archiveSyride();
                         }
                     }
                     if(errInsertion != null && !errInsertion.isEmpty())  {
-                        aInsFlights.alertInfo(i18n.tr(" Traces non insérées dans le carnet")+"\r\n"+errInsertion);
+                        aInsFlights.alertInfo("  "+i18n.tr("tracks not inserted in the logbook")+"\r\n"+errInsertion);
                     }
                     rootController.changeCarnetView();
                 });   
@@ -1153,7 +1153,7 @@ public class GPSViewController {
             subStage.show();
         }  else {
             alertbox aErrMap = new alertbox(myConfig.getLocale()); 
-            aErrMap.alertError(i18n.tr("Une erreur est survenue pendant la génération de la carte"));     // Error during map generation
+            aErrMap.alertError(i18n.tr("An error occurred during the map generation"));     // Error during map generation
         }        
     }
     
@@ -1166,9 +1166,12 @@ public class GPSViewController {
         String errMsg;
         if (badTrack.Tb_Tot_Points.size() > 0)  { 
             // "Unvalid track - Gross points : "+instance.Tb_Tot_Points.size()+" valid points : "+instance.Tb_Good_Points.size());
-            errMsg = i18n.tr("Trace invalide - Points bruts : "+badTrack.Tb_Tot_Points.size()+" points valides : "+badTrack.Tb_Good_Points.size()); 
+            StringBuilder sbMsg = new StringBuilder();
+            sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
+            sbMsg.append(badTrack.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(badTrack.Tb_Good_Points.size());
+            errMsg = sbMsg.toString();
         } else {                            
-            errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+            errMsg = i18n.tr("No valid points in this track file");
         }
         aError.alertError(errMsg);
     }
@@ -1396,7 +1399,7 @@ public class GPSViewController {
             }        
         } else {
             alertbox aInfo = new alertbox(myConfig.getLocale());
-            aInfo.alertInfo(i18n.tr("GPSDump n'a pas renvoyé la trace demandée"));
+            aInfo.alertInfo(i18n.tr("GPSDump did not return the requested track"));
         }
     }
                         
@@ -1449,7 +1452,7 @@ public class GPSViewController {
             }
         } else {
             alertbox aInfo = new alertbox(myConfig.getLocale());
-            aInfo.alertInfo(i18n.tr("Sélectionnez un vol par un clic gauche"));
+            aInfo.alertInfo(i18n.tr("Left-click to select a flight"));
         }
     }
     
@@ -1488,20 +1491,20 @@ public class GPSViewController {
     * Translate labels of the window
     */
     private void winTraduction() {
-        btnSelectGPS.setText(i18n.tr("Sélection GPS"));
-        btnDecocher.setText(i18n.tr("Décocher"));
-        btnMaj.setText(i18n.tr("Mise à jour Carnet"));
+        btnSelectGPS.setText(i18n.tr("Select GPS"));
+        btnDecocher.setText(i18n.tr("Unselect"));
+        btnMaj.setText(i18n.tr("Logbook update"));
         Tooltip majToolTip = new Tooltip();
         majToolTip.setStyle(myConfig.getDecoToolTip());
-        majToolTip.setText(i18n.tr("Tous les vols cochés sont incorporés dans le carnet"));
+        majToolTip.setText(i18n.tr("All checked flights will be included in the logbook"));
         btnVisu.setTooltip(majToolTip);
-        btnVisu.setText(i18n.tr("Visualisation trace")); 
+        btnVisu.setText(i18n.tr("Track visualization")); 
         Tooltip viToolTip = new Tooltip();
         viToolTip.setStyle(myConfig.getDecoToolTip());
-        viToolTip.setText(i18n.tr("Le vol sélectionné (clic gauche) est visualisé sans incorporation dans le carnet"));
+        viToolTip.setText(i18n.tr("The selected flight (left-click) is viewed without incorporation into the logbook"));
         btnVisu.setTooltip(viToolTip);        
         dateCol.setText(i18n.tr("Date"));
-        heureCol.setText(i18n.tr("Heure"));
+        heureCol.setText(i18n.tr("Time"));
     }
     
 }
