@@ -322,7 +322,7 @@ public class DashViewController {
             }
         } catch ( Exception e ) {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet")); 
+            aError.alertInfo(i18n.tr("Could not read logbook")); 
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             sbError.append(sReq).append(" -> ").append(lastYear);
@@ -359,7 +359,7 @@ public class DashViewController {
             compYearList.add(new monthData(labelMonth, count, totSec)); 
         } catch ( Exception e ) {     
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet"));             
+            aError.alertInfo(i18n.tr("Could not read logbook"));             
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             sbError.append(sReq).append(" -> ").append(reqMonth);
@@ -397,7 +397,7 @@ public class DashViewController {
             currYearList.add(new monthData(labelMonth, count, totSec)); 
         } catch ( Exception e ) {     
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet"));             
+            aError.alertInfo(i18n.tr("Could not read logbook"));             
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             sbError.append(sReq).append(" -> ").append(reqMonth);
@@ -435,11 +435,11 @@ public class DashViewController {
                 ca.setDuree(rs.getString("V_Duree"));
                 ca.setSite(rs.getString("V_Site"));  
                 bestFlightId = rs.getString("V_ID");
-                res = i18n.tr("Meilleur vol : ")+dtf.format(ca.getDate())+" "+dtfDuree.format(ca.getDuree())+" "+ca.getSite();
+                res = i18n.tr("Best flight")+" : "+dtf.format(ca.getDate())+" "+dtfDuree.format(ca.getDuree())+" "+ca.getSite();
             }
         } catch ( Exception e ) {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Problème de lecture dans le carnet"));             
+            aError.alertInfo(i18n.tr("Could not read logbook"));             
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             sbError.append(sbReq);
@@ -488,7 +488,7 @@ public class DashViewController {
             }
         } catch ( Exception e ) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture dans le carnet"));            
+            alert.setTitle(i18n.tr("Could not read logbook"));            
             String s = e.getClass().getName() + ": " + e.getMessage();
             alert.setContentText(s);
             alert.showAndWait();                                
@@ -525,13 +525,13 @@ public class DashViewController {
                     nameSite = rs.getString(1).trim();
                     sitesData.add(new PieChart.Data(nameSite, rs.getInt(3)));
                     if (bestSite == null) {
-                        bestSite = i18n.tr("Top site : ")+nameSite+" "+translateHours(rs.getInt(3));
+                        bestSite = i18n.tr("Top site")+" : "+nameSite+" "+translateHours(rs.getInt(3));
                     }
                 }
             }
         } catch ( Exception e ) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Problème de lecture dans le carnet"));            
+            alert.setTitle(i18n.tr("Could not read logbook"));            
             String s = e.getClass().getName() + ": " + e.getMessage();
             alert.setContentText(s);
             alert.showAndWait();                                
@@ -605,7 +605,7 @@ public class DashViewController {
                     }                  
                 } else {
                     alertbox aInfo = new alertbox(myConfig.getLocale());
-                    aInfo.alertInfo(i18n.tr("Pas de trace à afficher"));                         
+                    aInfo.alertInfo(i18n.tr("No track to display"));                         
                 }
             }
         } catch ( Exception e ) {
@@ -841,7 +841,7 @@ public class DashViewController {
             lnkBestFlight.setText(getBestFlight(dpDate.getValue().toString()));            
             lbTopSite.setText(bestSite);
             clicSites();
-            mainApp.rootLayoutController.updateMsgBar(i18n.tr("Cliquer sur un secteur pour afficher la valeur"), true, 350);
+            mainApp.rootLayoutController.updateMsgBar(i18n.tr("Click on a sector to display the value"), true, 350);
         }
     }
 
@@ -871,10 +871,10 @@ public class DashViewController {
     * Translate labels of the window
     */
     private void winTraduction() {
-        lbVols.setText(i18n.tr("Vols"));
-        lbDur.setText(i18n.tr("Heures"));
-        lbComparaison.setText(i18n.tr("Comparaison"));
-        lbSyntheseDate.setText(i18n.tr("Douze derniers mois depuis le "));
+        lbVols.setText(i18n.tr("Flights"));
+        lbDur.setText(i18n.tr("Hours"));
+        lbComparaison.setText(i18n.tr("Comparison"));
+        lbSyntheseDate.setText(i18n.tr("Last twelve months since the")+" ");
     }    
  
     public class monthData {
