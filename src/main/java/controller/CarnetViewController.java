@@ -188,7 +188,7 @@ public class CarnetViewController  {
      */
     private void iniTable() {
         
-        cmManual = new MenuItem(i18n.tr("Editer/Dupliquer"));
+        cmManual = new MenuItem(i18n.tr("Edit/Duplicate"));
         
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yy");
         DateTimeFormatter dtfDuree = new DateTimeFormatterBuilder().appendValue(HOUR_OF_DAY, 2).appendLiteral("h").appendValue(MINUTE_OF_HOUR, 2).appendLiteral("mn").toFormatter();
@@ -336,7 +336,7 @@ public class CarnetViewController  {
 
         } catch ( Exception e ) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Pas de vols dans le carnet"));            
+            alert.setTitle(i18n.tr("No flights in the logbook"));            
             String s = e.getClass().getName() + ": " + e.getMessage();
             alert.setContentText(s);
             alert.showAndWait();                      
@@ -434,7 +434,7 @@ public class CarnetViewController  {
             
         } catch ( Exception e ) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(i18n.tr("Pas de vols dans le carnet"));            
+            alert.setTitle(i18n.tr("No flights in logbook"));            
             String s = e.getClass().getName() + ": " + e.getMessage();
             alert.setContentText(s);
             alert.showAndWait();                      
@@ -474,8 +474,8 @@ public class CarnetViewController  {
             Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
             dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder(); 
-            sbMsg.append(selectedVol.getDate()).append(" ").append(i18n.tr("Durée")).append(" : ").append(selectedVol.getDuree());                 
-            if (dConfirm.YesNo(i18n.tr("Suppression du vol"), sbMsg.toString()))   {                
+            sbMsg.append(selectedVol.getDate()).append(" ").append(i18n.tr("Duration")).append(" : ").append(selectedVol.getDuree());                 
+            if (dConfirm.YesNo(i18n.tr("Delete flight"), sbMsg.toString()))   {                
                 String sReq = "DELETE FROM Vol WHERE V_ID = ?";
                 try {
                     pstmt = myConfig.getDbConn().prepareStatement(sReq);
@@ -491,7 +491,7 @@ public class CarnetViewController  {
         } else {
             // no flight selected
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(i18n.tr("Aucun vol sélectionné..."));                       
+            aError.alertError(i18n.tr("A flight must be selected"));                       
         }        
     }
     
@@ -570,7 +570,7 @@ public class CarnetViewController  {
                         }
                     }  else {
                         alertbox decodageError = new alertbox(myConfig.getLocale());
-                        decodageError.alertError(i18n.tr("Problème de décodage du fichier"));
+                        decodageError.alertError(i18n.tr("File decoding problem"));
                     }     
                 } else {
                     // No track to display
@@ -605,8 +605,8 @@ public class CarnetViewController  {
         StringBuilder sbMsg = new StringBuilder();
         //sbMsg.append(statusStart).append("  ").append(String.valueOf(countSelFlights));
         //sbMsg.append(i18n.tr(" vols sélectionnés"));
-        sbMsg.append(statusStart).append("     ").append(i18n.tr("Sélection")).append("[").append(String.valueOf(countSelFlights)).append("]");
-        sbMsg.append(i18n.tr(" temps de vol : ")).append(String.valueOf(nbHour)).append("h");
+        sbMsg.append(statusStart).append("     ").append(i18n.tr("Selection")).append("[").append(String.valueOf(countSelFlights)).append("]");
+        sbMsg.append(" ").append(i18n.tr("flight time")).append(" : ").append(String.valueOf(nbHour)).append("h");
         sbMsg.append(String.format("%02d", nbMn)).append("mn");
         mainApp.rootLayoutController.updateMsgBar(sbMsg.toString(), true, 60);
         
@@ -627,8 +627,8 @@ public class CarnetViewController  {
                 if (nbHour > 0 || nbMn > 0) {
                     StringBuilder sbMsg = new StringBuilder();
                     sbMsg.append(yearFiltre).append(" : ");
-                    sbMsg.append(String.valueOf(nbHour)+i18n.tr(" heures "));
-                    sbMsg.append(String.format("%02d", nbMn)+i18n.tr(" minutes"));
+                    sbMsg.append(String.valueOf(nbHour)).append(" ").append(i18n.tr("hours")).append(" ");
+                    sbMsg.append(String.format("%02d", nbMn)).append(" ").append(i18n.tr("minutes")).append(" ");
                     statusStart = sbMsg.toString();
                     mainApp.rootLayoutController.updateMsgBar(statusStart, true, 60);
                 } else {
@@ -757,8 +757,8 @@ public class CarnetViewController  {
         int res = -1;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(i18n.tr("Format IGC"), "*.igc"),
-                new FileChooser.ExtensionFilter(i18n.tr("Format GPX"), "*.gpx")
+                new FileChooser.ExtensionFilter(i18n.tr("IGC format"), "*.igc"),
+                new FileChooser.ExtensionFilter(i18n.tr("GPX format"), "*.gpx")
         );              
         File selectedFile = fileChooser.showSaveDialog(null);        
         if(selectedFile != null){
@@ -819,7 +819,7 @@ public class CarnetViewController  {
         
         tableContextMenu = new ContextMenu();
         
-        MenuItem cmItemGlider = new MenuItem(i18n.tr("Modifier la voile"));
+        MenuItem cmItemGlider = new MenuItem(i18n.tr("Change glider"));
         cmItemGlider.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 changeGlider();
@@ -827,7 +827,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmItemGlider);        
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo du jour"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo of the day"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 gestionPhoto();
@@ -835,7 +835,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Commentaire"));
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Comment"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                gestionComment();
@@ -843,7 +843,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmItem1);
 
-        MenuItem cmItem11 = new MenuItem(i18n.tr("Fiche site"));
+        MenuItem cmItem11 = new MenuItem(i18n.tr("Site form"));
         cmItem11.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                askEditSite();
@@ -851,7 +851,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmItem11);
         
-        MenuItem cmItem12 = new MenuItem(i18n.tr("Changer site"));
+        MenuItem cmItem12 = new MenuItem(i18n.tr("Change site"));
         cmItem12.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                askListSites();
@@ -859,7 +859,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmItem12);        
         
-        MenuItem cmItemSup = new MenuItem(i18n.tr("Supprimer"));        
+        MenuItem cmItemSup = new MenuItem(i18n.tr("Delete"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 supprimeVol();
@@ -867,7 +867,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmItemSup);
         
-        MenuItem cmItemEx = new MenuItem(i18n.tr("Exporter"));
+        MenuItem cmItemEx = new MenuItem(i18n.tr("Export"));
         cmItemEx.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 exportTrace();
@@ -884,7 +884,8 @@ public class CarnetViewController  {
         // binding explanations : http://bekwam.blogspot.fr/2015/08/disabling-menuitems-with-binding.html
         cmManual.disableProperty().bind(manualMenu.not());
         
-        MenuItem cmPlus = new MenuItem(i18n.tr("Plus..."));
+        String stMenu = i18n.tr("More")+"...";
+        MenuItem cmPlus = new MenuItem(stMenu);
         cmPlus.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 Bounds boundsInScreen = top_Menu.localToScreen(top_Menu.getBoundsInLocal());
@@ -902,7 +903,7 @@ public class CarnetViewController  {
     private ContextMenu clicTop_Menu()   {
         final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo du jour"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo of the day"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 gestionPhoto();
@@ -910,7 +911,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Commentaire"));
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Comment"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                gestionComment();
@@ -918,7 +919,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItem1);
         
-        MenuItem cmItemSup = new MenuItem(i18n.tr("Supprimer"));        
+        MenuItem cmItemSup = new MenuItem(i18n.tr("Delete"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 supprimeVol();
@@ -926,7 +927,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemSup);
         
-        MenuItem cmItemLp = new MenuItem(i18n.tr("Liste points"));
+        MenuItem cmItemLp = new MenuItem(i18n.tr("Points list"));
         cmItemLp.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 winPoints myGrid = new winPoints(myConfig.getLocale());    
@@ -935,7 +936,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemLp);
         
-        MenuItem cmItemEx = new MenuItem(i18n.tr("Exporter"));
+        MenuItem cmItemEx = new MenuItem(i18n.tr("Export"));
         cmItemEx.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 exportTrace();
@@ -951,7 +952,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmMail);        
         
-        MenuItem cmItemFic = new MenuItem(i18n.tr("Fichier trace"));
+        MenuItem cmItemFic = new MenuItem(i18n.tr("Track content"));
         cmItemFic.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 winTrackFile myTrace = new winTrackFile(currTrace.getFicIGC());            
@@ -959,7 +960,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemFic);
         
-        MenuItem cmItemGlider = new MenuItem(i18n.tr("Modifier la voile"));
+        MenuItem cmItemGlider = new MenuItem(i18n.tr("Change glider"));
         cmItemGlider.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 changeGlider();
@@ -967,7 +968,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemGlider);
         
-        MenuItem cmItemMerging = new MenuItem(i18n.tr("Fusionner les vols"));
+        MenuItem cmItemMerging = new MenuItem(i18n.tr("Merge flights"));
         cmItemMerging.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 askMergingIGC();
@@ -975,7 +976,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItemMerging);
         
-        MenuItem cmItemSitesUpdate = new MenuItem(i18n.tr("Actualiser les sites"));
+        MenuItem cmItemSitesUpdate = new MenuItem(i18n.tr("Update sites"));
         cmItemSitesUpdate.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 totalUpdateSites();
@@ -989,7 +990,7 @@ public class CarnetViewController  {
     private ContextMenu clicTop_VisuMenu()   {
         final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Visu GPS interne"));        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Visu GPS in Logfly"));        
         cmItem0.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 runVisuGPS(false);
@@ -997,7 +998,7 @@ public class CarnetViewController  {
         });
         cm.getItems().add(cmItem0);
         
-        MenuItem cmItem1 = new MenuItem(i18n.tr("VisuGPS navigateur"));
+        MenuItem cmItem1 = new MenuItem(i18n.tr("VisuGPS in browser"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                runVisuGPS(true);
@@ -1349,8 +1350,9 @@ public class CarnetViewController  {
     }
     
     private void askMergingIGC() {
-        dialogbox dConfirm = new dialogbox(i18n);                        
-        if (dConfirm.YesNo("",i18n.tr("Fusionner les traces IGC ?")))   {    
+        dialogbox dConfirm = new dialogbox(i18n);   
+        String msg = i18n.tr("Merge IGC tracks")+" ?";
+        if (dConfirm.YesNo("",msg))   {    
             mergeIGC();
         }
     }
@@ -1460,7 +1462,7 @@ public class CarnetViewController  {
                 //  V_Duree, V_sDuree,V_Commentaire must be updated                
                 sbReq.append("UPDATE Vol SET V_Duree=").append(sQuote).append(String.valueOf(totTime)).append(sQuote+",");
                 sbReq.append(" V_sDuree=").append(sQuote+String.valueOf(h)).append("h").append(String.valueOf(mn)).append("mn").append(sQuote).append(",");
-                sbReq.append(" V_Commentaire=").append(sQuote).append(String.valueOf(nbVol)).append(" ").append(i18n.tr("vols fusionnés")).append(sQuote).append(",");
+                sbReq.append(" V_Commentaire=").append(sQuote).append(String.valueOf(nbVol)).append(" ").append(i18n.tr("merged flights")).append(sQuote).append(",");
                 if (sImage != null && !sImage.isEmpty()) {
                     sbReq.append(" V_Photos=").append(sQuote).append(sImage).append(sQuote).append(",");
                 } 
@@ -1552,7 +1554,7 @@ public class CarnetViewController  {
                 subStage.show();
             }  else {
                 Alert alert = new Alert(Alert.AlertType.ERROR);                       
-                alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
+                alert.setContentText(i18n.tr("An error occurred during the map generation"));
                 alert.showAndWait();   
             }
             
@@ -1638,12 +1640,12 @@ public class CarnetViewController  {
                     }                                        
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);           
-                    alert.setContentText(i18n.tr("Mauvaise url de téléchargement"));
+                    alert.setContentText(i18n.tr("Bad download url"));
                     alert.showAndWait();  
                 }                
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(i18n.tr("Problème de chargement de la trace"));            
+                alert.setTitle(i18n.tr("Could not download track"));            
                 String s = e.getClass().getName() + ": " + e.getMessage();
                 alert.setContentText(s);
                 alert.showAndWait();     
@@ -1762,7 +1764,8 @@ public class CarnetViewController  {
     private void gestionComment() {
         if (tableVols.getSelectionModel().getSelectedItem().Comment.getValue()) {
             dialogbox actionReq = new dialogbox(i18n);
-            int actionType = actionReq.twoChoices(i18n.tr("Commentaire"), i18n.tr("Que voulez- vous faire ?"), i18n.tr("Supprimer"), i18n.tr("Changer"), i18n.tr("Annuler"));
+            String msg = i18n.tr("What would you like to do")+" ?";
+            int actionType = actionReq.twoChoices(i18n.tr("Comment"), msg, i18n.tr("Delete"), i18n.tr("Change"), i18n.tr("Cancel"));
             switch (actionType) {
                 case 1:
                     // Delete
@@ -1841,7 +1844,8 @@ public class CarnetViewController  {
     private void gestionPhoto() {
         if (tableVols.getSelectionModel().getSelectedItem().Photo.getValue()) {
             dialogbox actionReq = new dialogbox(i18n);
-            int actionType = actionReq.twoChoices(i18n.tr("Photo du jour"), i18n.tr("Que voulez- vous faire ?"), i18n.tr("Supprimer"), i18n.tr("Changer"), i18n.tr("Annuler"));
+            String msg = i18n.tr("What would you like to do")+" ?";
+            int actionType = actionReq.twoChoices(i18n.tr("Photo of the day"), msg, i18n.tr("Delete"), i18n.tr("Change"), i18n.tr("Cancel"));
             switch (actionType) {
                 case 1:
                     // Suppression
@@ -1890,7 +1894,7 @@ public class CarnetViewController  {
         if (selectedIndex >= 0) {
             Carnet currCarnet = tableVols.getSelectionModel().getSelectedItem();
             FileChooser fileChooser = new FileChooser();
-            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(i18n.tr("fichiers photos (*.jpg)"), "*.jpg");
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(i18n.tr("photos files (*.jpg)"), "*.jpg");
             fileChooser.getExtensionFilters().add(extFilter);
             File selectedFile = fileChooser.showOpenDialog(null);        
             if(selectedFile != null){
@@ -1995,7 +1999,7 @@ public class CarnetViewController  {
             
             AnchorPane page = (AnchorPane) loader.load();
             Stage dialogStage = new Stage();
-            dialogStage.setTitle(i18n.tr("Génération fichier kml"));
+            dialogStage.setTitle(i18n.tr("Kml file generation"));
             dialogStage.initModality(Modality.WINDOW_MODAL);       
             dialogStage.initOwner(mainApp.getPrimaryStage());
             Scene scene = new Scene(page);
@@ -2051,7 +2055,7 @@ public class CarnetViewController  {
                     }
                 } else {
                     alertbox aInfo = new alertbox(myConfig.getLocale());
-                    aInfo.alertInfo(i18n.tr("Génération du fichier terminée")); 
+                    aInfo.alertInfo(i18n.tr("File generation completed")); 
                 }
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
@@ -2065,32 +2069,32 @@ public class CarnetViewController  {
     */
     private void winTraduction() {
         dateCol.setText(i18n.tr("Date"));
-        heureCol.setText(i18n.tr("Heure"));
-        dureeCol.setText(i18n.tr("Durée"));
+        heureCol.setText(i18n.tr("Time"));
+        dureeCol.setText(i18n.tr("Duration"));
         siteCol.setText(i18n.tr("Site"));
-        voileCol.setText(i18n.tr("Voile"));
+        voileCol.setText(i18n.tr("Glider"));
         btnMap.setStyle("-fx-background-color: transparent;");
         Tooltip mapToolTip = new Tooltip();
         mapToolTip.setStyle(myConfig.getDecoToolTip());
-        mapToolTip.setText(i18n.tr("Carte Google Maps plein écran"));
+        mapToolTip.setText(i18n.tr("Full screen map"));
         btnMap.setTooltip(mapToolTip);
         
-        btnAllFlights.setText(i18n.tr("Tous"));
+        btnAllFlights.setText(i18n.tr("All"));
         Tooltip allToolTip = new Tooltip();
         allToolTip.setStyle(myConfig.getDecoToolTip());
-        allToolTip.setText(i18n.tr("Afficher tous les vols du carnet"));
+        allToolTip.setText(i18n.tr("Display all flights"));
         btnAllFlights.setTooltip(allToolTip);
                 
         btnScore.setStyle("-fx-background-color: transparent;");      
         Tooltip scoreToolTip = new Tooltip();
         scoreToolTip.setStyle(myConfig.getDecoToolTip());
-        scoreToolTip.setText(i18n.tr("Evaluation de la trace"));
+        scoreToolTip.setText(i18n.tr("Track scoring"));
         btnScore.setTooltip(scoreToolTip);
         
         btnGEarth.setStyle("-fx-background-color: transparent;");      
         Tooltip geToolTip = new Tooltip();
         geToolTip.setStyle(myConfig.getDecoToolTip());
-        geToolTip.setText(i18n.tr("Génération fichier Google Earth"));
+        geToolTip.setText(i18n.tr("Google Earth file generation"));
         btnGEarth.setTooltip(geToolTip);
         
     }
