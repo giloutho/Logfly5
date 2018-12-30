@@ -89,7 +89,7 @@ public class trackReplay {
   
             res.append("          <gx:Tour>").append(RC); 
             res.append("             <visibility>0</visibility>").append(RC); 
-            res.append("             <name>").append(i18n.tr("Refaire le vol")).append("</name>").append(RC); 
+            res.append("             <name>").append(i18n.tr("Replay the flight")).append("</name>").append(RC); 
             res.append("             <gx:Playlist>").append(RC); 
             res.append("                <gx:FlyTo>").append(RC); 
             res.append("                   <gx:duration>"+String.valueOf(camTimer)+"</gx:duration>").append(RC); 
