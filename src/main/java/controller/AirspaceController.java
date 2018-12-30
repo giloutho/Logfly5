@@ -371,8 +371,8 @@ public class AirspaceController {
         if (displayInfo) {
             StringBuilder sbInfo = new StringBuilder();        
             if (airNameFile != null) sbInfo.append(airNameFile).append("  ");        
-            sbInfo.append(String.valueOf(airTotal)).append(" ").append(i18n.tr("espaces")).append("  ");
-            sbInfo.append(String.valueOf(airsDisplayed)).append(" ").append(i18n.tr("affichés"));
+            sbInfo.append(String.valueOf(airTotal)).append(" ").append(i18n.tr("airspaces")).append("  ");
+            sbInfo.append(String.valueOf(airsDisplayed)).append(" ").append(i18n.tr("displayed"));
             airStage.setTitle(sbInfo.toString());          
         } else {
             airStage.setTitle("");
@@ -520,7 +520,7 @@ public class AirspaceController {
     
     private void gpxChoose() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("Format GPX"), "*.gpx"));              
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("GPX format"), "*.gpx"));              
         File selectedFile = fileChooser.showSaveDialog(null);        
         if(selectedFile != null) buildGPX(selectedFile); 
     }    
@@ -802,7 +802,7 @@ public class AirspaceController {
                     sDP.append(String.format("%02d", currPoint.getLongMin_ms())).append(":");
                     sDP.append(String.format("%02d", (int) currPoint.getLongSec_ms())).append(" ").append(currPoint.getMeridien()).append("\r\n");
                 }
-                String sName = i18n.tr("Polygone")+String.valueOf(idx);
+                String sName = i18n.tr("Polygon")+String.valueOf(idx);
                 airdraw currElem = new airdraw(sName, sDP.toString());
                 lsDraw.add(currElem);
            }
@@ -847,7 +847,7 @@ public class AirspaceController {
             sDP.append(String.format("%02d", currPoint.getLongMin_ms())).append(":");
             sDP.append(String.format("%02d", (int) currPoint.getLongSec_ms())).append(" ").append(currPoint.getMeridien()).append("\r\n");
             sDP.append("DC ").append(radFormat.format(radius)).append("\r\n");
-            String sName = i18n.tr("Cercle")+String.valueOf(idx);
+            String sName = i18n.tr("Circle")+String.valueOf(idx);
             airdraw currElem = new airdraw(sName, sDP.toString());
             lsDraw.add(currElem);                                
           } catch(ParseException pe) {	 	
@@ -990,7 +990,7 @@ public class AirspaceController {
         boolean res = false;
         if (myConfig.getOS() == osType.LINUX) {
             alertbox aInfo = new alertbox(myConfig.getLocale());
-            aInfo.alertInfo(i18n.tr("Transfert vers Reversale non supporté sous Linux"));
+            aInfo.alertInfo(i18n.tr("Reversale uploading not supported in Linux"));
         } else {
             usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
             if (usbRever.isConnected()) {
@@ -1094,7 +1094,7 @@ public class AirspaceController {
     private void reversaleResult() {
         alertbox aError = new alertbox(myConfig.getLocale());
         if (comReversale == 214)
-            aError.alertInfo(i18n.tr("Génération des fichiers FRDATA.bin et FRIDX.bin réussie"));   
+            aError.alertInfo(i18n.tr("FRDATA. bin and FRIDX. bin generation successful"));   
         else
             aError.alertNumError(comReversale);         
     }
@@ -1180,13 +1180,13 @@ public class AirspaceController {
             viewReset(true);
             currDbAir = new dbAirspace(selectedFile, currDbAir.getDbConn());
             if (currDbAir.isDbOK()) {
-                sbInfo.append(i18n.tr("Fusion en mémoire OK")).append("    ");
-                sbInfo.append(String.valueOf(currDbAir.getNbAirspaces())).append(" ").append(i18n.tr("espaces décodés"));
+                sbInfo.append(i18n.tr("Merge into memory successful")).append("    ");
+                sbInfo.append(String.valueOf(currDbAir.getNbAirspaces())).append(" ").append(i18n.tr("decoded airspaces"));
                 mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 60);
                 dbView = false;
                 buildTree();            
             } else {
-                sbInfo.append(i18n.tr("Problème de décodage..."));
+                sbInfo.append(i18n.tr("Decoding problem"));
                 mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 60);
             } 
            
@@ -1195,7 +1195,7 @@ public class AirspaceController {
     
     private void exportChoose() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("Format OpenAir"), "*.txt"));              
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("OpenAir format"), "*.txt"));              
         File selectedFile = fileChooser.showSaveDialog(null);        
         if(selectedFile != null) exportFile(selectedFile, false); 
     }        
@@ -1295,12 +1295,12 @@ public class AirspaceController {
     private void winTraduction() {
 
         btReadFile.setText(i18n.tr("OpenAir"));
-        btDraw.setText(i18n.tr("Dessiner"));
-        btDrawCancel.setText(i18n.tr("Annuler"));
-        btDrawValid.setText(i18n.tr("Enregistrer"));
-        btRefresh.setText(i18n.tr("Actualiser"));
+        btDraw.setText(i18n.tr("Draw"));
+        btDrawCancel.setText(i18n.tr("Cancel"));
+        btDrawValid.setText(i18n.tr("Save"));
+        btRefresh.setText(i18n.tr("Update"));
         btReset.setText(i18n.tr("Reset"));  
-        btWrite.setText(i18n.tr("Enregistrer"));
+        btWrite.setText(i18n.tr("Save"));
     }        
     
 }
