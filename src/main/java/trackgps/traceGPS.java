@@ -1588,7 +1588,8 @@ public class traceGPS {
                         Verif_Tb_Tot_Points(MissTime, true);     //  outliers taken into account
                     } else {
                         // time shift to local time for all points
-                        utcToLocalDecalage();                        
+                        utcToLocalDecalage();    
+                        // Previously outside the bracket, probably a bug
                         Verif_Tb_Tot_Points(MissTime, false);     // outliers are not taken into account   
                     }
                     if (Tb_Good_Points.size() > 1)  {
