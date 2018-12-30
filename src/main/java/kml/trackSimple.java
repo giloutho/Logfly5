@@ -54,8 +54,8 @@ public class trackSimple {
         
         try {
             res.append("          <Folder>").append(RC);  
-            res.append("               <name>").append(i18n.tr("Trace avec profil")).append("</name>").append(RC);  
-            res.append("               <description><![CDATA[").append(i18n.tr("Clic droit pour profil")).append("]]></description>").append(RC);  
+            res.append("               <name>").append(i18n.tr("Track with profile")).append("</name>").append(RC);  
+            res.append("               <description><![CDATA[").append(i18n.tr("Right clic for profile")).append("]]></description>").append(RC);  
             res.append("               <Placemark>").append(RC);  
             // If we put the pilot name, it is animated along the track
             // res.append("                    <name>"+KmlTrace.sPilote.trim+"</name>").append(RC);  
@@ -94,7 +94,7 @@ public class trackSimple {
             // Vario values put in elevation profile in xLogfly -> kml_C_Ext_Data 
             res.append( "                         <ExtendedData>").append(RC); 
             res.append( "                            <SchemaData schemaUrl=\"#schema\">").append(RC); 
-            res.append( "                               <gx:SimpleArrayData name=\"").append(i18n.tr("Vario")).append("\">").append(RC); 
+            res.append( "                               <gx:SimpleArrayData name=\"").append(i18n.tr("Climb")).append("\">").append(RC); 
             for (int i = 1; i <= totalPoints; i += localReduc) { 
                 pointIGC currPoint = KmlTrace.Tb_Good_Points.get(i);
                 // Checking vario values is skipped in xLogfly -> mValeur_Verifiee
