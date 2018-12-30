@@ -67,7 +67,7 @@ public class winAirDraw {
     private void showWin() {
         Stage subStage = new Stage();
         
-        subStage.setTitle(i18n.tr("[Enter] pour valider une saisie"));
+        subStage.setTitle(i18n.tr("Enter key for confirmation of entries"));
         tableView.setEditable(true);
         Callback<TableColumn<airdraw, String>, TableCell<airdraw, String>> cellFactory
                 = (TableColumn<airdraw, String> param) -> new stringEditingCell(); 
@@ -76,7 +76,7 @@ public class winAirDraw {
         Callback<TableColumn<airdraw, Integer>, TableCell<airdraw, Integer>> intFactory
                 = (TableColumn<airdraw, Integer> param) -> new intEditingCell();
         
-        TableColumn columnName = new TableColumn(i18n.tr("Nom"));
+        TableColumn columnName = new TableColumn(i18n.tr("Name"));
         columnName.setCellValueFactory(new PropertyValueFactory<airdraw,String>("name"));
         columnName.setMinWidth(120);       
         columnName.setCellFactory(cellFactory);
@@ -89,7 +89,7 @@ public class winAirDraw {
                 }
         });        
                        
-        TableColumn columnCat = new TableColumn(i18n.tr("Classe"));
+        TableColumn columnCat = new TableColumn(i18n.tr("Class"));
         columnCat.setCellValueFactory(new PropertyValueFactory<airdraw,String>("category"));
         columnCat.setMinWidth(40);   
         columnCat.setCellFactory(choiceFactory);  
@@ -102,7 +102,7 @@ public class winAirDraw {
                 }
         });         
         
-        TableColumn columnFloor = new TableColumn(i18n.tr("Plancher"));
+        TableColumn columnFloor = new TableColumn(i18n.tr("Floor"));
         columnFloor.setStyle( "-fx-alignment: CENTER-RIGHT;");
         columnFloor.setCellValueFactory(
                 new PropertyValueFactory<airdraw,Integer>("floor"));
@@ -117,7 +117,7 @@ public class winAirDraw {
                 }
             });        
         
-        TableColumn columnCeiling = new TableColumn(i18n.tr("Plafond"));
+        TableColumn columnCeiling = new TableColumn(i18n.tr("Ceiling"));
         columnCeiling.setStyle( "-fx-alignment: CENTER-RIGHT;");        
         columnCeiling.setCellValueFactory(
                 new PropertyValueFactory<airdraw,Integer>("ceiling"));
@@ -139,7 +139,7 @@ public class winAirDraw {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btValid = new Button(i18n.tr("Valider"));
+        Button btValid = new Button(i18n.tr("OK"));
         btValid.setOnAction((event) -> {
             if (checkTable()) {
                 saveOnDisk();
@@ -147,7 +147,7 @@ public class winAirDraw {
             } else
                 System.out.println("Erreur : "+errMsg);
         });
-        Button btCancel = new Button(i18n.tr("Annuler"));
+        Button btCancel = new Button(i18n.tr("Cancel"));
         btCancel.setOnAction((event) -> {
 
             subStage.close();
@@ -193,17 +193,17 @@ public class winAirDraw {
                         sbDrawing.append("AL ").append(String.valueOf(iFloor)).append("\r\n");
                         sbDrawing.append(sOA).append("\r\n");                        
                     } else {                        
-                        errMsg = i18n.tr("Le plafond doit être supérieur au plancher");
+                        errMsg = i18n.tr("Ceiling must be above the floor");
                         validInput = false;
                         break;
                     }
                 } else {
-                    errMsg = i18n.tr("Le nom ne doit pas être nul");
+                    errMsg = i18n.tr("Name must not be null");
                     validInput = false;
                     break;
                 }
             } else {
-                errMsg = i18n.tr("La classe ne doit pas être nulle");
+                errMsg = i18n.tr("Class must not be null");
                 validInput = false;
                 break;
             }
@@ -227,7 +227,7 @@ public class winAirDraw {
         sbExp.append("**********************************************************************\r\n\r\n");   
         sbExp.append(sbDrawing.toString());
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("Format OpenAir"), "*.txt"));              
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("OpenAir format"), "*.txt"));              
         File selectedFile = fileChooser.showSaveDialog(null);        
         if(selectedFile != null){
             try {
