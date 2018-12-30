@@ -8,15 +8,12 @@ package littlewins;
 
 import controller.SiteFormController;
 import controller.WaypViewController;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -73,17 +70,17 @@ public class winOsmCities {
         tableView.prefHeightProperty().bind(subStage.heightProperty());
         tableView.prefWidthProperty().bind(subStage.widthProperty());
 
-        colVille = new TableColumn(i18n.tr("Localité"));
+        colVille = new TableColumn(i18n.tr("City"));
         tableView.getColumns().add(colVille);
         colVille.setCellValueFactory(
             new PropertyValueFactory<Sitemodel, String>("ville"));  
         
-        colCp = new TableColumn(i18n.tr("CP"));
+        colCp = new TableColumn(i18n.tr("ZIP"));
         tableView.getColumns().add(colCp);
         colCp.setCellValueFactory(
             new PropertyValueFactory<Sitemodel, String>("cp"));    
         
-        colPays = new TableColumn(i18n.tr("Pays"));
+        colPays = new TableColumn(i18n.tr("Country"));
         tableView.getColumns().add(colPays);
         colPays.setCellValueFactory(
             new PropertyValueFactory<Sitemodel, String>("pays"));           
