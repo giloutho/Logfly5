@@ -7,7 +7,6 @@
 package littlewins;
 
 import dialogues.alertbox;
-import java.io.File;
 import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
@@ -81,7 +80,7 @@ public class winLog {
         vbox.setSpacing(5);
         
         Label lbMail = new Label();
-        lbMail.setText(i18n.tr("Votre adresse mail"));
+        lbMail.setText(i18n.tr("Your e-mail"));
         txtAdress = new TextField();
         txtAdress.setText(myConfig.getPiloteMail());
         txtLog = new TextArea();
@@ -93,12 +92,12 @@ public class winLog {
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
-        Button btSend = new Button(i18n.tr("Envoyer"));
+        Button btSend = new Button(i18n.tr("Send"));
         btSend.setOnAction((event) -> {
             logSend();
             subStage.close();
         });
-        Button btClose = new Button(i18n.tr("Fermer"));
+        Button btClose = new Button(i18n.tr("Close"));
         btClose.setOnAction((event) -> {            
             subStage.close();
         });
@@ -161,9 +160,9 @@ public class winLog {
             int res = sendMsg.sendPost(privateData.phpSupport.toString(),sbParam.toString());
             if (res ==200) {
                 alertbox aOk = new alertbox(myConfig.getLocale());
-                aOk.alertInfo(i18n.tr("Fichier envoyé au support")); 
+                aOk.alertInfo(i18n.tr("File sent to support")); 
             } else {
-                StringBuilder errMsg = new StringBuilder(i18n.tr("Le message n'a pas pu être envoyé"));
+                StringBuilder errMsg = new StringBuilder(i18n.tr("Message could not be sent"));
                 errMsg.append(" [ error ").append(String.valueOf(res)).append("]");                    
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertInfo(errMsg.toString()); 
@@ -171,7 +170,7 @@ public class winLog {
             }
         } catch (Exception e) {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Le message n'a pas pu être envoyé")); 
+            aError.alertInfo(i18n.tr("Message could not be sent")); 
             StringBuilder sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());
