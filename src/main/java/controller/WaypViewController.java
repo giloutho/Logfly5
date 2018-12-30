@@ -241,7 +241,7 @@ public class WaypViewController {
         });
         tableContextMenu.getItems().add(cmPosition);        
         
-        MenuItem cmEdit = new MenuItem(i18n.tr("Editer"));        
+        MenuItem cmEdit = new MenuItem(i18n.tr("Edit"));        
         cmEdit.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                editPoint();
@@ -249,7 +249,7 @@ public class WaypViewController {
         });
         tableContextMenu.getItems().add(cmEdit);
         
-        MenuItem cmDelete = new MenuItem(i18n.tr("Supprimer"));
+        MenuItem cmDelete = new MenuItem(i18n.tr("Delete"));
         cmDelete.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 deletePoint();
@@ -257,7 +257,7 @@ public class WaypViewController {
         });
         tableContextMenu.getItems().add(cmDelete);     
         
-        MenuItem cmCoord = new MenuItem(i18n.tr("Coordonnées"));
+        MenuItem cmCoord = new MenuItem(i18n.tr("Coordinates"));
         cmCoord.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 displayCoord();
@@ -319,10 +319,10 @@ public class WaypViewController {
     private void displayCoord() {
         currPoint = tablePoints.getSelectionModel().getSelectedItem();
         StringBuilder sb = new StringBuilder();
-        sb.append(i18n.tr("Nom court : ")).append(currPoint.getFBalise()).append("\r\n"); 
-        sb.append(i18n.tr("Nom long : ")).append(currPoint.getFDesc()).append("\r\n");    
-        sb.append(i18n.tr("Latitude : ")).append(currPoint.getFLat()).append("\r\n"); 
-        sb.append(i18n.tr("Longitude : ")).append(currPoint.getFLong()).append("\r\n"); 
+        sb.append(i18n.tr("Short name")).append(" : ").append(currPoint.getFBalise()).append("\r\n"); 
+        sb.append(i18n.tr("Long name")).append(" : ").append(currPoint.getFDesc()).append("\r\n");    
+        sb.append(i18n.tr("Latitude")).append(" : ").append(currPoint.getFLat()).append("\r\n"); 
+        sb.append(i18n.tr("Longitude")).append(" : ").append(currPoint.getFLong()).append("\r\n"); 
         winTrackFile noTrack = new winTrackFile(sb.toString());            
     }
     
@@ -421,7 +421,7 @@ public class WaypViewController {
                 ficType = "COM"; 
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertInfo(i18n.tr("Format de fichier non reconnu")); 
+                aError.alertInfo(i18n.tr("File format not recognized")); 
             }
         }
         waypFile = new wpreadfile();
@@ -461,7 +461,7 @@ public class WaypViewController {
             displayWpFile(waypFile.getWpreadList(), sbInfo.toString());
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Impossible de décoder le fichier"));                  
+            aError.alertInfo(i18n.tr("Unable to decode the file"));                  
         }        
     }
     
@@ -535,7 +535,7 @@ public class WaypViewController {
                 break;                    
         }       
         if (resWrite) {
-            displayInfo(sbInfo.toString()+String.valueOf(pointList.size())+" waypoints");                   
+            displayInfo(sbInfo.toString()+String.valueOf(pointList.size())+" "+i18n.tr("waypoints"));                   
         }                
     }
     
@@ -595,21 +595,21 @@ public class WaypViewController {
                 }
             }
             StringBuilder sb = new StringBuilder();
-            sb.append(i18n.tr("Gauche : ")).append(shortWest).append(" - ").append(nameWest).append(" -> ").append(df6.format(longWest)).append("\r\n");                    
-            sb.append(i18n.tr("Bas : ")).append(shortSud).append(" - ").append(nameSud).append(" -> ").append(df6.format(latSud)).append("\r\n");
-            sb.append(i18n.tr("Droit : ")).append(shortEst).append(" - ").append(nameEst).append(" -> ").append(df6.format(longEst)).append("\r\n");
-            sb.append(i18n.tr("Haut : ")).append(shortNord).append(" - ").append(nameNord).append(" -> ").append(df6.format(latNord)).append("\r\n\r\n");
+            sb.append(i18n.tr("Left")).append(" : ").append(shortWest).append(" - ").append(nameWest).append(" -> ").append(df6.format(longWest)).append("\r\n");                    
+            sb.append(i18n.tr("Bottom")).append(" : ").append(shortSud).append(" - ").append(nameSud).append(" -> ").append(df6.format(latSud)).append("\r\n");
+            sb.append(i18n.tr("Right")).append(" : ").append(shortEst).append(" - ").append(nameEst).append(" -> ").append(df6.format(longEst)).append("\r\n");
+            sb.append(i18n.tr("Top")).append(" : ").append(shortNord).append(" - ").append(nameNord).append(" -> ").append(df6.format(latNord)).append("\r\n\r\n");
             
             // On prend une marge de 11 km soit 0.1 degrés
             longEst+= 0.1;
             longWest -= 0.1;
             latNord += 0.1;
             latSud -= 0.1;
-            sb.append(i18n.tr("Bounding box avec une marge de 11 km :")).append("\r\n");
+            sb.append(i18n.tr("Bounding box with a margin of")).append(" ").append("11 km :").append("\r\n");
             sb.append("          ").append(df3.format(latNord)).append("\r\n");
             sb.append(df3.format(longWest)).append("           ").append(df3.format(longEst)).append(" ").append("\r\n");
             sb.append("          ").append(df3.format(latSud)).append("\r\n\r\n");
-            sb.append(i18n.tr("Placé dans le presse papier"));
+            sb.append(i18n.tr("Copy to clipboard"));
             
                                       
             final Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -672,7 +672,7 @@ public class WaypViewController {
         int nbPoints = 0;
         if (pointList.size() > 0) {
             dialogbox dConfirm = new dialogbox(i18n);
-            if (dConfirm.YesNo(i18n.tr("Affichage des balises"), i18n.tr("Fusionner l'affichage et le nouveau fichier"))) {
+            if (dConfirm.YesNo(i18n.tr("Turnpoints display"), i18n.tr("Merge display and new file"))) {
                 for (int i = 0; i < pointList.size(); i++) {
                     pointRecord pl = pointList.get(i);
                     wpTot.add(pl);    
@@ -764,7 +764,7 @@ public class WaypViewController {
             displayWpFile(gpsReadList, gpsInfo.toString());
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));  
+            aError.alertInfo(i18n.tr("No waypoints in this GPS"));  
         }
     }
     
@@ -775,7 +775,7 @@ public class WaypViewController {
             flymaster fms = new flymaster();
             if (listForGps.size() > 0 && fms.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");
                 fms.setListPFMWP(listForGps);
                 fms.sendWaypoint();
                 fms.closePort();
@@ -794,7 +794,7 @@ public class WaypViewController {
             flymasterold fmold = new flymasterold();
             if (listForGps.size() > 0 && fmold.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
                 fmold.setListPFMWP(listForGps);
                 fmold.sendWaypoint();
                 fmold.closePort();
@@ -813,7 +813,7 @@ public class WaypViewController {
             flytec20 fls = new flytec20();
             if (listForGps.size() > 0 && fls.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");
                 fls.setListPBRWP(listForGps);
                 fls.sendWaypoint();
                 fls.closePort();
@@ -833,7 +833,7 @@ public class WaypViewController {
             flytec15 fl15 = new flytec15();
             if (listForGps.size() > 0 && fl15.isPresent(currNamePort)) {
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flytec 6015/ IQ Basic ");
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
                 fl15.setListPBRWP(listForGps);
                 fl15.sendWaypoint();
                 fl15.closePort();
@@ -849,18 +849,18 @@ public class WaypViewController {
     private void writeToGpsProgress() {
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
-        sbMsg.append(i18n.tr("Anciens waypoints éventuellement effacés ?"));
+        sbMsg.append(i18n.tr("Old Waypoints possibly erased")).append(" ?");
         StringBuilder sbTitle = new StringBuilder(); 
-        sbTitle.append(i18n.tr("Transfert GPS")).append(" [");
+        sbTitle.append(i18n.tr("Sending to GPS")).append(" [");
         switch (gpsTypeName) {
             case 0:
-                sbTitle.append(i18n.tr("Noms longs"));
+                sbTitle.append(i18n.tr("Long names"));
                 break;
             case 1 :
-                sbTitle.append(i18n.tr("Noms courts"));
+                sbTitle.append(i18n.tr("Short names"));
                 break;
             case 2 :
-                sbTitle.append(i18n.tr("Mixte"));                
+                sbTitle.append(i18n.tr("Mixed"));                
                 break;            
         }
         sbTitle.append("]");
@@ -1057,10 +1057,10 @@ public class WaypViewController {
                 writeToGpsSimple();
                 break;       
             case Flynet :
-                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));  
+                aError.alertInfo(i18n.tr("No waypoints in this GPS"));  
                 break;  
             case Sensbox :
-                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));
+                aError.alertInfo(i18n.tr("No waypoints in this GPS"));
                 break;                         
             case Oudie :
                 writeToGpsSimple();
@@ -1068,9 +1068,9 @@ public class WaypViewController {
             case Syride :
                 StringBuilder sbAlert = new StringBuilder();
                 // For i18n, it's forbidden to put /r/n in the string
-                sbAlert.append(i18n.tr("Sauvegarder sur le disque"));
+                sbAlert.append(i18n.tr("Save to disk"));
                 sbAlert.append("\r\n");
-                sbAlert.append(i18n.tr("utiliser GPSDump pour transférer les waypoints"));
+                sbAlert.append(i18n.tr("Use GPSDump to download waypoints"));
                 aError.alertInfo(sbAlert.toString()); 
                 break;                            
             case Connect :
@@ -1083,7 +1083,7 @@ public class WaypViewController {
                 writeToGpsSimple();
                 break;  
             case XCTracer :
-                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));                  
+                aError.alertInfo(i18n.tr("No waypoints in this GPS"));                  
                 break;                        
         }               
     }            
@@ -1092,14 +1092,14 @@ public class WaypViewController {
         
         int lg = pointList.size();
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(i18n.tr("Envoi")).append("  ").append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints"));
+        sbMsg.append(i18n.tr("Sending to")).append("  ").append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints"));
         switch (currGPS) {
             case FlymOld :
             case FlymSD:               
             case Flytec15:
             case Flytec20:
                 dialogbox dConfirm = new dialogbox(i18n);        
-                if (dConfirm.YesNo(i18n.tr("Vérifier le contenu du GPS"), sbMsg.toString())) { 
+                if (dConfirm.YesNo(i18n.tr("Check GPS content"), sbMsg.toString())) { 
                     readFromGPS();
                 }                  
                 break;                                 
@@ -1113,7 +1113,7 @@ public class WaypViewController {
             flymasterold fmsold = new flymasterold();
             if (fmsold.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fmsold.getDeviceType()).append(" ").append(fmsold.getDeviceFirm()).append("  ");            
+                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flymaster ").append(fmsold.getDeviceType()).append(" ").append(fmsold.getDeviceFirm()).append("  ");            
                 int nbWayp = fmsold.getListWaypoints();
                 fmsold.closePort();
                 if (nbWayp > 0) {
@@ -1135,7 +1135,7 @@ public class WaypViewController {
             flymaster fms = new flymaster();
             if (fms.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");            
+                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");            
                 int nbWayp = fms.getListWaypoints();
                 fms.closePort();
                 if (nbWayp > 0) {
@@ -1157,7 +1157,7 @@ public class WaypViewController {
             flytec20 fls = new flytec20();
             if (fls.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");            
+                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");            
                 int nbWayp = fls.getListWaypoints();
                 fls.closePort();
                 if (nbWayp > 0) {
@@ -1179,7 +1179,7 @@ public class WaypViewController {
             flytec15 fl15 = new flytec15();
             if (fl15.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flytec 6015 / IQ Basic ");          
+                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6015 / IQ Basic ");          
                 int nbWayp = fl15.getListWaypoints();
                 fl15.closePort();
                 if (nbWayp > 0) {
@@ -1314,16 +1314,16 @@ public class WaypViewController {
                 readFromGpsSimple();
                 break;       
             case Flynet :
-                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));  
+                aError.alertInfo(i18n.tr("No waypoints in this GPS"));  
                 break;  
             case Sensbox :
-                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));
+                aError.alertInfo(i18n.tr("No waypoints in this GPS"));
                 break;                         
             case Oudie :
                 readFromGpsSimple();
                 break;  
             case Syride :
-                aError.alertInfo(i18n.tr("Utiliser GPSDump pour décharger les waypoints"));                
+                aError.alertInfo(i18n.tr("Use GPSDump to download waypoints"));                
                 break;                            
             case Connect :
                 readFromGpsSimple();                
@@ -1335,7 +1335,7 @@ public class WaypViewController {
                 readFromGpsSimple();
                 break;  
             case XCTracer :
-                aError.alertInfo(i18n.tr("Pas de waypoints sur ce GPS"));                  
+                aError.alertInfo(i18n.tr("No waypoints in this GPS"));                  
                 break;                        
         }               
     }
@@ -1380,7 +1380,7 @@ public class WaypViewController {
             
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);                       
-            alert.setContentText(i18n.tr("Une erreur est survenue pendant la préparation des points"));
+            alert.setContentText(i18n.tr("Could not translate the points"));
             alert.showAndWait();                  
         }         
     }
@@ -1424,7 +1424,7 @@ public class WaypViewController {
                 listForGps.add(fullLine);                 
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);                       
-                alert.setContentText(i18n.tr("Une erreur est survenue pendant la préparation des points"));
+                alert.setContentText(i18n.tr("Could not translate the points"));
                 alert.showAndWait();                      
             }
             
@@ -1471,7 +1471,7 @@ public class WaypViewController {
                 listForGps.add(sbLine.toString());  
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);                       
-                alert.setContentText(i18n.tr("Une erreur est survenue pendant la préparation des points"));
+                alert.setContentText(i18n.tr("Could not translate the points"));
                 alert.showAndWait();                      
             }            
         }
@@ -1530,7 +1530,7 @@ public class WaypViewController {
             
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);                       
-            alert.setContentText(i18n.tr("Une erreur est survenue pendant la génération de la carte"));
+            alert.setContentText(i18n.tr("An error occurred during the map generation"));
             alert.showAndWait();   
         }                   
     }
@@ -1541,12 +1541,12 @@ public class WaypViewController {
             if (txLocality.getText() != null && !txLocality.getText().equals("")) {
                 searchOsmName(txLocality.getText().trim());
             } else {
-                displayDefault(i18n.tr("Par défaut..."));
+                displayDefault(i18n.tr("Default"));
             }
         } else {
             dialogbox dConfirm = new dialogbox(i18n);
             StringBuilder sbMsg = new StringBuilder(); 
-            sbMsg.append(i18n.tr("Abandonner la liste en cours"));
+            sbMsg.append(i18n.tr("Cancel current list"));
             if (dConfirm.YesNo(sbMsg.toString(),""))  { 
                 tablePoints.getItems().clear();
                 handleGo();
@@ -1574,13 +1574,13 @@ public class WaypViewController {
                 defaultPos.setLongitudeDd(pSelectedCity.getLongitude()); 
                 // an empty list is required for correct initialization of tableview
                 ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
-                String infoFile = i18n.tr("Nouveau fichier")+"   ";
+                String infoFile = i18n.tr("New file")+"   ";
                 displayWpFile(emptyList, infoFile); 
             } else {
-                displayDefault(i18n.tr("Lieu non trouvé..."));
+                displayDefault(i18n.tr("Location not found"));
             }
         } catch ( Exception e) {
-            displayDefault(i18n.tr("Problème de geolocalisation"));
+            displayDefault(i18n.tr("Geolocation problem"));
         }            
     }
     
@@ -1602,7 +1602,7 @@ public class WaypViewController {
         } finally {
             // an empty list is required for correct initialization of tableview
             ArrayList<pointRecord> emptyList = new ArrayList<pointRecord>();
-            String infoFile = i18n.tr("Nouveau fichier")+"   ";
+            String infoFile = i18n.tr("New file")+"   ";
             displayWpFile(emptyList, infoFile);                                           
         }   
     }
@@ -1799,20 +1799,20 @@ public class WaypViewController {
     }
     
     private void winTraduction() {
-        btReadFile.setText(i18n.tr("Lire fichier"));
-        btReadGps.setText(i18n.tr("Lire GPS"));
-        chkNoms.setText(i18n.tr("Noms courts auto"));
-        btNew.setText(i18n.tr("Nouveau"));
-        btWriteFile.setText(i18n.tr("Ecrire fichier"));
-        btWriteGPS.setText(i18n.tr("Envoi GPS"));
-        btMail.setText(i18n.tr("Mail"));
+        btReadFile.setText(i18n.tr("Read file"));
+        btReadGps.setText(i18n.tr("Read GPS"));
+        chkNoms.setText(i18n.tr("Auto short names"));
+        btNew.setText(i18n.tr("New"));
+        btWriteFile.setText(i18n.tr("Write file"));
+        btWriteGPS.setText(i18n.tr("Send to GPS"));
+        btMail.setText(i18n.tr("Email"));
         StringBuilder sbLoc = new StringBuilder();
-        sbLoc.append(i18n.tr("Nouveau")).append("... ").append("Saisir une ville").append(" + Go");
+        sbLoc.append(i18n.tr("New")).append("... ").append(i18n.tr("Enter a city")).append(" + Go");
         txLocality.setPromptText(sbLoc.toString());
-        colBalise.setText(i18n.tr("Balise"));
-        colAlt.setText(i18n.tr("Alt."));
-        colDesc.setText(i18n.tr("Nom"));
-        btCancelPos.setText(i18n.tr("Abandon"));
+        colBalise.setText(i18n.tr("Turnpoint"));
+        colAlt.setText(i18n.tr("Alt")+".");
+        colDesc.setText(i18n.tr("Name"));
+        btCancelPos.setText(i18n.tr("Cancel"));
     }   
 
     public class Bridge { 
