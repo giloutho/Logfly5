@@ -580,16 +580,16 @@ public class CoordController {
      */
     private void winTraduction() {
         lbDesc.setText(i18n.tr("Description"));   
-        lbBalise.setText(i18n.tr("Nom court"));  
+        lbBalise.setText(i18n.tr("Short name"));  
         lbLat1.setText(i18n.tr("Latitude"));   
         lbLat2.setText(i18n.tr("Latitude"));   
         lbLat3.setText(i18n.tr("Latitude"));   
         lbLong1.setText(i18n.tr("Longitude"));   
         lbLong2.setText(i18n.tr("Longitude"));   
         lbLong3.setText(i18n.tr("Longitude"));    
-        lbSeparator.setText(i18n.tr("Le séparateur décimal doit être un point"));   
-        btCoord.setText(i18n.tr("Placer avec les coordonnées"));      
-        btManual.setText(i18n.tr("Placer manuellement le point sur la carte"));  
+        lbSeparator.setText(i18n.tr("Decimal separator must be a point"));   
+        btCoord.setText(i18n.tr("Place with coordinates"));      
+        btManual.setText(i18n.tr("Manually place the point on the map"));  
     }    
     
 }
