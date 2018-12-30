@@ -341,26 +341,26 @@ public class KmlViewController implements Initializable {
     * Translate labels of the window
     */
     private void winTraduction() {
-        checkReduc.setText(i18n.tr("Réduction du nombre de points"));
-        checkTrace.setText(i18n.tr("Trace avec profil"));
-        checkColorAlti.setText(i18n.tr("Trace colorée par altitude"));
-        checkColorVario.setText(i18n.tr("Trace colorée par vario"));
-        checkColorSpeed.setText(i18n.tr("Trace colorée par vitesse"));
-        checkScore.setText(i18n.tr("Score"));
-        checkThermiq.setText(i18n.tr("Thermiques"));
+        checkReduc.setText(i18n.tr("Reduce the number of points"));
+        checkTrace.setText(i18n.tr("Track with profile"));
+        checkColorAlti.setText(i18n.tr("Colored track by altitude"));
+        checkColorVario.setText(i18n.tr("Colored track by climb"));
+        checkColorSpeed.setText(i18n.tr("Colored track by speed"));
+        checkScore.setText(i18n.tr("Scoring"));
+        checkThermiq.setText(i18n.tr("Thermals"));
         checkReplay.setText(i18n.tr("Replay"));
-        checkSave.setText(i18n.tr("Exporter le fichier Google Earth"));
-        checkMail.setText(i18n.tr("Envoyer par mail"));
-        checkRunGE.setText(i18n.tr("Lancer Google Earth"));
-        lbEchantillon.setText(i18n.tr("Echantillonnage de points"));
-        lbDessus.setText(i18n.tr("Distance au dessus de la trace"));
-        lbTimer.setText(i18n.tr("Timer de la caméra"));
-        lbRecul.setText(i18n.tr("Recul de la camera"));
-        lbInclinaison.setText(i18n.tr("Inclinaison caméra"));
-        rdAltGPS.setText(i18n.tr("Alti GPS"));
-        rdAltBaro.setText(i18n.tr("Alti Baro"));
-        btAnnuler.setText(i18n.tr("Annuler"));
-        btValider.setText(i18n.tr("Valider"));
+        checkSave.setText(i18n.tr("Export Google Earth file"));
+        checkMail.setText(i18n.tr("Send via e-mail"));
+        checkRunGE.setText(i18n.tr("Run Google Earth"));
+        lbEchantillon.setText(i18n.tr("Sampling points"));
+        lbDessus.setText(i18n.tr("Distance above the trace"));
+        lbTimer.setText(i18n.tr("Camera timer"));
+        lbRecul.setText(i18n.tr("Camera recoil"));
+        lbInclinaison.setText(i18n.tr("Camera tilt"));
+        rdAltGPS.setText(i18n.tr("GPS alt"));
+        rdAltBaro.setText(i18n.tr("Baro alt"));
+        btAnnuler.setText(i18n.tr("Cancel"));
+        btValider.setText(i18n.tr("OK"));
     }
     
 }
