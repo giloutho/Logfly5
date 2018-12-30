@@ -93,7 +93,7 @@ public class CartoViewController {
         FileChooser fileChooser = new FileChooser();
 
         //Set extension filter
-        fileChooser.setTitle(i18n.tr("Fichier GPX ou IGC"));
+        fileChooser.setTitle(i18n.tr("GPX or IGC files"));
 
         //Show open file dialog
         File selectedFile = fileChooser.showOpenDialog(null);        
@@ -117,7 +117,7 @@ public class CartoViewController {
                 } 
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertError(i18n.tr("Fichiers acceptés : IGC ou GPX"));                
+                aError.alertError(i18n.tr("Accepted files: IGC or GPX"));                
             }    
         }
     }      
@@ -265,12 +265,12 @@ public class CartoViewController {
     }     
     
     private void winTraduction() {
-        btMesure.setText(i18n.tr("Mesurer"));    
-        btTrace.setText(i18n.tr("Trace"));    
+        btMesure.setText(i18n.tr("Measure"));    
+        btTrace.setText(i18n.tr("Track"));    
         btReset.setText(i18n.tr("Reset"));    
         btHtml.setText("HTML");
         btMail.setText(i18n.tr("Mail"));
-        btClose.setText(i18n.tr("Fermer"));
+        btClose.setText(i18n.tr("Close"));
     }      
 }    
    
