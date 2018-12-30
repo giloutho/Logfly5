@@ -79,7 +79,7 @@ public class trackScore {
             res.append(String.format("%4.2f",KmlTrace.getScore_Route_Km())).append(" km</TD>").append(RC);    
             res.append( "                                                  <TR><TD>");
             res.append(String.format("%4.2f",KmlTrace.getScore_Route_Pts())).append(" pts</TD>").append(RC);    
-            res.append( "                                                  <TR><TD>").append(i18n.tr("Moyenne")).append(" : ");
+            res.append( "                                                  <TR><TD>").append(i18n.tr("Average")).append(" : ");
             res.append(String.format("%3.2f",KmlTrace.getScore_Moyenne())).append(" km/h</TR></TABLE>").append(RC); 
 
             if (genScoreDetails()) {
@@ -109,10 +109,10 @@ public class trackScore {
         String res;
         switch (codeLeague) {
             case "FR" :
-                res = i18n.tr("CFD");
+                res = i18n.tr("French contest");
                 break;
             case "CH" :
-                res = i18n.tr("Challenge suisse");
+                res = i18n.tr("Swiss contest");
                 break;
             case "XC":
                 res = i18n.tr("World XContest");
@@ -132,19 +132,19 @@ public class trackScore {
         String res;
         switch (codeShape) {
             case "FAI Triangle" :
-                res = i18n.tr("Triangle FAI");
+                res = i18n.tr("FAI Triangle");
                 break;
             case "Free flight 2 wpt" :
-                res = i18n.tr("Distance 2 points");
+                res = i18n.tr("Flight 2 points");
                 break;
             case "Flat Triangle":
-                res = i18n.tr("Triangle plat");
+                res = i18n.tr("Flat triangle");
                 break;
              case "Free flight 1 wpt" :
-                res = i18n.tr("Distance 1 point"); 
+                res = i18n.tr("Flight 1 point"); 
                 break;
             case "Free flight 3 wpt":
-                res = i18n.tr("Distance 3 points");
+                res = i18n.tr("Flight 3 points");
                 break;
             default:
                 res = codeShape;
@@ -172,7 +172,7 @@ public class trackScore {
             int IdxBD = KmlTrace.Score_Tb_Balises.get(0);
             currPoint = KmlTrace.Tb_Calcul.get(IdxBD);
             kmlScoreDetails.append("                                                  <TR><TD nowrap>");
-            kmlScoreDetails.append(i18n.tr("BD")).append("</TD>");    // BD ou SP en anglais
+            kmlScoreDetails.append(i18n.tr("SP")).append("</TD>");    // BD ou SP en anglais
             kmlScoreDetails.append("<TD>").append(currPoint.dHeure.format(dtfHHmm)).append("</TD>");
             kmlScoreDetails.append("<TD  align=\"right\">").append(String.format("%03d",IdxBD)).append("</TD>");
             kmlScoreDetails.append("<TD  align=\"right\">").append(decimalFormat.format(currPoint.Latitude)).append("</TD>");
@@ -196,7 +196,7 @@ public class trackScore {
             for (int i = 1; i < LgTb; i++) {
                 int IdxBal = KmlTrace.Score_Tb_Balises.get(i);
                 currPoint = KmlTrace.Tb_Calcul.get(IdxBal);
-                kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("B")).append(String.valueOf(i)).append("</TD>");
+                kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("P")).append(String.valueOf(i)).append("</TD>");
                 kmlScoreDetails.append("<TD>").append(currPoint.dHeure.format(dtfHHmm)).append("</TD>");
                 kmlScoreDetails.append("<TD  align=\"right\">").append(String.format("%03d",IdxBal)).append("</TD>");
                 kmlScoreDetails.append("<TD  align=\"right\">").append(decimalFormat.format(currPoint.Latitude)).append("</TD>");
@@ -235,7 +235,7 @@ public class trackScore {
             // End point
             int IdxBA = KmlTrace.Score_Tb_Balises.get(LgTb);
             currPoint = KmlTrace.Tb_Calcul.get(IdxBA);
-            kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("BA")).append("</TD>");
+            kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("EP")).append("</TD>");
             kmlScoreDetails.append("<TD>").append(currPoint.dHeure.format(dtfHHmm)).append("</TD>");
             kmlScoreDetails.append("<TD  align=\"right\">").append(String.format("%03d",IdxBA)).append("</TD>");
             kmlScoreDetails.append("<TD  align=\"right\">").append(decimalFormat.format(currPoint.Latitude)).append("</TD>");
@@ -268,7 +268,7 @@ public class trackScore {
             
             if (KmlTrace.getScore_Triangle()) {
                 // B3 -> B1
-                kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("B")).append("3 -> ").append(i18n.tr("B")).append("1</TD>");
+                kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("P")).append("3 -> ").append(i18n.tr("P")).append("1</TD>");
                 kmlScoreDetails.append("<TD></TD>");
                 kmlScoreDetails.append("<TD></TD>");
                 kmlScoreDetails.append("<TD></TD>");
@@ -291,7 +291,7 @@ public class trackScore {
                     sCoordTrace.append(String.valueOf(pointA.AltiGPS)).append(" ");
                 }      
                 // BD -> BA
-                kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("BD")).append(" -> ").append(i18n.tr("BA")).append("</TD>");
+                kmlScoreDetails.append("                                                  <TR><TD>").append(i18n.tr("SP")).append(" -> ").append(i18n.tr("EP")).append("</TD>");
                 kmlScoreDetails.append("<TD></TD>");
                 kmlScoreDetails.append("<TD></TD>");
                 kmlScoreDetails.append("<TD></TD>");
@@ -347,11 +347,11 @@ public class trackScore {
             // Turnpoints
             for (int i = 0; i <= LgTb; i++) {
                 if (i == 0) {                    
-                    kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("BD"),0,"",KmlTrace.Score_Tb_Balises.get(i+1),i18n.tr("B")+String.valueOf(i+1)));
+                    kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("SP"),0,"",KmlTrace.Score_Tb_Balises.get(i+1),i18n.tr("P")+String.valueOf(i+1)));
                 } else if (i == LgTb) {
-                    kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("BA"),KmlTrace.Score_Tb_Balises.get(i-1),i18n.tr("B")+String.valueOf(i-1),0,""));
+                    kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("EP"),KmlTrace.Score_Tb_Balises.get(i-1),i18n.tr("P")+String.valueOf(i-1),0,""));
                 } else {
-                    kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("B")+String.valueOf(i),KmlTrace.Score_Tb_Balises.get(i-1),i18n.tr("P")+String.valueOf(i-1),KmlTrace.Score_Tb_Balises.get(i+1),"P"+String.valueOf(i+1)));
+                    kmlScoreTrace.append(codeBalise(KmlTrace.Score_Tb_Balises.get(i),i18n.tr("P")+String.valueOf(i),KmlTrace.Score_Tb_Balises.get(i-1),i18n.tr("P")+String.valueOf(i-1),KmlTrace.Score_Tb_Balises.get(i+1),"P"+String.valueOf(i+1)));
                 }
                     
             }
