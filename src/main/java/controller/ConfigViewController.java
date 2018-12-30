@@ -427,7 +427,7 @@ public class ConfigViewController {
             myConfig.setUrlContest(txUrlContest.getText());             
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Problème de paramètrage non résolu"));  
+            aError.alertInfo(i18n.tr("Unresolved settings problem"));  
             System.exit(0);
         }
         
@@ -443,7 +443,7 @@ public class ConfigViewController {
             dialogStage.close();
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("Problème de paramètrage non résolu"));  
+            aError.alertInfo(i18n.tr("Unresolved settings problem"));  
             System.exit(0);
         }
     }
@@ -548,7 +548,7 @@ public class ConfigViewController {
     private void copyInNewFolder(Path srcPath, File selectedFile) {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        aError.alertInfo(i18n.tr("Sélectionner un dossier pour le carnet")); 
+        aError.alertInfo(i18n.tr("Select a folder for the logbook")); 
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File selectedDirectory = directoryChooser.showDialog(dialogStage);
         if(selectedDirectory != null){
@@ -578,21 +578,22 @@ public class ConfigViewController {
     @FXML
     private void restoreBackup() {
         alertbox aError = new alertbox(myConfig.getLocale());
-        aError.alertInfo(i18n.tr("Sélectionner le carnet à restaurer"));  
+        aError.alertInfo(i18n.tr("Select logbook to restore"));  
+        String msg = i18n.tr("Logbook")+" ";
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(i18n.tr("Carnet "), "*.db")                
+            new FileChooser.ExtensionFilter(msg, "*.db")                
         );              
-        fileChooser.setTitle(i18n.tr("Sélectionner le carnet"));
+        fileChooser.setTitle(i18n.tr("Select a logbook"));
         File selectedFile = fileChooser.showOpenDialog(null);        
         if(selectedFile != null){
             Path srcPath = Paths.get(selectedFile.getAbsolutePath());
             File folderDb = new File(myConfig.getPathDb());
             if (folderDb.exists() && folderDb.isDirectory() ) {
                 dialogbox dConfirm = new dialogbox(i18n);
-                StringBuilder sbMsg = new StringBuilder(); 
-                sbMsg.append(i18n.tr("Copier dans :")).append(myConfig.getPathDb());
-                int myChoice = dConfirm.twoChoices(i18n.tr("Restauration carnet"), sbMsg.toString(), i18n.tr("Oui"), i18n.tr("Autre dossier"), i18n.tr("Annuler"));
+                StringBuilder sbMsg = new StringBuilder();                 
+                sbMsg.append(i18n.tr("Copy in")).append(" :").append(myConfig.getPathDb());
+                int myChoice = dConfirm.twoChoices(i18n.tr("Logbook restore"), sbMsg.toString(), i18n.tr("Yes"), i18n.tr("Other folder"), i18n.tr("Cancel"));
                 switch (myChoice) {
                     case  0:
                         System.exit(0);
@@ -698,7 +699,7 @@ public class ConfigViewController {
                     iniChbCarnet(files);
                 } else {
                     alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertError(i18n.tr("Pas de carnets dans le dossier choisi..."));  
+                    aError.alertError(i18n.tr("No logbook in selected folder"));  
                 }
             }
         }
@@ -836,55 +837,55 @@ public class ConfigViewController {
      * Translate labels of the window
      */
     private void winTraduction() {
-        tabCarnet.setText(i18n.tr("Carnet"));        
-        tabCarte.setText(i18n.tr("Carte"));
-        tabDivers.setText(i18n.tr("Divers"));
-        tabInternet.setText(i18n.tr("Internet"));
-        tabLog.setText(i18n.tr("Fichier log"));        
-        lbWorkingPath.setText(i18n.tr("Chemin du dossier de travail"));
-        btCarnetEdit.setText(i18n.tr("Modifier"));
-        lbWorkingLog.setText(i18n.tr("Chemin carnet(s)"));
-        btNewLog.setText(i18n.tr("Créer un nouveau carnet"));
-        btMoveLog.setText(i18n.tr("Déplacer le(s) carnet(s) vers un autre dossier"));
-        btSelectLog.setText(i18n.tr("Choisir un nouveau dossier de carnets"));
-        btRestore.setText(i18n.tr("Restaurer une sauvegarde"));
-        btCarnetClose.setText(i18n.tr("Fermer"));
-        tabPilote.setText(i18n.tr("Pilote"));
-        lbPilote.setText(i18n.tr("Nom pilote"));
-        lbVoile.setText(i18n.tr("Voile"));
-        lbGPS.setText(i18n.tr("GPS habituel"));
-        lbIntegration.setText(i18n.tr("Intégration"));
-        lbLimite.setText(i18n.tr("Limite USB"));
-        lbMail.setText(i18n.tr("Mail pilote"));
+        tabCarnet.setText(i18n.tr("Logbook"));        
+        tabCarte.setText(i18n.tr("Map"));
+        tabDivers.setText(i18n.tr("Miscellaneous"));
+        tabInternet.setText(i18n.tr("Web"));
+        tabLog.setText(i18n.tr("Log file"));        
+        lbWorkingPath.setText(i18n.tr("Working folder path"));
+        btCarnetEdit.setText(i18n.tr("Modify"));
+        lbWorkingLog.setText(i18n.tr("Logbook(s) path"));
+        btNewLog.setText(i18n.tr("Create a new logbook"));
+        btMoveLog.setText(i18n.tr("Move logbook(s) to a different folder"));
+        btSelectLog.setText(i18n.tr("Choose a new logbook folder"));
+        btRestore.setText(i18n.tr("Restore a backup"));
+        btCarnetClose.setText(i18n.tr("Close"));
+        tabPilote.setText(i18n.tr("Pilot"));
+        lbPilote.setText(i18n.tr("Pilot name"));
+        lbVoile.setText(i18n.tr("Glider"));
+        lbGPS.setText(i18n.tr("Usual GPS"));
+        lbIntegration.setText(i18n.tr("Integration"));
+        lbLimite.setText(i18n.tr("USB limit"));
+        lbMail.setText(i18n.tr("Pilot mail"));
         lbLeague.setText(i18n.tr("League"));
-        lbIdentif.setText(i18n.tr("Identifiant"));
-        lbPass.setText(i18n.tr("Mot de passe"));
-        btPilotAnnuler.setText(i18n.tr("Annuler"));
-        btPilotOK.setText(i18n.tr("Valider"));
-        lbNavigateur.setText(i18n.tr("VisuGPS dans le navigateur"));
-        lbDefaultMap.setText(i18n.tr("Carte par défaut"));
+        lbIdentif.setText(i18n.tr("Login"));
+        lbPass.setText(i18n.tr("Pass"));
+        btPilotAnnuler.setText(i18n.tr("Cancel"));
+        btPilotOK.setText(i18n.tr("Ok"));
+        lbNavigateur.setText(i18n.tr("VisuGPS in browser"));
+        lbDefaultMap.setText(i18n.tr("Default map"));
         lbLatitude.setText(i18n.tr("Latitude"));
         lbLongitude.setText(i18n.tr("Longitude"));
-        btMapMap.setText(i18n.tr("Carte"));
-        lbAberrants.setText(i18n.tr("Seuil points aberrants"));
-        btMapOK.setText(i18n.tr("Valider"));
-        btMapAnnuler.setText(i18n.tr("Annuler"));
-        lbLanguage.setText(i18n.tr("Langue"));
-        lbImport.setText(i18n.tr("Dossier d'import"));
-        lbPhotoAuto.setText(i18n.tr("Affichage automatique des photos"));
-        lbUpdateAuto.setText(i18n.tr("Mise à jour automatique"));
-        btDiversAnnuler.setText(i18n.tr("Annuler"));
-        btDiversOk.setText(i18n.tr("Valider"));
-        lbLogfly.setText(i18n.tr("Url Site Logfly"));
-        lbIcones.setText(i18n.tr("Url Icônes"));
-        lbLoadUrl.setText(i18n.tr("Url Téléchargement"));
-        lbVisuAdress.setText(i18n.tr("Url VisuGPS"));
-        lbSupport.setText(i18n.tr("Url mail support"));
-        lbDeclaration.setText(i18n.tr("Url Déclaration"));
-        lbExport.setText(i18n.tr("Dossier Export IGC"));
-        btWebAnnuler.setText(i18n.tr("Annuler"));
-        btWebOk.setText(i18n.tr("Valider"));    
-        btLogAnnuler.setText(i18n.tr("Annuler"));
-        btLogOk.setText(i18n.tr("Valider"));            
+        btMapMap.setText(i18n.tr("Map"));
+        lbAberrants.setText(i18n.tr("Outliers threshold for map"));
+        btMapOK.setText(i18n.tr("OK"));
+        btMapAnnuler.setText(i18n.tr("Cancel"));
+        lbLanguage.setText(i18n.tr("Language"));
+        lbImport.setText(i18n.tr("Import folder"));
+        lbPhotoAuto.setText(i18n.tr("Automatic display of photos"));
+        lbUpdateAuto.setText(i18n.tr("Automatic update"));
+        btDiversAnnuler.setText(i18n.tr("Cancel"));
+        btDiversOk.setText(i18n.tr("OK"));
+        lbLogfly.setText(i18n.tr("Logfly site url"));
+        lbIcones.setText(i18n.tr("Icons url"));
+        lbLoadUrl.setText(i18n.tr("Download url"));
+        lbVisuAdress.setText(i18n.tr("VisuGPS url"));
+        lbSupport.setText(i18n.tr("mail support url"));
+        lbDeclaration.setText(i18n.tr("Claim url"));
+        lbExport.setText(i18n.tr("Export IGC folder"));
+        btWebAnnuler.setText(i18n.tr("Cancel"));
+        btWebOk.setText(i18n.tr("OK"));    
+        btLogAnnuler.setText(i18n.tr("Cancel"));
+        btLogOk.setText(i18n.tr("OK"));            
     }
 }
