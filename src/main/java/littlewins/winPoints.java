@@ -141,11 +141,11 @@ public class winPoints {
         
         TableColumn colNum = new TableColumn(i18n.tr("No"));
         colNum.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("numero"));
-        TableColumn colHeure = new TableColumn(i18n.tr("Heure"));
+        TableColumn colHeure = new TableColumn(i18n.tr("Time"));
         colHeure.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("heure"));
-        TableColumn colAltib = new TableColumn(i18n.tr("Alti Baro"));
+        TableColumn colAltib = new TableColumn(i18n.tr("Baro Alt"));
         colAltib.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("altibaro"));
-        TableColumn colAltig = new TableColumn(i18n.tr("Alti GPS"));
+        TableColumn colAltig = new TableColumn(i18n.tr("GPS Alt"));
         colAltig.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("altigps"));
         TableColumn colLat = new TableColumn(i18n.tr("Lat"));
         colLat.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("latitude"));
@@ -153,7 +153,7 @@ public class winPoints {
         colLong.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("longitude"));
         TableColumn colDist = new TableColumn(i18n.tr("Dist (m)"));
         colDist.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("distance"));
-        TableColumn colVit = new TableColumn(i18n.tr("Vit Sol"));
+        TableColumn colVit = new TableColumn(i18n.tr("Gd Speed"));
         colVit.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("vsol"));
         TableColumn colVz = new TableColumn("Vz");
         colVz.setCellValueFactory(new PropertyValueFactory<trackPoint, String>("vz"));
@@ -180,9 +180,9 @@ public class winPoints {
         StringBuilder zdtTitle = new StringBuilder();
         zdtTitle.append(currTrace.getTzVol().getDisplayName()).append("  ").append(String.format("%+2.2f",currTrace.getUtcOffset()));
         if (currTrace.isDstOffset())  {
-            zdtTitle.append("  ").append(i18n.tr("Eté"));
+            zdtTitle.append("  ").append(i18n.tr("Summer"));
         }  else  {
-            zdtTitle.append(" ").append(i18n.tr("Hiver"));            
+            zdtTitle.append(" ").append(i18n.tr("Winter"));            
         }            
         subStage.setTitle(zdtTitle.toString());
         subStage.setScene(secondScene);
