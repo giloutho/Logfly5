@@ -702,7 +702,7 @@ public class SiteFormController {
                 // Direct parsing is possible because we have default ISO_LOCAL_DATE format
                 LocalDate localDate = LocalDate.parse(dateStr);
                 DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
-                dialogStage.setTitle(i18n.tr("Date de mise à jour : "+localDate.format(formatter)));                
+                dialogStage.setTitle(i18n.tr("Last updated date")+" : "+localDate.format(formatter));                
             } 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -761,10 +761,10 @@ public class SiteFormController {
                 txCP.setText(googCP);
                 iniMap(pSelectedCity.getLatitude(), pSelectedCity.getLongitude());                
             } else {
-                displayDefault(i18n.tr("Non trouvé..."));
+                displayDefault(i18n.tr("Not found"));
             }
         } catch ( Exception e) {
-            displayDefault(i18n.tr("Problème de geolocalisation"));
+            displayDefault(i18n.tr("Geolocation problem"));
         }            
     }    
         
@@ -958,7 +958,7 @@ public class SiteFormController {
             }                       
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(i18n.tr("La saisie est incomplète"));              
+            aError.alertError(i18n.tr("Incomplete input"));              
         }
         
         return res;
@@ -1097,21 +1097,22 @@ public class SiteFormController {
         
         Tooltip caracToolTip = new Tooltip();
         caracToolTip.setStyle(myConfig.getDecoToolTip());
-        caracToolTip.setText(i18n.tr("Caractères acceptés : - . 0-9"));
+        String stChar = i18n.tr("Accepted characters")+" : ";
+        caracToolTip.setText(stChar+"- . 0-9");
         Tooltip latToolTip = new Tooltip();
         latToolTip.setStyle(myConfig.getDecoToolTip());
-        latToolTip.setText(i18n.tr("Caractères acceptés : N S"));
+        latToolTip.setText(stChar+"N S");
         Tooltip longToolTip = new Tooltip();
         longToolTip.setStyle(myConfig.getDecoToolTip());
-        longToolTip.setText(i18n.tr("Caractères acceptés : W E"));   
+        longToolTip.setText(stChar+"W E");   
         btGeoloc.setText("");
         Tooltip geoLocToolTip = new Tooltip();
         geoLocToolTip.setStyle(myConfig.getDecoToolTip());
-        geoLocToolTip.setText(i18n.tr("Remplit les champs avec les valeurs du bouton"));
+        geoLocToolTip.setText(i18n.tr("Fills fields with the button values"));
         btGeoloc.setTooltip(geoLocToolTip);
         Tooltip geocodeToolTip = new Tooltip();
         geocodeToolTip.setStyle(myConfig.getDecoToolTip());
-        geocodeToolTip.setText(i18n.tr("Recherche OpenStreetMap sur le nom"));        
+        geocodeToolTip.setText(i18n.tr("OpenStreetMap search with name"));        
         btGoogle.setTooltip(geocodeToolTip);        
         txLat.setTooltip(caracToolTip);
         txDMLatDeg.setTooltip(caracToolTip);
@@ -1129,25 +1130,25 @@ public class SiteFormController {
         txDMSLongMin.setTooltip(caracToolTip);
         txDMSLongSec.setTooltip(caracToolTip);
         txDMSLongMer.setTooltip(longToolTip);
-        lbNom.setText(i18n.tr("Nom"));
+        lbNom.setText(i18n.tr("Name"));
         lbOrien.setText(i18n.tr("Orientation"));   
-        lbLocalite.setText(i18n.tr("Localité"));   
-        lbCP.setText(i18n.tr("Code Postal"));   
-        lbPays.setText(i18n.tr("Pays"));   
-        rdDeco.setText(i18n.tr("Décollage"));     
-        rdAttero.setText(i18n.tr("Atterissage"));       
+        lbLocalite.setText(i18n.tr("City"));   
+        lbCP.setText(i18n.tr("ZIP code"));   
+        lbPays.setText(i18n.tr("Country"));   
+        rdDeco.setText(i18n.tr("Take off"));     
+        rdAttero.setText(i18n.tr("Landing"));       
         lbLat1.setText(i18n.tr("Latitude"));   
         lbLat2.setText(i18n.tr("Latitude"));   
         lbLat3.setText(i18n.tr("Latitude"));   
         lbLong1.setText(i18n.tr("Longitude"));   
         lbLong2.setText(i18n.tr("Longitude"));   
         lbLong3.setText(i18n.tr("Longitude"));   
-        lbAlt.setText(i18n.tr("Alti déco"));   
-        lbComment.setText(i18n.tr("Commentaire"));   
-        btCancel.setText(i18n.tr("Annuler"));  
-        btOk.setText(i18n.tr("Valider"));       
-        debLbGeoloc = i18n.tr("Géolocalisation");
-        lbPointeur.setText(i18n.tr("Déplacer le marqueur pour modifier les coordonnées"));
+        lbAlt.setText(i18n.tr("Take-off alt"));   
+        lbComment.setText(i18n.tr("Comment"));   
+        btCancel.setText(i18n.tr("Cancel"));  
+        btOk.setText(i18n.tr("OK"));       
+        debLbGeoloc = i18n.tr("Geolocation");
+        lbPointeur.setText(i18n.tr("Move marker to change coordinates"));
     }    
     
     /**
