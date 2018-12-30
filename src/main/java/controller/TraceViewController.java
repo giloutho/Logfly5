@@ -130,16 +130,19 @@ public class TraceViewController {
                 }  else {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     String errMsg;
-                    if (extTrace.Tb_Tot_Points.size() > 0)  {             
-                        errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
+                    if (extTrace.Tb_Tot_Points.size() > 0)  {    
+                        StringBuilder sbMsg = new StringBuilder();
+                        sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
+                        sbMsg.append(extTrace.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(                           extTrace.Tb_Good_Points.size());                        
+                        errMsg = sbMsg.toString();
                     } else {                            
-                        errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+                        errMsg = i18n.tr("No valid points in this track file");
                     }
                     aError.alertError(errMsg);
                 }   
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertError(i18n.tr("Fichiers acceptés : IGC ou GPX"));
+                aError.alertError(i18n.tr("Accepted files: IGC or GPX"));
             }
         }
     }
@@ -179,15 +182,18 @@ public class TraceViewController {
                 subStage.show();
             }  else {
                 alertbox aErrMap = new alertbox(myConfig.getLocale()); 
-                aErrMap.alertError(i18n.tr("Une erreur est survenue pendant la génération de la carte"));                
+                aErrMap.alertError(i18n.tr("An error occurred during the map generation"));                
             }            
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
             String errMsg;
             if (extTrace.Tb_Tot_Points.size() > 0)  { 
-                errMsg = i18n.tr("Trace invalide - Points bruts : "+extTrace.Tb_Tot_Points.size()+" points valides : "+extTrace.Tb_Good_Points.size()); 
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
+                sbMsg.append(extTrace.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(                           extTrace.Tb_Good_Points.size());                      
+                errMsg = sbMsg.toString();
             } else {                            
-                errMsg = i18n.tr("Aucun points valide dans ce fichier trace");
+                errMsg = i18n.tr("No valid points in this track file");
             }
             aError.alertError(errMsg);
         }
@@ -267,12 +273,12 @@ public class TraceViewController {
                     }                                        
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);           
-                    alert.setContentText(i18n.tr("Mauvaise url de téléchargement"));
+                    alert.setContentText(i18n.tr("Bad download URL"));
                     alert.showAndWait();  
                 }                
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(i18n.tr("Problème de chargement de la trace"));            
+                alert.setTitle(i18n.tr("Could not download track"));            
                 String s = e.getClass().getName() + ": " + e.getMessage();
                 alert.setContentText(s);
                 alert.showAndWait();     
@@ -375,7 +381,7 @@ public class TraceViewController {
             
             AnchorPane page = (AnchorPane) loader.load();
             Stage dialogStage = new Stage();
-            dialogStage.setTitle(i18n.tr("Génération fichier kml"));
+            dialogStage.setTitle(i18n.tr("Generating KML file"));
             dialogStage.initModality(Modality.WINDOW_MODAL);       
             dialogStage.initOwner(mainApp.getPrimaryStage());
             Scene scene = new Scene(page);
@@ -433,7 +439,7 @@ public class TraceViewController {
                     }
                 } else {
                     alertbox aInfo = new alertbox(myConfig.getLocale());
-                    aInfo.alertInfo(i18n.tr("Génération du fichier terminée")); 
+                    aInfo.alertInfo(i18n.tr("File generation completed")); 
                 }
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
@@ -449,8 +455,8 @@ public class TraceViewController {
         int res = -1;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(i18n.tr("Format IGC"), "*.igc"),
-                new FileChooser.ExtensionFilter(i18n.tr("Format GPX"), "*.gpx")
+                new FileChooser.ExtensionFilter(i18n.tr("IGC format"), "*.igc"),
+                new FileChooser.ExtensionFilter(i18n.tr("GPX format"), "*.gpx")
         );              
         File selectedFile = fileChooser.showSaveDialog(null);        
         if(selectedFile != null){
@@ -498,7 +504,7 @@ public class TraceViewController {
     // http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm    
     private ContextMenu clicTop_Menu()   {
         final ContextMenu cm = new ContextMenu();
-        MenuItem cmItem1 = new MenuItem(i18n.tr("Fichier trace"));        
+        MenuItem cmItem1 = new MenuItem(i18n.tr("Track file"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 winTrackFile myTrace = new winTrackFile(extTrace.getFicIGC());                     
@@ -506,7 +512,7 @@ public class TraceViewController {
         });
         cm.getItems().add(cmItem1);
         
-        MenuItem cmItem2 = new MenuItem(i18n.tr("Liste points"));
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Points list"));
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 winPoints myGrid = new winPoints(myConfig.getLocale());    
@@ -515,7 +521,7 @@ public class TraceViewController {
         });
         cm.getItems().add(cmItem2);
         
-        MenuItem cmItem3 = new MenuItem(i18n.tr("Exporter"));
+        MenuItem cmItem3 = new MenuItem(i18n.tr("Export"));
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 exportTrace();
@@ -527,7 +533,7 @@ public class TraceViewController {
         cmItemMa.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 alertbox aInfo = new alertbox(myConfig.getLocale());
-                aInfo.alertInfo(i18n.tr("Envoi par mail"));                    
+                aInfo.alertInfo(i18n.tr("Send via e-mail"));                    
             }
         });
         cm.getItems().add(cmItemMa);
@@ -553,30 +559,30 @@ public class TraceViewController {
     * Translate labels of the window
     */
     private void winTraduction() {
-        btnSelect.setText(i18n.tr("Sélectionner une trace"));
+        btnSelect.setText(i18n.tr("Select a track"));
         
         btnMap.setStyle("-fx-background-color: transparent;");
         Tooltip mapToolTip = new Tooltip();
         mapToolTip.setStyle(myConfig.getDecoToolTip());
-        mapToolTip.setText(i18n.tr("Carte Google Maps plein écran"));
+        mapToolTip.setText(i18n.tr("Full screen map"));
         btnMap.setTooltip(mapToolTip);
                 
         btnVisuGPS.setStyle("-fx-background-color: transparent;"); 
         Tooltip visuToolTip = new Tooltip();
         visuToolTip.setStyle(myConfig.getDecoToolTip());
-        visuToolTip.setText(i18n.tr("Affichage VisuGPS"));
+        visuToolTip.setText(i18n.tr("VisuGPS display"));
         btnVisuGPS.setTooltip(visuToolTip);
         
         btnScore.setStyle("-fx-background-color: transparent;");      
         Tooltip scoreToolTip = new Tooltip();
         scoreToolTip.setStyle(myConfig.getDecoToolTip());
-        scoreToolTip.setText(i18n.tr("Evaluation de la trace"));
+        scoreToolTip.setText(i18n.tr("Score evaluation"));
         btnScore.setTooltip(scoreToolTip);
         
         btnGEarth.setStyle("-fx-background-color: transparent;");      
         Tooltip geToolTip = new Tooltip();
         geToolTip.setStyle(myConfig.getDecoToolTip());
-        geToolTip.setText(i18n.tr("Génération fichier Google Earth"));
+        geToolTip.setText(i18n.tr("Google Earth file generation"));
         btnGEarth.setTooltip(geToolTip);
     }
     
