@@ -219,9 +219,9 @@ public class map_visu {
                     }     
                     jsThermique.append("        .addTo(THmarkers)").append(RC);
                     jsThermique.append("        .bindPopup(\"");
-                    jsThermique .append(" ").append(i18n.tr("Alt."));
+                    jsThermique .append(" ").append(i18n.tr("Alt")).append(".");
                     jsThermique.append(" ").append(String.valueOf(currPoint.AltiGPS)).append("m  \\r\\n");
-                    jsThermique.append(i18n.tr("Gain ")).append(" : ").append(String.valueOf(currTh.DeltaAlt)).append(" m  ");
+                    jsThermique.append(i18n.tr("Gain")).append(" : ").append(String.valueOf(currTh.DeltaAlt)).append(" m  ");
                     jsThermique.append(String.format(Locale.ROOT,"%+5.2f",currTh.MeanVarioValue)).append(" m/s");
                     jsThermique.append("\");").append(RC);
                     
@@ -262,7 +262,7 @@ public class map_visu {
             jsThermique.append(decimalFormat.format(bestPoint2.Longitude));
             jsThermique.append("],{icon: L.AwesomeMarkers.icon({icon: 'fa-external-link', markerColor: 'green', prefix: 'fa', iconColor: 'white'}) })").append(RC);
             jsThermique.append("        .addTo(THmarkers)").append(RC);
-            jsThermique.append("        .bindPopup(\"").append(i18n.tr("Meilleure transition")).append(" : ");
+            jsThermique.append("        .bindPopup(\"").append(i18n.tr("Best transition")).append(" : ");
             jsThermique.append(String.format(Locale.ROOT,"%6.2f",dBestT)).append(" km \");").append(RC);
             res = true;
         }
@@ -318,7 +318,7 @@ public class map_visu {
                     if ( i == 0) {                    
                             // start point BD                            
                             jsBalises.append("    var markerBal = new L.marker(new L.LatLng(").append(coord.get(0)).append(",").append(coord.get(1)).append("), {icon: StartIcon})").append(RC); 
-                            jsBalises.append("                    .bindPopup(\"<b>").append(i18n.tr("BD")).append("</b><br/>");
+                            jsBalises.append("                    .bindPopup(\"<b>").append(i18n.tr("SP")).append("</b><br/>");
                             jsBalises.append(currPoint.dHeure.format(dtfHHmm)).append("<br/>Alt GPS : ").append(String.valueOf(currPoint.AltiGPS)).append("<br/>");
                             jsBalises.append(String.format("%3.2f",currPoint.Vitesse)).append("km/h<br/>").append(fmtsigne.format(currPoint.Vario)).append("m/s\");").append(RC); 
                             jsBalises.append("    LayerBal.addLayer(markerBal);").append(RC).append(RC); 
@@ -334,7 +334,7 @@ public class map_visu {
                         jsBalises.append("    var EndIcon = new IconEP();").append(RC); 
                         jsBalises.append(RC);
                         jsBalises.append("    var markerBal = new L.marker(new L.LatLng(").append(coord.get(0)).append(",").append(coord.get(1)).append("), {icon: EndIcon})").append(RC); 
-                        jsBalises.append( "                    .bindPopup(\"<b>").append(i18n.tr("BA")).append("</b><br/>");
+                        jsBalises.append( "                    .bindPopup(\"<b>").append(i18n.tr("EP")).append("</b><br/>");
                         jsBalises.append(currPoint.dHeure.format(dtfHHmm)).append("<br/>Alt GPS : ").append(String.valueOf(currPoint.AltiGPS)).append("<br/>");
                         jsBalises.append(String.format("%3.2f",currPoint.Vitesse)).append("km/h<br/>").append(fmtsigne.format(currPoint.Vario)).append("m/s\");").append(RC); 
                         jsBalises.append( "    LayerBal.addLayer(markerBal);").append(RC);                         
@@ -451,11 +451,11 @@ public class map_visu {
         jsLegende.append("legend._div.innerHTML += '").append(traceVisu.getsDate_Vol()).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append(traceVisu.getsPilote()).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append(traceVisu.getsVoile()).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Durée")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Duration")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append("<hr />';").append(RC);
         // Launching time
         String hDeco = traceVisu.getDT_Deco().format(DateTimeFormatter.ofPattern("HH:mm"));                
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Décollage")).append(" : ").append(hDeco).append("<br>';").append(RC);   
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Take off")).append(" : ").append(hDeco).append("<br>';").append(RC);   
         jsLegende.append("        legend._div.innerHTML += '").append("GPS : ").append(String.valueOf(traceVisu.getAlt_Deco_GPS())).append("m<br>';").append(RC);
         String[] siteComplet;       
         // Search for launching site
@@ -553,23 +553,23 @@ public class map_visu {
         // To avoid an unsightly \ in place of apostrophe
         String goodSiteAterro = finalSiteAtterro.replace("'", "\\'");    
         String hAttero = traceVisu.getDT_Attero().format(DateTimeFormatter.ofPattern("HH:mm"));                 
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Atterrissage")).append(" : ").append(hAttero).append("<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Landing")).append(" : ").append(hAttero).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append(" GPS : ").append(String.valueOf(traceVisu.getAlt_Attero_GPS())).append("m<br>';").append(RC);        
         jsLegende.append("        legend._div.innerHTML += '").append(goodSiteAterro).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append("<hr />';").append(RC);
         pointIGC ptAltMax = traceVisu.getAlt_Maxi_GPS();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Alt max GPS")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max GPS alt")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
         pointIGC ptAltMini = traceVisu.getAlt_Mini_GPS();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Alt mini GPS")).append(" : ").append(String.valueOf(ptAltMini.AltiGPS)).append("m<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Min GPS alt")).append(" : ").append(String.valueOf(ptAltMini.AltiGPS)).append("m<br>';").append(RC);
         pointIGC ptVarioMax = traceVisu.getVario_Max();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Vario max")).append(" : ").append(String.format("%2.2f",ptVarioMax.Vario)).append("m/s<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max climb")).append(" : ").append(String.format("%2.2f",ptVarioMax.Vario)).append("m/s<br>';").append(RC);
         pointIGC ptVarioMini = traceVisu.getVario_Mini();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Vario mini")).append(" : ").append(String.format("%2.2f",ptVarioMini.Vario)).append("m/s<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Gain max")).append(" : ").append(String.valueOf(traceVisu.getBestGain())).append("m<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max sink")).append(" : ").append(String.format("%2.2f",ptVarioMini.Vario)).append("m/s<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max gain")).append(" : ").append(String.valueOf(traceVisu.getBestGain())).append("m<br>';").append(RC);
         pointIGC ptVitMax = traceVisu.getVit_Max();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Vitesse max")).append(" : ").append(String.format("%3.2f",ptVitMax.Vitesse)).append("km/h<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Transition max")).append(" : ").append(String.format("%3.2f",dBestT)).append("km<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Longueur")).append(" : ").append(String.format("%3.2f",traceVisu.getTrackLen())).append("km<br>';").append(RC);        
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max speed")).append(" : ").append(String.format("%3.2f",ptVitMax.Vitesse)).append("km/h<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Best transition")).append(" : ").append(String.format("%3.2f",dBestT)).append("km<br>';").append(RC);
+        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Size")).append(" : ").append(String.format("%3.2f",traceVisu.getTrackLen())).append("km<br>';").append(RC);        
         jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Points")).append(" : ").append(String.valueOf(traceVisu.getNbPoints())).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Aberrants")).append(" : ").append(String.valueOf(traceVisu.getNbPointsAberr())).append("<br>';").append(RC);
         jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Signature")).append(" : ").append(traceVisu.getSignature()).append("<br>';").append(RC);        
@@ -582,10 +582,10 @@ public class map_visu {
         jsLegende.append("        legend._div.innerHTML += '").append("<hr />';").append(RC);
         switch (legLeague) {
             case "FR" :
-                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("CFD")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("French contest")).append("</b><br>';").append(RC);    
                 break;
             case "CH" :
-                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("Challenge suisse")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("Swiss contest")).append("</b><br>';").append(RC);    
                 break;
             case "XC":
                 jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("World XContest")).append("</b><br>';").append(RC);    
@@ -595,19 +595,19 @@ public class map_visu {
         }
         switch (legShape) {
             case "FAI Triangle" :
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Triangle FAI")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("FAI triangle")).append("</b><br>';").append(RC);    
                 break;
             case "Free flight 2 wpt" :
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Distance 2 points")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 2 points")).append("</b><br>';").append(RC);    
                 break;
             case "Flat Triangle":
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Triangle plat")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flat triangle")).append("</b><br>';").append(RC);    
                 break;
              case "Free flight 1 wpt" :
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Distance 1 point")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 1 point")).append("</b><br>';").append(RC);    
                 break;
             case "Free flight 3 wpt":
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Distance 3 points")).append("</b><br>';").append(RC);    
+                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 3 points")).append("</b><br>';").append(RC);    
                 break;
             default:
                 jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(legShape).append("</b><br>';").append(RC);    
