@@ -1589,8 +1589,8 @@ public class traceGPS {
                     } else {
                         // time shift to local time for all points
                         utcToLocalDecalage();                        
-                    } 
-                    Verif_Tb_Tot_Points(MissTime, false);     // outliers are not taken into account                    
+                        Verif_Tb_Tot_Points(MissTime, false);     // outliers are not taken into account   
+                    }
                     if (Tb_Good_Points.size() > 1)  {
                         pointIGC LastPoint = Tb_Good_Points.get(Tb_Good_Points.size() - 1);                                        
                         DT_Attero = LastPoint.dHeure;
