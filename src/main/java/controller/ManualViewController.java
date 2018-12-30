@@ -197,7 +197,7 @@ public class ManualViewController  {
         String sSQL_Date = pickDate.getValue()+" "+sHour+":"+sMin+":00";        
         if (sSQL_Date.equals(initialDate)) {
             alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertInfo(i18n.tr("La date et l'heure n'ont pas été modifiées"));             
+            aError.alertInfo(i18n.tr("Date and time unchanged"));             
         } else {
             if (checkFields()) {
                 editMode = 0;
@@ -246,7 +246,7 @@ public class ManualViewController  {
         }
         if (saisieEnCours) {
             dialogbox dConfirm = new dialogbox(i18n);    
-            if (dConfirm.YesNo("", i18n.tr("Abandon saisie ?")))  { 
+            if (dConfirm.YesNo("", i18n.tr("Cancel input")+" ?"))  { 
                 saisieEnCours = false;
             }            
         } 
@@ -523,7 +523,9 @@ public class ManualViewController  {
         if (pModeEdit == 1) {
             if (!dbRead()) {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertInfo(i18n.tr("Site non retrouvé - Edition impossible")); 
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.append(i18n.tr("Site not found")).append(" - ").append("Unable to edit");
+                aError.alertInfo(sbMsg.toString()); 
                 exitController();
             } else {
                 btDuplicate.setVisible(true);
@@ -540,21 +542,21 @@ public class ManualViewController  {
     */
     private void winTraduction() {
         lbDate.setText(i18n.tr("Date"));
-        lbHDeco.setText(i18n.tr("Heure Déco"));
+        lbHDeco.setText(i18n.tr("Take-off time"));
         //lbFormatsetText(i18n.tr("Format 24h"));
-        lbDuree.setText(i18n.tr("Durée"));
-        lbVoile.setText(i18n.tr("Voile"));
-        cbGliders.setPromptText(i18n.tr("Clic pour lister"));
-        lbDeco.setText(i18n.tr("Décollage"));
+        lbDuree.setText(i18n.tr("Duration"));
+        lbVoile.setText(i18n.tr("Glider"));
+        cbGliders.setPromptText(i18n.tr("Click to list"));
+        lbDeco.setText(i18n.tr("Take off"));
         lbAlt.setText(i18n.tr("Altitude"));
-        lbComment.setText(i18n.tr("Commentaire"));
-        btSites.setText(i18n.tr("Fichier des sites"));
-        txSite.setPromptText(i18n.tr("Clic fichier des sites"));
-        btOk.setText(i18n.tr("Ajouter"));
-        btDuplicate.setText(i18n.tr("Dupliquer"));
-        btCancel.setText(i18n.tr("Fermer"));
-        addStatusMsg = i18n.tr("Vol ajouté");
-        modStatusMsg = i18n.tr("Vol modifié");
+        lbComment.setText(i18n.tr("Comment"));
+        btSites.setText(i18n.tr("Site file"));
+        txSite.setPromptText(i18n.tr("Click site File"));
+        btOk.setText(i18n.tr("Add"));
+        btDuplicate.setText(i18n.tr("Duplicate"));
+        btCancel.setText(i18n.tr("Close"));
+        addStatusMsg = i18n.tr("Flight added");
+        modStatusMsg = i18n.tr("Flight updated");
     }    
     
 }
