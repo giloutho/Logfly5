@@ -9,7 +9,6 @@ package littlewins;
 import com.serialpundit.core.SerialComPlatform;
 import com.serialpundit.core.SerialComSystemProperty;
 import com.serialpundit.serial.SerialComManager;
-import dialogues.alertbox;
 import gps.compass;
 import gps.connect;
 import gps.element;
@@ -137,7 +136,7 @@ public class winGPS {
                 
     private void showWin() {
         subStage = new Stage();   
-        subStage.setTitle(i18n.tr("Choix GPS"));
+        subStage.setTitle(i18n.tr("GPS Choice"));
         subStage.initModality(Modality.APPLICATION_MODAL);
         Label lbGPS = new Label("GPS ");
         lbGPS.setMinWidth(50);
@@ -174,9 +173,9 @@ public class winGPS {
         
         ChoiceBox cbName = new ChoiceBox();
 
-        cbName.getItems().add(i18n.tr("Noms longs"));
-        cbName.getItems().add(i18n.tr("Noms courts"));
-        cbName.getItems().add(i18n.tr("Mixte"));
+        cbName.getItems().add(i18n.tr("Long names"));
+        cbName.getItems().add(i18n.tr("Short names"));
+        cbName.getItems().add(i18n.tr("Mixed"));
         cbName.getSelectionModel().selectedIndexProperty()
         .addListener(new ChangeListener<Number>() {
           public void changed(ObservableValue ov, Number value, Number new_value) {
@@ -213,24 +212,24 @@ public class winGPS {
         });
         Tooltip connToolTip = new Tooltip();
         connToolTip.setStyle(myConfig.getDecoToolTip());
-        connToolTip.setText(i18n.tr("Teste la connexion GPS"));
+        connToolTip.setText(i18n.tr("Test GPS connection"));
         btConnexion.setTooltip(connToolTip);
         
-        Button btCancel = new Button(i18n.tr("Fermer"));
+        Button btCancel = new Button(i18n.tr("Close"));
         btCancel.setOnAction((event) -> {
             currGPS = null;
             currNamePort = null;
             gpsConnect = false;
             subStage.close();
         });
-        btRefresh = new Button(i18n.tr("Actualiser"));
+        btRefresh = new Button(i18n.tr("Update"));
         btRefresh.setOnAction((event) -> {
             choixGPS(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
         });        
         btRefresh.setVisible(false);
         Tooltip refToolTip = new Tooltip();
         refToolTip.setStyle(myConfig.getDecoToolTip());
-        refToolTip.setText(i18n.tr("Actualise la liste des ports ou des disques"));
+        refToolTip.setText(i18n.tr("Refreshes the list of ports or disks"));
         btRefresh.setTooltip(refToolTip);
         
         buttonBar.getChildren().addAll(btRefresh, btConnexion, btCancel);
@@ -478,7 +477,7 @@ public class winGPS {
         gpsConnect = false;
         btRefresh.setVisible(true);
         btConnexion.setVisible(true);  
-        subStage.setTitle(i18n.tr("GPS non détecté !"));        
+        subStage.setTitle(i18n.tr("GPS not detected"));        
     }
     
     private void gpsPresent() {
