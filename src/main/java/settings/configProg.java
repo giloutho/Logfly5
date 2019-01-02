@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
 import java.util.logging.Level;
+import littlewins.winLanguage;
 import systemio.mylogging;
 
 
@@ -271,6 +272,10 @@ public class configProg {
                 //locale = new Locale("fr"); 
                 locale = java.util.Locale.FRENCH;
                 break;
+            case 3 :
+                //locale = new Locale("it"); 
+                locale = java.util.Locale.ITALIAN;
+                break;                
             default:
                 locale = new Locale("fr"); 
         }
@@ -683,6 +688,8 @@ public class configProg {
                         break;
                     case 6 :
                         idxLang = Integer.parseInt(line);   // Language index  
+                        if (idxLang < 0 || idxLang > 3) idxLang = 1;
+                        setLocale(idxLang);
                         break;
                     case 7 :
                         defaultPilote = line;    // App.Def_Pilote
@@ -921,14 +928,16 @@ public class configProg {
                 folderOK = false;
             }
             if (folderOK)  {
+                // language choice
+                winLanguage showLang = new winLanguage();
+                idxLang = showLang.getIdxLang();
                 pathW = targetPath;
                 dbName = "Logfly.db";
                 pathDb = targetPath;  
                 // fullPathDb is defined previously
                 finderLat = "45.863";   //  Lake of Annecy
                 finderLong = "6.1725";   
-                pathImport = importPath;
-                idxLang = 2;    // by default french -:)
+                pathImport = importPath;                
                 setLocale(idxLang);
                 defaultPilote = "";
                 defaultVoile = "";
