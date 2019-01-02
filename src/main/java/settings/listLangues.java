@@ -34,7 +34,8 @@ public class listLangues {
                  
         Lang_List.add(i18n.tr("German"));
         Lang_List.add(i18n.tr("English"));
-        Lang_List.add(i18n.tr("French"));        
+        Lang_List.add(i18n.tr("French"));     
+        Lang_List.add(i18n.tr("Italian"));
         
         return Lang_List;
     }
