@@ -136,7 +136,7 @@ public class map_pm {
      */
     private void genInfo(traceGPS tracePM)  {
      //   jsInfo.append("this._div.innerHTML += '").append(i18n.tr("Voile")).append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
-        jsInfo.append("            this._div.innerHTML += '").append("Voile").append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
+        jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Glider")).append(":").append(tracePM.getsVoile()).append("<br>';").append(RC);
         pointIGC ptAltMax = tracePM.getAlt_Maxi_GPS();    
         jsInfo.append("            this._div.innerHTML += '").append(i18n.tr("Max GPS Alt")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
          pointIGC ptVarioMax = tracePM.getVario_Max();
