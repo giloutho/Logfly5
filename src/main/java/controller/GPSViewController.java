@@ -1009,7 +1009,7 @@ public class GPSViewController {
                         
                         try {
                             switch (currGPS) {  
-                                case FlymSD :
+                                case FlymPlus :
                                     fms.closePort();
                                     break;
                             }
