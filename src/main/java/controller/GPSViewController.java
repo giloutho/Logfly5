@@ -838,7 +838,7 @@ public class GPSViewController {
                             gpsOK = true;
                             // if GPSDump used, we must release the port 
                             // Otherwise, port must stay open
-                            //  fliq.closePort();
+                            fliq.closePort();
                         }  
                         break;    
                     case FlymSD :
