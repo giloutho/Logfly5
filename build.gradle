@@ -49,5 +49,5 @@ jfx {
     vendor = 'Logfly'
     appName = 'Logfly5'
     additionalAppResources = 'src/main/runlib'
-    nativeReleaseVersion = "13"
+    nativeReleaseVersion = "18"
 }
