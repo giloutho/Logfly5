@@ -14,6 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Level;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import liveUpdate.objects.Modes;
 import liveUpdate.objects.Release;
 import liveUpdate.parsers.ReleaseXMLParser;
@@ -22,6 +24,7 @@ import org.xml.sax.SAXException;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.osType;
 import settings.privateData;
 import systemio.mylogging;
 import systemio.tempacess;
@@ -52,6 +55,7 @@ public class checkUpdate {
     public checkUpdate(Release release, configProg mainConfig) throws IOException  {
         this.myConfig = mainConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",alertbox.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        myLocale = myConfig.getLocale();
         updateURL = privateData.updateUrl.toString();
         webio myConnect = new webio();
         if (myConnect.checkConnection()) runChecking(release);        
@@ -87,41 +91,58 @@ public class checkUpdate {
                 } 
             } else {
                 // major update ->  bundle download required 
-                dialogbox dInfo = new dialogbox(i18n);
-                String dHeader = i18n.tr("A major update is available [version {0}]",current.getseverity());
-                String dText = current.getMessage()+"\n"+i18n.tr("Do you want to install it")+" ?";
-                answer = dInfo.YesNo(dHeader,dText); 
-                if (answer == true) {
-                    tmpUpdateFiles = tempacess.getTemPath(null);
-                    String msg = i18n.tr("You need to restart the program")+"...";
-                    String sUrl=null;
+                if (myConfig.getOS() == osType.LINUX) {
+                    alertbox aInfo = new alertbox(myLocale);
+                    String sTitle = i18n.tr("A major update is available [version {0}]",current.getseverity());               
                     // Get bundle.xml with download url
                     bundleXMLParser bParser = new bundleXMLParser();
-                    bParser.parse(updateURL+"/bundle.inf");                                        
-                    switch (myConfig.getOS()) {
-                        case WINDOWS:
-                            sUrl = bParser.getWinUrl();
-                            break;
-                        case MACOS :
-                            sUrl = bParser.getMacUrl();
-                            break;
-                        case LINUX :
-                            sUrl = bParser.getLinuxUrl();
-                            break;
-                    }
-                    if (sUrl != null) {
-                        webdown myLoad = new webdown(sUrl,tmpUpdateFiles, i18n, msg);
-                        if (myLoad.isDownSuccess()) {
-                            File downFile = new File(myLoad.getDownPath());
-                            try {
-                                Desktop desktop = Desktop.getDesktop();
-                                desktop.open(downFile);
-                                System.exit(0);
-                            } catch (Exception e) {
-                            }                    
+                    bParser.parse(updateURL+"/bundle.inf");   
+                    StringBuilder sbText = new StringBuilder();       
+                    String sUrl = bParser.getLinuxUrl();
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(sUrl.toString());            
+                    clipboard.setContent(content);
+                    sbText.append(sUrl).append("   [");
+                    sbText.append(i18n.tr("Copy to clipboard")).append("]");
+                    aInfo.alertWithTitle(sTitle,sbText.toString());                                            
+                } else {
+                    dialogbox dInfo = new dialogbox(i18n);
+                    String dHeader = i18n.tr("A major update is available [version {0}]",current.getseverity());
+                    String dText = current.getMessage()+"\n"+i18n.tr("Do you want to install it")+" ?";
+                    answer = dInfo.YesNo(dHeader,dText); 
+                    if (answer == true) {
+                        tmpUpdateFiles = tempacess.getTemPath(null);
+                        String msg = i18n.tr("You need to restart the program")+"...";
+                        String sUrl=null;
+                        // Get bundle.xml with download url
+                        bundleXMLParser bParser = new bundleXMLParser();
+                        bParser.parse(updateURL+"/bundle.inf");                                        
+                        switch (myConfig.getOS()) {
+                            case WINDOWS:
+                                sUrl = bParser.getWinUrl();
+                                break;
+                            case MACOS :
+                                sUrl = bParser.getMacUrl();
+                                break;
+                            case LINUX :
+                                sUrl = bParser.getLinuxUrl();
+                                break;
+                        }
+                        if (sUrl != null) {
+                            webdown myLoad = new webdown(sUrl,tmpUpdateFiles, i18n, msg);
+                            if (myLoad.isDownSuccess()) {
+                                File downFile = new File(myLoad.getDownPath());
+                                try {
+                                    Desktop desktop = Desktop.getDesktop();
+                                    desktop.open(downFile);
+                                    System.exit(0);
+                                } catch (Exception e) {
+                                }                    
+                            }
                         }
                     }
-                }                            
+                }
             }
             
         } catch (SAXException ex) {
