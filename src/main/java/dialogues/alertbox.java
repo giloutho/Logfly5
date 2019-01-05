@@ -228,5 +228,13 @@ public class alertbox {
         alert.setContentText(msg);
         alert.showAndWait();
     }
+    
+    public void alertWithTitle (String sTitle, String msg)  {       
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(sTitle);
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }    
      
 }
