@@ -378,7 +378,38 @@ public class SitesViewController {
         mapViewer.getEngine().load("about:blank");  
         txtSearch.setText(null);
         fillTable(sbReq.toString());
-    }    
+    } 
+    
+    private void deleteDuplicates() {
+     
+        dialogbox dConfirm = new dialogbox(i18n);
+        if (dConfirm.YesNo("",i18n.tr("Remove duplicates")))   {              
+            String sReq = "DELETE FROM Site WHERE rowid NOT IN (SELECT MIN(rowid) FROM Site GROUP BY S_Nom,S_Alti)";
+            try {
+                PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                pstmt.executeUpdate();    
+                pstmt.close();      
+                alertbox aInfo = new alertbox(myConfig.getLocale());
+                aInfo.alertInfo(i18n.tr("Successful operation"));  
+                fillTable("SELECT * FROM Site ORDER BY S_Nom");
+            } catch (Exception e) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                  
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getMessage());                  
+            }            
+        }        
+    }
+    
+    private void searchAllDuplicates() {
+        
+        String sReq = "SELECT *, COUNT(S_ID) FROM Site GROUP BY S_Nom, S_Alti HAVING COUNT(S_Nom) > 1";
+        dataSites.clear();
+        mapViewer.getEngine().load("about:blank");  
+        txtSearch.setText(null);
+        fillTable(sReq);
+    }
 
     @FXML
     private void pushAll() {
@@ -791,19 +822,18 @@ public class SitesViewController {
         MenuItem cmItem22 = new MenuItem(i18n.tr("Duplicates"));        
         cmItem22.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                searchDuplicate();
+                searchAllDuplicates();
             }            
         });
-        cm.getItems().add(cmItem22);   
+        cm.getItems().add(cmItem22);          
         
-        MenuItem cmItem23 = new MenuItem(i18n.tr("Waypoints export"));        
-        cmItem23.setOnAction(new EventHandler<ActionEvent>() {
+        MenuItem cmItem25 = new MenuItem(i18n.tr("Cleaning"));        
+        cmItem25.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                alertbox aMsg = new alertbox(myConfig.getLocale());
-                aMsg.alertInfo(i18n.tr("Not implemented")); 
+                deleteDuplicates();
             }            
         });
-        cm.getItems().add(cmItem23);  
+        cm.getItems().add(cmItem25);  
 
         MenuItem cmItem24 = new MenuItem(i18n.tr("Download"));        
         cmItem24.setOnAction(new EventHandler<ActionEvent>() {
