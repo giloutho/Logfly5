@@ -8,14 +8,18 @@ package systemio;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -83,7 +87,7 @@ public class webio {
      *      YYYYMMDDHHMMSS_Randomnumber  [between 1 and 1000]
      * @return 
      */
-    public String aleaNomfichier()  {
+    public String aleaNomfichier(String sExt)  {
         String res = null;
         
         LocalDateTime ldt = LocalDateTime.now();
@@ -93,7 +97,7 @@ public class webio {
         // found in http://stackoverflow.com/questions/363681/generating-random-integers-in-a-specific-range
         int aleaNumber = 1 + (int)(Math.random() * ((1000 - 1) + 1));
         StringBuilder suggName = new StringBuilder();
-        suggName.append(sLdt).append(String.format("%d",aleaNumber)).append(".igc");
+        suggName.append(sLdt).append(String.format("%d",aleaNumber)).append(sExt);
         res = suggName.toString();
         
         return res;
@@ -114,7 +118,7 @@ public class webio {
         InputStream is = null;
         
         URLConnection conn = null;
-        tempFicName = aleaNomfichier();
+        tempFicName = aleaNomfichier(".igc");
         
         try {
             URL url = new URL(sUrl);
@@ -191,6 +195,51 @@ public class webio {
         
         return res;
     }
+    
+    public void httpUploadFile(File upFile, String sUrl) {        
+         
+        String charset = "UTF-8";
+        String param = "value";
+        String boundary = Long.toHexString(System.currentTimeMillis()); // Just generate some unique random value.
+        String CRLF = "\r\n"; // Line separator required by multipart/form-data.
+                    
+        try {
+            URLConnection connection = new URL(sUrl).openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            try (
+                OutputStream output = connection.getOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, charset), true);
+            ) {
+                    // Send normal param.
+                    writer.append("--" + boundary).append(CRLF);
+                    writer.append("Content-Disposition: form-data; name=\"param\"").append(CRLF);
+                    writer.append("Content-Type: text/plain; charset=" + charset).append(CRLF);
+                    writer.append(CRLF).append(param).append(CRLF).flush();                
+                    // Send binary file.
+                    writer.append("--" + boundary).append(CRLF);
+                    writer.append("Content-Disposition: form-data; name=\"binaryFile\"; filename=\"" + upFile.getName() + "\"").append(CRLF);
+                    writer.append("Content-Type: " + URLConnection.guessContentTypeFromName(upFile.getName())).append(CRLF);
+                    writer.append("Content-Transfer-Encoding: binary").append(CRLF);
+                    writer.append(CRLF).flush();
+                    Files.copy(upFile.toPath(), output);
+                    output.flush(); // Important before continuing with writer!
+                    writer.append(CRLF).flush(); // CRLF is important! It indicates end of boundary.          
+                    
+                    // End of multipart/form-data.
+                    writer.append("--" + boundary + "--").append(CRLF).flush();                    
+              }
+            // Request is lazily fired whenever you need to obtain information about response.            
+            int responseCode = ((HttpURLConnection) connection).getResponseCode();
+            // Code values https://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html
+            if (responseCode == 200)
+                dlError = 0;
+            else
+                dlError = 1310;
+        } catch (Exception e) {
+            dlError = 1310;   // Error while transferring file
+        }         
+     }
     
     public int sendPost(String url, String urlParameters) throws Exception {
         String USER_AGENT = "Mozilla/5.0";
