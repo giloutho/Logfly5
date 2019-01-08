@@ -750,10 +750,8 @@ public class flymaster {
                     {
                         nbPoints++;  
                         int altiOrPressure=0;
-                        // Faire le traitement pour une position complète
-                        // Travail arrêté ici... Les valeurs ci dessous ont été vérifiées.
-                        latitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+2, wOffset+dwScan+6));
-                        longitude = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+6, wOffset+dwScan+10));
+                        altitude = (short)twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+10, wOffset+dwScan+12));  
+                        altiOrPressure = (short)twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+12, wOffset+dwScan+14)); 
                         altitude = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+10, wOffset+dwScan+12)); 
                         altiOrPressure = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+12, wOffset+dwScan+14));
                         time  = fourBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+14, wOffset+dwScan+18));
