@@ -90,7 +90,7 @@ public class TraceViewController {
     
     // Reference à l'application principale
     private Main mainApp;
-    
+    private boolean isGPX;
     private StringBuilder sbError;
     
     @FXML
@@ -109,6 +109,10 @@ public class TraceViewController {
         if(selectedFile != null){ 
             String extension = getFileExtension(selectedFile);
             if (extension.equals("IGC") || extension.equals("igc") || extension.equals("GPX") || extension.equals("gpx")) {
+                if (extension.equals("GPX") || extension.equals("gpx")) 
+                    isGPX = true;
+                else
+                    isGPX = false;
                 extTrace = new traceGPS(selectedFile,true, myConfig);
                 if (extTrace.isDecodage()) {                 
                     map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
@@ -130,13 +134,17 @@ public class TraceViewController {
                 }  else {
                     alertbox aError = new alertbox(myConfig.getLocale());
                     String errMsg;
-                    if (extTrace.Tb_Tot_Points.size() > 0)  {    
-                        StringBuilder sbMsg = new StringBuilder();
+                    StringBuilder sbMsg = new StringBuilder();
+                    if (extTrace.Tb_Tot_Points.size() > 0)  {                            
                         sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
-                        sbMsg.append(extTrace.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(                           extTrace.Tb_Good_Points.size());                        
+                        sbMsg.append(extTrace.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(                           extTrace.Tb_Good_Points.size());                              if (isGPX) {
+                            sbMsg.append(" -- "+i18n.tr("Try Cartography option"));
+                        }  
                         errMsg = sbMsg.toString();
-                    } else {                            
-                        errMsg = i18n.tr("No valid points in this track file");
+                    } else {      
+                        sbMsg.append(i18n.tr("No valid points in this track file"));
+                        sbMsg.append(" -- "+i18n.tr("Try Cartography option"));
+                        errMsg = sbMsg.toString();
                     }
                     aError.alertError(errMsg);
                 }   
