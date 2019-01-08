@@ -41,6 +41,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import littlewins.winLog;
 import littlewins.winMail;
+import littlewins.winSendDb;
 import littlewins.winWeb;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -352,7 +353,15 @@ public class RootLayoutController {
                displaySystem();
             }
         });
-        cm.getItems().add(cmItem11);                       
+        cm.getItems().add(cmItem11);
+        
+        MenuItem cmItem2 = new MenuItem(i18n.tr("Send logbook"));
+        cmItem2.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               sendLogbook();
+            }
+        });
+        cm.getItems().add(cmItem2);            
                                     
         return cm;
     }
@@ -489,6 +498,12 @@ public class RootLayoutController {
             winMail showMail = new winMail(myConfig, null, true); 
         }
     }
+    
+    private void sendLogbook() {
+        if (myConfig.isValidConfig()) {
+            winSendDb showMail = new winSendDb(myConfig);            
+        }    
+    }    
         
     public void changeCarnetView()  {  
         switchMenu(1);
