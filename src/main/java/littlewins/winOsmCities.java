@@ -8,6 +8,7 @@ package littlewins;
 
 import controller.SiteFormController;
 import controller.WaypViewController;
+import controller.XcpViewController;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -38,6 +39,7 @@ public class winOsmCities {
     // Reference to Controllers
     private WaypViewController waypController;
     private SiteFormController sitefController;
+    private XcpViewController xcpController;
     private int typeController;
     
     // Localization
@@ -62,7 +64,15 @@ public class winOsmCities {
         this.sitefController = pSiteController;   
         typeController = 2;
         showWin();
-    }             
+    }       
+    
+    public winOsmCities(I18n pI18n, ObservableList <Sitemodel> pDataCities, XcpViewController pXcpController)  {  
+        this.i18n = pI18n;     
+        dataCities = pDataCities;
+        this.xcpController = pXcpController;   
+        typeController = 3;
+        showWin();
+    }        
             
     private void showWin() {
         subStage = new Stage();    
@@ -107,6 +117,9 @@ public class winOsmCities {
                         case 2:
                             sitefController.returnFromOsmCities(rowData);
                             break;
+                        case 3:
+                            xcpController.returnFromOsmCities(rowData);
+                            break;                            
                     } 
                 }
             });
