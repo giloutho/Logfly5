@@ -34,7 +34,7 @@ public class geonominatim {
     private String geoLat = "";
     private String geoLong = ""; 
     private String geoStatus = "";
-    private String geoError = null;
+    private int geoError = 0;
     private ObservableList <Sitemodel> osmTowns; 
     
     private StringBuilder sbError;    
@@ -71,7 +71,7 @@ public class geonominatim {
         return geoStatus;
     }    
 
-    public String getGeoError() {
+    public int getGeoError() {
         return geoError;
     }
 
@@ -97,7 +97,7 @@ public class geonominatim {
         } catch (Throwable th) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append("Can't get response from web location ").append(url).append(" ").append(th);
-            geoError = "Can't get response from web location ";
+            geoError = 310;    // Can't get response from web service
             mylogging.log(Level.SEVERE, sbError.toString());               
         }
         
@@ -127,7 +127,7 @@ public class geonominatim {
             } catch (NullPointerException ex) {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                 sbError.append("\r\n").append("Can't parse ").append(totalAnswer);
-                geoError = "Parsing error";
+                geoError = 4;   // Parsing error
                 mylogging.log(Level.SEVERE, sbError.toString());  
             }                    
         } else {
@@ -192,7 +192,7 @@ public class geonominatim {
         } catch (Throwable th) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append("Can't get response from web location ").append(url).append(" ").append(th);
-            geoError = "No response from web service";
+            geoError = 310;  // No response from web service
             mylogging.log(Level.SEVERE, sbError.toString());               
         }                
     }    
@@ -243,18 +243,18 @@ public class geonominatim {
                     }                                      
                 }
                 if (resultat.size() < 1) {
-                    geoError = "Not found...";
+                    geoError = 320;  // Unusable response from web service
                 }
             } catch (Exception ex) {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                 sbError.append("\r\n").append("Can't parse ").append(resJson);
-                geoError = "Parsing error";
+                geoError = 4; // Parsing error
                 mylogging.log(Level.SEVERE, sbError.toString());  
             } 
         } else {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append("Json is null");
-            geoError = "Json is null";
+            geoError = 330;   // Json is null
             mylogging.log(Level.SEVERE, sbError.toString());  
         }                
     }
