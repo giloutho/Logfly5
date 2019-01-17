@@ -1562,7 +1562,8 @@ public class WaypViewController {
         if (lsSize > 0) {
             winOsmCities wCities = new winOsmCities(i18n, osmCities, this);  
         } else {
-            displayDefault(debGeo.getGeoError());
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(debGeo.getGeoError());
         }
     }
     
