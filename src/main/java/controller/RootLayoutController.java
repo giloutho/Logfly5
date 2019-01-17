@@ -73,8 +73,8 @@ public class RootLayoutController {
     private Label mnSites;    
     @FXML
     private Label mnBalises;    
-    //@FXML
-    //private Label mnXcplanner;
+    @FXML
+    private Label mnXcplanner;
     @FXML
     private Label mnEspaces;    
     @FXML
@@ -111,57 +111,44 @@ public class RootLayoutController {
         mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
         //Initialization of click areas with lambda expressions
         mnCarnet.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(1);
-            mainApp.showCarnetOverview();
+            switchMenu(1);            
         });
         mnGPS.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(2);
-            mainApp.showGPSview();
         });
         mnImport.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(3);
-            mainApp.showImportview();
         });
         mnManuel.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(4);
-            mainApp.showManualview(0, null);
+            switchMenu(4);            
         });        
         mnTrace.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(5);
-            mainApp.showTraceview();
+            switchMenu(5);            
         });  
         mnSynthese.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(6);
-            mainApp.showDashView();
+            switchMenu(6);            
         });        
         mnStat.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(7);
-            mainApp.showStatView();
+            switchMenu(7);            
         });           
         mnSites.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(8);
-            mainApp.showSitesOverview();
+            switchMenu(8);            
         });            
         mnBalises.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(9);
-            mainApp.showWaypOverview();
-        });  
-//        mnXcplanner.setOnMouseClicked((MouseEvent event) -> {
-//            switchMenu(13);
-//            mainApp.showXcplannerview();
-//        });           
+            switchMenu(9);            
+        });           
         mnEspaces.setOnMouseClicked((MouseEvent event) -> {
-            switchMenu(10);
-            mainApp.showAirspaceView();
+            switchMenu(10);            
         });       
         mnPhotos.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(11);
-            comingSoon();
         });    
         mnCarto.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(12);
-            mainApp.showCartoOverview();
-        });            
+        });    
+        mnXcplanner.setOnMouseClicked((MouseEvent event) -> {
+            switchMenu(13);
+        });          
         btnSupport.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override public void handle(MouseEvent e) {                        
@@ -275,49 +262,62 @@ public class RootLayoutController {
         mnStat.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnSites.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnBalises.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
-        //mnXcplanner.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
+        mnXcplanner.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         mnEspaces.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnPhotos.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnCarto.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         switch (idxMenu) {
             case 1:
                 mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mainApp.showCarnetOverview();
                 break;
             case 2:
-                mnGPS.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                                       
+                mnGPS.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");       
+                mainApp.showGPSview();
                 break;
             case 3:
                 mnImport.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mainApp.showImportview();
                 break;
             case 4:
                 mnManuel.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mainApp.showManualview(0, null);
                 break;
             case 5:
                 mnTrace.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mainApp.showTraceview();
                 break;
             case 6:
-                mnSynthese.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");               
+                mnSynthese.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");     
+                mainApp.showDashView();
                 break;
             case 7:
-                mnStat.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
+                mnStat.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");       
+                mainApp.showStatView();
                 break;
             case 8:
-                mnSites.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
+                mnSites.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");   
+                mainApp.showSitesOverview();
                 break;
             case 9:
-                mnBalises.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
+                mnBalises.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");   
+                mainApp.showWaypOverview();                
                 break;
             case 10:
-                mnEspaces.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
+                mnEspaces.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");     
+                mainApp.showAirspaceView();
                 break;
             case 11:
                 mnPhotos.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                comingSoon();
                 break;
             case 12:    
                 mnCarto.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mainApp.showCartoOverview();
                 break;    
             case 13:    
-               // mnXcplanner.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mnXcplanner.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                mainApp.showXcplannerview();                           
                 break;                    
             default:
                 throw new AssertionError();
@@ -422,7 +422,7 @@ public class RootLayoutController {
         MenuItem cmItem3 = new MenuItem(i18n.tr("Csv export"));        
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                comingSoon();
+                mainApp.showXcplannerview();
             }
         });
         cm.getItems().add(cmItem3);  
