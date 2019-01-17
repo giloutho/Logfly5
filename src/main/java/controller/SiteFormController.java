@@ -653,8 +653,7 @@ public class SiteFormController {
      * three days for fix the mystake...
      */
     private void updateFieldsPos() {
-        decimalFormatSymbols.setDecimalSeparator('.'); 
-        // fields update       
+        decimalFormatSymbols.setDecimalSeparator('.');     
         df2 = new DecimalFormat("#0.0000", decimalFormatSymbols);
         df3 = new DecimalFormat("##0.0000", decimalFormatSymbols);
         updateProgress = true;
@@ -747,6 +746,7 @@ public class SiteFormController {
     
     public void returnFromOsmCities(Sitemodel pSelectedCity) {
         
+        decimalFormatSymbols.setDecimalSeparator('.');
         df2 = new DecimalFormat("#0.0000", decimalFormatSymbols);
         df3 = new DecimalFormat("##0.0000", decimalFormatSymbols);
         
