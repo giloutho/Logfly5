@@ -7,23 +7,31 @@
 package controller;
 
 import Logfly.Main;
+import dialogues.alertbox;
+import geoutils.geonominatim;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.logging.Level;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import littlewins.winOsmCities;
 import littlewins.winSaveXcp;
+import model.Sitemodel;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.xnap.commons.i18n.I18n;
@@ -31,7 +39,6 @@ import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.privateData;
 import systemio.mylogging;
-import waypio.pointRecord;
 
 /**
  *
@@ -68,6 +75,9 @@ public class XcpViewController {
     
     private Paint colorBadValue = Paint.valueOf("FA6C04");
     private Paint colorGoodValue = Paint.valueOf("FFFFFF");
+    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();     
+    private DecimalFormat df2;
+    private DecimalFormat df3;    
     
     private String urlBaseXC;
     private String urlCircuit;
@@ -86,29 +96,34 @@ public class XcpViewController {
             if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
                 showRecord(newValue);
         });        
+        
+        txLocality.setOnKeyPressed(new EventHandler<KeyEvent>() {              
+                @Override
+                public void handle(KeyEvent t) {
+                    if (t.getCode() == KeyCode.ENTER) {
+                        String locality = txLocality.getText().trim();
+                        if (locality != null && !locality.equals("")) { 
+                            txLocality.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
+                            getCoordinate(locality);
+                        } else {
+                            btSave.setVisible(false);
+                            txLocality.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                            txLocality.requestFocus();  
+                        }
+                    } 
+                }
+            });        
     }   
     
     @FXML
     private void handleGo(ActionEvent event) {
-        String locality = txLocality.getText().trim();
-        if (locality != null && !locality.equals("")) { 
-            txLocality.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));  
-            xcView.setVisible(true);
-            StringBuilder sbUrl = new StringBuilder();
-            sbUrl.append(urlBaseXC);
-            sbUrl.append("?location=").append(locality);
-            // Au départ on pensait mettre une choicebox mais cela fait double emploi avec le script
-            // donc on opte pour un triangle par défaut
-            urlCircuit = "cfd3c";
-            sbUrl.append("&flightType=").append(urlCircuit);                       
-            urlXC = sbUrl.toString();
-            eng.load(urlXC);   
-            btSave.setVisible(true);
+        if (eng != null) {   
+            eng.executeScript("XCHere()");
         } else {
-            btSave.setVisible(false);
-            txLocality.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
-            txLocality.requestFocus();  
-        }
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("eng is null\r\n");
+            mylogging.log(Level.SEVERE, sbError.toString());  
+        }    
     }    
     
     @FXML
@@ -161,6 +176,73 @@ public class XcpViewController {
         }        
     }    
     
+    private void iniMap() {
+        
+        String sLat;
+        String sLong;
+        
+        if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
+            sLat = myConfig.getFinderLat();
+            sLong = myConfig.getFinderLong();
+        } else {
+            // settings not valid, we put Annecy Lake
+            sLat = "45.863";
+            sLong = "6.1725";
+        }
+        xcView.setVisible(true);
+        StringBuilder sbUrl = new StringBuilder();
+        sbUrl.append(urlBaseXC);
+        sbUrl.append("?&start=%5B").append(myConfig.getFinderLat()).append(",").append(myConfig.getFinderLong()).append("%5D");
+        urlCircuit = "cfd3c";
+        sbUrl.append("&flightType=").append(urlCircuit);                       
+        urlXC = sbUrl.toString();
+        eng.load(urlXC);   
+        btSave.setVisible(true);           
+    }
+    
+    private void getCoordinate(String pLocality) {
+        
+        geonominatim debGeo = new geonominatim();         
+        debGeo.askGeo(pLocality.trim());
+        ObservableList<Sitemodel> osmCities = debGeo.getOsmTowns(); 
+        int lsSize = osmCities.size();         
+        if (lsSize > 0) {
+            winOsmCities wCities = new winOsmCities(i18n, osmCities, this);  
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(debGeo.getGeoError());
+        }        
+    }
+    
+    public void returnFromOsmCities(Sitemodel pSelectedCity) {
+        
+        decimalFormatSymbols.setDecimalSeparator('.');  
+        df2 = new DecimalFormat("#0.0000", decimalFormatSymbols);
+        df3 = new DecimalFormat("##0.0000", decimalFormatSymbols);
+        
+        try {
+            if (pSelectedCity.getLatitude() != null && pSelectedCity.getLongitude() != null) {
+                String sLat = df2.format(pSelectedCity.getLatitude());
+                String sLong = df3.format(pSelectedCity.getLongitude());           
+                xcView.setVisible(true);
+                StringBuilder sbUrl = new StringBuilder();
+                sbUrl.append(urlBaseXC);
+                sbUrl.append("?&start=%5B").append(sLat).append(",").append(sLong).append("%5D");
+                urlCircuit = "cfd3c";
+                sbUrl.append("&flightType=").append(urlCircuit);                       
+                urlXC = sbUrl.toString();
+                eng.load(urlXC);   
+                btSave.setVisible(true);                
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(320);  // Unusable response from web service           
+            }
+        } catch ( Exception e) {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(320);  // Unusable response from web service              
+        }            
+    }        
+    
     private void showRecord(String sUrl) {
         if (sUrl.contains("turnpoints")) {
             winSaveXcp saveWin = new winSaveXcp(i18n, sUrl, usedPrefix);        
@@ -197,9 +279,15 @@ public class XcpViewController {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp; 
         myConfig = mainApp.myConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",SitesViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = I18nFactory.getI18n("","lang/Messages",XcpViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
+        // To return first option  
+        xcpStage.setOnHiding( event -> {
+            rootController.switchMenu(1);
+            rootController.mainApp.showCarnetOverview();
+        });     
+        iniMap();
     }  
     
         /**
