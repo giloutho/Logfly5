@@ -22,6 +22,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -739,7 +740,8 @@ public class SiteFormController {
         if (lsSize > 0) {
             winOsmCities wCities = new winOsmCities(i18n, osmCities, this);  
         } else {
-            displayDefault(debGeo.getGeoError());
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(debGeo.getGeoError());
         }
     }
     
