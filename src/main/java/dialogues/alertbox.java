@@ -113,7 +113,16 @@ public class alertbox {
                 break;           
             case 220:    
                 msg = i18n.tr("Unable to create airspaces selection");                          
-                break;                     
+                break;         
+            case 310:    
+                msg = i18n.tr("Can't get response from web service");                          
+                break;      
+            case 320:    
+                msg = i18n.tr("Unusable response from web service");                          
+                break; 
+            case 330:    
+                msg = i18n.tr("Json response is null");                          
+                break; 
             case 1000:
                 // Error in reading the parameters
                 msg = i18n.tr("Reading settings failed");                          
