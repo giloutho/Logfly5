@@ -486,7 +486,14 @@ public class Main extends Application {
             FXMLLoader loader = new FXMLLoader();            
             loader.setLocation(Logfly.Main.class.getResource("/XcplannerView.fxml"));
             AnchorPane xcpview = (AnchorPane) loader.load();     
-            
+// ==========       Litlle window     
+//            Stage littleXcp = new Stage(); 
+//            controlXcp = loader.getController();   
+//            controlXcp.setXcpStage(littleXcp); 
+//            controlXcp.setMainApp(this);    
+//            controlXcp.setRootBridge(rootLayoutController);  
+//            rootLayout.setCenter(xcpview); 
+// ==========       Full window            
             Stage fullXcp = new Stage();            
             fullXcp.initModality(Modality.WINDOW_MODAL);       
             fullXcp.initOwner(this.getPrimaryStage());
@@ -506,10 +513,11 @@ public class Main extends Application {
             // Initialization of a communication bridge between Xccontroller an RootLayout
             controlXcp = loader.getController();  
             controlXcp.setXcpStage(fullXcp);                
-            controlXcp.setWinMax();  
+            controlXcp.setWinMax();                    
             controlXcp.setRootBridge(rootLayoutController);
             controlXcp.setMainApp(this);
-            fullXcp.showAndWait();                                                      
+            fullXcp.showAndWait();           
+// ==========       End full window  
             
         } catch (IOException e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
