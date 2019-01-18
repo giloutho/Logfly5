@@ -149,6 +149,7 @@ public class XcpViewController {
                     xcView.setVisible(true);
                     StringBuilder sbUrl = new StringBuilder();
                     sbUrl.append(urlBaseXC).append("?").append(sUrl);
+                    System.out.println(sbUrl.toString());
                     eng.load(sbUrl.toString());
                     btSave.setVisible(true);                     
                 }
@@ -167,7 +168,7 @@ public class XcpViewController {
         if (eng != null) {   
             // we want to update title at each clic
             // We put a timestamp to modify title at each request
-            // even if there has been no change in position
+            // even if there has been no change in position            
             eng.executeScript("updateTile()");
         } else {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -180,6 +181,8 @@ public class XcpViewController {
         
         String sLat;
         String sLong;
+        String sIndex;
+        String sContest;
         
         if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
             sLat = myConfig.getFinderLat();
@@ -192,8 +195,14 @@ public class XcpViewController {
         xcView.setVisible(true);
         StringBuilder sbUrl = new StringBuilder();
         sbUrl.append(urlBaseXC);
-        sbUrl.append("?&start=%5B").append(myConfig.getFinderLat()).append(",").append(myConfig.getFinderLong()).append("%5D");
-        urlCircuit = "cfd3c";
+        if (myConfig.getLocale() == java.util.Locale.FRENCH) {
+            sIndex = "index_fr.php";
+            urlCircuit = "cfd3c";
+        } else {
+            sIndex = "index.php";
+            urlCircuit = "xc3c";
+        }
+        sbUrl.append(sIndex).append("?&start=%5B").append(myConfig.getFinderLat()).append(",").append(myConfig.getFinderLong()).append("%5D");
         sbUrl.append("&flightType=").append(urlCircuit);                       
         urlXC = sbUrl.toString();
         eng.load(urlXC);   
