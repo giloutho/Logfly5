@@ -6,10 +6,11 @@
  */
 package littlewins;
 
+import geoutils.elevationapi;
+import geoutils.geonominatim;
 import geoutils.googlegeo;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
@@ -35,7 +36,6 @@ import org.json.simple.JSONObject;
 import org.xnap.commons.i18n.I18n;
 import settings.privateData;
 import systemio.mylogging;
-import systemio.textio;
 import waypio.pointRecord;
 import waypio.wpwritefile;
 
@@ -204,6 +204,15 @@ public class winSaveXcp {
                                         String[] stPart = s.split("=");
                                         if (stPart.length > 1) {
                                             sStart = stPart[1].replaceAll("%5B", "").replaceAll("%5D", "");
+                                            String[] sCoord = sStart.split(",");
+                                            if (sCoord.length > 1) {
+                                                // reverse geo attempt
+                                                geonominatim myGeo = new geonominatim(); 
+                                                myGeo.askReverseGeo(sCoord[0], sCoord[1]);
+                                                if (myGeo.getGeoStatus().equals("OK")) {
+                                                    sLocation = myGeo.getGeoVille()+" - "+myGeo.getGeoCodepays();                
+                                                 }   
+                                            }
                                         } 
                                     }                                           
             }
@@ -231,12 +240,12 @@ public class winSaveXcp {
                 currPoint.setFLong(sLong);
                 // altitude request
                 googlegeo myGoog = new googlegeo();
-                // Best results with a low precision in coordinates
+                // With Google API, best results with a low precision in coordinates, we keep this
                 if (sLat.length() > 6) sLat = sLat.substring(0, 6);
                 if (sLong.length() > 6) sLong = sLong.substring(0, 6);
-                String googCoord = sLat+","+sLong;  
-                if (myGoog.googleElevation(sCoord) == 0) {
-                    currPoint.setFAlt(myGoog.getGeoAlt().trim());
+                int iAlt = elevationapi.raceElevation(sLat, sLong);
+                if (iAlt > -1) {
+                    currPoint.setFAlt(String.valueOf(iAlt));
                 } else {
                     currPoint.setFAlt("");
                 } 
