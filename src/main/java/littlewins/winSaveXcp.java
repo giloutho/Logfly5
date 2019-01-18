@@ -94,144 +94,118 @@ public class winSaveXcp {
 
             for (int i = 0; i < urlPart.length; i++) {
                 String s = urlPart[i];
-                // case 0 is the timestamp
-                switch (i) {
-                    case 1 :
-                        // http://alpidev.com/xcplanner/?Distance=84533.56737426427
-                        if (s.contains("Distance")) {
-                            String[] distPart = s.split("=");
-                            if (distPart.length > 1) {
-                                try {
-                                    double dDist = Double.valueOf(distPart[1])/1000;   
-                                    sDistance = String.format("%3.2f" , dDist) ;
-                                } catch (Exception e) {
-                                    sDistance = "NC";
-                                }                                    
-                            } 
+                if (s.contains("Distance")) {
+                    String[] distPart = s.split("=");
+                    if (distPart.length > 1) {
+                        try {
+                            double dDist = Double.valueOf(distPart[1])/1000;   
+                            sDistance = String.format("%3.2f" , dDist) ;
+                        } catch (Exception e) {
+                            sDistance = "NC";
+                        }                                    
+                    } 
+                } else if (s.contains("Score")) {
+                        String[] scPart = s.split("=");
+                        if (scPart.length > 1) {
+                            try {
+                                double dScore = Double.valueOf(scPart[1]);   
+                                sScore = String.format("%3.2f" , dScore) ;
+                            } catch (Exception e) {
+                                sDistance = "NC";
+                            }                                                                                             
                         }
-                        break;
-                    case 2 :
-                        // Score=118.34699432396997
-                        if (s.contains("Score")) {
-                            String[] scPart = s.split("=");
-                            if (scPart.length > 1) {
-                                try {
-                                    double dScore = Double.valueOf(scPart[1]);   
-                                    sScore = String.format("%3.2f" , dScore) ;
-                                } catch (Exception e) {
-                                    sDistance = "NC";
-                                }                                                                                             
-                            }
-                        }
-                        break;     
-                    case 3 :
-                        // location=Doussard
-                        if (s.contains("location")) {
+                    } else if (s.contains("location")) {
                             String[] locPart = s.split("=");
                             if (locPart.length > 1) sLocation = locPart[1]; 
-                        }
-                        break;                     
-                    case 4 :
-                        // flightType=cfd3c
-                        if (s.contains("flightType")) {
-                            String[] flPart = s.split("=");
-                            String sCode = "";
-                            if (flPart.length > 1) sCode = flPart[1];
-                            switch (sCode) {
-                                case "cfd2": 
-                                    sType = "CFD Distance libre";
-                                    break;
-                                case "cfd3":
-                                    sType = "CFD Distance libre (1 point)";
-                                    break;                                
-                                case "cfd4":
-                                    sType = "CFD Distance libre (2 points)";
-                                    break;
-                                case "cfd2c":
-                                    sType = "CFD Aller-retour";
-                                    break;
-                                case "cfd3c":
-                                    sType = "CFD Triangle plat ou FAI";
-                                    break;
-                                case "cfd4c":
-                                    sType = "CFD Quadrilatère";
-                                    break;
-				case "olc2":
-                                    sType = "OLC Free flight";
-                                    break;
-				case "olc3":
-                                    sType = "OLC Free flight via a turnpoint";
-                                    break;
-				case "olc4":
-                                    sType = "OLC Free flight via 2 turnpoints";
-                                    break;
-				case "olc5":
-                                    sType = "OLC Free flight via 3 turnpoints";
-                                    break;
-				case "olc3c":
-                                    sType = "OLC Flat or FAI triangle";
-                                    break;
-				case "ukxcl2":
-                                    sType = "UK XC Open distance";
-                                    break;
-				case "ukxcl3":
-                                    sType = "UK XC Turnpoint flight";
-                                    break;
-				case "ukxcl4":
-                                    sType = "UK XC Turnpoint flight (2 turnpoints)";
-                                    break;
-				case "ukxcl5":
-                                    sType = "UK XC Turnpoint flight (3 turnpoints)";
-                                    break;
-				case "ukxcl2c":
-                                    sType = "UK XC Out and return";
-                                    break;
-				case "ukxcl3c":
-                                    sType = "UK XC Flat or FAI triangle";
-                                    break;
-				case "ukxcl2d":
-                                    sType = "UK XC Flight to goal";
-                                    break;   
-				case "xc2":
-                                    sType = "XContest Free flight";
-                                    break;
-				case "xc3":
-                                    sType = "XContest Free flight via a turnpoint";
-                                    break;
-				case "xc4":
-                                    sType = "XContest Free flight via 2 turnpoints";
-                                    break;
-				case "xc5":
-                                    sType = "XContest Free flight via 3 turnpoints";
-                                    break;
-				case "xc3c":
-                                    sType = "XContest Flat or FAI triangle";
-                                    break;                                    
-                            }
-                        }
-                        break;   
-                    case 5 :
-                        // turnpoints=%5B%5B45.86131,6.04244%5D,%5B45.91580,6.36563%5D,%5B45.69050,6.39859%5D%5D
-                        if (s.contains("turnpoints")) {
-                            String[] tpPart = s.split("=");
-                            if (tpPart.length > 1) {
-                                aTp = tpPart[1].split("%5D,%5B");
-                                for (int j = 0; j < aTp.length; j++) {
-                                    aTp[j] = aTp[j].replaceAll("%5B", "").replaceAll("%5D", "");
+                        } else if (s.contains("flightType")) {
+                                String[] flPart = s.split("=");
+                                String sCode = "";
+                                if (flPart.length > 1) sCode = flPart[1];
+                                switch (sCode) {
+                                    case "cfd2": 
+                                        sType = "CFD Distance libre";
+                                        break;
+                                    case "cfd3":
+                                        sType = "CFD Distance libre (1 point)";
+                                        break;                                
+                                    case "cfd4":
+                                        sType = "CFD Distance libre (2 points)";
+                                        break;
+                                    case "cfd2c":
+                                        sType = "CFD Aller-retour";
+                                        break;
+                                    case "cfd3c":
+                                        sType = "CFD Triangle plat ou FAI";
+                                        break;
+                                    case "cfd4c":
+                                        sType = "CFD Quadrilatère";
+                                        break;
+                                    case "olc2":
+                                        sType = "OLC Free flight";
+                                        break;
+                                    case "olc3":
+                                        sType = "OLC Free flight via a turnpoint";
+                                        break;
+                                    case "olc4":
+                                        sType = "OLC Free flight via 2 turnpoints";
+                                        break;
+                                    case "olc5":
+                                        sType = "OLC Free flight via 3 turnpoints";
+                                        break;
+                                    case "olc3c":
+                                        sType = "OLC Flat or FAI triangle";
+                                        break;
+                                    case "ukxcl2":
+                                        sType = "UK XC Open distance";
+                                        break;
+                                    case "ukxcl3":
+                                        sType = "UK XC Turnpoint flight";
+                                        break;
+                                    case "ukxcl4":
+                                        sType = "UK XC Turnpoint flight (2 turnpoints)";
+                                        break;
+                                    case "ukxcl5":
+                                        sType = "UK XC Turnpoint flight (3 turnpoints)";
+                                        break;
+                                    case "ukxcl2c":
+                                        sType = "UK XC Out and return";
+                                        break;
+                                    case "ukxcl3c":
+                                        sType = "UK XC Flat or FAI triangle";
+                                        break;
+                                    case "ukxcl2d":
+                                        sType = "UK XC Flight to goal";
+                                        break;   
+                                    case "xc2":
+                                        sType = "XContest Free flight";
+                                        break;
+                                    case "xc3":
+                                        sType = "XContest Free flight via a turnpoint";
+                                        break;
+                                    case "xc4":
+                                        sType = "XContest Free flight via 2 turnpoints";
+                                        break;
+                                    case "xc5":
+                                        sType = "XContest Free flight via 3 turnpoints";
+                                        break;
+                                    case "xc3c":
+                                        sType = "XContest Flat or FAI triangle";
+                                        break;                                    
                                 }
-                            } 
-                        }
-                        break;                      
-                    case 6 :
-                        // start=%5B45.77495,6.16970%5D
-                        if (s.contains("start")) {
-                            String[] stPart = s.split("=");
-                            if (stPart.length > 1) {
-                                sStart = stPart[1].replaceAll("%5B", "").replaceAll("%5D", "");
-                            } 
-                        }
-                        break;                      
-                }
+                            } else if (s.contains("turnpoints")) {
+                                    String[] tpPart = s.split("=");
+                                    if (tpPart.length > 1) {
+                                        aTp = tpPart[1].split("%5D,%5B");
+                                        for (int j = 0; j < aTp.length; j++) {
+                                            aTp[j] = aTp[j].replaceAll("%5B", "").replaceAll("%5D", "");
+                                        }
+                                    } 
+                                } else if (s.contains("start")) {
+                                        String[] stPart = s.split("=");
+                                        if (stPart.length > 1) {
+                                            sStart = stPart[1].replaceAll("%5B", "").replaceAll("%5D", "");
+                                        } 
+                                    }                                           
             }
             
             sbType.append(sType).append("  ").append("Secteur").append(" : ").append(sLocation);
