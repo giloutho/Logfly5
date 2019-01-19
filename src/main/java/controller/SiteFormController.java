@@ -7,6 +7,7 @@
 package controller;
 
 import dialogues.alertbox;
+import geoutils.elevationapi;
 import geoutils.geonominatim;
 import geoutils.googlegeo;
 import geoutils.position;
@@ -800,42 +801,19 @@ public class SiteFormController {
                 StringBuilder sb = new StringBuilder();
                 sb.append(googCP).append(" ").append(googVille).append(" ").append(googPays);                
                 finalSiteDeco = sb.toString();  
-                // elevation request
-                googlegeo myGoog = new googlegeo();
-                String sCoord = sLat+","+sLong;
-                if (myGoog.googleElevation(sCoord) == 0) {
-                    System.out.println("myGoog.getGeoAlt() "+myGoog.getGeoAlt());
-                    googAlt = myGoog.getGeoAlt();
-                    System.out.println("googalt "+googAlt);
-                }                
+                // elevation request       
+                int iAlt = elevationapi.raceElevation(sLat, sLong);
+                if (iAlt > -1) {
+                    googAlt = (String.valueOf(iAlt));
+                } else {
+                    googAlt = "";
+                }                 
             }  else {
                 googCP = null;
                 googVille = null;
                 googPays = null;
             }
         }            
-            
-//            String sCoord = sLat+","+sLong;  
-//            googlegeo myGoog = new googlegeo();
-//            if (myGoog.googleReverseGeo(sCoord) == 0) {
-//                googCP = myGoog.getGeoCP();
-//                googVille = myGoog.getGeoVille();
-//                googPays = myGoog.getGeoPays();
-//                StringBuilder sb = new StringBuilder();
-//                sb.append(googCP).append(" ").append(googVille).append(" ").append(googPays);                
-//                finalSiteDeco = sb.toString();
-//                // elevation request
-//                if (myGoog.googleElevation(sCoord) == 0) {
-//                    System.out.println("myGoog.getGeoAlt() "+myGoog.getGeoAlt());
-//                    googAlt = myGoog.getGeoAlt();
-//                    System.out.println("googalt "+googAlt);
-//                }
-//            } else {
-//                googCP = null;
-//                googVille = null;
-//                googPays = null;
-//            }
-//        }
         btGeoloc.setText(finalSiteDeco);
         java.awt.Toolkit.getDefaultToolkit().beep();
         btGeoloc.requestFocus();
