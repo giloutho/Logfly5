@@ -226,7 +226,7 @@ public class googlegeo {
         return res;
         
     }    
-    
+       
     private String askGoogleElevation(String sCoord) {
         String res = null;
         try {
@@ -260,6 +260,23 @@ public class googlegeo {
         
         return res;
     }    
+    
+    /**
+     * 
+     * Example 
+     * 
+     * Best results with a low precision in coordinates
+     *  if (sLat.length() > 6) sLat = sLat.substring(0, 6);
+     *  if (sLong.length() > 6) sLong = sLong.substring(0, 6);
+     *  googlegeo myGoog = new googlegeo();
+     *  String sCoord = sLat+","+sLong;
+     *  if (myGoog.googleElevation(sCoord) == 0) {
+     *      googAlt = myGoog.getGeoAlt();
+     *  }   
+     *      
+     * @param sCoord
+     * @return 
+     */
 
     public int googleElevation(String sCoord) {
 
