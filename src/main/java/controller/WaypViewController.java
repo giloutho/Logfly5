@@ -10,6 +10,7 @@ import Logfly.Main;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
+import geoutils.elevationapi;
 import geoutils.geonominatim;
 import geoutils.googlegeo;
 import geoutils.position;
@@ -379,14 +380,16 @@ public class WaypViewController {
                 String sLong = ba.getLongitude();
                 currPoint.setFLong(sLong);
                 // altitude request
-                googlegeo myGoog = new googlegeo();
-                // Best results with a low precision in coordinates
+                // Google API -> best results with a low precision in coordinates 
                 if (sLat.length() > 6) sLat = sLat.substring(0, 6);
                 if (sLong.length() > 6) sLong = sLong.substring(0, 6);
-                String sCoord = sLat+","+sLong;  
-                if (myGoog.googleElevation(sCoord) == 0) {
-                    currPoint.setFAlt(myGoog.getGeoAlt().trim());
-                } 
+                // elevation request       
+                int iAlt = elevationapi.raceElevation(sLat, sLong);
+                if (iAlt > -1) {
+                    currPoint.setFAlt(String.valueOf(iAlt));
+                } else {
+                    currPoint.setFAlt("");
+                }     
                 pointList.add(currPoint);
                 displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");   
                 showMapPoints();
