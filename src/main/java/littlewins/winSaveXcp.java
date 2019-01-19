@@ -239,7 +239,6 @@ public class winSaveXcp {
                 String sLong = arCoord[1];
                 currPoint.setFLong(sLong);
                 // altitude request
-                googlegeo myGoog = new googlegeo();
                 // With Google API, best results with a low precision in coordinates, we keep this
                 if (sLat.length() > 6) sLat = sLat.substring(0, 6);
                 if (sLong.length() > 6) sLong = sLong.substring(0, 6);
