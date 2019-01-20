@@ -27,7 +27,7 @@
                         <Insets right="10.0" top="6.0" />
                      </HBox.margin>
                   </TextField>
-                  <Button fx:id="btGo" mnemonicParsing="false" onAction="#handleGo" text="Go..">
+                  <Button fx:id="btGo" mnemonicParsing="false" onAction="#handleGo" text="Reset">
                      <HBox.margin>
                         <Insets right="10.0" top="5.0" />
                      </HBox.margin>
