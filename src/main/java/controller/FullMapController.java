@@ -416,12 +416,6 @@ public class FullMapController {
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.0000", decimalFormatSymbols);
-//        String sCoord = decimalFormat.format(dLat)+","+decimalFormat.format(dLong);
-//        googlegeo myGoog = new googlegeo();
-//        if (myGoog.googleReverseGeo(sCoord) == 0) {
-//            res = myGoog.getGeoVille();
-//             
-//        } 
         geonominatim nom = new geonominatim();
         nom.askReverseGeo(decimalFormat.format(dLat), decimalFormat.format(dLong));
         if (nom.getGeoStatus().equals("OK")) {
