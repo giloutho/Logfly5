@@ -485,18 +485,7 @@ public class map_visu {
                 siteDeco = sb.toString();                
             } else {
                 siteDeco = "";
-            }       
-            
-//            String sCoord = decimalFormat.format(traceVisu.getLatDeco())+","+decimalFormat.format(traceVisu.getLongDeco());
-//            googlegeo myGoog = new googlegeo();
-//            if (myGoog.googleReverseGeo(sCoord) == 0) {
-//                StringBuilder sb = new StringBuilder();
-//                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
-//                siteDeco = sb.toString();                
-//            } else {
-//                siteDeco = "";
-//            }
-            
+            }                   
             if (siteDeco.length() > 25) 
                 finalSiteDeco = siteDeco.substring(0,25);
             else
@@ -533,18 +522,6 @@ public class map_visu {
             } else {
                 siteAtterro = "";
             }               
-            
-//            String sCoord = decimalFormat.format(lastPoint.Latitude)+","+decimalFormat.format(lastPoint.Longitude);            
-//            googlegeo myGoog = new googlegeo();
-//            if (myGoog.googleReverseGeo(sCoord) == 0) {
-//                StringBuilder sb = new StringBuilder();
-//                sb.append(myGoog.getGeoPays()).append(" ").append(myGoog.getGeoVille());
-//                System.out.println("Atterro sb "+sb.toString());
-//                siteAtterro = sb.toString();               
-//            } else {
-//                siteAtterro = "";
-//            }           
-            
             if (siteAtterro.length() > 25) 
                 finalSiteAtterro = siteAtterro.substring(0,25);
             else
