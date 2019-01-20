@@ -93,6 +93,14 @@
                   <Insets left="5.0" top="10.0" />
                </VBox.margin>
             </Label>
+            <Label fx:id="mnXcplanner" prefWidth="150.0" text="XC Planner 1" textFill="WHITE">
+               <padding>
+                  <Insets left="2.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </VBox.margin>
+            </Label>
             <Label fx:id="mnEspaces" layoutX="15.0" layoutY="432.0" prefWidth="150.0" text="fEspaces aériens" textFill="WHITE">
                <padding>
                   <Insets left="2.0" />
