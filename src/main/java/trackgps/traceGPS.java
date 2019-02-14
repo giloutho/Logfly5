@@ -1925,7 +1925,7 @@ public class traceGPS {
         String finalName = null;
         if (sPilote != null && !sPilote.equals(""))  {
             // Il y a un problème s'il y a un point dans l'expression comme Gégé avait fait -> sPilote = G. LEGRAS...        
-            String suggPilote1 = sPilote.replaceAll("\\.","_");
+            String suggPilote1 = sPilote.trim().replaceAll("\\.","_");
             suggPilote = suggPilote1.replaceAll(" ","_");  
             if (suggPilote.equals("-")) 
                 finalName = suggName;
