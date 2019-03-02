@@ -30,6 +30,7 @@ import igc.pointIGC;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -81,7 +82,6 @@ import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.mylogging;
-import systemio.textio;
 import waypio.pointRecord;
 import waypio.wpreadfile;
 import waypio.wpwritefile;
@@ -398,12 +398,30 @@ public class WaypViewController {
         enableInput();
     }    
     
+    /**
+     * Most of waypoints files are encoded with ISO-8859-1 format
+     * @param fichier
+     * @return 
+     */
+    private String readTxt8859(File fichier){
+        String res = null;
+        
+        try {
+            res = new String(Files.readAllBytes(Paths.get(fichier.getAbsolutePath())),Charset.forName("ISO-8859-1"));     
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }    
+                                
+        return res;
+    }    
+    
     private void readFromFile(String fPath) {
         boolean goodRead = false;
-        File file = new File(fPath);
-        String ficType = null;
-        textio fread = new textio();                                    
-        String pFichier = fread.readTxt(file);   
+        File file = new File(fPath);       
+        String ficType = null;                                    
+        String pFichier = readTxt8859(file);   
         ficType = "nil";
         if (pFichier != null)  {
             if (pFichier.indexOf("OziExplorer") > -1) {
