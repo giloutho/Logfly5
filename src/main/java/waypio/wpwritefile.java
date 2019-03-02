@@ -99,7 +99,7 @@ public class wpwritefile {
                 pFile.createNewFile();
             }
             // Encodage ASCII
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "Cp1252"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             // header spécifications -> http://www.rus-roads.ru/gps/help_ozi/fileformats.html
             // Line 1 : File type and version information
             writer.write("OziExplorer Waypoint File Version 1.0"+CF);
@@ -153,7 +153,7 @@ public class wpwritefile {
                 pFile.createNewFile();
             }        
             // Encodage ASCII
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "Cp1252"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             writer.write("name,code,country,lat,lon,elev,style,rwdir,rwlen,freq,desc"+CF);       
             for (int i = 0; i < wpList.size(); i++) {
                 StringBuilder sb = new StringBuilder();
@@ -195,7 +195,7 @@ public class wpwritefile {
                 pFile.createNewFile();
             }        
             // Encodage ASCII
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "Cp1252"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             // header                   
             StringBuilder sbHeader = new StringBuilder();    
             sbHeader.append("").append(CF);
@@ -242,7 +242,7 @@ public class wpwritefile {
                     pFile.createNewFile();
                 }        
                 // Encodage ASCII
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "Cp1252"));
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
                 // header                   
                 StringBuilder sbHeader = new StringBuilder();
                 sbHeader.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append(CF);
@@ -327,7 +327,7 @@ public class wpwritefile {
                 pFile.createNewFile();
             }        
             // Encodage ASCII
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "Cp1252"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             // header
             writer.write("G  WGS 84"+CF);     // Line G: It identifies the datum of the map
             writer.write("U  1"+CF);          //  Line U: It identifies the system of coordinate [U 1] indicates coordinates in Lat/Lot.                  
