@@ -18,7 +18,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
@@ -181,7 +180,7 @@ public class wpreadfile {
         String piecePoint;
         String sLat;
         String sLong;
-        
+               
         int iAlt;
         wpreadList = new ArrayList<pointRecord>();
         int idxPoint = 0;
@@ -195,14 +194,14 @@ public class wpreadfile {
         }
         try {
             for (int i = 0; i < lgTb; i++) {        
-                if (!tbFile[i].equals("") && tbFile[i].length() > 47) {
+                if (!tbFile[i].equals("") && tbFile[i].length() > 10) {
                     if (tbFile[i].indexOf("task") > -1) {
                         break;
                     } else {
                         // les waypoints arrivent lorsque la ligne commence par "
                         if (tbFile[i].substring(0,1).equals("\"")) {
                             String[] partPoint = tbFile[i].split(",");
-                            if (partPoint.length > 8) {                                
+                            if (partPoint.length >= 7) {                                
                                 sLat = decodeCupLat(partPoint[3]);
                                 sLong = decodeCupLong(partPoint[4]);
                                 if (!sLat.equals("error") && !sLong.equals("error"))  {                                        
