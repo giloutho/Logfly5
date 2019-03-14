@@ -4,9 +4,6 @@
     <title></title>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
     <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
-    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&v=3"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <style>
         html, body, #map {
@@ -36,40 +33,37 @@
 <pre id='coordinates' class='ui-coordinates'></pre>
 <script type='text/javascript'>
 
-    function getElevation(lMarker)
+    function getCoord(lMarker)
     {
-        // Code inspiré de http://www.daftlogic.com/sandbox-google-maps-find-altitude.htm
-        var locations = [];
-        elevator = new google.maps.ElevationService();
-        var myMarker = lMarker;
-        var googleLocation = new google.maps.LatLng(myMarker.getLatLng());
-        locations.push(googleLocation);
-        // Create a LocationElevationRequest object using the array's one value
-        var positionalRequest = {'locations': locations};
-        elevator.getElevationForLocations(positionalRequest, function(results, status)
-        {
-            if (status == google.maps.ElevationStatus.OK)
-            {
-                if (results[0])
-                {
-                    // Impossible de retourner la valeur car cette fonction est "asynchrone"
-                    // Cf http://www.developpez.net/forums/d955312/webmasters-developpement-web/javascript/js-fonction-anonyme-retour-variable/
-                    console.log([googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),results[0].elevation.toFixed(0)].join(', '));
-                    java.setLatitude(googleLocation.lat().toFixed(4));
-                    java.setLongitude(googleLocation.lng().toFixed(4));    
-                    java.setAltitude(results[0].elevation.toFixed(0));                
-                    coordinates.innerHTML = 'Latitude: ' + googleLocation.lat().toFixed(5) + '<br />Longitude: ' + googleLocation.lng().toFixed(5)+ '<br />Altitude : ' +results[0].elevation.toFixed(0)+' m';
-                }
-                else
-                {
-                    alert("No found");
-                }
-            }
-            else
-            {
-                alert("Elevation service failed due to: " + status);
-            }
-        });
+        console.log('GetCoord called');
+        var sLat = lMarker.getLatLng().lat.toFixed(4);
+        var sLong = lMarker.getLatLng().lng.toFixed(4);
+        var iAlt = 0;    
+
+        const Http = new XMLHttpRequest();
+        const el_url='https://elevation.racemap.com/api/?lat='+sLat+'&lng='+sLong;
+        $.ajax({
+            url : el_url,
+            type : "GET", 
+            success : function(result) {
+                iAlt = parseInt(result,10);
+                if(!isNaN(iAlt)){
+                    console.log('Latitude : '+ sLat+' Longitude : '+sLong+' Alt : '+iAlt); 
+                    coordinates.innerHTML = 'Latitude: ' + sLat + '<br />Longitude: ' + sLong+ '<br />Altitude: ' + iAlt;
+                    java.setLatitude(sLat);
+                    java.setLongitude(sLong);    
+                    java.setAltitude(iAlt);
+                }                
+            },
+            error : function(error) {
+                console.log('Latitude : '+ sLat+' Longitude : '+sLong+' Alt : '+iAlt); 
+                coordinates.innerHTML = 'Latitude: ' + sLat + '<br />Longitude: ' + sLong;
+                java.setLatitude(sLat);
+                java.setLongitude(sLong);    
+                java.setAltitude(null);    
+            }           
+        })
+        // Impossible de retourner la valeur ici car la fonction ajax est "asynchrone"
     }
 
     // create a map in the "map" div, set the view to a given place and zoom
@@ -116,7 +110,7 @@
     ondragend();
 
     function ondragend() {
-        getElevation(marker);
+        getCoord(marker);
     }
 
 </script>
