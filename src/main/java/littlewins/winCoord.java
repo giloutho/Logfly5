@@ -6,7 +6,6 @@
  */
 package littlewins;
 
-import controller.SiteFormController;
 import igc.pointIGC;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -24,7 +23,6 @@ import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
-import settings.osType;
 
 /**
  *
@@ -99,7 +97,6 @@ public class winCoord {
             new ChangeListener<Worker.State>() {
                 public void changed(ObservableValue ov, Worker.State oldState, Worker.State newState) {
                     if (newState == Worker.State.SUCCEEDED) {        
-                        System.out.println("Ready!");
                         JSObject jso = (JSObject) webEngine.executeScript("window");
                         jso.setMember("java", new Bridge());
                     }
@@ -121,7 +118,6 @@ public class winCoord {
     public class Bridge { 
   
         public void setLatitude(String value) { 
-            System.out.println("Lat "+value);
             mapLat = value;                        
         } 
   
