@@ -50,17 +50,13 @@
                 if(!isNaN(iAlt)){
                     console.log('Latitude : '+ sLat+' Longitude : '+sLong+' Alt : '+iAlt); 
                     coordinates.innerHTML = 'Latitude: ' + sLat + '<br />Longitude: ' + sLong+ '<br />Altitude: ' + iAlt;
-                    java.setLatitude(sLat);
-                    java.setLongitude(sLong);    
-                    java.setAltitude(iAlt);
+                    document.title = [sLat,sLong,iAlt].join(', ');
                 }                
             },
             error : function(error) {
                 console.log('Latitude : '+ sLat+' Longitude : '+sLong+' Alt : '+iAlt); 
                 coordinates.innerHTML = 'Latitude: ' + sLat + '<br />Longitude: ' + sLong;
-                java.setLatitude(sLat);
-                java.setLongitude(sLong);    
-                java.setAltitude(null);    
+                document.title = [sLat,sLong,null].join(', ');    
             }           
         })
         // Impossible de retourner la valeur ici car la fonction ajax est "asynchrone"
