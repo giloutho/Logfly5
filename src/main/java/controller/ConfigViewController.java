@@ -534,7 +534,6 @@ public class ConfigViewController {
                 sLong = "6.1725";                       
             } finally {
                 winCoord myWinCoord = new winCoord(myConfig, sLat, sLong);
-                System.out.println("lat retour "+myWinCoord.getMapLat());
                 if (myWinCoord.getMapLat() != null) {
                     txFinderLat.setText(myWinCoord.getMapLat());
                 }
