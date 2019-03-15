@@ -9,7 +9,6 @@ package controller;
 import dialogues.alertbox;
 import geoutils.elevationapi;
 import geoutils.geonominatim;
-import geoutils.googlegeo;
 import geoutils.position;
 import igc.pointIGC;
 import java.io.File;
@@ -23,14 +22,10 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -179,8 +174,6 @@ public class SiteFormController {
     // Localization
     private I18n i18n; 
     
-    // bridge between java code and javascript map
-    private final Bridge pont = new Bridge();
     private WebEngine webEngine;
     
     // Settings
@@ -228,16 +221,10 @@ public class SiteFormController {
         
         webEngine = mapViewer.getEngine();
         webEngine.setJavaScriptEnabled(true);
-        webEngine.getLoadWorker().stateProperty().addListener(
-            new ChangeListener<Worker.State>() {
-                public void changed(ObservableValue ov, Worker.State oldState, Worker.State newState) {
-                    if (newState == Worker.State.SUCCEEDED) {        
-                        System.out.println("Ready!");
-                        JSObject jso = (JSObject) webEngine.executeScript("window");
-                        jso.setMember("java", new Bridge());
-                    }
-                }
-            });              
+        webEngine.titleProperty().addListener( (observable, oldValue, newValue) -> {
+            if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
+                decodeCoord(newValue);
+        });            
                 
         txNom.textProperty().addListener((ov, oldValue, newValue) -> {
             if (newValue != null) txNom.setText(newValue.toUpperCase());
@@ -717,9 +704,6 @@ public class SiteFormController {
             File f = new File("site3.html");
             String sHTML = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())));
             mapViewer.getEngine().loadContent(sHTML,"text/html");   
-            // On passe maintenant l'objet java au formulaire. 
-            final JSObject jsobj = (JSObject) mapViewer.getEngine().executeScript("window"); 
-            jsobj.setMember("java", pont); 
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -838,9 +822,17 @@ public class SiteFormController {
         clipboard.setContent(content);            
             
             webEngine.loadContent(myMap.getMap_HTML());   
-        }
-        
+        }        
     }
+    
+    private void decodeCoord(String sCoord) {
+        String[] tbCoord = sCoord.split(",");
+        if (tbCoord.length == 3) {       
+            txLat.setText(tbCoord[0].replaceAll("\\s+",""));
+            txLong.setText(tbCoord[1].replaceAll("\\s+",""));
+            txAlt.setText(tbCoord[2].replaceAll("\\s+",""));  
+        }
+    }       
 
     private boolean updateDb() {
         boolean res = false;
@@ -1129,25 +1121,6 @@ public class SiteFormController {
         btOk.setText(i18n.tr("OK"));       
         debLbGeoloc = i18n.tr("Geolocation");
         lbPointeur.setText(i18n.tr("Move marker to change coordinates"));
-    }    
-    
-    /**
-     * A voir avec https://stackoverflow.com/questions/32564195/load-a-new-page-in-javafx-webview
-     */
-    public class Bridge { 
-  
-        public void setLatitude(String value) { 
-            txLat.setText(value);            
-        } 
-  
-        public void setLongitude(String value) { 
-            txLong.setText(value);
-        } 
-        
-        public void setAltitude(String value) { 
-            txAlt.setText(value);
-        }        
-    }    
-    
+    }             
 }
  
