@@ -180,6 +180,9 @@ public class alertbox {
             case 1060 :
                  msg = i18n.tr("File Extension not recognized");                          
                 break; 
+            case 1062:
+                msg = i18n.tr("Decoding problem in track file");                          
+                break;                         
             case 1102:                
                 msg = i18n.tr("Reading problem in flights file");                          
                 break; 
