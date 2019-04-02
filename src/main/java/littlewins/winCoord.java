@@ -7,9 +7,6 @@
 package littlewins;
 
 import igc.pointIGC;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.scene.Scene;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -19,10 +16,10 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import leaflet.map_markers_coord;
-import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import trackgps.traceGPS;
 
 /**
  *
@@ -32,19 +29,20 @@ public class winCoord {
     
     private configProg myConfig;
     private I18n i18n; 
-    private final Bridge pont = new Bridge();
     private WebEngine webEngine;    
     private String sHTML = null;
     private String mapLat;
     private String mapLong;
     private String mapAlt;
+    private traceGPS currTrace;
 
-    public winCoord(configProg currConfig, String pLat, String pLong) {
+    public winCoord(configProg currConfig, String pLat, String pLong, traceGPS pTrack) {
         myConfig = currConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0); 
         mapLat = null;
         mapLong = null;
         mapAlt = null;
+        currTrace = pTrack;
         iniMap(pLat,pLong);
         showBrowser();
     }      
@@ -72,7 +70,7 @@ public class winCoord {
                 pPoint1.setLatitude(dLatitude);        
                 if (dLongitude > 180 || dLongitude < -180) dLongitude = 0;
                 pPoint1.setLongitude(dLongitude);    
-                map_markers_coord myMap = new map_markers_coord(i18n, myConfig.getIdxMap(), pPoint1); 
+                map_markers_coord myMap = new map_markers_coord(i18n, myConfig.getIdxMap(), pPoint1, currTrace); 
                 if (myMap.isMap_OK()) {              
                     String sDebug = myMap.getMap_HTML();
                     final Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -93,15 +91,11 @@ public class winCoord {
         WebView wv = new WebView();
         webEngine = wv.getEngine();
         webEngine.setJavaScriptEnabled(true);
-        webEngine.getLoadWorker().stateProperty().addListener(
-            new ChangeListener<Worker.State>() {
-                public void changed(ObservableValue ov, Worker.State oldState, Worker.State newState) {
-                    if (newState == Worker.State.SUCCEEDED) {        
-                        JSObject jso = (JSObject) webEngine.executeScript("window");
-                        jso.setMember("java", new Bridge());
-                    }
-                }
-        });         
+        
+        webEngine.titleProperty().addListener( (observable, oldValue, newValue) -> {
+            if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
+                decodeCoord(newValue);
+        });                     
         StackPane root = new StackPane();
         root.getChildren().add(wv);
         if (sHTML != null) webEngine.loadContent(sHTML); 
@@ -111,23 +105,14 @@ public class winCoord {
         subStage.showAndWait();
                    
     }
-
-    /**
-     * A voir avec https://stackoverflow.com/questions/32564195/load-a-new-page-in-javafx-webview
-     */
-    public class Bridge { 
-  
-        public void setLatitude(String value) { 
-            mapLat = value;                        
-        } 
-  
-        public void setLongitude(String value) { 
-            mapLong = value;            
-        } 
-        
-        public void setAltitude(String value) { 
-            mapAlt = value;
-        }        
-    }      
+    
+    private void decodeCoord(String sCoord) {
+        String[] tbCoord = sCoord.split(",");
+        if (tbCoord.length == 3) {       
+            mapLat = tbCoord[0].replaceAll("\\s+","");
+            mapLong = tbCoord[1].replaceAll("\\s+","");
+            mapAlt = tbCoord[2].replaceAll("\\s+","");  
+        }
+    }     
     
 }
