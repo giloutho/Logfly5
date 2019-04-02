@@ -191,11 +191,12 @@ public class winSendDb {
             sbTxFile.append("------------------------------------------").append("\r\n");
             sbTxFile.append("   ").append(myConfig.getOS().toString());
             sbTxFile.append("   ").append(myConfig.getVersion()).append("\r\n");
-            sbTxFile.append("------------------------------------------");            
+            sbTxFile.append("------------------------------------------").append("\r\n");  
+            sbTxFile.append("   ").append(myConfig.getUrlLogfly()).append("/support/").append(namedb).append("\r\n");
+            sbTxFile.append("------------------------------------------");               
             http.addFormField("msgtext", sbTxFile.toString());
             final byte[] bytes = http.finish();
-            mailSended = true;
-        
+            mailSended = true;        
         } catch (Exception e) {
             e.printStackTrace();
             mailSended = false;
