@@ -813,7 +813,7 @@ public class SiteFormController {
         String sAlt = txAlt.getText().trim();
         if (sAlt != null && !sAlt.equals(""))
             pPoint1.setAltiGPS(Integer.parseInt(sAlt));
-        map_markers_coord myMap = new map_markers_coord(i18n, myConfig.getIdxMap(), pPoint1); 
+        map_markers_coord myMap = new map_markers_coord(i18n, myConfig.getIdxMap(), pPoint1, null); 
         if (myMap.isMap_OK()) {              
         String sDebug = myMap.getMap_HTML();
         final Clipboard clipboard = Clipboard.getSystemClipboard();
