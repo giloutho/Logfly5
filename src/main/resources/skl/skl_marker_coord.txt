@@ -32,6 +32,9 @@
 <div id="map"></div>
 <pre id='coordinates' class='ui-coordinates'></pre>
 <script type='text/javascript'>
+    
+    var tabPoints = [];
+    //%tabPoints%
 
     function getCoord(lMarker)
     {
@@ -63,7 +66,7 @@
     }
 
     // create a map in the "map" div, set the view to a given place and zoom
-    var map = L.map('map').setView([%coord%], 12);
+    %inimap%
 
 
     var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
@@ -85,6 +88,8 @@
 
     // Si on met les couches Google, en mettant les lignes indispensables concernant le zIndex, l'infobox Lat, Long Coordinates ne s'affiche pas
     L.control.layers(baseMaps).addTo(map);
+
+    //%trackDisplay%
 
     var coordinates = document.getElementById('coordinates');
 
