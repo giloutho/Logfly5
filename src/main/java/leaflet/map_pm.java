@@ -1,4 +1,4 @@
-/* 
+ /* 
  * Copyright Gil THOMAS
  * This file forms an integral part of Logfly project
  * See the LICENSE file distributed with source code
@@ -16,7 +16,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Random;
 import org.xnap.commons.i18n.I18n;
 import photo.imgmanip;
-import settings.configProg;
 import trackgps.traceGPS;
 
 /**
