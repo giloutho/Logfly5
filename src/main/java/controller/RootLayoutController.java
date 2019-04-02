@@ -1,4 +1,4 @@
-/* 
+ /* 
  * Copyright Gil THOMAS
  * This file forms an integral part of Logfly project
  * See the LICENSE file distributed with source code
@@ -47,6 +47,7 @@ import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.mylogging;
+import trackgps.traceGPS;
 
 /**
  *
@@ -309,7 +310,7 @@ public class RootLayoutController {
                 break;
             case 11:
                 mnPhotos.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
-                comingSoon();
+                mainApp.showPhotoview();
                 break;
             case 12:    
                 mnCarto.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
@@ -508,6 +509,11 @@ public class RootLayoutController {
     public void changeCarnetView()  {  
         switchMenu(1);
         mainApp.showCarnetOverview();
+    }
+    
+    public void switchToPhotos(traceGPS pTrack) {
+        switchMenu(11);
+        mainApp.showPhotoWithTrack(pTrack);
     }
     
     /**
