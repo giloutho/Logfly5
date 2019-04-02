@@ -533,7 +533,7 @@ public class ConfigViewController {
                 sLat = "45.863";
                 sLong = "6.1725";                       
             } finally {
-                winCoord myWinCoord = new winCoord(myConfig, sLat, sLong);
+                winCoord myWinCoord = new winCoord(myConfig, sLat, sLong, null);
                 if (myWinCoord.getMapLat() != null) {
                     txFinderLat.setText(myWinCoord.getMapLat());
                 }
