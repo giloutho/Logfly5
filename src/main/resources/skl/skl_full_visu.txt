@@ -31,6 +31,9 @@
 
     <script src="http://rawgit.com/albburtsev/Leaflet.geojsonCSS/master/leaflet.geojsoncss.min.js"></script>
 
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/jquery.fancybox.js?v=2.1.5"></script>
+    <link rel="stylesheet" type="text/css" href="http://www.logfly.org/download/gmap/jquery.fancybox.css?v=2.1.5" media="screen" />   
+
     <style>
         html, body {
             height:100%;
@@ -92,6 +95,10 @@
     var Vario = [%Vario%];
 
     var Speed = [%Speed%];
+
+    //%Photos%
+
+    //%Gallery%
 
     var Heure = [%Heure%];
 
@@ -212,6 +219,8 @@
 
     var track = new L.Polyline(tabPoints, trackOptions);
 
+    //%Aff_Photos%
+
     //%Aff_Zones%
 
     var geojsonMarkerOptions = {
@@ -233,6 +242,7 @@
         ,
         //%ScoreOptions%
         //%CheckOption%
+        //%PhotosOption%
     };
 
     L.control.layers(baseMaps,Affichage).addTo(map);
@@ -338,7 +348,7 @@
         });
     });
 
-var toggle = L.easyButton({
+    var toggle = L.easyButton({
         states: [{
             stateName: 'remove-infos',
             icon: 'fa-user-times',
@@ -359,6 +369,9 @@ var toggle = L.easyButton({
     });
 
     toggle.addTo(map);
+
+    //%btnGallery%
+
     var legend = L.control({position: 'topleft'});
 
     legend.onAdd = function (map) {
