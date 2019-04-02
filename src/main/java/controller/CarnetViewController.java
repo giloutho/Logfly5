@@ -99,6 +99,7 @@ import littlewins.winSiteChoice;
 import model.Import;
 import model.Sitemodel;
 import photo.imgmanip;
+import photos.filesUtils;
 import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
@@ -219,8 +220,15 @@ public class CarnetViewController  {
                         setText(dtf.format(lDate)); // Fill cell with the string
                         // If needed, we can change all informations of the table
                         Carnet currLigne = getTableView().getItems().get(getIndex());  
-                        if (currLigne.getComment()) {                       
-                            setTextFill(Color.CORAL); //The text in red                            
+                        if (currLigne.getComment()) {  
+                            String sCom = currLigne.getComTexte();
+                            if (sCom.length() > 7) {
+                                if (sCom.substring(0,8).equals("[Photos]"))
+                                    setTextFill(Color.FUCHSIA); 
+                                else
+                                    setTextFill(Color.CORAL);
+                            } else                            
+                                setTextFill(Color.CORAL);
                         } else {
                             setTextFill(Color.BLACK);
                             setStyle("");
@@ -275,7 +283,7 @@ public class CarnetViewController  {
                     Image dbImage = currImage.strToImage(sPhoto, 700, 700);            
                     if (dbImage != null) {
                         winPhoto myPhoto = new winPhoto();    
-                        myPhoto.showDbPhoto(dbImage);
+                        myPhoto.displayPhoto(dbImage);
                     }
                 }
             });
@@ -514,6 +522,8 @@ public class CarnetViewController  {
                     manualMenu.set(false);
                     currTrace = new traceGPS(rs.getString("V_IGC"),"",true, myConfig);   // String pFichier, String pType, String pPath
                     if (currTrace.isDecodage()) {
+                        // dbId is saved
+                        currTrace.setIdDatabase(idVol);
                         // Like in xLogfly we put glider and site
                         if (!rs.getString("V_Engin").equals(currTrace.getsVoile()))
                             currTrace.setsVoile(rs.getString("V_Engin"));
@@ -564,7 +574,7 @@ public class CarnetViewController  {
                             mapViewer.getEngine().loadContent(visuMap.getMap_HTML()); 
                             if (dbImage != null) {
                                 winPhoto myPhoto = new winPhoto();    
-                                myPhoto.showDbPhoto(dbImage);
+                                myPhoto.displayPhoto(dbImage);
                             }
 
                         }
@@ -722,7 +732,7 @@ public class CarnetViewController  {
             mapViewer.getEngine().loadContent(mapNoIGC.getMap_HTML()); 
             if (dbImage != null) {
                 winPhoto myPhoto = new winPhoto();    
-                myPhoto.showDbPhoto(dbImage);
+                myPhoto.displayPhoto(dbImage);
             }            
         }
         
@@ -825,15 +835,7 @@ public class CarnetViewController  {
                 changeGlider();
             }
         });
-        tableContextMenu.getItems().add(cmItemGlider);        
-        
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo of the day"));        
-        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                gestionPhoto();
-            }            
-        });
-        tableContextMenu.getItems().add(cmItem0);
+        tableContextMenu.getItems().add(cmItemGlider);                
         
         MenuItem cmItem1 = new MenuItem(i18n.tr("Comment"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
@@ -873,7 +875,23 @@ public class CarnetViewController  {
                 exportTrace();
             }
         });
-        tableContextMenu.getItems().add(cmItemEx);
+        tableContextMenu.getItems().add(cmItemEx);        
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Photo of the day"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                gestionPhoto();
+            }            
+        });
+        tableContextMenu.getItems().add(cmItem0);        
+        
+        MenuItem cmPhotoTag = new MenuItem(i18n.tr("Photos folder"));
+        cmPhotoTag.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                mainApp.rootLayoutController.switchToPhotos(currTrace);
+            }
+        });
+        tableContextMenu.getItems().add(cmPhotoTag);
         
         cmManual.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -882,7 +900,7 @@ public class CarnetViewController  {
         });
         tableContextMenu.getItems().add(cmManual);
         // binding explanations : http://bekwam.blogspot.fr/2015/08/disabling-menuitems-with-binding.html
-        cmManual.disableProperty().bind(manualMenu.not());
+        cmManual.disableProperty().bind(manualMenu.not());        
         
         String stMenu = i18n.tr("More")+"...";
         MenuItem cmPlus = new MenuItem(stMenu);
@@ -1564,7 +1582,12 @@ public class CarnetViewController  {
     @FXML
     private void showFullMap() {
         
-        if (currTrace.isDecodage()) {        
+        if (currTrace.isDecodage()) {  
+            // check if a photo folder exists            
+            filesUtils fUtils = new filesUtils(myConfig, currTrace);
+            if (fUtils.checkFolder(true)) {
+                currTrace.setPhotosPath(fUtils.getDestinationPath());
+            } 
             map_visu visuFullMap = new map_visu(currTrace, myConfig);
             if (visuFullMap.isMap_OK()) {            
                 try {
@@ -1925,7 +1948,7 @@ public class CarnetViewController  {
                         tableVols.refresh();
                         Image redImg = SwingFXUtils.toFXImage(redBufImage, null);
                         winPhoto myPhoto = new winPhoto();    
-                        myPhoto.showDbPhoto(redImg);    
+                        myPhoto.displayPhoto(redImg);    
                     }
                 } catch (IOException ex) {
                     alertbox aError = new alertbox(myConfig.getLocale());
