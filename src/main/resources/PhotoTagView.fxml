@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.PhotoTagViewController">
+   <children>
+      <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxHeight="60.0" maxWidth="1.7976931348623157E308" minHeight="60.0" minWidth="-Infinity" prefHeight="60.0" prefWidth="880.0" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <children>
+                  <Button fx:id="btnFolder" mnemonicParsing="false" onAction="#handleChoiceFolder" text="fDossier">
+                     <HBox.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button fx:id="btnTrack" layoutX="20.0" layoutY="32.0" mnemonicParsing="false" onAction="#handleChoiceTrack" text="fTrace">
+                     <HBox.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  <HBox fx:id="hbInfo" alignment="CENTER_RIGHT" maxHeight="60.0" minHeight="60.0" prefHeight="60.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <VBox alignment="CENTER_RIGHT" layoutX="546.0" layoutY="23.0" maxHeight="45.0" maxWidth="150.0" minHeight="45.0" minWidth="150.0" prefHeight="45.0" prefWidth="150.0">
+                           <children>
+                              <Label fx:id="lbFlightDate" text="01/01/2012" textFill="WHITE">
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                              </Label>
+                              <Label fx:id="lbTakeoff" alignment="CENTER_RIGHT" text="Décollage : 11:02:28" textFill="WHITE">
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets top="2.0" />
+                                 </VBox.margin></Label>
+                              <Label fx:id="lbLanding" alignment="CENTER_RIGHT" text="Atterrissage : 11:52:34" textFill="WHITE">
+                                 <VBox.margin>
+                                    <Insets top="5.0" />
+                                 </VBox.margin>
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                        </VBox>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" />
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Button fx:id="btnOnTrack" maxHeight="200.0" minHeight="22.0" minWidth="200.0" mnemonicParsing="false" onAction="#handlePhotosOnTrack" prefHeight="22.0" prefWidth="200.0" text="fGénérer sur la trace">
+                                 <VBox.margin>
+                                    <Insets bottom="6.0" top="7.0" />
+                                 </VBox.margin>
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="btnAlbum" maxHeight="200.0" minHeight="22.0" minWidth="200.0" mnemonicParsing="false" onAction="#handlePhotosAlbum" prefHeight="22.0" prefWidth="200.0" text="fGénérer un album">
+                                 <font>
+                                    <Font size="11.0" />
+                                 </font>
+                              </Button>
+                           </children>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
+                        </VBox>
+                        <ImageView fx:id="top_Menu" fitHeight="25.0" fitWidth="26.0" layoutX="706.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/list.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets right="10.0" top="10.0" />
+                           </HBox.margin>
+                        </ImageView>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <SplitPane fx:id="splitPhotos" dividerPositions="0.55" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: black;" VBox.vgrow="ALWAYS">
+               <items>
+                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="400.0" minHeight="0.0" minWidth="400.0" prefHeight="530.0" prefWidth="400.0">
+                     <children>
+                        <TableView fx:id="tablePhotos" editable="true" maxWidth="400.0" minWidth="400.0" prefHeight="530.0" prefWidth="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <columns>
+                              <TableColumn fx:id="colCheck" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" sortable="false" />
+                              <TableColumn fx:id="colName" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" text="fNom du fichier" />
+                              <TableColumn fx:id="colDate" editable="false" maxWidth="80.0" minWidth="80.0" sortable="false" text="fDate" />
+                              <TableColumn fx:id="colHour" maxWidth="80.0" minWidth="80.0" text="fHeure" />
+                              <TableColumn fx:id="colGps" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" text="GPS" />
+                           </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="530.0" prefWidth="501.0">
+                     <children>
+                        <StackPane fx:id="stackP" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: grey;" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                     </children>
+                  </AnchorPane>
+               </items>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </SplitPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
