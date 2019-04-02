@@ -11,6 +11,7 @@ import geoutils.geonominatim;
 import geoutils.googlegeo;
 import igc.pointIGC;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
@@ -39,29 +40,34 @@ public class map_visu {
     // Paramètres de configuration
     configProg myConfig;
     
-    public static boolean graphAltiBaro = false;
+    public boolean graphAltiBaro = false;
     
     private boolean map_OK;
     private String map_HTML;
     private String map_HTML_NoScore;
-    private static final String RC = "\n";  
-    private static StringBuilder jsaltiLg ;
-    private static StringBuilder jsaltiVal;
-    private static StringBuilder jsHeure;
-    private static StringBuilder jsSpeed;
-    private static StringBuilder jsTabPoints;
-    private static StringBuilder jsVario;
-    private static StringBuilder jsThermique;
-    private static StringBuilder jsLegende;
-    private static StringBuilder jsBalises;
-    private static StringBuilder jsScore;
-    private static String jsLayer;
-    private static String legLeague; 
-    private static String legShape;
-    private static String legDistance;
-    private static String legPoints;
-    private static double dBestT = 0;
-    private static DateTimeFormatter dtfHHmm = DateTimeFormatter.ofPattern("HH:mm");
+    private final String RC = "\n";  
+    private StringBuilder jsaltiLg ;
+    private StringBuilder jsaltiVal;
+    private StringBuilder jsHeure;
+    private StringBuilder jsSpeed;
+    private StringBuilder jsTabPoints;
+    private StringBuilder jsVario;
+    private StringBuilder jsThermique;
+    private StringBuilder jsLegende;
+    private StringBuilder jsBalises;
+    private StringBuilder jsScore;
+    private StringBuilder jsPhotos;
+    private StringBuilder jsGallery;
+    private StringBuilder jsPhotosCode;
+    private StringBuilder jsGalleryCode;
+    
+    private String jsLayer;
+    private String legLeague; 
+    private String legShape;
+    private String legDistance;
+    private String legPoints;
+    private double dBestT = 0;
+    private DateTimeFormatter dtfHHmm = DateTimeFormatter.ofPattern("HH:mm");
     private DecimalFormat fmtsigne = new DecimalFormat("+#0.00;-#");
     DecimalFormat decimalFormat;
 
@@ -92,6 +98,10 @@ public class map_visu {
         jsLegende = new StringBuilder();
         jsBalises = new StringBuilder();
         jsScore = new StringBuilder();
+        jsPhotos = new StringBuilder();
+        jsPhotosCode = new StringBuilder();
+        jsGallery = new StringBuilder();
+        jsGalleryCode = new StringBuilder();
                
         i18n = I18nFactory.getI18n("","lang/Messages",map_visu.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         
@@ -201,7 +211,8 @@ public class map_visu {
         
         if (totPoints > 0) {
             // Mini gain is 10% of best gain
-            minGain = (int) (traceVisu.getBestGain() * 0.10);     
+            //minGain = (int) (traceVisu.getBestGain() * 0.10);     
+            minGain = 0;
             for (int i = 0; i < totPoints; i++) {
                 thermique currTh = traceVisu.Tb_Thermique.get(i);
                 if (currTh.DeltaAlt > 0 && currTh.DeltaAlt > minGain) {
@@ -222,6 +233,7 @@ public class map_visu {
                     jsThermique .append(" ").append(i18n.tr("Alt")).append(".");
                     jsThermique.append(" ").append(String.valueOf(currPoint.AltiGPS)).append("m  \\r\\n");
                     jsThermique.append(i18n.tr("Gain")).append(" : ").append(String.valueOf(currTh.DeltaAlt)).append(" m  ");
+                    System.out.println("i "+currTh.NumPoint+" Gain : "+String.valueOf(currTh.DeltaAlt));
                     jsThermique.append(String.format(Locale.ROOT,"%+5.2f",currTh.MeanVarioValue)).append(" m/s");
                     jsThermique.append("\");").append(RC);
                     
@@ -440,6 +452,54 @@ public class map_visu {
         }
         
         return res;
+    }
+        
+    private void genPhotosLayer(traceGPS traceVisu) {
+                
+        String pathPhotoFolder = traceVisu.getPhotosPath();
+        if (pathPhotoFolder != null) {
+            map_photos genJsPhotos = new map_photos(traceVisu, new File(pathPhotoFolder), myConfig, false);
+            if (genJsPhotos.getNbGpsPhotos() > 0) {                        
+                jsPhotos.append(genJsPhotos.getJsTabPhotos().toString());
+                
+                jsPhotosCode.append("    var photoIcon = new L.Icon({").append(RC);
+                jsPhotosCode.append("        iconUrl: 'http://maps.google.com/mapfiles/kml/pal4/icon46.png',").append(RC);
+                jsPhotosCode.append("        iconSize: [32, 32],").append(RC);
+                jsPhotosCode.append("        iconAnchor: [16, 32],").append(RC);
+                jsPhotosCode.append("        popupAnchor: [1, -34]").append(RC);
+                jsPhotosCode.append("    });").append(RC).append(RC);
+                jsPhotosCode.append("    var photo_layer = L.layerGroup();").append(RC);
+                jsPhotosCode.append("    $.each(photos, function(k, photo) {").append(RC);
+                jsPhotosCode.append("         var marker = L.marker(photo.latLng, { icon: photoIcon}).addTo(photo_layer)").append(RC);
+                jsPhotosCode.append("                      .bindPopup(''+k+'').on('click', onClickMarker);").append(RC);
+                jsPhotosCode.append("    });").append(RC);
+                jsPhotosCode.append("    photo_layer.addTo(map);").append(RC).append(RC);
+                jsPhotosCode.append("    function onClickMarker(e) {").append(RC);
+                jsPhotosCode.append("        var popup = e.target.getPopup();").append(RC);
+                jsPhotosCode.append("        var content = popup.getContent();").append(RC);
+                jsPhotosCode.append("        $.fancybox.open([galerie[content]], {padding : 0 });").append(RC);
+                jsPhotosCode.append("        map.closePopup();").append(RC);
+                jsPhotosCode.append("    }").append(RC);                                   
+            }
+            
+            if (genJsPhotos.getNbSimplePhotos() > 0) {                   
+                jsGallery.append(genJsPhotos.getJsTabGallery().toString());
+                
+                jsGalleryCode.append("L.easyButton('fa-photo', function(btn, map){").append(RC);
+                jsGalleryCode.append("         $.fancybox.open(galerie, {").append(RC); 
+                jsGalleryCode.append("             \"overlayOpacity\":0.8,").append(RC);
+                jsGalleryCode.append("             \"autoScale\" : true,").append(RC);
+                jsGalleryCode.append("             \"arrows\" : true,").append(RC);
+                jsGalleryCode.append("             \"type\" : \"image\",").append(RC);
+                jsGalleryCode.append("             \"width\" : \"100%\",").append(RC);
+                jsGalleryCode.append("             \"height\" : \"100%\",").append(RC);
+                jsGalleryCode.append("             \"padding\": 0,").append(RC);
+                jsGalleryCode.append("             \"margin\": 20").append(RC);
+                jsGalleryCode.append("         });").append(RC);
+                jsGalleryCode.append("         $(\".fancybox\").fancybox();").append(RC);
+                jsGalleryCode.append("    }).addTo(map);").append(RC);                
+            }
+        }
     }
     
     /**
@@ -668,7 +728,23 @@ public class map_visu {
                 String altiValHTML = altiLgHTML.replace("%altiVal%", jsaltiVal.toString());
                 String varioHTML =  altiValHTML.replace("%Vario%", jsVario.toString());
                 String speedHTML = varioHTML.replace("%Speed%", jsSpeed.toString());
-                String heureHTML = speedHTML.replace("%Heure%", jsHeure.toString());   
+                String heureHTML = "";
+                if (traceVisu.getPhotosPath() != null) {
+                    genPhotosLayer(traceVisu);
+                    String photosHTML;
+                    if (jsPhotos.length() > 10) 
+                        photosHTML = speedHTML.replace("//%Photos%", jsPhotos.toString());
+                    else
+                        photosHTML = speedHTML;
+                    String galleryHTML;
+                    if (jsGallery.length() > 30)
+                        galleryHTML = photosHTML.replace("//%Gallery%", jsGallery.toString());
+                    else
+                        galleryHTML = photosHTML;
+                    heureHTML = photosHTML.replace("%Heure%", jsHeure.toString());
+                } else {
+                    heureHTML = speedHTML.replace("%Heure%", jsHeure.toString());   
+                }                
                 genDefaultLayer();
                 String layerHTML = heureHTML.replace("%layer%", jsLayer); 
                 String thermiqHTML;
@@ -720,6 +796,21 @@ public class map_visu {
                     String checkOpHTML = affBadHTML.replace("//%CheckOption%",checkOptions.toString());
                     endHTML = checkOpHTML;
                 }
+                if (traceVisu.getPhotosPath() != null) {
+                    String beforePhotosHTML = endHTML;
+                    String beforeGalleryHTML;
+                    if (jsPhotosCode.length() > 30) {
+                        String photosHTML = beforePhotosHTML.replace("//%Aff_Photos%", jsPhotosCode); 
+                        beforeGalleryHTML = photosHTML.replace("//%PhotosOption%", "Photos : photo_layer"); 
+                    } else {
+                        beforeGalleryHTML = endHTML;
+                    }
+                    if (jsGalleryCode.length() > 30) {
+                        String galleryHTML = beforeGalleryHTML.replace("//%Gallery%", jsGallery); 
+                        endHTML = galleryHTML.replace("//%btnGallery%", jsGalleryCode); 
+                    } else
+                        endHTML = beforeGalleryHTML;
+                } 
                 String Code_HTML = endHTML.replace("%legende%", jsLegende.toString());
                 map_HTML = Code_HTML;      
                 map_OK = true;
