@@ -21,6 +21,7 @@ import controller.DashViewController;
 import controller.GPSViewController;
 import controller.ImportViewController;
 import controller.ManualViewController;
+import controller.PhotoTagViewController;
 import controller.RootLayoutController;
 import controller.SitesViewController;
 import controller.StatViewController;
@@ -39,6 +40,7 @@ import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
+import trackgps.traceGPS;
 
 public class Main extends Application {
     private Stage primaryStage;
@@ -47,6 +49,7 @@ public class Main extends Application {
     private CarnetViewController controlCarnet;
     private TraceViewController controlTrace;
     private GPSViewController controlGPS;
+    private PhotoTagViewController controlPhoto;
     private SitesViewController controlSites;
     private WaypViewController controlWayp;
     private XcpViewController controlXcp;
@@ -311,7 +314,57 @@ public class Main extends Application {
             mylogging.log(Level.SEVERE, sbError.toString());
         }
     }
+
+
+    /**
+    * Display photo window without track preselection
+    */
+    public void showPhotoview() {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/PhotoTagView.fxml"));
+            AnchorPane photoOverview = (AnchorPane) loader.load();            
+            
+            // Initialization of a communication bridge between GPSView and RootLayout
+            controlPhoto = loader.getController();     
+            controlPhoto.setRootBridge(rootLayoutController);
+            controlPhoto.setMyConfig(this,myConfig);
+            
+            // Place GPS Import window in center of RootLayout..
+            rootLayout.setCenter(photoOverview); 
+           // controlPhoto.displayWin();
+            
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }    
     
+    /**
+    * Display photo window without track preselection
+    */
+    public void showPhotoWithTrack(traceGPS pTrack) {
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/PhotoTagView.fxml"));
+            AnchorPane photoOverview = (AnchorPane) loader.load();            
+            
+            // Initialization of a communication bridge between GPSView and RootLayout
+            controlPhoto = loader.getController();     
+            controlPhoto.setRootBridge(rootLayoutController);
+            controlPhoto.setMyConfig(this,myConfig);
+            
+            // Place GPS Import window in center of RootLayout..
+            rootLayout.setCenter(photoOverview); 
+            controlPhoto.displayLogTrack(pTrack);
+            
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }        
     
     
     /**
