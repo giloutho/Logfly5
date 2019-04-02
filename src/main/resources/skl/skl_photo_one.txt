@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+
+    <script src="https://code.highcharts.com/4.2.2/highcharts.js"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
+
+    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.measurecontrol.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.measurecontrol.css" />
+
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.label.css" />
+    <script src="http://www.logfly.org/download/gmap/leaflet.label.js"></script>
+
+    <script src="http://www.logfly.org/download/gmap/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.awesome-markers.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <script type="text/javascript" src="http://www.logfly.org/download/gmap/jquery.fancybox.js?v=2.1.5"></script>
+    <link rel="stylesheet" type="text/css" href="http://www.logfly.org/download/gmap/jquery.fancybox.css?v=2.1.5" media="screen" /> 
+
+    <style>
+        html, body {
+            height:100%;
+            width:100%;
+            padding:0px;
+            margin:0px;
+        }
+        #carte { height: 85% }
+        #graphe { height: 15% }
+        .leaflet-google-layer{
+            z-index: 0 !important;
+        }
+        .leaflet-map-pane{
+            z-index: 100;
+        }
+        .awesome-marker i {
+            font-size: 20px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div id="carte"></div>
+<div id="graphe"></div>
+
+<script type='text/javascript'>
+
+    var map = null;
+    var mousemarker = null;
+
+    var tabPoints = [];
+%tabPoints%
+
+    var altiLg = [%altiLg%];
+
+    var altiVal = [%altiVal%];
+
+    var Heure = [%Heure%];
+
+    function GrillePos(i) {
+        if (mousemarker != null) {
+            map.removeLayer(mousemarker);
+            mousemarker = null;
+        }
+        mousemarker = new L.marker(tabPoints[i]).addTo(map);
+        map.panTo(tabPoints[i]);
+    }
+    
+    map = new L.Map('carte');
+
+    var osmlayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'});
+    var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 16,
+        attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
+    var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
+    var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
+    var outdoorlayer = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6f5667c1f2d24e5f84ec732c1dbd032e', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+    var googleLayer = new L.Google('TERRAIN');
+    var googleSat = new L.Google('SATELLITE');
+
+    %layer%
+
+    var baseMaps = {
+        "OSM": osmlayer,
+        "OpenTopo" : OpenTopoMap,
+        "MTK" : mtklayer,
+        "4UMaps" : fouryoulayer,
+        "Outdoor" : outdoorlayer,
+        "Google Terrain" : googleLayer,
+        "Google Sat" : googleSat
+    };
+
+    // Couche trace
+    var trackOptions = {
+        color: 'red',
+        weight: 3,
+        opacity: 0.85
+    };
+
+    L.control.layers(baseMaps).addTo(map);
+
+    var track = new L.Polyline(tabPoints, trackOptions);
+    
+    map.addLayer(track);
+
+    L.Control.measureControl().addTo(map);
+
+    var StartIcon = new L.Icon({
+        iconUrl: 'http://www.logfly.org/download/gmap/windsock.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [32, 32],
+        iconAnchor: [0, 32],
+        popupAnchor: [1, -34],
+        shadowSize: [25, 25]
+    });
+
+    L.marker(tabPoints[0],{icon: StartIcon}).addTo(map);
+
+    var EndIcon = new L.Icon({
+        iconUrl: 'http://www.logfly.org/download/gmap/Arrivee.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+        iconSize: [32, 32],
+        iconAnchor: [8, 32],
+        popupAnchor: [1, -34],
+        shadowSize: [25, 25]
+    });
+
+    L.marker(tabPoints[tabPoints.length-1],{icon: EndIcon}).addTo(map);
+
+    var greenIcon = new L.Icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+    var iconPhoto = L.AwesomeMarkers.icon({icon: 'fa fa-camera', markerColor: 'cadetblue', prefix: 'fa', iconColor: 'white'});
+    %marker%
+
+    $(function () {
+
+        $('#graphe').highcharts({
+            
+            title: {
+                text: ''
+            },
+            subtitle: {
+                text: ''
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        // Sinon le point est dessiné pour les petites séries
+                        enabled: false
+                    },
+                    point: {
+                        events: {
+                            mouseOver: function () {
+                                if (mousemarker == null) {
+                                    // Le x correspond à l'index, ça tombe bien...
+                                    // Sinon on avait un obscur this.series.data.indexOf( this.point ) qui ne fonctionnait pas
+                                    // mousemarker = new L.marker(tabPoints[this.x], {icon: IconPara}).addTo(map);
+                                    //  mousemarker = new L.marker(tabPoints[this.x]).addTo(map);
+                                    mousemarker = new L.marker(tabPoints[this.x],{icon: L.AwesomeMarkers.icon({icon: 'fa-star-o', markerColor: 'orange', prefix: 'fa', iconColor: 'white'}) }).addTo(map);
+                                }
+                                else {
+                                    mousemarker.setLatLng(tabPoints[this.x]);
+                                }
+                            },
+                            click: function () {
+                                map.panTo(tabPoints[this.x]);
+                                map.removeLayer(markerPhoto);                            
+                                markerPhoto = new L.marker(tabPoints[this.x],{icon: iconPhoto }).addTo(map).on('click', onClickMarker);   
+                                // during the development, we use this
+                                //var dPointer = new Date(dtrack+' '+hms);
+                                // from http://www.finalclap.com/faq/88-javascript-difference-date
+                                //var dDiff = (dPointer - dMarker) / 1000;
+                                // But it does not work in webviewer
+                                // We use a precalculated array
+                                // We changed the process, we take only the index of the point
+                                document.title = this.x; 
+                            }
+                        }
+                    },
+                    events: {
+                        mouseOut: function () {
+                            if (mousemarker != null) {
+                                map.removeLayer(mousemarker);
+                                mousemarker = null;
+                            }
+                        }
+                    }
+                }
+            },
+
+            tooltip: {
+                // from https://stackoverflow.com/questions/43893035/how-to-customize-tooltip-in-highchart
+                formatter: function () {
+                    %infoMsg%
+                    return infoMsg;
+                }
+            },
+
+            xAxis: {
+                categories: altiLg
+            },
+
+            yAxis: {
+                title: {
+                    text: ''
+                },                
+            },
+
+            series: [{
+                showInLegend: false,
+                data: altiVal
+            }]
+        });
+    });
+    setTimeout(function(){ map.fitBounds(track.getBounds()); }, 2000);
+</script>
+</body>
+</html>
