@@ -61,7 +61,7 @@ public class pointIGC {
         Vario = 0;
         Vitesse = 0;
         VitesseMoy = 0;    
-        violation = false;
+        violation = false;       
     }
     
     public void setAltiBaro(int pAltiBaro)
