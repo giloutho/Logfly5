@@ -69,6 +69,22 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
             border-radius: 5px;
         }
+        table{
+            border:1px solid black;
+            border-collapse: collapse;
+        }
+        th, td{
+            border:1px solid black;
+            padding: 2px;
+            font-weight: bolder;
+        }
+        tr:nth-child(even) {background: #CCC}
+        tr:nth-child(odd) {background: #FFF}
+        td:nth-child(2) { text-align: right; } 
+        caption { 
+            font-weight: bold;
+            font-size: 1.4em;
+        }
         .awesome-marker i {
             font-size: 20px;
             margin-top: 8px;
@@ -186,8 +202,17 @@
 
 
     var THmarkers = new L.LayerGroup();
+    var thermOptions = {
+        color: 'yellow',
+        weight: 6,
+        opacity: 0.50
+    };
 
-    //%THmarker%
+//%THmarker%
+
+    var GLmarkers = new L.LayerGroup();
+
+//%GLmarker%
 
     var ScoreMarkers = new L.LayerGroup();
 
@@ -238,8 +263,8 @@
         "Airspaces" : openaip_cached_basemap,
         "Shadow" : hillslayer,
         "Trace": track,
-        "Thermiques": THmarkers
-        ,
+        "Thermiques": THmarkers,
+        "Transitions": GLmarkers,
         //%ScoreOptions%
         //%CheckOption%
         //%PhotosOption%
