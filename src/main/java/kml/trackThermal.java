@@ -278,7 +278,7 @@ public class trackThermal {
             sAltiA = String.valueOf(bestPointA.AltiGPS);     
         }
         // Mandatory : point as decimal separator
-        sDist = String.format(Locale.ROOT,"%5.2f",(KmlTrace.getBestTransDist()/1000));
+        sDist = String.format(Locale.ROOT,"%5.2f",(bestTrans.getDistance()));
         res.append("                     <Placemark>").append(RC); 
         res.append("                           <Point>").append(RC); 
         res.append("                                  <altitudeMode>absolute</altitudeMode>").append(RC); 
