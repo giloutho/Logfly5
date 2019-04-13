@@ -9,7 +9,7 @@ package trackgps;
 /**
  *
  * @author Gil Thomas logfly.org
- * Decoding track IGC format or GPX format
+ * Decoding track in IGC format or GPX format
  */
 
 import gapchenko.llttz.Converter;
@@ -54,7 +54,7 @@ import systemio.mylogging;
 import systemio.textio;
 
 public class traceGPS {
-    // variables names from xLogfly
+    // variables names from Logfly 4
     private int APP_INTEGRATION;    
     private String pathFichier;
     private String FicIGC;
@@ -96,7 +96,6 @@ public class traceGPS {
     private String colDureeVol;   // Duration with colon HH:MM:SS
     private int NbPoints;
     private int NbPointsAberr;
-    private boolean Decodage_En_Tete;
     private String Score_JSON;
     private int Score_Idx_League;
     private String Score_League;
@@ -106,14 +105,6 @@ public class traceGPS {
     private double Score_Route_Pts;
     private double Score_Moyenne;
     private boolean Scored;
-    private int Th_DeltaAltMax;
-    private int Th_DeltaAltMini;
-    private double bestTransDist;
-    private int bestTransIndice1;
-    private int bestTransIndice2;
-    private int bestGain;
-    private int bestGainIndice1;
-    private int bestGainIndice2;
     private String Comment;
     private String photo;
     private int nbGpxPoint;
@@ -127,12 +118,12 @@ public class traceGPS {
     private int airPoints;
     private String photosPath;
     private String idDatabase;
+    private int bestGain;
     
     
     public List<pointIGC> Tb_Tot_Points = new ArrayList<pointIGC>();
     public List<pointIGC> Tb_Good_Points = new ArrayList<pointIGC>();
     public List<pointIGC> Tb_Calcul = new ArrayList<pointIGC>();
-    public List<thermique> Tb_Thermique = new ArrayList<thermique>();
     public ArrayList<Integer> Score_Tb_Balises = new ArrayList<Integer>();
     
     private final String CrLf = "\r\n";
@@ -294,26 +285,6 @@ public class traceGPS {
     public String getColDureeVol() {
         return colDureeVol;
     }
-                       
-    public int getBestGain() {
-        return bestGain;
-    }
-
-    public int getBestGainIndice1() {
-        return bestGainIndice1;
-    }
-    
-    public int getBestGainIndice2() {
-        return bestGainIndice2;
-    }
-
-    public int getBestTransIndice1() {
-        return bestTransIndice1;
-    }
-
-    public int getBestTransIndice2() {
-        return bestTransIndice2;
-    }
 
     public double getLatDeco() {
         return LatDeco;
@@ -326,6 +297,16 @@ public class traceGPS {
     public void setLongDeco(double LongDeco) {
         this.LongDeco = LongDeco;
     }
+
+    public int getBestGain() {
+        return bestGain;
+    }
+
+    public void setBestGain(int bestGain) {
+        this.bestGain = bestGain;
+    }
+    
+    
     
     public double getLongDeco() {
         return LongDeco;
@@ -426,12 +407,7 @@ public class traceGPS {
     public String getSignature() {
         return Signature;
     }
-
-    public double getBestTransDist() {
-        return bestTransDist;
-    }        
-                    
-    
+                        
     public String getOrigine()
     {
       return Origine;
@@ -599,8 +575,7 @@ public class traceGPS {
     public void setIdDatabase(String idDatabase) {
         this.idDatabase = idDatabase;
     }
-    
-    
+        
                                    
     /**
      * if there is a non numeric character, Integer.parseInt triggers an exception
@@ -1036,23 +1011,13 @@ public class traceGPS {
                     // it seems unnecessary an average is computed in Verif_Tb_Tot_Points with an integration parameter
                     
                     // Reduce number of points for scoring
-                    fillTb_Calcul();
-                    
-                    // compoute thermals points
-                    calc_Thermiques();
-                                        
+                    fillTb_Calcul();                    
+                                                                                
                     Decodage = true;
                 }
             }
         }
-        
-        // System.out.println(String.valueOf(Lg_sLine)+" lignes");
-        // System.out.println("Valid_Trace : "+Valid_Trace);
-        // System.out.println("Date vol : "+sDate_Vol);
-        // System.out.println("Pilote : "+sPilote);
-        // System.out.println("Date vol SQL : "+Date_Vol_SQL);
-        // System.out.println("Signature : "+Signature);
-        // System.out.println(TotPoint+" points ajoutés");                              
+                                   
     }
     
     
@@ -1635,9 +1600,6 @@ public class traceGPS {
                         // Reduce number of points for scoring
                         fillTb_Calcul();
 
-                        // compute thermals points
-                        calc_Thermiques();
-
                         encodeIGC();
 
                         Decodage = true;
@@ -1651,215 +1613,7 @@ public class traceGPS {
             mylogging.log(Level.SEVERE, sbError.toString());        
         }     
     }
-                     
-    /**
-    * Thermal points computing
-    * adapted from a php script [Emmanuel Chabani [Man's] and P.O. Gueneguo (Parawing.net)]
-    */
-    private void calc_Thermiques()   {
-        
-        double MeanVarioMinValue = 0;
-        double MeanVarioMaxValue = 0;
-        int localAltMin = 0;
-        int localAltMax = 0;
-        int LastChange = 0;
-        String direction = null;
-        int switchlevel = 50;  // This value is the height value deciding if we're in or out of a thermal jusqu'à 2,018 était de 50
-        int DeltaAltMin;
-        int DeltaAltMax;
-        int deltaAlt=0;
-        double TotalDistWithoutThermal = 0;
-        double MeanVarioMin = 0;
-        double MeanVarioMax = 0;
-        double bestGlideRatioValue = 0;
-        int bestGlideRatio1;
-        int bestGlideRatio2;
-        double bestTransitionValue = 0;
-        int bestTransition1=0;
-        int bestTransition2=0;
-        int bestGainValue=0;
-        int bestGain1=0;
-        int bestGain2=0;
-        int minAlt=0;
-        int high;
-        int low;
-        double deltaDist = 0;
-        int deltaTime;
-        double MeanvarioValue = 0;
-        double meanvario = 0;
-        double GlideRatioValue = 0;
-        int fin = Tb_Good_Points.size();
-
-        Th_DeltaAltMax = 0;
-        Th_DeltaAltMini = 0;
-  
-        for (int i = 0; i < fin; i++) {
-            // for thermal computing, we take baro altitude 
-            pointIGC currPoint = Tb_Good_Points.get(i);
-            pointIGC pointMax = Tb_Good_Points.get(localAltMax);
-            pointIGC pointMin = Tb_Good_Points.get(localAltMin);
-            if (currPoint.AltiBaro > 0) {                
-                if (currPoint.AltiBaro > pointMax.AltiBaro) localAltMax = i;
-                if (currPoint.AltiBaro < pointMin.AltiBaro) localAltMin = i;
-                DeltaAltMin = currPoint.AltiBaro - pointMin.AltiBaro;
-                DeltaAltMax = pointMax.AltiBaro - currPoint.AltiBaro;
-            }  else  {
-                if (currPoint.AltiGPS > pointMax.AltiGPS) localAltMax = i;
-                if (currPoint.AltiGPS < pointMin.AltiGPS) localAltMin = i;
-                DeltaAltMin = currPoint.AltiGPS - pointMin.AltiGPS;
-                DeltaAltMax = pointMax.AltiGPS - currPoint.AltiGPS;
-            }
-            if (((direction != "up" && DeltaAltMin > switchlevel) || (direction != "down" && DeltaAltMax > switchlevel))) {
-                high = i;
-                low = LastChange;
-                pointIGC highPoint = Tb_Good_Points.get(high);
-                pointIGC lowPoint = Tb_Good_Points.get(low);
-                if (currPoint.AltiBaro > 0)  {
-                    deltaAlt = highPoint.AltiBaro - lowPoint.AltiBaro;
-                } else  {
-                    deltaAlt = highPoint.AltiGPS - lowPoint.AltiGPS;
-                }
-                if (deltaAlt == 0) deltaAlt = 1;
-                deltaDist = geoutils.trigo.CoordDistance(highPoint.Latitude,highPoint.Longitude,lowPoint.Latitude,lowPoint.Longitude);
-                TotalDistWithoutThermal = TotalDistWithoutThermal + deltaDist / 1000;
-                deltaTime = highPoint.Periode - lowPoint.Periode;
-                if (deltaTime == 0) {
-                    deltaTime = 1;
-                }
-                // special Java -> division result of two integers is an integer. We must cast in double                
-                MeanvarioValue = (double) deltaAlt / deltaTime;
-                if (MeanvarioValue < MeanVarioMinValue) {
-                    MeanVarioMinValue = MeanvarioValue;
-                    MeanVarioMin = i;
-                }
-                if (meanvario > MeanVarioMaxValue) {     // WARNING Change original code -> if ($meanvario!!!!>$meanvariomaxValue){
-                    MeanVarioMaxValue = MeanvarioValue;
-                    MeanVarioMax = i;
-                }
-                GlideRatioValue = -deltaDist / deltaAlt;
-                if (deltaAlt < 0) {
-                    direction = "down";
-                }  else  {
-                    direction = "up";
-                }
-                if (GlideRatioValue > bestGlideRatioValue && GlideRatioValue < 50) {    // GR>50 is quite unrealistic !
-                    bestGlideRatioValue = GlideRatioValue;
-                    bestGlideRatio1 = low;
-                    bestGlideRatio2 = high;
-                }
-                if (deltaDist > bestTransitionValue)  {
-                    bestTransitionValue = deltaDist;
-                    bestTransition1 = low;
-                    bestTransition2 = high;
-                }
-                if (deltaAlt > bestGainValue) {
-                    bestGainValue = deltaAlt;
-                    bestGain1 = low;
-                    bestGain2 = high;
-                }
-                pointMin = Tb_Good_Points.get(localAltMin);
-                pointIGC pointMinAlt = Tb_Good_Points.get(minAlt);
-                if (pointMin.AltiBaro > 0) {
-                    if (pointMin.AltiBaro < pointMinAlt.AltiBaro) minAlt = localAltMin;
-                } else  {
-                    if (pointMin.AltiGPS < pointMinAlt.AltiGPS) minAlt = localAltMin;
-                }
-                /* -----------------------------------------------------------------
-                *    ATTENTION   J'ai sauté ces lignes dont je ne comprends pas le sens
-                *    mais elles ne me paraissent pas avoir une importance mathematique
-                *    if ($deltaAlt>0) $deltaAlt="+".$deltaAlt;
-                *    if ($meanvarioValue>0) $meanvarioValue="+".$meanvarioValue;
-                * ----------------------------------------------------------------- */
-                                System.out.println(" i: "+i+" "+direction+" Alt max : "+highPoint.AltiBaro+" alt min : "+lowPoint.AltiBaro+" diff "+(highPoint.AltiBaro - lowPoint.AltiBaro)+" localAltMin : "+Tb_Good_Points.get(localAltMin).AltiGPS+" localAltMax : "+Tb_Good_Points.get(localAltMax).AltiGPS+" deltaAlt "+deltaAlt); 
-                localAltMax = i;
-                localAltMin = i;
-                LastChange = i;
-                // Ajouté en version Xojo
-                if (deltaAlt < Th_DeltaAltMini) Th_DeltaAltMini = deltaAlt;
-                if (deltaAlt > Th_DeltaAltMax) Th_DeltaAltMax = deltaAlt;
-                // this point is considered like a "thermal point"
-                thermique Thermal1 = new thermique();
-                Thermal1.NumPoint = i;
-                Thermal1.GlideRatioValue = GlideRatioValue;
-                Thermal1.MeanVarioValue = MeanvarioValue;
-                Thermal1.d_DeltaDist = deltaDist / 1000;
-                Thermal1.DeltaAlt = deltaAlt;
-                Tb_Thermique.add(Thermal1);                                   
-            }           
-        }
-        bestTransDist = bestTransitionValue;
-        bestTransIndice1 = bestTransition1;
-        bestTransIndice2 = bestTransition2;
-        bestGain = bestGainValue;
-        bestGainIndice1 = bestGain1;
-        bestGainIndice2 = bestGain2;     
-        System.out.println("Best gain "+bestGainValue);   
-        calc_ThermiquesBis();
-    }
-    
-    private void calc_ThermiquesBis() {
-        
-        double progress;
-        double directDist;        
-        int deltaAlt;
-        boolean inThermal = false;
-        pointIGC startThermal = null;
-        pointIGC endThermal = null;
-        int idxStartThermal = 0;
-        int idxEndThermal;
-        int iTotPoints = Tb_Good_Points.size();
-        int fin = iTotPoints - 1;
-        int iPeriode = (int) (Duree_Vol/ iTotPoints);
-        int exploRange = 20/iPeriode;        
-        for (int i = 0; i < fin; i++) {
-            pointIGC currPoint = Tb_Good_Points.get(i);   
-            if (i+exploRange < fin) {
-                double totalDist = 0;       
-                pointIGC endPoint = null;
-                int idxEndPoint = 0;
-                for (int j = i; j < i+exploRange+1; j++) {
-                   pointIGC startPoint = Tb_Good_Points.get(j);
-                   endPoint = Tb_Good_Points.get(j+1);
-                   idxEndPoint = j+1;
-                   totalDist = totalDist + trigo.CoordDistance(endPoint.Latitude,endPoint.Longitude, startPoint.Latitude,startPoint.Longitude);
-                }
-                directDist = trigo.CoordDistance(endPoint.Latitude,endPoint.Longitude,currPoint.Latitude,currPoint.Longitude);
-                if (currPoint.AltiBaro > 0)  {
-                    deltaAlt = endPoint.AltiBaro - currPoint.AltiBaro;
-                } else  {
-                    deltaAlt = endPoint.AltiGPS - currPoint.AltiGPS;
-                }                
-                if (directDist > 0) {
-                    progress = directDist/totalDist;
-                } else 
-                    progress = 1;
-                if (progress < 0.9 && deltaAlt > 0 && !inThermal) {
-                    // we begin to thermal                    
-                        inThermal = true;
-                        startThermal = currPoint;  
-                        idxStartThermal = i;
-                } else {
-                    if (progress > 0.9 && inThermal) {
-                        inThermal = false;
-                        endThermal = endPoint;
-                        idxEndThermal = idxEndPoint;
-                        int totalGain = endThermal.AltiGPS-startThermal.AltiGPS;
-                        // calcul du taux de montée.
-                        int deltaTime = endThermal.Periode - startThermal.Periode;
-                        if (deltaTime == 0) deltaTime = 1;
-                        double vz = (double) totalGain/deltaTime;
-                        if (totalGain > 50) {
-                            System.out.println("Start "+idxStartThermal+" end "+idxEndThermal+" start Alt "+startThermal.AltiGPS+" end Alt "+endThermal.AltiGPS+ " gain : "+(endThermal.AltiGPS-startThermal.AltiGPS)+" montée "+vz);
-                            
-                        }
-                        i = idxEndThermal;
-                    }
-                }
-                
-            }
-        }
-    }
-    
+                        
     /**
      * Library jpx-1.3.0 used from https://github.com/jenetics/jpx
      * Javadoc http://www.javadoc.io/doc/io.jenetics/jpx
