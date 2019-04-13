@@ -15,7 +15,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Random;
 import org.xnap.commons.i18n.I18n;
-import photo.imgmanip;
+import photos.imgmanip;
 import trackgps.traceGPS;
 
 /**
