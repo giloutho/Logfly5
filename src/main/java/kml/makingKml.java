@@ -277,7 +277,7 @@ public class makingKml {
                             errorCode = 1020;
                     }
                     if (drawThermal) {
-                        trackThermals genThermal = new trackThermals(traceKml,this, currLocale);
+                        trackThermal genThermal = new trackThermal(traceKml,this, currLocale);
                         if (genThermal.genThermals())
                             sbKml.append(genThermal.getKmlString());
                         else
