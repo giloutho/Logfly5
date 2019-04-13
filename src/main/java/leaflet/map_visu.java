@@ -8,7 +8,6 @@ package leaflet;
 
 import database.dbSearch;
 import geoutils.geonominatim;
-import geoutils.googlegeo;
 import igc.pointIGC;
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,6 +26,8 @@ import trackgps.traceGPS;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import trackgps.analyse;
+import trackgps.remarkable;
 
 /**
  *
@@ -53,6 +54,7 @@ public class map_visu {
     private StringBuilder jsTabPoints;
     private StringBuilder jsVario;
     private StringBuilder jsThermique;
+    private StringBuilder jsGlide;
     private StringBuilder jsLegende;
     private StringBuilder jsBalises;
     private StringBuilder jsScore;
@@ -60,6 +62,8 @@ public class map_visu {
     private StringBuilder jsGallery;
     private StringBuilder jsPhotosCode;
     private StringBuilder jsGalleryCode;
+    
+    private analyse trackAnalyze;
     
     private String jsLayer;
     private String legLeague; 
@@ -95,6 +99,7 @@ public class map_visu {
         jsTabPoints = new StringBuilder();
         jsVario = new StringBuilder();
         jsThermique = new StringBuilder();
+        jsGlide = new StringBuilder();
         jsLegende = new StringBuilder();
         jsBalises = new StringBuilder();
         jsScore = new StringBuilder();
@@ -107,7 +112,14 @@ public class map_visu {
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');        
-        decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);        
+        decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);       
+        
+        trackAnalyze = new analyse(traceVisu);
+        
+//        for (int i = 0; i < trackAnalyze.finalDives.size(); i++) {
+//            System.out.println(trackAnalyze.finalDives.get(i).getHTMLDives(i18n));
+//        }
+        
         
         carteVisu(traceVisu);       
     } 
@@ -193,96 +205,120 @@ public class map_visu {
     
     /**
      * HTML generation of thermals markers
-     * @param traceVisu
+     * @param traceGPS
      * @return 
      */
-    private boolean genThermData(traceGPS traceVisu)   {
+    private boolean genThermalData(traceGPS traceVisu)   {
         
         boolean res = false;
-        int minGain;
         int idxPtB;
         String sIcone = "fa-cloud-upload";
         String sBestIcone = "fa-thumbs-up";
-        int totPoints = traceVisu.Tb_Thermique.size();
+        int totPoints = trackAnalyze.finalThermals.size();
                       
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');        
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);  
         
         if (totPoints > 0) {
-            // Mini gain is 10% of best gain
-            //minGain = (int) (traceVisu.getBestGain() * 0.10);     
-            minGain = 0;
             for (int i = 0; i < totPoints; i++) {
-                thermique currTh = traceVisu.Tb_Thermique.get(i);
-                if (currTh.DeltaAlt > 0 && currTh.DeltaAlt > minGain) {
-                    idxPtB = currTh.NumPoint;
-                    pointIGC currPoint = traceVisu.Tb_Good_Points.get(idxPtB);
-                    jsThermique.append("    var TH").append(String.valueOf(i)).append("marker = new L.marker([");
-                    jsThermique.append(decimalFormat.format(currPoint.Latitude)).append(",").append(decimalFormat.format(currPoint.Longitude));                            
-                    // S'agit il du best gain ?
-                    if (currTh.NumPoint == traceVisu.getBestGainIndice2()) {
-                        jsThermique.append("],{icon: L.AwesomeMarkers.icon({icon: '").append(sBestIcone);
-                        jsThermique.append("', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'}) })").append(RC);
-                    } else {
-                        jsThermique.append("],{icon: L.AwesomeMarkers.icon({icon: '").append(sIcone);
-                        jsThermique.append("', markerColor: 'blue', prefix: 'fa', iconColor: 'white'}) })").append(RC);                        
-                    }     
-                    jsThermique.append("        .addTo(THmarkers)").append(RC);
-                    jsThermique.append("        .bindPopup(\"");
-                    jsThermique .append(" ").append(i18n.tr("Alt")).append(".");
-                    jsThermique.append(" ").append(String.valueOf(currPoint.AltiGPS)).append("m  \\r\\n");
-                    jsThermique.append(i18n.tr("Gain")).append(" : ").append(String.valueOf(currTh.DeltaAlt)).append(" m  ");
-                    System.out.println("i "+currTh.NumPoint+" Gain : "+String.valueOf(currTh.DeltaAlt));
-                    jsThermique.append(String.format(Locale.ROOT,"%+5.2f",currTh.MeanVarioValue)).append(" m/s");
-                    jsThermique.append("\");").append(RC);
-                    
-                }
+                remarkable currRmk = trackAnalyze.finalThermals.get(i);         
+                int startLine = currRmk.getIdxStart();
+                if (startLine > 0)
+                    startLine = startLine - 1;
+                int endLine = currRmk.getIdxEnd();
+                if (endLine < traceVisu.Tb_Good_Points.size()-2)
+                    endLine = endLine+1;
+                idxPtB = currRmk.getIdxEnd();                    
+                pointIGC currPoint = traceVisu.Tb_Good_Points.get(idxPtB);
+                jsThermique.append("    var TH").append(String.valueOf(i)).append("marker = new L.marker([");
+                jsThermique.append(decimalFormat.format(currPoint.Latitude)).append(",").append(decimalFormat.format(currPoint.Longitude));                            
+                // Is it best gain ?
+                if (currRmk.getIdxEnd() == trackAnalyze.getBestGainEnd()) {
+                    jsThermique.append("],{icon: L.AwesomeMarkers.icon({icon: '").append(sBestIcone);
+                    jsThermique.append("', markerColor: 'darkblue', prefix: 'fa', iconColor: 'white'}) })").append(RC);
+                } else {
+                    jsThermique.append("],{icon: L.AwesomeMarkers.icon({icon: '").append(sIcone);
+                    jsThermique.append("', markerColor: 'blue', prefix: 'fa', iconColor: 'white'}) })").append(RC);                        
+                }     
+                jsThermique.append("        .addTo(THmarkers)").append(RC);
+                jsThermique.append("        .bindPopup(\"");
+                jsThermique.append(currRmk.getHTMLThermal(i18n));
+                jsThermique.append("\");").append(RC);
+                jsThermique.append("    var TH").append(String.valueOf(i)).append("Points = tabPoints.slice(").append(String.valueOf(startLine)).append(",").append(String.valueOf(endLine)).append(");").append(RC);
+                jsThermique.append("    var TH").append(String.valueOf(i)).append("Line = new L.Polyline(TH").append(String.valueOf(i)).append("Points, thermOptions);").append(RC);
+                jsThermique.append("    TH").append(String.valueOf(i)).append("Line.addTo(THmarkers);").append(RC).append(RC);
             }
-            // best transition
-            pointIGC bestPoint2 = traceVisu.Tb_Good_Points.get(traceVisu.getBestTransIndice2());
-            pointIGC bestPoint1 = traceVisu.Tb_Good_Points.get(traceVisu.getBestTransIndice1());
-            dBestT = (geoutils.trigo.CoordDistance(bestPoint2.Latitude,bestPoint2.Longitude,bestPoint1.Latitude,bestPoint1.Longitude))/1000;
             
-            jsThermique.append(RC).append("   var tabBT = [").append(RC);
-            jsThermique.append("         new L.LatLng(").append(decimalFormat.format(bestPoint1.Latitude));
-            jsThermique.append(",").append(decimalFormat.format(bestPoint1.Longitude)).append("),").append(RC);
-            jsThermique.append("         new L.LatLng(").append(decimalFormat.format(bestPoint2.Latitude));
-            jsThermique.append(",").append(decimalFormat.format(bestPoint2.Longitude)).append("),").append(RC);            
-            jsThermique.append("      ];").append(RC);
-            
-            jsThermique.append("   var optionsBT = {").append(RC);
-            jsThermique.append("      map: map,").append(RC);
-            jsThermique.append("      strokeColor : \"#7FFF00\",").append(RC);
-            jsThermique.append("      strokeWeight : 3,").append(RC);
-            jsThermique.append("      path: tabBT").append(RC);
-            jsThermique.append("   };").append(RC);
-            jsThermique.append("   var BTPolyline = L.polyline(tabBT, {color: '#848484',weight: 3, dashArray: '10,5', opacity: 1 });").append(RC);
-            jsThermique.append("   BTPolyline.addTo(THmarkers);").append(RC);
-            jsThermique.append(RC);
-            
-            /*   removed code in last xLogfly version
-            *   **************** with yhis markers, the map seems less readable
-                's=s+"     var BT1marker = new google.maps.Marker({").append(RC); 
-                's=s+"           position: new google.maps.LatLng("+Str(LeafTrace.Tb_Good_Points(LeafTrace.BestTransIndice1).Latitude)+","+Str(LeafTrace.Tb_Good_Points(LeafTrace.BestTransIndice1).Longitude)+"),").append(RC); 
-                's=s+"           map: map,").append(RC); 
-                's=s+"           title:"""+App.LangRef(214,App.Lang)+""",").append(RC); 
-                's=s+"           icon: ""http://maps.google.com/mapfiles/kml/pal5/icon13.png""});").append(RC); 
-            */
-            
-            jsThermique.append("   var BT2marker = new L.marker([").append(decimalFormat.format(bestPoint2.Latitude)).append(",");
-            jsThermique.append(decimalFormat.format(bestPoint2.Longitude));
-            jsThermique.append("],{icon: L.AwesomeMarkers.icon({icon: 'fa-external-link', markerColor: 'green', prefix: 'fa', iconColor: 'white'}) })").append(RC);
-            jsThermique.append("        .addTo(THmarkers)").append(RC);
-            jsThermique.append("        .bindPopup(\"").append(i18n.tr("Best transition")).append(" : ");
-            jsThermique.append(String.format(Locale.ROOT,"%6.2f",dBestT)).append(" km \");").append(RC);
             res = true;
         }
                   
         return res;
         
-    }
+    }    
     
+    
+    /**
+     * HTML generation of thermals markers
+     * @param traceGPS
+     * @return 
+     */
+    private boolean genGlideData(traceGPS traceVisu)   {
+        
+        boolean res = false;
+        String glideIcon;
+        String colorIcon;
+        int totPoints = trackAnalyze.finalGlides.size();
+                      
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+        decimalFormatSymbols.setDecimalSeparator('.');        
+        DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);  
+        
+        if (totPoints > 0) {
+            for (int i = 0; i < totPoints; i++) {
+                remarkable currRmk = trackAnalyze.finalGlides.get(i);          
+                pointIGC startPoint = traceVisu.Tb_Good_Points.get(currRmk.getIdxStart());              
+                pointIGC endPoint = traceVisu.Tb_Good_Points.get(currRmk.getIdxEnd());                    
+                if (startPoint.getLongitude() < endPoint.getLongitude()) 
+                    glideIcon = "'fa-angle-right'";
+                else
+                    glideIcon = "'fa-angle-left'";
+                jsGlide.append("    var Line").append(String.valueOf(i)).append(" = L.polyline([new L.LatLng(");
+                jsGlide.append(decimalFormat.format(startPoint.Latitude)).append(",").append(decimalFormat.format(startPoint.Longitude)).append("),");       
+                jsGlide.append("new L.LatLng(").append(decimalFormat.format(endPoint.Latitude)).append(",").append(decimalFormat.format(endPoint.Longitude)).append(")],").append(RC); 
+                jsGlide.append("                      {color: '#848484',weight: 3, dashArray: '10,5', opacity: 1 });").append(RC); 
+                jsGlide.append("     Line").append(String.valueOf(i)).append(".addTo(GLmarkers);").append(RC); 
+                // Info distances supprimées pour l'instant
+                // 1. rendent la carte un peu chargée
+                // 2. surtout restent par dessus le popup rendant celui-ci illisible
+//                jsGlide.append("labelDist = new L.Label();").append(RC); 
+//                jsGlide.append("LabelInfo = '").append(String.format("%2.1f",currRmk.getDistance())).append(" km'").append(RC);
+//                jsGlide.append("labelDist.setContent(LabelInfo);").append(RC); 
+//                jsGlide.append("labelDist.setLatLng(Line").append(String.valueOf(i)).append(".getBounds().getCenter());").append(RC); 
+//                jsGlide.append("GLmarkers.addLayer(labelDist);").append(RC);      
+                if (currRmk.getIdxEnd() == trackAnalyze.getBestGlideEnd()) {
+                    colorIcon = "red";
+                } else {
+                    colorIcon = "blue";
+                }
+                jsGlide.append("    var posMarker = Line").append(String.valueOf(i)).append(".getBounds().getCenter();").append(RC);
+                jsGlide.append("    var GL").append(String.valueOf(i));
+                jsGlide.append("marker = new L.marker(posMarker,{icon: L.AwesomeMarkers.icon({icon: ");
+                jsGlide.append(glideIcon).append(", markerColor: '").append(colorIcon);
+                jsGlide.append("', prefix: 'fa', iconColor: 'white'}) })");
+                jsGlide.append("         .addTo(GLmarkers)");
+                jsGlide.append("         .bindPopup(\"");
+                jsGlide.append(currRmk.getHTMLGlides(i18n));
+                jsGlide.append("\");").append(RC);
+                jsGlide.append("    GL").append(String.valueOf(i)).append("marker.addTo(GLmarkers);").append(RC);                                
+                jsGlide.append(RC);                                                             
+            }
+            res = true;
+        }
+                  
+        return res;
+        
+    }                
     /**
      * HTML generation of trunpoints markers
      * in xLogfly -> jsVisuBal
@@ -747,12 +783,18 @@ public class map_visu {
                 }                
                 genDefaultLayer();
                 String layerHTML = heureHTML.replace("%layer%", jsLayer); 
+                String glideHTML;
+                 if (genGlideData(traceVisu)) {
+                    glideHTML = layerHTML.replace("//%GLmarker%", jsGlide.toString());
+                } else  {
+                    glideHTML = layerHTML;
+                }                  
                 String thermiqHTML;
                 // special method for thermals
-                if (genThermData(traceVisu)) {
-                    thermiqHTML = layerHTML.replace("//%THmarker%", jsThermique.toString());
+                if (genThermalData(traceVisu)) {
+                    thermiqHTML = glideHTML.replace("//%THmarker%", jsThermique.toString());
                 } else  {
-                    thermiqHTML = layerHTML;
+                    thermiqHTML = glideHTML;
                 }   
                 genLegende(traceVisu);
                 map_HTML_NoScore = thermiqHTML;
