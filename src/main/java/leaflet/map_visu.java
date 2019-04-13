@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import trackgps.thermique;
 import trackgps.traceGPS;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -296,8 +295,9 @@ public class map_visu {
 //                jsGlide.append("labelDist.setContent(LabelInfo);").append(RC); 
 //                jsGlide.append("labelDist.setLatLng(Line").append(String.valueOf(i)).append(".getBounds().getCenter());").append(RC); 
 //                jsGlide.append("GLmarkers.addLayer(labelDist);").append(RC);      
-                if (currRmk.getIdxEnd() == trackAnalyze.getBestGlideEnd()) {
+                if (currRmk.getIdxEnd() == trackAnalyze.getBestGlideEnd()) {                    
                     colorIcon = "red";
+                    dBestT = currRmk.getDistance();
                 } else {
                     colorIcon = "blue";
                 }
