@@ -98,7 +98,7 @@ import littlewins.winMail;
 import littlewins.winSiteChoice;
 import model.Import;
 import model.Sitemodel;
-import photo.imgmanip;
+import photos.imgmanip;
 import photos.filesUtils;
 import settings.osType;
 import systemio.mylogging;
