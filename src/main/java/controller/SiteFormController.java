@@ -958,7 +958,6 @@ public class SiteFormController {
                         pstmtCarnet.setString(2, txPays.getText());
                         pstmtCarnet.setString(3, rs.getString("V_ID"));
                         pstmtCarnet.executeUpdate();
-                        System.out.println(rs.getString("V_ID")+" mis à jour");
                     }                
                 }
             } catch (Exception e) {  
