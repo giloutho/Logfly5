@@ -6,7 +6,6 @@
  */
 package littlewins;
 
-import dialogues.alertbox;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.logging.Level;
@@ -127,7 +126,7 @@ public class winRename {
     private void updateCarnet() {
   
         PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        ResultSet rs = null;       
         String sReq = "SELECT V_ID,V_Site from vol where V_Site = ?";
         try {
             pstmt = myConfig.getDbConn().prepareStatement(sReq);                      
@@ -142,7 +141,13 @@ public class winRename {
                     pstmtCarnet.setString(1, txSiteName.getText());
                     pstmtCarnet.setString(2, rs.getString("V_ID"));
                     pstmtCarnet.executeUpdate();
-                }                
+                }
+                PreparedStatement pstmtSite = null;                    
+                String sReqSite = "UPDATE Site SET S_Nom=? WHERE S_Nom = ?";
+                pstmtSite = myConfig.getDbConn().prepareStatement(sReqSite); 
+                pstmtSite.setString(1, txSiteName.getText());
+                pstmtSite.setString(2, sInitial);
+                pstmtSite.executeUpdate();   
             }
         } catch (Exception e) {  
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
