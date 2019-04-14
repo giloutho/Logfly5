@@ -1201,7 +1201,8 @@ public class CarnetViewController  {
                 if (rs.next()) {  
                     editSite(rs.getString("S_ID"));                    
                 } else {
-                    editSite(null);
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(i18n.tr("Site form not found")); 
                 }
             } catch (Exception e) {
                 alertbox aError = new alertbox(myConfig.getLocale());
