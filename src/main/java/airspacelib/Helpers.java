@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author gil
+ * @author Rob Verhoef from https://github.com/mobileaviation/AirspacesImportApp
+ * 
  */
 
 public class Helpers {
@@ -68,6 +69,9 @@ public static LatLng getDutchFormatPosition(String text)
     
   public static LatLng parseOpenAirLocation(String location)
     {
+        Double _lat = 0.0;
+        Double _lon = 0.0;
+        LatLng latLng = null;
         //Remove all the text after the * sign
 
         // replace DP, DB, V X=
@@ -76,26 +80,44 @@ public static LatLng getDutchFormatPosition(String text)
         l = l.replace("V X=", "");
         l = l.trim();
         l = l.replace(":.", ":");
-        l = l.replace(".", ":");
-        if (l.indexOf("*")>-1) l = l.substring(0, l.indexOf("*"));
+        // Original code but not correct
+        //l = l.replace(".", ":");
+        // generally it's DP 46:34:20 N 001:41:25 E
+        // but sometimes we can have DP 44:13.488 N 3:14.5409 E
+        try {
+            if (l.indexOf("*")>-1) l = l.substring(0, l.indexOf("*"));
 
-        // 53:40:00 N 006:30:00 E
-        String[] loc = l.split("[NSns]");
+            // 53:40:00 N 006:30:00 E
+            String[] loc = l.split("[NSns]");
 
-        LatLng latLng = null;
-        String lat[] = loc[0].split(":");
-        Double _lat = (Double.valueOf(lat[0]) +
-                (Double.valueOf(lat[1]) / 60) +
-                (Double.valueOf(lat[2]) / 3600))
-                        * ((l.contains("S")) ? -1 : 1);
-        String lon[] = loc[1].split(":");
-        lon[2] = findRegex("[0-9]+", lon[2]);
-
-        Double _lon = (Double.valueOf(lon[0]) +
-                (Double.valueOf(lon[1]) / 60) +
-                (Double.valueOf(lon[2]) / 3600))
-                        * ((l.contains("W")) ? -1 : 1);
-        latLng = new LatLng(_lat,_lon);
+            String lat[] = loc[0].split(":");
+            if (lat.length == 3) {
+                    _lat = (Double.valueOf(lat[0]) +
+                    (Double.valueOf(lat[1]) / 60) +
+                    (Double.valueOf(lat[2]) / 3600))
+                            * ((l.contains("S")) ? -1 : 1);
+            } else if (lat.length == 2) {
+                    _lat = (Double.valueOf(lat[0]) +
+                    (Double.valueOf(lat[1]) / 60)) 
+                            * ((l.contains("S")) ? -1 : 1);
+            }       
+            String lon[] = loc[1].split(":");        
+            if (lon.length == 3) {
+                lon[2] = findRegex("[0-9]+", lon[2]);
+                _lon = (Double.valueOf(lon[0]) +
+                    (Double.valueOf(lon[1]) / 60) +
+                    (Double.valueOf(lon[2]) / 3600))
+                    * ((l.contains("W")) ? -1 : 1);
+            } else {
+                lon[1] = findRegex("^[0-9]*\\.?[0-9]+", lon[1]);
+                _lon = (Double.valueOf(lon[0]) +
+                    (Double.valueOf(lon[1]) / 60))                
+                    * ((l.contains("W")) ? -1 : 1);            
+            }
+            latLng = new LatLng(_lat,_lon);            
+        } catch (Exception e) {
+            System.out.println("location "+location);
+        }
 
         return latLng;
     }       
