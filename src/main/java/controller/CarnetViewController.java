@@ -95,6 +95,7 @@ import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
 import littlewins.winGlider;
 import littlewins.winMail;
+import littlewins.winRename;
 import littlewins.winSiteChoice;
 import model.Import;
 import model.Sitemodel;
@@ -844,6 +845,14 @@ public class CarnetViewController  {
             }
         });
         tableContextMenu.getItems().add(cmItem1);
+        
+        MenuItem cmItem13 = new MenuItem(i18n.tr("Rename site"));
+        cmItem13.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+               renameSite();
+            }
+        });
+        tableContextMenu.getItems().add(cmItem13);        
 
         MenuItem cmItem11 = new MenuItem(i18n.tr("Site form"));
         cmItem11.setOnAction(new EventHandler<ActionEvent>() {
@@ -1064,7 +1073,6 @@ public class CarnetViewController  {
                 
         winGlider chgeGlider = new winGlider(lsGliders, myConfig.getDefaultPilote(), i18n); 
         if (chgeGlider.isModif()) {
-            System.out.println(chgeGlider.getwPilot()+" "+chgeGlider.getwGlider());
             String strPilot = chgeGlider.getwPilot();
             String strGlider = chgeGlider.getwGlider();
             ObservableList<Carnet> selFlights = tableVols.getSelectionModel().getSelectedItems();         
@@ -1161,6 +1169,21 @@ public class CarnetViewController  {
             mylogging.log(Level.SEVERE, sbError.toString());            
         }
     }    
+    
+     private void renameSite() {
+        int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            String sSite = tableVols.getSelectionModel().getSelectedItem().getSite();
+            winRename wRename = new winRename(sSite, myConfig); 
+            int nb = wRename.getNbUpdates();
+            if (nb < 0) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(104);    // Problem while updating the logbook            
+            } else if (nb > 0) {
+                editSiteReturn(2);
+            }
+        }         
+     }
     
     private void askEditSite() {
 
