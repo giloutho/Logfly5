@@ -738,6 +738,7 @@ public class traceGPS {
                                     // Ces paramètres calculés sur L'UTC seront modifiés plus tard après calcul du décalage UTC
                                     // On eu des vols réalisés en Australie le 1er janvier à 10h où l'UTC est au 31 décembre à 23h... 
                                     Date_Vol = LocalDateTime.of(Annee, Mois, Jour,0,0,0);
+                                    if (Annee > 2098 || Annee < 2011) bug2019(SearchDate.group(3),Mois,Jour);
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                     Decodage_HFDTE = true;                                                                          
                                 }                                                                 
@@ -1739,6 +1740,29 @@ public class traceGPS {
     	}
         
         return res;
+    }
+    
+    /**
+     * April 6, 2019, will mark a special rollover of the GPS week number, or WNRO, that helps receivers tell time more precisely.  
+     * The last one happened at the stroke of GPS midnight on August 21, 1999. 
+     * Interestingly, this was at around 23:59:47 UTC due to the 13-leap-second offset between UTC and GPS Time. 
+     * old GPS like Reversale do not account for this change and display incorrect dates
+     * @param ldtBug 
+     */
+    public void bug2019(String bugYear, int iMonth, int iDay) {
+        // l'année prochaine, il te colle 00   !!!
+        int iYear = Integer.parseInt(bugYear);
+        int Annee;
+        if (iYear > 98)
+            Annee = Integer.parseInt("19"+bugYear);
+        else
+            Annee = Integer.parseInt("20"+bugYear);
+        LocalDateTime bugLdt = LocalDateTime.of(Annee, iMonth, iDay,0,0,0);
+        LocalDateTime wnro = LocalDateTime.of(1999, 8, 22, 00, 00, 00);
+        LocalDateTime newWnro = LocalDateTime.of(2019, 4, 7, 00, 00, 00);
+        long weeks = ChronoUnit.WEEKS.between(wnro, bugLdt);
+        long days = ChronoUnit.DAYS.between(wnro,bugLdt);
+        Date_Vol = newWnro.plusDays(days);
     }
     
     /**
