@@ -36,7 +36,7 @@ public class winMapPhotoPoint {
     public winMapPhotoPoint(configProg currConfig, traceGPS pTrace, int pIdx, String phPath) {
         // it will be useful if we choose url according to current language
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
+        i18n = I18nFactory.getI18n("","lang/Messages",winMapPhotoPoint.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
         currTrace = pTrace;
         idxPoint = pIdx;
         backPoint = -1;
