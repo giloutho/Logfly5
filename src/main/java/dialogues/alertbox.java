@@ -90,6 +90,9 @@ public class alertbox {
             case 102:    
                 msg = i18n.tr("Reading problem in logbook");                          
                 break;
+            case 104:    
+                msg = i18n.tr("Problem while updating the logbook");                          
+                break;                
             case 202:    
                 msg = i18n.tr("Unable to create AIRSP folder");                          
                 break;   
