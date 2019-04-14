@@ -73,6 +73,7 @@ public class map_visu {
     private DateTimeFormatter dtfHHmm = DateTimeFormatter.ofPattern("HH:mm");
     private DecimalFormat fmtsigne = new DecimalFormat("+#0.00;-#");
     DecimalFormat decimalFormat;
+    private int stepLoop;
 
     public boolean isMap_OK() {
         return map_OK;
@@ -143,7 +144,7 @@ public class map_visu {
         }  else  {
             step = 1;
         }               
-        
+        stepLoop = step;
         // Checking of double cast to string
         Pattern DOUBLE = Pattern.compile("\\d");
         
@@ -222,10 +223,10 @@ public class map_visu {
         if (totPoints > 0) {
             for (int i = 0; i < totPoints; i++) {
                 remarkable currRmk = trackAnalyze.finalThermals.get(i);         
-                int startLine = currRmk.getIdxStart();
+                int startLine = currRmk.getIdxStart()/stepLoop;
                 if (startLine > 0)
                     startLine = startLine - 1;
-                int endLine = currRmk.getIdxEnd();
+                int endLine = currRmk.getIdxEnd()/stepLoop;
                 if (endLine < traceVisu.Tb_Good_Points.size()-2)
                     endLine = endLine+1;
                 idxPtB = currRmk.getIdxEnd();                    
