@@ -5,12 +5,19 @@
  */
 package airspacelib;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import org.locationtech.jts.geom.Coordinate;
+import systemio.mylogging;
 
 /**
  *
- * Created by Rob Verhoef on 20-10-2015.
+ * Created by Rob Verhoef on 20-10-2015 (https://github.com/mobileaviation/AirspacesImportApp)
  * 
  * Rob removes airspace with less 4 coordinates
  * We have openAir files with only three coordinates (triangle) or even
@@ -18,6 +25,8 @@ import org.locationtech.jts.geom.Coordinate;
  * 
  */
 public class Airspaces extends ArrayList<Airspace> {
+    
+    private StringBuilder sbError;
     
     public Airspaces()
     {
@@ -28,11 +37,30 @@ public class Airspaces extends ArrayList<Airspace> {
     {
         this.add(airspace);
     }
+    
+    
+    private String readTxt8859(String pathFichier){
+        String res = null;
+        
+        try {
+            File fichier = new File(pathFichier);
+            res = new String(Files.readAllBytes(Paths.get(fichier.getAbsolutePath())),Charset.forName("ISO-8859-1"));     
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }    
+                                
+        return res;
+    }        
 
     public void OpenOpenAirTextFile(String filename)
     {
         String _filename = filename;
-        String txt = Helpers.readFromFile(_filename);
+        // Original code
+        //String txt = Helpers.readFromFile(_filename);
+        // We had bad characters, we use waypoint function readTxt8859
+        String txt = readTxt8859(_filename);
         readOpenAirText(txt);
     }
     
