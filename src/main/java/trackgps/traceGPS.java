@@ -1470,7 +1470,17 @@ public class traceGPS {
                     if (nbPoint == 0) {
                         // take off time
                         if (ldt != null) {
-                            DT_Deco = ldt;
+                            int Annee = ldt.getYear();
+                            if (Annee > 2098 || Annee < 2011) {
+                                String sYear = String.valueOf(ldt.getYear());
+                                if (sYear.length() == 4) {
+                                    sYear = sYear.substring(2, 4);
+                                    bug2019(sYear,ldt.getMonthValue(),ldt.getDayOfMonth());
+                                    DT_Deco = Date_Vol;
+                                }
+                            }
+                            else
+                                DT_Deco = ldt;                                                        
                         } else {
                             // Time field can be null (BaseCamp GPX generation)
                             DT_Deco = LocalDateTime.of(2000, 1, 1, 0, 0, 0);                                   
