@@ -21,6 +21,7 @@ import javafx.scene.input.ClipboardContent;
 import org.xnap.commons.i18n.I18n;
 import photos.exifReader;
 import settings.configProg;
+import settings.osType;
 import trackgps.traceGPS;
 
 /**
@@ -157,6 +158,7 @@ public class map_photos {
 
     
     private void genPhotosData() throws Exception {  
+        String pathPhoto;
         Collections.sort(photoPathList);
         jsTabPhotos.append("    var photos = [];").append(RC);  
         jsTabGallery.append("    var galerie = [];").append(RC);    
@@ -167,7 +169,12 @@ public class map_photos {
                     exifReader metaPhoto = new exifReader(i18n);
                     metaPhoto.decodeGPS(fPhoto);
                     jsTabGallery.append("           galerie.push({'class' : 'fancybox','href': 'file://localhost/");
-                    jsTabGallery.append(fPhoto.getAbsolutePath()).append("'});").append(RC);                       
+                    if (myConfig.getOS() == osType.WINDOWS) {
+                        String sPath = fPhoto.getAbsolutePath();
+                        pathPhoto = sPath.replaceAll("\\\\", "/");
+                    } else
+                        pathPhoto = fPhoto.getAbsolutePath();
+                    jsTabGallery.append(pathPhoto).append("'});").append(RC);                       
                     if(metaPhoto.isInfoGPS()) {                                                                  
                         if (metaPhoto.isInfoGPS()) {
                             jsTabPhotos.append("          photos.push({\"latLng\":[").append(decimalFormat.format(metaPhoto.getTagLatitude()));
