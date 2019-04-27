@@ -260,11 +260,7 @@
     //%Aff_BadPoints%
 
     var Affichage = {
-        "Airspaces" : openaip_cached_basemap,
-        "Shadow" : hillslayer,
-        "Trace": track,
-        "Thermiques": THmarkers,
-        "Transitions": GLmarkers,
+%DisplayMenu%        
         //%ScoreOptions%
         //%CheckOption%
         //%PhotosOption%
