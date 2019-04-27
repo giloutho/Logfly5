@@ -55,6 +55,7 @@ public class map_visu {
     private StringBuilder jsThermique;
     private StringBuilder jsGlide;
     private StringBuilder jsLegende;
+    private StringBuilder jsMenu;
     private StringBuilder jsBalises;
     private StringBuilder jsScore;
     private StringBuilder jsPhotos;
@@ -101,6 +102,7 @@ public class map_visu {
         jsThermique = new StringBuilder();
         jsGlide = new StringBuilder();
         jsLegende = new StringBuilder();
+        jsMenu = new StringBuilder();
         jsBalises = new StringBuilder();
         jsScore = new StringBuilder();
         jsPhotos = new StringBuilder();
@@ -740,6 +742,14 @@ public class map_visu {
         
     }
     
+    private void genDisplayMenu() {
+        jsMenu.append("        \"").append(i18n.tr("Airspaces")).append("\" : openaip_cached_basemap,").append(RC);
+        jsMenu.append("        \"").append(i18n.tr("Shadow")).append("\" : hillslayer,").append(RC);
+        jsMenu.append("        \"").append(i18n.tr("Track")).append("\" : track,").append(RC);
+        jsMenu.append("        \"").append(i18n.tr("Thermals")).append("\": THmarkers,").append(RC);
+        jsMenu.append("        \"").append(i18n.tr("Transitions")).append("\": GLmarkers,").append(RC);        
+    }
+    
     /**
      * HTML generation of the map
      * @param traceVisu 
@@ -853,8 +863,10 @@ public class map_visu {
                         endHTML = galleryHTML.replace("//%btnGallery%", jsGalleryCode); 
                     } else
                         endHTML = beforeGalleryHTML;
-                } 
-                String Code_HTML = endHTML.replace("%legende%", jsLegende.toString());
+                }
+                genDisplayMenu();
+                String menu_HTML = endHTML.replace("%DisplayMenu%", jsMenu.toString());
+                String Code_HTML = menu_HTML.replace("%legende%", jsLegende.toString());                
                 map_HTML = Code_HTML;      
                 map_OK = true;
             }
