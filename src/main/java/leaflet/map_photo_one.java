@@ -141,7 +141,7 @@ public class map_photo_one {
         jsMarker.append("}").append(RC);       
         
         jsInfoMsg.append("var infoMsg = '").append(i18n.tr("Click on timeline")).append("<br />");
-        jsInfoMsg.append("to place the photo marker").append("';");
+        jsInfoMsg.append(i18n.tr("to place the photo marker")).append("';");
         
         for(int i = 1; i<=totPoints; i = i+step)
         {
