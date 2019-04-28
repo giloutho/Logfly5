@@ -738,7 +738,6 @@ public class traceGPS {
                                     // Ces paramètres calculés sur L'UTC seront modifiés plus tard après calcul du décalage UTC
                                     // On eu des vols réalisés en Australie le 1er janvier à 10h où l'UTC est au 31 décembre à 23h... 
                                     Date_Vol = LocalDateTime.of(Annee, Mois, Jour,0,0,0);
-                                    if (Annee > 2098 || Annee < 2011) bug2019(SearchDate.group(3),Mois,Jour);
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                     Decodage_HFDTE = true;                                                                          
                                 }                                                                 
@@ -1470,25 +1469,16 @@ public class traceGPS {
                     if (nbPoint == 0) {
                         // take off time
                         if (ldt != null) {
-                            int Annee = ldt.getYear();
-                            if (Annee > 2098 || Annee < 2011) {
-                                String sYear = String.valueOf(ldt.getYear());
-                                if (sYear.length() == 4) {
-                                    sYear = sYear.substring(2, 4);
-                                    bug2019(sYear,ldt.getMonthValue(),ldt.getDayOfMonth());
-                                    DT_Deco = Date_Vol;
-                                }
-                            }
-                            else
-                                DT_Deco = ldt;                                                        
+                            DT_Deco = ldt;
                         } else {
                             // Time field can be null (BaseCamp GPX generation)
                             DT_Deco = LocalDateTime.of(2000, 1, 1, 0, 0, 0);                                   
                             // For SQLIte
                             Date_Vol_SQL = "2000-01-01 ";
                         }
-                        // flight date                      
-                        Date_Vol = DT_Deco;
+                        // flight date                             
+                        //Date_Vol = DT_Deco;  // it was a mystake, we update hours, mn and sec by addition in Verif_tb_TotPoints
+                        Date_Vol = LocalDateTime.of(DT_Deco.getYear(), DT_Deco.getMonth(), DT_Deco.getDayOfMonth(),0,0,0);
                         sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                         if (!avecPoints) {
                             LocalDateTime iniDate_Vol = Date_Vol;
@@ -1759,20 +1749,37 @@ public class traceGPS {
      * old GPS like Reversale do not account for this change and display incorrect dates
      * @param ldtBug 
      */
-    public void bug2019(String bugYear, int iMonth, int iDay) {
-        // l'année prochaine, il te colle 00   !!!
-        int iYear = Integer.parseInt(bugYear);
-        int Annee;
-        if (iYear > 98)
-            Annee = Integer.parseInt("19"+bugYear);
-        else
-            Annee = Integer.parseInt("20"+bugYear);
-        LocalDateTime bugLdt = LocalDateTime.of(Annee, iMonth, iDay,0,0,0);
-        LocalDateTime wnro = LocalDateTime.of(1999, 8, 22, 00, 00, 00);
-        LocalDateTime newWnro = LocalDateTime.of(2019, 4, 7, 00, 00, 00);
-        long weeks = ChronoUnit.WEEKS.between(wnro, bugLdt);
-        long days = ChronoUnit.DAYS.between(wnro,bugLdt);
-        Date_Vol = newWnro.plusDays(days);
+    public void bug2019() {
+        
+        DateTimeFormatter fHDTE = DateTimeFormatter.ofPattern("ddMMYY");
+        String strDateOriginal = "HFDTE"+Date_Vol.format(fHDTE);
+        String sOriginalYear = String.valueOf(Date_Vol.getYear());
+        if (sOriginalYear.length() == 4) {
+            String sYear = sOriginalYear.substring(2, 4);
+            int iYear = Integer.parseInt(sYear);
+            int iMonth = Date_Vol.getMonthValue();
+            int iDay = Date_Vol.getDayOfMonth();                
+            int Annee;
+            if (iYear > 98)
+                Annee = Integer.parseInt("19"+sYear);
+            else
+                Annee = Integer.parseInt("20"+sYear);
+            LocalDateTime bugLdt = LocalDateTime.of(Annee, iMonth, iDay,0,0,0);
+            LocalDateTime wnro = LocalDateTime.of(1999, 8, 22, 00, 00, 00);
+            LocalDateTime newWnro = LocalDateTime.of(2019, 4, 7, 00, 00, 00);
+            long weeks = ChronoUnit.WEEKS.between(wnro, bugLdt);
+            long days = ChronoUnit.DAYS.between(wnro,bugLdt);
+            LocalDateTime goodDate = newWnro.plusDays(days);
+            Date_Vol = goodDate;            
+        //    Date_Vol_SQL = DT_Deco.format(formatterSQL); 
+            String strDateNew = "HFDTE"+goodDate.format(fHDTE);            
+            FicIGC = FicIGC.replace(strDateOriginal, strDateNew);
+            if (Origine == "GPX") {
+                String sNewYear = String.valueOf(Date_Vol.getYear());
+                FicGPX = FicGPX.replaceAll(sOriginalYear, sNewYear);
+                System.out.println("Remplacement éffectué...");
+            }
+        }            
     }
     
     /**
