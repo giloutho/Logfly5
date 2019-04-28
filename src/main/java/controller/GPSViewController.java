@@ -30,7 +30,10 @@ import gps.xctracer;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.logging.Level;
@@ -641,7 +644,14 @@ public class GPSViewController {
                     File fTrack = new File(trackPath);                    
                    // traceGPS tempTrack = new traceGPS(fTrack, false, myConfig);
                     traceGPS tempTrack = new traceGPS(fTrack, false, otherConfig);
-                    if (tempTrack.isDecodage()) {                                                                                                
+                    if (tempTrack.isDecodage()) {            
+                        if (currGPS == winGPS.gpsType.Rever) {
+                            int Annee = tempTrack.getDate_Vol().getYear();
+                            if (Annee > 2098 || Annee < 2011) {                                               
+                                traceGPS newTrack = bug2019(tempTrack,false);
+                                if (newTrack.isDecodage()) tempTrack = newTrack;
+                            }
+                        }      
                         SimpleDateFormat sdfSql = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");                        
                         java.util.Date igcDate = sdfSql.parse(tempTrack.getDate_Vol_SQL());     
                         // For uniform format in AfficheFlyList, we want date like DD.MM.YY and time HH:MM:SS this is German display format.
@@ -981,7 +991,14 @@ public class GPSViewController {
                                     }                                  
                                     if (strTrack != null ) {                                
                                         traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
-                                        if (downTrack.isDecodage()) { 
+                                        if (downTrack.isDecodage()) {  
+                                            if (currGPS == winGPS.gpsType.Rever) {
+                                                int Annee = downTrack.getDate_Vol().getYear();
+                                                if (Annee > 2098 || Annee < 2011) {                                               
+                                                    traceGPS newTrack = bug2019(downTrack,true);
+                                                    if (newTrack.isDecodage()) downTrack = newTrack;
+                                                }
+                                            }
                                             dbAdd myDbAdd = new dbAdd(myConfig,i18n);
                                             int resAdd = myDbAdd.addVolCarnet(downTrack);
                                             if (resAdd == 0) nbFlightIn++;
@@ -1059,6 +1076,53 @@ public class GPSViewController {
         } 
     }    
     
+    private traceGPS bug2019(traceGPS originalTrack, boolean totalPoints) {
+        traceGPS newTrack = null;
+        
+        DateTimeFormatter fHDTE = DateTimeFormatter.ofPattern("ddMMYY");
+        DateTimeFormatter fGPX = DateTimeFormatter.ofPattern("YYYY-MM-dd");
+        String strDateOriginal = "HFDTE"+originalTrack.getDate_Vol().format(fHDTE);
+        String gpxDateOriginal = originalTrack.getDate_Vol().format(fGPX);
+        String sOriginalYear = String.valueOf(originalTrack.getDate_Vol().getYear());
+        if (sOriginalYear.length() == 4) {
+            String sYear = sOriginalYear.substring(2, 4);
+            int iYear = Integer.parseInt(sYear);
+            int iMonth = originalTrack.getDate_Vol().getMonthValue();
+            int iDay = originalTrack.getDate_Vol().getDayOfMonth();                
+            int Annee;
+            if (iYear > 98)
+                Annee = Integer.parseInt("19"+sYear);
+            else
+                Annee = Integer.parseInt("20"+sYear);
+            LocalDateTime bugLdt = LocalDateTime.of(Annee, iMonth, iDay,0,0,0);
+            LocalDateTime wnro = LocalDateTime.of(1999, 8, 22, 00, 00, 00);
+            LocalDateTime newWnro = LocalDateTime.of(2019, 4, 7, 00, 00, 00);
+            long weeks = ChronoUnit.WEEKS.between(wnro, bugLdt);
+            long days = ChronoUnit.DAYS.between(wnro,bugLdt);
+            LocalDateTime goodDate = newWnro.plusDays(days);
+            String strDateNew = "HFDTE"+goodDate.format(fHDTE);   
+            String newTrackString = null;
+            if (originalTrack.getFicGPX()!= null) {
+                String gpxDateNew = goodDate.format(fGPX);
+                newTrackString = originalTrack.getFicGPX().replace(gpxDateOriginal, gpxDateNew);
+            } else {  
+                if (originalTrack.getFicIGC() != null) {
+                    newTrackString = originalTrack.getFicIGC().replace(strDateOriginal, strDateNew);
+                }
+            }
+            if (newTrackString != null ) {
+                if (totalPoints) {
+                    newTrack = new traceGPS(newTrackString, "", true, myConfig);             
+                } else {
+                    configProg otherConfig = new configProg();
+                    newTrack = new traceGPS(newTrackString,"", false, otherConfig);                
+                }
+            }
+        } 
+        
+        return newTrack; 
+    }    
+        
     private void archiveSyride() {
         
         ObservableList <Gpsmodel> checkedData = tableImp.getItems();
