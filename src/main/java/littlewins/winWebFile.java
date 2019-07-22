@@ -29,7 +29,7 @@ public class winWebFile {
         // it will be useful if we choose url according to current language
         myConfig = currConfig;
         this.sizeMax = pSizeMax;
-        i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
+        i18n = I18nFactory.getI18n("","lang/Messages",winWebFile.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
         this.htmlCode = pHTML;
         showBrowser();
     }    
