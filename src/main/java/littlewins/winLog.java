@@ -7,15 +7,15 @@
 package littlewins;
 
 import dialogues.alertbox;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -26,7 +26,6 @@ import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.privateData;
 import systemio.mylogging;
-import systemio.textio;
 import systemio.webio;
 
 /**
@@ -41,8 +40,8 @@ public class winLog {
     private String logTxt;
     private configProg myConfig;
     private I18n i18n; 
-    
-    TextField txtAdress;
+    private String fileName;
+
     TextArea txtLog;
     
     public winLog(configProg currConfig, int pAction) {
@@ -51,9 +50,11 @@ public class winLog {
         switch (pAction) {
             case 0:
                 readLogFile();
+                fileName = "currlog.txt";
                 break;
             case 1:
                 reportSystem();
+                fileName = "currsystem.txt";
                 break;
         }
         showText();
@@ -79,10 +80,6 @@ public class winLog {
         vbox.setPadding(new Insets(10));
         vbox.setSpacing(5);
         
-        Label lbMail = new Label();
-        lbMail.setText(i18n.tr("Your e-mail"));
-        txtAdress = new TextField();
-        txtAdress.setText(myConfig.getPiloteMail());
         txtLog = new TextArea();
         txtLog.setWrapText(true);
         txtLog.setText(logTxt);
@@ -94,7 +91,7 @@ public class winLog {
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
         Button btSend = new Button(i18n.tr("Send"));
         btSend.setOnAction((event) -> {
-            logSend();
+            sendLogFile();
             subStage.close();
         });
         Button btClose = new Button(i18n.tr("Close"));
@@ -103,7 +100,7 @@ public class winLog {
         });
         buttonBar.getChildren().addAll(btSend, btClose);
         
-        vbox.getChildren().addAll(lbMail,txtAdress,txtLog, buttonBar);
+        vbox.getChildren().addAll(txtLog, buttonBar);
         
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
@@ -115,66 +112,19 @@ public class winLog {
         subStage.showAndWait();
     }
     
-    private void logSend() {
-        
-        String mailAd = txtAdress.getText();        
-        if (mailAd == null || mailAd.equals("")) {
-            mailAd = "anonymous@logfly.org";
-        }
-        String sup_nom = myConfig.getDefaultPilote();
-        String sup_adresse = mailAd;
-        String sup_os = "";
-        switch (myConfig.getOS()) {
-            case WINDOWS :
-                sup_os = "Windows";
-                break;
-            case MACOS :
-                sup_os = "Mac Os";
-                break;
-            case LINUX :
-                sup_os = "Linux";
-                break;
-        }
-        String sup_Gps = "Inconnu";
-        String sup_categ = "Support";
-        String sup_message = logTxt;
-
-        // imposed by our php support script
-        String sup_full_name = "full_name";
-        String sup_email = "email";
-        String sup_phone = "phone";
-        String sup_city = "city";
-        String sup_subject = "subject";
-        String sup_comments = "comments";
-
-        StringBuilder sbParam = new StringBuilder();
-        sbParam.append(sup_full_name).append("=").append(sup_nom);
-        sbParam.append("&").append(sup_email).append("=").append(sup_adresse);
-        sbParam.append("&").append(sup_phone).append("=").append(sup_os);
-        sbParam.append("&").append(sup_city).append("=").append(sup_Gps);
-        sbParam.append("&").append(sup_subject).append("=").append(sup_categ);
-        sbParam.append("&").append(sup_comments).append("=").append(sup_message);    
-
+    private void sendLogFile() {
         try {
-            webio sendMsg = new webio();
-            int res = sendMsg.sendPost(privateData.phpSupport.toString(),sbParam.toString());
-            if (res ==200) {
-                alertbox aOk = new alertbox(myConfig.getLocale());
-                aOk.alertInfo(i18n.tr("File sent to support")); 
-            } else {
-                StringBuilder errMsg = new StringBuilder(i18n.tr("Message could not be sent"));
-                errMsg.append(" [ error ").append(String.valueOf(res)).append("]");                    
-                alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertInfo(errMsg.toString()); 
-                mylogging.log(Level.SEVERE, errMsg.toString());
-            }
+            File tempLog = systemio.tempacess.getAppFile("Logfly", fileName);
+            FileWriter fileWriter = new FileWriter(tempLog);
+            fileWriter.write(logTxt);
+            fileWriter.close();
+            winMail showMail = new winMail(myConfig,tempLog.getAbsolutePath(), true);  
         } catch (Exception e) {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertInfo(i18n.tr("Message could not be sent")); 
             StringBuilder sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-        }                
+            mylogging.log(Level.SEVERE, sbError.toString());         
+        }
     }
-    
 }
