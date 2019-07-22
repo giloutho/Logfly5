@@ -59,7 +59,7 @@ public class winSendDb {
         
     public winSendDb(configProg currConfig) {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);   
+        i18n = I18nFactory.getI18n("","lang/Messages",winSendDb.class.getClass().getClassLoader(),myConfig.getLocale(),0);   
         showWin();
     }    
     
