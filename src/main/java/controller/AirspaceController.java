@@ -7,6 +7,9 @@ package controller;
 
 import Logfly.Main;
 import airspacelib.dbAirspace;
+import com.chainstaysoftware.filechooser.FileChooserFx;
+import com.chainstaysoftware.filechooser.FileChooserFxImpl;
+import com.chainstaysoftware.filechooser.ViewType;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import geoutils.position;
@@ -32,7 +35,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
@@ -232,23 +234,49 @@ public class AirspaceController {
             levelFlight = 9999;            
         }
         
-        FileChooser fileChooser = new FileChooser();
-
-        //Set extension filter
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(extFilter);
-
-        //Show open file dialog
-        File selectedFile = fileChooser.showOpenDialog(null);        
-        if (selectedFile != null){    
-            actionDraw = false;
-            screenForTree();
-            readAirspaceFile(selectedFile);
-        }
-        // Dans Logfly on mettra à jour la barre d'état avec le nom du fichier
-        //labelFile.setText(file.getName());
-
+        final FileChooserFx fileChooser = new FileChooserFxImpl();
+        fileChooser.setShowHiddenFiles(false);
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("airspaces files (txt)", "*.txt", "*.TXT"));          
+        fileChooser.setShowMountPoints(true);       
+        fileChooser.setViewType(ViewType.List);
+        fileChooser.setDividerPositions(.15, .30);
+        fileChooser.showOpenDialog(null,fileOptional -> { 
+            final String res = fileOptional.toString();
+            String sPath;
+            // Cancel result string is : Optional.empty
+            if (res.contains("empty")) {
+                sPath = null;
+            } else {
+                // result string is Optional[absolute_path...]
+                String[] s = res.split("\\[");
+                if (s.length > 1)
+                    sPath = s[1].substring(0, s[1].length()-1);
+                else
+                    sPath = res;
+            }
+            replyReadFile(sPath);
+        });                
     }    
+    
+    private void replyReadFile(String strChooser) {
+    alertbox aError = new alertbox(myConfig.getLocale());
+    if (strChooser != null) {
+        try {
+            File selectedFile = new File(strChooser);            
+            if(selectedFile.exists()){
+                actionDraw = false;
+                screenForTree();
+                readAirspaceFile(selectedFile);                                
+            }
+        } catch (Exception ex) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(ex.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());  
+            aError = new alertbox(myConfig.getLocale());
+            aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+        }             
+    }
+}
     
     @FXML
     private void handleWrite(ActionEvent event) {
@@ -519,12 +547,51 @@ public class AirspaceController {
     }    
     
     private void gpxChoose() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("GPX format"), "*.gpx"));              
-        File selectedFile = fileChooser.showSaveDialog(null);        
-        if(selectedFile != null) buildGPX(selectedFile); 
+        
+        final FileChooserFx fileChooser = new FileChooserFxImpl();
+        fileChooser.setShowHiddenFiles(false);                                              
+        fileChooser.setShowMountPoints(true);       
+        fileChooser.setViewType(ViewType.List);
+        fileChooser.setDividerPositions(.15, .30);
+        fileChooser.showSaveDialog(null,fileOptional -> { 
+            final String res = fileOptional.toString();
+            String sPath;
+            // Cancel result string is : Optional.empty
+            if (res.contains("empty")) {
+                sPath = null;
+            } else {
+                // result string is Optional[absolute_path...]
+                String[] s = res.split("\\[");
+                if (s.length > 1)
+                    sPath = s[1].substring(0, s[1].length()-1);
+                else
+                    sPath = res;
+            }
+            replyGpxChoose(sPath, ".gpx");
+        });          
     }    
     
+    private void replyGpxChoose(String strChooser, String formatExt) {
+        int res = -1;
+        alertbox aError = new alertbox(myConfig.getLocale());
+        if (strChooser != null) {
+            try {
+                File save = new File(strChooser);  
+                if (!save.getPath().toLowerCase().endsWith(formatExt)) { 
+                    save = new File(save.getPath() + formatExt); 
+                }
+                buildGPX(save); 
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                aError = new alertbox(myConfig.getLocale());
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+            }                    
+        } else {
+            aError.alertNumError(res);
+        }
+    }        
     
     private void buildGPX(File pFile) {
         
@@ -1167,38 +1234,102 @@ public class AirspaceController {
     
     
     private void fileMerge() {
-        FileChooser fileChooser = new FileChooser();
-
-        //Set extension filter
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Open Air files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(extFilter);
-
-        //Show open file dialog
-        File selectedFile = fileChooser.showOpenDialog(null);
-        if (selectedFile != null){    
-            StringBuilder sbInfo = new StringBuilder();
-            viewReset(true);
-            currDbAir = new dbAirspace(selectedFile, currDbAir.getDbConn());
-            if (currDbAir.isDbOK()) {
-                sbInfo.append(i18n.tr("Merge into memory successful")).append("    ");
-                sbInfo.append(String.valueOf(currDbAir.getNbAirspaces())).append(" ").append(i18n.tr("decoded airspaces"));
-                mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 60);
-                dbView = false;
-                buildTree();            
+        
+        final FileChooserFx fileChooser = new FileChooserFxImpl();
+        fileChooser.setShowHiddenFiles(false);
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Open Air files (*.txt)", "*.txt", "*.TXT"));          
+        fileChooser.setShowMountPoints(true);       
+        fileChooser.setViewType(ViewType.List);
+        fileChooser.setDividerPositions(.15, .30);
+        fileChooser.showOpenDialog(null,fileOptional -> { 
+            final String res = fileOptional.toString();
+            String sPath;
+            // Cancel result string is : Optional.empty
+            if (res.contains("empty")) {
+                sPath = null;
             } else {
-                sbInfo.append(i18n.tr("Decoding problem"));
-                mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 60);
-            } 
-           
-        } 
+                // result string is Optional[absolute_path...]
+                String[] s = res.split("\\[");
+                if (s.length > 1)
+                    sPath = s[1].substring(0, s[1].length()-1);
+                else
+                    sPath = res;
+            }
+            replyFileMerge(sPath);
+        });        
     }
     
+    private void replyFileMerge(String strChooser) {
+        alertbox aError = new alertbox(myConfig.getLocale());
+        if (strChooser != null) {
+            try {
+                File selectedFile = new File(strChooser);            
+                StringBuilder sbInfo = new StringBuilder();
+                viewReset(true);
+                currDbAir = new dbAirspace(selectedFile, currDbAir.getDbConn());
+                if (currDbAir.isDbOK()) {
+                    sbInfo.append(i18n.tr("Merge into memory successful")).append("    ");
+                    sbInfo.append(String.valueOf(currDbAir.getNbAirspaces())).append(" ").append(i18n.tr("decoded airspaces"));
+                    mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 60);
+                    dbView = false;
+                    buildTree();            
+                } else {
+                    sbInfo.append(i18n.tr("Decoding problem"));
+                    mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 60);
+                } 
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                aError = new alertbox(myConfig.getLocale());
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+            }             
+        }
+    }    
+    
     private void exportChoose() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("OpenAir format"), "*.txt"));              
-        File selectedFile = fileChooser.showSaveDialog(null);        
-        if(selectedFile != null) exportFile(selectedFile, false); 
+        final FileChooserFx fileChooser = new FileChooserFxImpl();
+        fileChooser.setShowHiddenFiles(false);                                              
+        fileChooser.setShowMountPoints(true);       
+        fileChooser.setViewType(ViewType.List);
+        fileChooser.setDividerPositions(.15, .30);
+        fileChooser.showSaveDialog(null,fileOptional -> { 
+            final String res = fileOptional.toString();
+            String sPath;
+            // Cancel result string is : Optional.empty
+            if (res.contains("empty")) {
+                sPath = null;
+            } else {
+                // result string is Optional[absolute_path...]
+                String[] s = res.split("\\[");
+                if (s.length > 1)
+                    sPath = s[1].substring(0, s[1].length()-1);
+                else
+                    sPath = res;
+            }
+            replyExportChoose(sPath, ".txt");
+        });          
     }        
+    
+    private void replyExportChoose(String strChooser, String formatExt) {
+        int res = -1;
+        alertbox aError = new alertbox(myConfig.getLocale());
+        if (strChooser != null) {
+            try {
+                File save = new File(strChooser);  
+                if (!save.getPath().toLowerCase().endsWith(formatExt)) { 
+                    save = new File(save.getPath() + formatExt); 
+                }
+                exportFile(save, false);
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                aError = new alertbox(myConfig.getLocale());
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+            }                    
+        } 
+    }       
     
     private void exportFile(File pFile, boolean Silent) {
         
