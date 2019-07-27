@@ -134,7 +134,6 @@ public class TraceViewController {
     private void replyRestoreChooser(String strChooser) {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        
         if (strChooser != null) {
             try {
                 File selectedFile = new File(strChooser);            
