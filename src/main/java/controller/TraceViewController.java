@@ -38,6 +38,14 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import com.chainstaysoftware.filechooser.FileChooserFx;
+import com.chainstaysoftware.filechooser.FileChooserFxImpl;
+import com.chainstaysoftware.filechooser.ViewType;
+import dialogues.dialogbox;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import java.util.logging.Level;
@@ -104,54 +112,91 @@ public class TraceViewController {
      */
     @FXML
     private void selectTrackFolder() throws Exception {
-        FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(dialogStage);        
-        if(selectedFile != null){ 
-            String extension = getFileExtension(selectedFile);
-            if (extension.equals("IGC") || extension.equals("igc") || extension.equals("GPX") || extension.equals("gpx")) {
-                if (extension.equals("GPX") || extension.equals("gpx")) 
-                    isGPX = true;
-                else
-                    isGPX = false;
-                extTrace = new traceGPS(selectedFile,true, myConfig);
-                if (extTrace.isDecodage()) {                 
-                    map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
-                    StringBuilder sbInfo = new StringBuilder();
-                    sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
-                    sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(" ").append(i18n.tr("points"));
-                    this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
-                    if (visuMap.isMap_OK()) {
-                        mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
-                    }
-                    webAnchor.setVisible(true);
-                    buttonBar.setVisible(true);   
-                    top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                    new EventHandler<MouseEvent>() {
-                        @Override public void handle(MouseEvent e) {                        
-                            clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
-                        }
-                    });  
-                }  else {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    String errMsg;
-                    StringBuilder sbMsg = new StringBuilder();
-                    if (extTrace.Tb_Tot_Points.size() > 0)  {                            
-                        sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
-                        sbMsg.append(extTrace.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(                           extTrace.Tb_Good_Points.size());                              if (isGPX) {
-                            sbMsg.append(" -- "+i18n.tr("Try Cartography option"));
-                        }  
-                        errMsg = sbMsg.toString();
-                    } else {      
-                        sbMsg.append(i18n.tr("No valid points in this track file"));
-                        sbMsg.append(" -- "+i18n.tr("Try Cartography option"));
-                        errMsg = sbMsg.toString();
-                    }
-                    aError.alertError(errMsg);
-                }   
+        final FileChooserFx fileChooser = new FileChooserFxImpl();
+        fileChooser.setTitle(i18n.tr("Choose the track file : IGC or GPX"));
+        fileChooser.setShowHiddenFiles(false);
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("track files (igc or gpx)", "*.igc", "*.IGC", "*.gpx", "*.GPX"));                                                 
+        fileChooser.setShowMountPoints(true);       
+        fileChooser.setViewType(ViewType.List);
+        fileChooser.setDividerPositions(.15, .30);
+        fileChooser.showOpenDialog(null,fileOptional -> { 
+            final String res = fileOptional.toString();
+            String sPath;
+            // Cancel result string is : Optional.empty
+            if (res.contains("empty")) {
+                sPath = null;
             } else {
-                alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertError(i18n.tr("Accepted files: IGC or GPX"));
+                // result string is Optional[absolute_path...]
+                String[] s = res.split("\\[");
+                if (s.length > 1)
+                    sPath = s[1].substring(0, s[1].length()-1);
+                else
+                    sPath = res;
             }
+            replyRestoreChooser(sPath);
+        });        
+    }
+    
+    private void replyRestoreChooser(String strChooser) {
+        
+        alertbox aError = new alertbox(myConfig.getLocale());
+        
+        if (strChooser != null) {
+            try {
+                File selectedFile = new File(strChooser);            
+                if(selectedFile.exists()){
+                    String extension = getFileExtension(selectedFile);
+                    if (extension.equals("GPX") || extension.equals("gpx")) 
+                        isGPX = true;
+                    else
+                        isGPX = false;
+                    extTrace = new traceGPS(selectedFile,true, myConfig);
+                    if (extTrace.isDecodage()) {        
+                        map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
+                        StringBuilder sbInfo = new StringBuilder();
+                        sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
+                        sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(" ").append(i18n.tr("points"));
+                        this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
+                        if (visuMap.isMap_OK()) {
+                            mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
+                        }
+                        webAnchor.setVisible(true);
+                        buttonBar.setVisible(true);    
+                        top_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                        new EventHandler<MouseEvent>() {
+                            @Override public void handle(MouseEvent e) {                        
+                                clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
+                            }
+                        });                         
+                    } else {
+                        String errMsg;
+                        StringBuilder sbMsg = new StringBuilder();
+                        if (extTrace.Tb_Tot_Points.size() > 0)  {                            
+                            sbMsg.append(i18n.tr("Invalid Track")).append(" - ").append(i18n.tr("Rough Points")).append(" : ");
+                            sbMsg.append(extTrace.Tb_Tot_Points.size()).append(" ").append(i18n.tr("valid points")).append(" : ").append(                           extTrace.Tb_Good_Points.size());                              if (isGPX) {
+                                sbMsg.append(" -- "+i18n.tr("Try Cartography option"));
+                            }  
+                            errMsg = sbMsg.toString();
+                        } else {      
+                            sbMsg.append(i18n.tr("No valid points in this track file"));
+                            sbMsg.append(" -- "+i18n.tr("Try Cartography option"));
+                            errMsg = sbMsg.toString();
+                        }
+                        aError.alertError(errMsg);
+                        if (isGPX) {
+                            winTrackFile myTrace = new winTrackFile(extTrace.getFicGPX());
+                        } else {
+                            winTrackFile myTrace = new winTrackFile(extTrace.getFicIGC());
+                        }           
+                    }   
+                }
+            } catch (Exception ex) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(ex.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());  
+                aError = new alertbox(myConfig.getLocale());
+                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+            }             
         }
     }
     
