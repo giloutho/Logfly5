@@ -39,6 +39,8 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import littlewins.winBackup;
+import littlewins.winCsv;
 import littlewins.winLog;
 import littlewins.winMail;
 import littlewins.winSendDb;
@@ -423,15 +425,15 @@ public class RootLayoutController {
         MenuItem cmItem3 = new MenuItem(i18n.tr("Csv export"));        
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                mainApp.showXcplannerview();
+                winCsv myCsv = new winCsv(myConfig,i18n); 
             }
         });
         cm.getItems().add(cmItem3);  
         
-        MenuItem cmItem4 = new MenuItem(i18n.tr("Sql export"));        
+        MenuItem cmItem4 = new MenuItem(i18n.tr("Backup")+"/"+i18n.tr("Restore"));        
         cmItem4.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                comingSoon();
+                displayBackupWin(); 
             }
         });
         cm.getItems().add(cmItem4);    
@@ -446,12 +448,17 @@ public class RootLayoutController {
         
         return cm;
     }
-        
+    
+    private void displayBackupWin() {
+        winBackup myBack = new winBackup(myConfig,i18n, this); 
+    }
+    
     private void displaySystem() {
         winLog myLog = new winLog(myConfig,1); 
     }
     
     private void displayLog() {
+       // A modifier pour ajouter un message
         winLog myLog = new winLog(myConfig,0);        
     }
     
