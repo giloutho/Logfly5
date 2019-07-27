@@ -6,6 +6,9 @@
  */
 package controller;
 
+import com.chainstaysoftware.filechooser.DirectoryChooserFx;
+import com.chainstaysoftware.filechooser.DirectoryChooserFxImpl;
+import com.chainstaysoftware.filechooser.ViewType;
 import database.dbAdd;
 import database.dbSearch;
 import dialogues.alertbox;
@@ -32,6 +35,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -48,6 +52,7 @@ import trackgps.traceGPS;
 /**
  *
  * @author gil
+ * fileChooserFX from https://github.com/ricemery/FileChooserFx
  */
 public class ImportViewController {
     
@@ -126,22 +131,51 @@ public class ImportViewController {
      */
     @FXML
     private void selectImpFolder() throws Exception {
-        //if (myConfig.getPathImport() != null)
-        DirectoryChooser directoryChooser = new DirectoryChooser();     
+        
+        final DirectoryChooserFx dirChooser = new DirectoryChooserFxImpl();
+        
         String iniPath = myConfig.getPathImport();
         if (iniPath != null && !iniPath.equals("")) {
             File iniImport = new File(iniPath);
             if (iniImport.exists()) {
-                directoryChooser.setInitialDirectory(new File(iniPath));
+                dirChooser.setInitialDirectory(new File(iniPath));
             }
         }
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
-            displayFlights(selectedDirectory);
-        }        
+        
+        dirChooser.setViewType(ViewType.ListWithPreview);
+        dirChooser.setShowMountPoints(true);
+        dirChooser.setDividerPosition(.15);
+        dirChooser.showDialog(null,fileOptional -> { 
+            final String res = fileOptional.toString();
+            String sPath;
+            // Cancel result string is : Optional.empty
+            if (res.contains("empty")) {
+                sPath = null;
+            } else {
+                // result string is Optional[absolute_path...]
+                String[] s = res.split("\\[");
+                if (s.length > 1)
+                    sPath = s[1].substring(0, s[1].length()-1);
+                else
+                    sPath = res;
+            }
+            replyChooser(sPath);
+        });        
+    }
+    
+    private void replyChooser(String strChooser) {
+        
+        if (strChooser != null) {
+            File selectedDirectory = new File(strChooser);            
+            if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
+                displayFlights(selectedDirectory);
+            }
+        }
     }
     
     private void displayFlights(File fImport)  {
+        
+        StringBuilder sbMsg;
         try {
             // This clear section was in listtracksFiles
             // this was a big bug cause by recursive call of listTracksFiles
@@ -155,12 +189,16 @@ public class ImportViewController {
             float seconds = (tempsFin - tempsDebut) / 1000F;
             System.out.println("Nombre de traces : "+trackPathList.size());
             System.out.println("Opération effectuée en: "+ Float.toString(seconds) + " secondes.");
+            sbMsg = new StringBuilder();
+            sbMsg.append(i18n.tr("Detected tracks in folder")).append(" ");
+            sbMsg.append(fImport.getAbsolutePath()).append(" : ") .append(String.valueOf(trackPathList.size()));
+            rootController.updateMsgBar(sbMsg.toString(), true, 60);
             if (trackPathList.size() > 0) {
                 importDirectory = fImport;
-                InitialiseTableData();
+                initialiseTableData();
             } else {
                 clearData();
-                StringBuilder sbMsg = new StringBuilder();
+                sbMsg = new StringBuilder();
                 sbMsg.append(i18n.tr("Tracks in folder")).append(" ");
                 sbMsg.append(fImport.getAbsolutePath()).append(" : ") .append("0");
                 rootController.updateMsgBar(sbMsg.toString(), true, 60);
@@ -213,7 +251,7 @@ public class ImportViewController {
      * Flight parameters pushed in the table
      * if a flight not exists in  the logbook, the line is checked
      */
-    private void InitialiseTableData() {
+    private void initialiseTableData() {
         
         traceGPS myTrace;
         int nbTracks = 0;
@@ -239,7 +277,12 @@ public class ImportViewController {
                     // for sorting the list we keep SQL date
                     imp.setColSort(myTrace.getDate_Vol_SQL());                    
                     dataImport.add(imp);                   
-                }            
+                } else {
+                    alertbox aError = new alertbox(myConfig.getLocale());
+                    StringBuilder sbMsg = new StringBuilder();                         
+                    sbMsg.append(i18n.tr("Invalid Track")).append(" : ").append(fMyTrace.getName());
+                    aError.alertError(sbMsg.toString());
+                }         
             }
         }   
         Comparator<? super Import> comparatorDate = new Comparator<Import>() {
