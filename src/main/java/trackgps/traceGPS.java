@@ -883,7 +883,7 @@ public class traceGPS {
                                     tzVol = tzCalcul(Point1);
                                     if (tzVol.getID() != null)  {
                                         ZonedDateTime utcZDT = Point1.dHeure.atZone(ZoneId.of("Etc/UTC"));
-                                        DT_Deco = LocalDateTime.ofInstant(utcZDT.toInstant(), ZoneId.of(tzVol.getID()));                                         
+                                        DT_Deco = LocalDateTime.ofInstant(utcZDT.toInstant(), ZoneId.of(tzVol.getID()));             
                                     } else  {
                                         // no timezone, we keep UTC time
                                         DT_Deco = Point1.dHeure;
@@ -909,13 +909,15 @@ public class traceGPS {
                                     // We must test j Sometimes, the GPS screwed
                                     // we find tracks with only one B record
                                     if (j > ideb)  {
-                                        while (!DebChar.equals("B") || j == ideb ) {
+                                        while (j >= ideb)  {
                                             j--;
                                             DebChar = sLine[j].substring(0,1);
+                                            if (DebChar.equals("B")) {
+                                                break;
+                                            }
                                         }
                                     }
-                                    calcLastPoint(sLine[j],iniDate_Vol);
-                                    Decodage = true;
+                                    Decodage = calcLastPoint(sLine[j],iniDate_Vol);                                    
                                     return;
                                 }                                                                        
                             }
@@ -1022,84 +1024,100 @@ public class traceGPS {
     
     
     /**
-     * When track is not completely decoded
-     * this function is called to compute flight duration with last point
+
      * @param lastB
      * @param iniDateVol 
      */
-    private void calcLastPoint(String lastB, LocalDateTime iniDateVol ) {
+    /**
+     * When track is not completely decoded
+     * this function is called to compute flight duration with last point
+     * @param lastB
+     * @param iniDateVol
+     * @return 
+     */
+    private boolean calcLastPoint(String lastB, LocalDateTime iniDateVol ) {
         String DebMot;
         int Deg;
         double Min,Sec;
         int Alti_Baro;
         int Alti_GPS;
+        boolean res = false;
         
-        if (lastB.length() > 34) {
-            if (lastB.length() > 24)
-                DebMot = lastB.substring(24,25);
-            else
-                DebMot = "";
-            Alti_Baro = 0;
-            Alti_GPS = 0;
-            if (DebMot.equals("V"))  {
-                if (lastB.length() > 30)                                    
-                    Alti_Baro = checkParseInt(lastB.substring(25,30),0);
+        try {
+            if (lastB.length() > 34) {
+                if (lastB.length() > 24)
+                    DebMot = lastB.substring(24,25);
                 else
-                    Alti_Baro = 0;              
-            }
-            if (DebMot.equals("A"))  {
-                if (lastB.length() > 30)                                    
-                    Alti_Baro = checkParseInt(lastB.substring(25,30),0);
-                else
-                    Alti_Baro = 0;    
-                if (lastB.length() > 34)                                    
-                    Alti_GPS = checkParseInt(lastB.substring(30,35),0);
-                else
-                    Alti_GPS = 0;  
-            }
-            pointIGC Point1 = new pointIGC();
-            Point1.setComment("");
-            Point1.setAltiBaro(Alti_Baro);
-            Point1.setAltiGPS(Alti_GPS);            
-            // latitude decoding
-            Deg = checkParseInt(lastB.substring(7,9),0);
-            Min = checkParseDouble(lastB.substring(9,11),0);
-            Sec = (checkParseDouble(lastB.substring(11,14),0)/1000) * 60;                           
-            Point1.setLatitudeDMS(Deg, Min, Sec, lastB.substring(14,15));
-            // recorded in seconds for scoring
-            Min = checkParseDouble(lastB.substring(9,14),0);
-            Point1.setLatitudeSec(Deg,(int)Min,lastB.substring(14,15)); 
+                    DebMot = "";
+                Alti_Baro = 0;
+                Alti_GPS = 0;
+                if (DebMot.equals("V"))  {
+                    if (lastB.length() > 30)                                    
+                        Alti_Baro = checkParseInt(lastB.substring(25,30),0);
+                    else
+                        Alti_Baro = 0;              
+                }
+                if (DebMot.equals("A"))  {
+                    if (lastB.length() > 30)                                    
+                        Alti_Baro = checkParseInt(lastB.substring(25,30),0);
+                    else
+                        Alti_Baro = 0;    
+                    if (lastB.length() > 34)                                    
+                        Alti_GPS = checkParseInt(lastB.substring(30,35),0);
+                    else
+                        Alti_GPS = 0;  
+                }
+                pointIGC Point1 = new pointIGC();
+                Point1.setComment("");
+                Point1.setAltiBaro(Alti_Baro);
+                Point1.setAltiGPS(Alti_GPS);            
+                // latitude decoding
+                Deg = checkParseInt(lastB.substring(7,9),0);
+                Min = checkParseDouble(lastB.substring(9,11),0);
+                Sec = (checkParseDouble(lastB.substring(11,14),0)/1000) * 60;                           
+                Point1.setLatitudeDMS(Deg, Min, Sec, lastB.substring(14,15));
+                // recorded in seconds for scoring
+                Min = checkParseDouble(lastB.substring(9,14),0);
+                Point1.setLatitudeSec(Deg,(int)Min,lastB.substring(14,15)); 
 
-            // longitude decoding
-            Deg = checkParseInt(lastB.substring(15,18),0);
-            Min = checkParseDouble(lastB.substring(18,20),0);
-            Sec = (checkParseDouble(lastB.substring(20,23),0)/1000) * 60;
-            Point1.setLongitudeDMS(Deg, Min, Sec, lastB.substring(23,24));
-            // recorded in seconds for scoring
-            Min = checkParseDouble(lastB.substring(18,23),0);
-            Point1.setLongitudeSec(Deg,(int)Min,lastB.substring(23,24));                       
-            // date coding Decodage_HFDTE is necessarily OK
-            Point1.setdHeure(iniDateVol,checkParseInt(lastB.substring(1,3),0), checkParseInt(lastB.substring(3,5),0), checkParseInt(lastB.substring(5,7),0));                
-            // Update final flight parameters
-            long decUTC = (long) (utcOffset*3600);
-            DT_Attero = Point1.dHeure.plusSeconds(decUTC);
-            // altitude landing recorded            
-            // it's possible to compute flight duration
-            Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
-            if (Duree_Vol > 0) {
-                // compute average period between two points            
-                LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
-                sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
-                colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
-            } else {
-                sDuree_Vol = "not def";
-                colDureeVol = "not def";
-            }
-                        
-            Alt_Attero_Baro = Point1.AltiBaro;
-            Alt_Attero_GPS = Point1.AltiGPS;
-            
-        }                
+                // longitude decoding
+                Deg = checkParseInt(lastB.substring(15,18),0);
+                Min = checkParseDouble(lastB.substring(18,20),0);
+                Sec = (checkParseDouble(lastB.substring(20,23),0)/1000) * 60;
+                Point1.setLongitudeDMS(Deg, Min, Sec, lastB.substring(23,24));
+                // recorded in seconds for scoring
+                Min = checkParseDouble(lastB.substring(18,23),0);
+                Point1.setLongitudeSec(Deg,(int)Min,lastB.substring(23,24));                       
+                // date coding Decodage_HFDTE is necessarily OK
+                Point1.setdHeure(iniDateVol,checkParseInt(lastB.substring(1,3),0), checkParseInt(lastB.substring(3,5),0), checkParseInt(lastB.substring(5,7),0));                
+                // Update final flight parameters
+                long decUTC = (long) (utcOffset*3600);
+                DT_Attero = Point1.dHeure.plusSeconds(decUTC);
+                
+                Alt_Attero_Baro = Point1.AltiBaro;
+                Alt_Attero_GPS = Point1.AltiGPS;
+                
+                // altitude landing recorded            
+                // it's possible to compute flight duration
+                Duree_Vol = Duration.between(DT_Deco,DT_Attero).getSeconds();
+                 if (Duree_Vol > 0) {
+                    // compute average period between two points            
+                    LocalTime TotSecondes = LocalTime.ofSecondOfDay(Duree_Vol);
+                    sDuree_Vol = TotSecondes.getHour()+"h"+TotSecondes.getMinute()+"mn";
+                    colDureeVol = String.format("%02d", TotSecondes.getHour())+":"+String.format("%02d", TotSecondes.getMinute())+":"+String.format("%02d", TotSecondes.getSecond());
+                    res = true;
+                } else {
+                    sDuree_Vol = "not def";
+                    colDureeVol = "not def";
+                    res = false;
+                }
+            }                            
+        } catch (Exception e) {
+            res = false;
+        }
+        
+        return res;
+        
     }
     
     /**
@@ -1138,15 +1156,19 @@ public class traceGPS {
      * @param ldt 
      */
     private void majParamUTC(LocalDateTime ldt)  {
-        ZoneId idz = ZoneId.of(tzVol.getID()); 
-        ZonedDateTime zdt = ZonedDateTime.of(ldt, idz);  
-        double decalage = tzVol.getRawOffset()/3600000;
-        if (idz.getRules().isDaylightSavings(zdt.toInstant()))  {            
-            decalage += tzVol.getDSTSavings()/3600000;           
-            dstOffset = true;            
-        } else  {
-            dstOffset = false;
-        }   
+        
+        double decalage = 0;
+        if (tzVol != null) {
+            ZoneId idz = ZoneId.of(tzVol.getID()); 
+            ZonedDateTime zdt = ZonedDateTime.of(ldt, idz);  
+            decalage = tzVol.getRawOffset()/3600000;
+            if (idz.getRules().isDaylightSavings(zdt.toInstant()))  {            
+                decalage += tzVol.getDSTSavings()/3600000;           
+                dstOffset = true;            
+            } else  {
+                dstOffset = false;
+            }
+        }
         utcOffset = decalage;
     }
     
