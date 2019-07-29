@@ -7,9 +7,6 @@
 package controller;
 
 import Logfly.Main;
-import com.chainstaysoftware.filechooser.FileChooserFx;
-import com.chainstaysoftware.filechooser.FileChooserFxImpl;
-import com.chainstaysoftware.filechooser.ViewType;
 import dialogues.alertbox;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -22,20 +19,18 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.image.WritableImage;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import leaflet.map_carto;
 import leaflet.map_carto_gpx;
 import leaflet.map_carto_igc;
+import littlewins.winFileChoose;
 import littlewins.winMail;
 import littlewins.winTrackFile;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.mylogging;
-import systemio.textio;
-import static systemio.textio.getFileExtension;
 import trackgps.simpleGPX;
 import trackgps.traceGPS;
 
@@ -92,68 +87,36 @@ public class CartoViewController {
     
     @FXML
     private void handleTrack(ActionEvent event) {
-        final FileChooserFx fileChooser = new FileChooserFxImpl();
-        fileChooser.setTitle(i18n.tr("Choose the track file : IGC or GPX"));
-        fileChooser.setShowHiddenFiles(false);
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("track files (igc or gpx)", "*.igc", "*.IGC", "*.gpx", "*.GPX"));                                                 
-        fileChooser.setShowMountPoints(true);       
-        fileChooser.setViewType(ViewType.List);
-        fileChooser.setDividerPositions(.15, .30);
-        fileChooser.showOpenDialog(null,fileOptional -> { 
-            final String res = fileOptional.toString();
-            String sPath;
-            // Cancel result string is : Optional.empty
-            if (res.contains("empty")) {
-                sPath = null;
-            } else {
-                // result string is Optional[absolute_path...]
-                String[] s = res.split("\\[");
-                if (s.length > 1)
-                    sPath = s[1].substring(0, s[1].length()-1);
-                else
-                    sPath = res;
-            }
-            replyFileChooser(sPath);
-        });          
-    }      
-    
-   private void replyFileChooser(String strChooser) {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
+        winFileChoose wf = new winFileChoose(myConfig, i18n, 1, null);  
+        File selectedFile = wf.getSelectedFile();
+        if (selectedFile != null && selectedFile.exists()) {
             try {
-                File selectedFile = new File(strChooser);    
-                if (selectedFile != null && selectedFile.exists()){    
-                    String fileExt = textio.getFileExtension(selectedFile).toUpperCase(); 
-                    if (fileExt.equals("IGC") || fileExt.equals("GPX")) {
-                        trackFileName = textio.getBaseName(selectedFile.getName());
-                        switch (fileExt) {
-                            case "IGC":
-                                igcTrack = new traceGPS(selectedFile,true, myConfig);   
-                                if (igcTrack.isDecodage()) {  
-                                    showIGC();
-                                }                     
-                                break;
-                            case "GPX":
-                                gpxTrack = new simpleGPX(selectedFile,myConfig);   
-                                if (gpxTrack.isDecodage()) {  
-                                    showGPX();
-                                }                     
-                                break;
-                        } 
-                    } else {
-                        aError.alertError(i18n.tr("Accepted files: IGC or GPX"));                
-                    }    
-                }                
+                String fileExt = wf.getExtFormat().toUpperCase();
+                switch (fileExt) {
+                    case "IGC":
+                        igcTrack = new traceGPS(selectedFile,true, myConfig);   
+                        if (igcTrack.isDecodage()) {  
+                            showIGC();
+                        }                     
+                        break;
+                    case "GPX":
+                        gpxTrack = new simpleGPX(selectedFile,myConfig);   
+                        if (gpxTrack.isDecodage()) {  
+                            showGPX();
+                        }                     
+                        break;
+                } 
             } catch (Exception ex) {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                 sbError.append("\r\n").append(ex.toString());
                 mylogging.log(Level.SEVERE, sbError.toString());  
                 aError = new alertbox(myConfig.getLocale());
                 aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }             
-        }
-    }    
+            }                       
+        }                   
+   }          
     
     @FXML
     private void handleReset(ActionEvent event) {
