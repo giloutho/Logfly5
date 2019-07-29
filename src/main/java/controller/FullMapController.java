@@ -28,10 +28,10 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import leaflet.map_visu;
+import littlewins.winFileChoose;
 import littlewins.winMail;
 import littlewins.winSaveXcp;
 import littlewins.winTrackFile;
@@ -358,10 +358,10 @@ public class FullMapController {
     
     private void airChecking() {
         int res = -1;
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(i18n.tr("OpenAir format"), "*.txt"));              
-        File selectedFile = fileChooser.showOpenDialog(null);            
-        if(selectedFile != null) {
+        
+        winFileChoose wf = new winFileChoose(myConfig, i18n, 3, configProg.getPathOpenAir());  
+        File selectedFile = wf.getSelectedFile();
+        if (selectedFile != null && selectedFile.exists()) {           
             checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile);
             if (trackCheck.isAirDbLoad()) {               
                 if (mapTrace.isDecodage()) {  
