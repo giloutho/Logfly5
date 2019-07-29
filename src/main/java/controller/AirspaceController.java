@@ -60,12 +60,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import leaflet.map_air;
 import leaflet.map_air_draw;
 import littlewins.winAirDraw;
 import littlewins.winAirSearch;
+import littlewins.winChooseFile;
 import model.airdraw;
 import model.airspacetree;
 import org.json.simple.JSONArray;
@@ -78,8 +78,6 @@ import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
 import systemio.tempacess;
-import trackgps.checkAirspace;
-import trackgps.traceGPS;
 
 /**
  *
@@ -233,50 +231,14 @@ public class AirspaceController {
             ch_Flight.getSelectionModel().selectFirst();
             levelFlight = 9999;            
         }
-        
-        final FileChooserFx fileChooser = new FileChooserFxImpl();
-        fileChooser.setShowHiddenFiles(false);
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("airspaces files (txt)", "*.txt", "*.TXT"));          
-        fileChooser.setShowMountPoints(true);       
-        fileChooser.setViewType(ViewType.List);
-        fileChooser.setDividerPositions(.15, .30);
-        fileChooser.showOpenDialog(null,fileOptional -> { 
-            final String res = fileOptional.toString();
-            String sPath;
-            // Cancel result string is : Optional.empty
-            if (res.contains("empty")) {
-                sPath = null;
-            } else {
-                // result string is Optional[absolute_path...]
-                String[] s = res.split("\\[");
-                if (s.length > 1)
-                    sPath = s[1].substring(0, s[1].length()-1);
-                else
-                    sPath = res;
-            }
-            replyReadFile(sPath);
-        });                
+        winChooseFile wf = new winChooseFile(myConfig, i18n, 2, configProg.getPathOpenAir());  
+        File selectedFile = wf.getSelectedFile();
+        if (selectedFile != null && selectedFile.exists()) {
+            actionDraw = false;
+            screenForTree();
+            readAirspaceFile(selectedFile); 
+        }          
     }    
-    
-    private void replyReadFile(String strChooser) {
-    alertbox aError = new alertbox(myConfig.getLocale());
-    if (strChooser != null) {
-        try {
-            File selectedFile = new File(strChooser);            
-            if(selectedFile.exists()){
-                actionDraw = false;
-                screenForTree();
-                readAirspaceFile(selectedFile);                                
-            }
-        } catch (Exception ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());  
-            aError = new alertbox(myConfig.getLocale());
-            aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-        }             
-    }
-}
     
     @FXML
     private void handleWrite(ActionEvent event) {
@@ -388,6 +350,7 @@ public class AirspaceController {
             airNameFile = pFile.getName();
             airTotal = currDbAir.getNbAirspaces();                        
             dbView = false;
+            myConfig.setPathOpenAir(pFile.getParent());
             buildTree();            
         } else {           
             alertbox aError = new alertbox(myConfig.getLocale());
@@ -1234,36 +1197,11 @@ public class AirspaceController {
     
     
     private void fileMerge() {
-        
-        final FileChooserFx fileChooser = new FileChooserFxImpl();
-        fileChooser.setShowHiddenFiles(false);
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Open Air files (*.txt)", "*.txt", "*.TXT"));          
-        fileChooser.setShowMountPoints(true);       
-        fileChooser.setViewType(ViewType.List);
-        fileChooser.setDividerPositions(.15, .30);
-        fileChooser.showOpenDialog(null,fileOptional -> { 
-            final String res = fileOptional.toString();
-            String sPath;
-            // Cancel result string is : Optional.empty
-            if (res.contains("empty")) {
-                sPath = null;
-            } else {
-                // result string is Optional[absolute_path...]
-                String[] s = res.split("\\[");
-                if (s.length > 1)
-                    sPath = s[1].substring(0, s[1].length()-1);
-                else
-                    sPath = res;
-            }
-            replyFileMerge(sPath);
-        });        
-    }
-    
-    private void replyFileMerge(String strChooser) {
         alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
-            try {
-                File selectedFile = new File(strChooser);            
+        winChooseFile wf = new winChooseFile(myConfig, i18n, 2, myConfig.getPathOpenAir());  
+        File selectedFile = wf.getSelectedFile();
+        if (selectedFile != null && selectedFile.exists()) {
+            try {           
                 StringBuilder sbInfo = new StringBuilder();
                 viewReset(true);
                 currDbAir = new dbAirspace(selectedFile, currDbAir.getDbConn());
@@ -1283,9 +1221,9 @@ public class AirspaceController {
                 mylogging.log(Level.SEVERE, sbError.toString());  
                 aError = new alertbox(myConfig.getLocale());
                 aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }             
-        }
-    }    
+            }          
+        }        
+    } 
     
     private void exportChoose() {
         final FileChooserFx fileChooser = new FileChooserFxImpl();
