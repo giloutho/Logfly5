@@ -7,9 +7,6 @@ package controller;
 
 import Logfly.Main;
 import airspacelib.dbAirspace;
-import com.chainstaysoftware.filechooser.FileChooserFx;
-import com.chainstaysoftware.filechooser.FileChooserFxImpl;
-import com.chainstaysoftware.filechooser.ViewType;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import geoutils.position;
@@ -65,7 +62,8 @@ import leaflet.map_air;
 import leaflet.map_air_draw;
 import littlewins.winAirDraw;
 import littlewins.winAirSearch;
-import littlewins.winChooseFile;
+import littlewins.winFileChoose;
+import littlewins.winFileSave;
 import model.airdraw;
 import model.airspacetree;
 import org.json.simple.JSONArray;
@@ -231,7 +229,7 @@ public class AirspaceController {
             ch_Flight.getSelectionModel().selectFirst();
             levelFlight = 9999;            
         }
-        winChooseFile wf = new winChooseFile(myConfig, i18n, 2, configProg.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, 2, configProg.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
             actionDraw = false;
@@ -510,51 +508,10 @@ public class AirspaceController {
     }    
     
     private void gpxChoose() {
-        
-        final FileChooserFx fileChooser = new FileChooserFxImpl();
-        fileChooser.setShowHiddenFiles(false);                                              
-        fileChooser.setShowMountPoints(true);       
-        fileChooser.setViewType(ViewType.List);
-        fileChooser.setDividerPositions(.15, .30);
-        fileChooser.showSaveDialog(null,fileOptional -> { 
-            final String res = fileOptional.toString();
-            String sPath;
-            // Cancel result string is : Optional.empty
-            if (res.contains("empty")) {
-                sPath = null;
-            } else {
-                // result string is Optional[absolute_path...]
-                String[] s = res.split("\\[");
-                if (s.length > 1)
-                    sPath = s[1].substring(0, s[1].length()-1);
-                else
-                    sPath = res;
-            }
-            replyGpxChoose(sPath, ".gpx");
-        });          
-    }    
-    
-    private void replyGpxChoose(String strChooser, String formatExt) {
-        int res = -1;
-        alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
-            try {
-                File save = new File(strChooser);  
-                if (!save.getPath().toLowerCase().endsWith(formatExt)) { 
-                    save = new File(save.getPath() + formatExt); 
-                }
-                buildGPX(save); 
-            } catch (Exception ex) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(ex.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());  
-                aError = new alertbox(myConfig.getLocale());
-                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }                    
-        } else {
-            aError.alertNumError(res);
-        }
-    }        
+        winFileSave wfs = new winFileSave(myConfig, i18n, 3, myConfig.getPathOpenAir());  
+        File selectedFile = wfs.getSelectedFile();
+        if (selectedFile != null) buildGPX(selectedFile);       
+    }           
     
     private void buildGPX(File pFile) {
         
@@ -1198,7 +1155,7 @@ public class AirspaceController {
     
     private void fileMerge() {
         alertbox aError = new alertbox(myConfig.getLocale());
-        winChooseFile wf = new winChooseFile(myConfig, i18n, 2, myConfig.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, 2, myConfig.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
             try {           
@@ -1226,48 +1183,10 @@ public class AirspaceController {
     } 
     
     private void exportChoose() {
-        final FileChooserFx fileChooser = new FileChooserFxImpl();
-        fileChooser.setShowHiddenFiles(false);                                              
-        fileChooser.setShowMountPoints(true);       
-        fileChooser.setViewType(ViewType.List);
-        fileChooser.setDividerPositions(.15, .30);
-        fileChooser.showSaveDialog(null,fileOptional -> { 
-            final String res = fileOptional.toString();
-            String sPath;
-            // Cancel result string is : Optional.empty
-            if (res.contains("empty")) {
-                sPath = null;
-            } else {
-                // result string is Optional[absolute_path...]
-                String[] s = res.split("\\[");
-                if (s.length > 1)
-                    sPath = s[1].substring(0, s[1].length()-1);
-                else
-                    sPath = res;
-            }
-            replyExportChoose(sPath, ".txt");
-        });          
-    }        
-    
-    private void replyExportChoose(String strChooser, String formatExt) {
-        int res = -1;
-        alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
-            try {
-                File save = new File(strChooser);  
-                if (!save.getPath().toLowerCase().endsWith(formatExt)) { 
-                    save = new File(save.getPath() + formatExt); 
-                }
-                exportFile(save, false);
-            } catch (Exception ex) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(ex.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());  
-                aError = new alertbox(myConfig.getLocale());
-                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }                    
-        } 
-    }       
+        winFileSave wfs = new winFileSave(myConfig, i18n, 2, myConfig.getPathOpenAir());  
+        File selectedFile = wfs.getSelectedFile();
+        if (selectedFile != null) exportFile(selectedFile, false);
+    }          
     
     private void exportFile(File pFile, boolean Silent) {
         
