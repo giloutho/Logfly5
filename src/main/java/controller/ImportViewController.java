@@ -6,9 +6,6 @@
  */
 package controller;
 
-import com.chainstaysoftware.filechooser.DirectoryChooserFx;
-import com.chainstaysoftware.filechooser.DirectoryChooserFxImpl;
-import com.chainstaysoftware.filechooser.ViewType;
 import database.dbAdd;
 import database.dbSearch;
 import dialogues.alertbox;
@@ -34,12 +31,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import leaflet.map_visu;
+import littlewins.winDirChoose;
 import model.Import;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -131,48 +127,13 @@ public class ImportViewController {
      */
     @FXML
     private void selectImpFolder() throws Exception {
-        
-        final DirectoryChooserFx dirChooser = new DirectoryChooserFxImpl();
-        
-        String iniPath = myConfig.getPathImport();
-        if (iniPath != null && !iniPath.equals("")) {
-            File iniImport = new File(iniPath);
-            if (iniImport.exists()) {
-                dirChooser.setInitialDirectory(new File(iniPath));
-            }
-        }
-        
-        dirChooser.setViewType(ViewType.ListWithPreview);
-        dirChooser.setShowMountPoints(true);
-        dirChooser.setDividerPosition(.15);
-        dirChooser.showDialog(null,fileOptional -> { 
-            final String res = fileOptional.toString();
-            String sPath;
-            // Cancel result string is : Optional.empty
-            if (res.contains("empty")) {
-                sPath = null;
-            } else {
-                // result string is Optional[absolute_path...]
-                String[] s = res.split("\\[");
-                if (s.length > 1)
-                    sPath = s[1].substring(0, s[1].length()-1);
-                else
-                    sPath = res;
-            }
-            replyChooser(sPath);
-        });        
-    }
-    
-    private void replyChooser(String strChooser) {
-        
-        if (strChooser != null) {
-            File selectedDirectory = new File(strChooser);            
-            if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 1, myConfig.getPathImport());
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
                 displayFlights(selectedDirectory);
-            }
         }
     }
-    
+        
     private void displayFlights(File fImport)  {
         
         StringBuilder sbMsg;
