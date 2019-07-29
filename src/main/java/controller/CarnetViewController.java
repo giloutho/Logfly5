@@ -67,17 +67,10 @@ import littlewins.winPhoto;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
-import com.chainstaysoftware.filechooser.FileChooserFx;
-import com.chainstaysoftware.filechooser.FileChooserFxImpl;
-import com.chainstaysoftware.filechooser.ViewType;
 import database.dbSearch;
 import igc.mergingIGC;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.time.LocalDate;
 import static java.time.LocalDateTime.now;
@@ -90,7 +83,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,15 +90,14 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
+import littlewins.winFileSave;
 import littlewins.winGlider;
 import littlewins.winMail;
 import littlewins.winRename;
 import littlewins.winSiteChoice;
-import model.Import;
 import model.Sitemodel;
 import photos.imgmanip;
 import photos.filesUtils;
@@ -115,8 +106,6 @@ import systemio.mylogging;
 import systemio.textio;
 import systemio.webio;
 import trackgps.scoring;
-import org.controlsfx.dialog.CommandLinksDialog;
-import org.controlsfx.control.action.Action;
 
 /**
  * FXML Controller class
@@ -778,58 +767,13 @@ public class CarnetViewController  {
      * se reporter à la javadoc https://controlsfx.bitbucket.io/ et Google -:)
      */
     private void exportTrace() {
-        
-        String formatExt;
-        
-        List<CommandLinksDialog.CommandLinksButtonType> links = new ArrayList<>();       
-        links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("IGC Format"),i18n.tr("The track is saved in IGC format with the .igc extension"),true));
-        links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("GPX Format"),i18n.tr("The track is saved in GPX format with the .gpx extension"),false));
-        
-        CommandLinksDialog dg = new CommandLinksDialog(links);
-        dg.setTitle(i18n.tr("Exported file type"));
-        Optional<ButtonType> result = dg.showAndWait();
-        String resDg = result.get().getText();       
-        if (resDg.contains("IGC")) 
-            formatExt = ".igc";
-        else if (resDg.contains("GPX")) 
-            formatExt = ".gpx";
-        else
-            formatExt = null;
-        if (formatExt != null) {
-            final FileChooserFx fileChooser = new FileChooserFxImpl();
-            fileChooser.setTitle(i18n.tr("Choose a name for the track file"));
-            fileChooser.setShowHiddenFiles(false);                                              
-            fileChooser.setShowMountPoints(true);       
-            fileChooser.setViewType(ViewType.List);
-            fileChooser.setDividerPositions(.15, .30);
-            fileChooser.showSaveDialog(null,fileOptional -> { 
-                final String res = fileOptional.toString();
-                String sPath;
-                // Cancel result string is : Optional.empty
-                if (res.contains("empty")) {
-                    sPath = null;
-                } else {
-                    // result string is Optional[absolute_path...]
-                    String[] s = res.split("\\[");
-                    if (s.length > 1)
-                        sPath = s[1].substring(0, s[1].length()-1);
-                    else
-                        sPath = res;
-                }
-                replyRestoreChooser(sPath, formatExt);
-            });  
-        }
-    }
-    
-    private void replyRestoreChooser(String strChooser, String formatExt) {
-        int res = -1;
         alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
+        int res = -1;
+        winFileSave wfs = new winFileSave(myConfig, i18n, 1, null);  
+        File saveTrack = wfs.getSelectedFile();
+        if (saveTrack != null) {
             try {
-                File saveTrack = new File(strChooser);  
-                if (!saveTrack.getPath().toLowerCase().endsWith(formatExt)) { 
-                    saveTrack = new File(saveTrack.getPath() + formatExt); 
-                }
+                String formatExt = wfs.getExtFormat();
                 switch (formatExt) {
                     case ".igc":
                         try {
@@ -863,18 +807,16 @@ public class CarnetViewController  {
                         }
                         break;
                 }
-                aError.alertNumError(res);
-            } catch (Exception ex) {
+                aError.alertNumError(res);     
+           } catch (Exception ex) {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                 sbError.append("\r\n").append(ex.toString());
                 mylogging.log(Level.SEVERE, sbError.toString());  
                 aError = new alertbox(myConfig.getLocale());
                 aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }                    
-        } else {
-            aError.alertNumError(res);
-        }
-    }        
+            }                   
+        }        
+    }    
     
     /**
      * Display details of a flight
