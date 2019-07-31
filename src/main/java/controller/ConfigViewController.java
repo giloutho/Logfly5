@@ -31,11 +31,11 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.paint.Paint;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import littlewins.winCoord;
+import littlewins.winDirChoose;
+import littlewins.winFileChoose;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -496,13 +496,12 @@ public class ConfigViewController {
      */
     @FXML
     private void changePathW() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 2, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             lbCurrFolder.setText(selectedDirectory.getAbsolutePath());   
             myConfig.setPathW(selectedDirectory.getAbsolutePath());
-        }
-        
+        }              
     }
     
     /**
@@ -511,9 +510,9 @@ public class ConfigViewController {
      */
     @FXML
     private void changePathImport() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 1, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             lbImpFolder.setText(selectedDirectory.getAbsolutePath());   
             myConfig.setPathImport(selectedDirectory.getAbsolutePath());
         }        
@@ -547,10 +546,10 @@ public class ConfigViewController {
     private void copyInNewFolder(Path srcPath, File selectedFile) {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        aError.alertInfo(i18n.tr("Select a folder for the logbook")); 
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
+        
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 3, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             try {
                 Path dstPath = Paths.get(selectedDirectory.getAbsolutePath()+File.separator+selectedFile.getName());
                 Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);  
@@ -577,15 +576,10 @@ public class ConfigViewController {
     @FXML
     private void restoreBackup() {
         alertbox aError = new alertbox(myConfig.getLocale());
-        aError.alertInfo(i18n.tr("Select logbook to restore"));  
-        String msg = i18n.tr("Logbook")+" ";
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter(msg, "*.db")                
-        );              
-        fileChooser.setTitle(i18n.tr("Select a logbook"));
-        File selectedFile = fileChooser.showOpenDialog(null);        
-        if(selectedFile != null){
+        
+        winFileChoose wf = new winFileChoose(myConfig, i18n, 4, null);  
+        File selectedFile = wf.getSelectedFile();
+        if (selectedFile != null) { 
             Path srcPath = Paths.get(selectedFile.getAbsolutePath());
             File folderDb = new File(myConfig.getPathDb());
             if (folderDb.exists() && folderDb.isDirectory() ) {
@@ -629,9 +623,9 @@ public class ConfigViewController {
      */
     @FXML
     private void changePathContest() {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 4, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             lbContestPath.setText(selectedDirectory.getAbsolutePath());   
             myConfig.setPathContest(selectedDirectory.getAbsolutePath());
         }        
@@ -644,9 +638,9 @@ public class ConfigViewController {
      */
     @FXML
     private void moveDb() throws InterruptedException {
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 5, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             File folderDb = new File(myConfig.getPathDb());
             if (folderDb.exists() && folderDb.isDirectory() ) {
                 FilenameFilter filter = new FilenameFilter() {
@@ -678,9 +672,9 @@ public class ConfigViewController {
     @FXML
     private void selectNewFolderDb() throws InterruptedException {
         
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory = directoryChooser.showDialog(dialogStage);
-        if(selectedDirectory != null){
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 3, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             File folderDb = new File(myConfig.getPathDb());
             if (folderDb.exists() && folderDb.isDirectory() ) {
                 FilenameFilter filter = new FilenameFilter() {
