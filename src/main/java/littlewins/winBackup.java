@@ -6,11 +6,6 @@
  */
 package littlewins;
 
-import com.chainstaysoftware.filechooser.DirectoryChooserFx;
-import com.chainstaysoftware.filechooser.DirectoryChooserFxImpl;
-import com.chainstaysoftware.filechooser.FileChooserFx;
-import com.chainstaysoftware.filechooser.FileChooserFxImpl;
-import com.chainstaysoftware.filechooser.ViewType;
 import controller.RootLayoutController;
 import dialogues.alertbox;
 import dialogues.dialogbox;
@@ -28,7 +23,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.xnap.commons.i18n.I18n;
@@ -38,7 +32,7 @@ import systemio.mylogging;
 /**
  *
  * @author gil
- * fileChooserFX from https://github.com/ricemery/FileChooserFx
+ * 
  */
 public class winBackup {
     
@@ -104,28 +98,25 @@ public class winBackup {
             dbName = myConfig.getDbName();               
         backupName = dbName+"_"+dateName+".dbk";
 
-        if (myConfig.isValidConfig()) {             
-            final DirectoryChooserFx dirChooser = new DirectoryChooserFxImpl();        
-            dirChooser.setViewType(ViewType.ListWithPreview);
-            dirChooser.setShowMountPoints(true);
-            dirChooser.setDividerPosition(.15);
-            dirChooser.setTitle(i18n.tr("Choose the destination folder"));       
-            dirChooser.showDialog(null,fileOptional -> { 
-                final String res = fileOptional.toString();
-                String sPath;
-                // Cancel result string is : Optional.empty
-                if (res.contains("empty")) {
-                    sPath = null;
-                } else {
-                    // result string is Optional[absolute_path...]
-                    String[] s = res.split("\\[");
-                    if (s.length > 1)
-                        sPath = s[1].substring(0, s[1].length()-1);
-                    else
-                        sPath = res;
-                }
-                replyChooser(sPath,backupName);
-            });       
+        if (myConfig.isValidConfig()) {   
+            alertbox aError = new alertbox(myConfig.getLocale());
+            winDirChoose wd = new winDirChoose(myConfig, i18n, 6, null);
+            File selectedDirectory = wd.getSelectedFolder();
+            if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
+                try {
+                    Path srcPath = Paths.get(myConfig.getFullPathDb());
+                    Path dstPath = Paths.get(selectedDirectory.getAbsolutePath()+File.separator+backupName);
+                    Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);  
+                    aError.alertNumError(0);   // Successful operation 
+                    subStage.close();                                   
+                } catch (Exception ex) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(ex.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());  
+                    aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+                }             
+            }
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError = new alertbox(myConfig.getLocale());
@@ -133,67 +124,13 @@ public class winBackup {
         }                                                        
     }
     
-    private void replyChooser(String strChooser, String backupName) {
-        
-        alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
-            try {
-                File selectedDirectory = new File(strChooser);            
-                if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
-                    Path srcPath = Paths.get(myConfig.getFullPathDb());
-                    Path dstPath = Paths.get(selectedDirectory.getAbsolutePath()+File.separator+backupName);
-                    Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);  
-                    aError.alertNumError(0);   // Successful operation 
-                    subStage.close();
-                }                
-            } catch (Exception ex) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(ex.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());  
-                aError = new alertbox(myConfig.getLocale());
-                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }                    
-        }
-    }
-    
     private void restoreLogFile() {
-        if (myConfig.isValidConfig()) { 
-            final FileChooserFx fileChooser = new FileChooserFxImpl();
-            fileChooser.setTitle(i18n.tr("Choose the file to restore"));
-            fileChooser.setShowHiddenFiles(false);
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("DBK files (dbk)", "*.dbk"));
-            fileChooser.setShowMountPoints(true);       
-            fileChooser.setViewType(ViewType.List);
-            fileChooser.setDividerPositions(.15, .30);
-            fileChooser.showOpenDialog(null,fileOptional -> { 
-                final String res = fileOptional.toString();
-                String sPath;
-                // Cancel result string is : Optional.empty
-                if (res.contains("empty")) {
-                    sPath = null;
-                } else {
-                    // result string is Optional[absolute_path...]
-                    String[] s = res.split("\\[");
-                    if (s.length > 1)
-                        sPath = s[1].substring(0, s[1].length()-1);
-                    else
-                        sPath = res;
-                }
-                replyRestoreChooser(sPath);
-            });
-        } else {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError = new alertbox(myConfig.getLocale());
-            aError.alertNumError(20);   // Invalid configuration            
-        }        
-    }
-    
-    private void replyRestoreChooser(String strChooser) {
         alertbox aError = new alertbox(myConfig.getLocale());
-        if (strChooser != null) {
-            try {
-                File selectedFile = new File(strChooser);            
-                if(selectedFile.exists()){
+        if (myConfig.isValidConfig()) { 
+            winFileChoose wf = new winFileChoose(myConfig, i18n, 5, null);  
+            File selectedFile = wf.getSelectedFile();
+            if (selectedFile != null && selectedFile.exists()) { 
+                try {
                     dialogbox dConfirm = new dialogbox(i18n);
                     StringBuilder sbMsg = new StringBuilder(); 
                     sbMsg.append(i18n.tr("Replace current log file by ")).append(selectedFile.getName());
@@ -215,15 +152,19 @@ public class winBackup {
                             aError.alertNumError(0);   // Successful operation 
                             subStage.close();                            
                         }
-                    }
-                }
-            } catch (Exception ex) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(ex.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());  
-                aError = new alertbox(myConfig.getLocale());
-                aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
-            }             
-        }
-    }
+                    }                    
+                } catch (Exception ex) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(ex.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());  
+                    aError = new alertbox(myConfig.getLocale());
+                    aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
+                } 
+            }
+        } else {
+            aError = new alertbox(myConfig.getLocale());
+            aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(20);   // Invalid configuration            
+        }        
+    }    
 }
