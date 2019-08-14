@@ -74,7 +74,6 @@ public class listGPS {
         GPS_List.add("Skytraxx 3");
         GPS_List.add("C-Pilot Evo");
         GPS_List.add("XC Tracer II"); 
-        GPS_List.add("Flymaster +"); 
         
         return GPS_List;
         
