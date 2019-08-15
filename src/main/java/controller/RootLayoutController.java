@@ -223,7 +223,7 @@ public class RootLayoutController {
         }
     }
     
-    private void originalSize() {
+    private void originalSize() {        
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sb = new StringBuilder();
         sb.append("Largeur : ").append(String.valueOf(mainApp.getPrimaryStage().getWidth()));
