@@ -431,6 +431,13 @@ public class configProg {
         configProg.version = version;
     }
 
+    public static String getPathOpenAir() {
+        return pathOpenAir;
+    }
+
+    public static void setPathOpenAir(String pathOpenAir) {
+        configProg.pathOpenAir = pathOpenAir;
+    }        
     
     private boolean dbCheckField(Connection con, String fieldName) {
         boolean res = false;       
