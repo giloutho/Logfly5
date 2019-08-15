@@ -17,8 +17,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import model.Gpsmodel;
 import settings.configProg;
 import systemio.mylogging;
 import systemio.textio;
@@ -46,6 +52,8 @@ public class gpsdump {
     private String strLog;
     private String portNumber; 
     private String linuxPort;
+    private ArrayList<String> listPFM;
+    private ObservableList <Gpsmodel> listFlights;   
     
 
     public gpsdump(configProg currConfig)  {
@@ -55,6 +63,7 @@ public class gpsdump {
     public gpsdump(GPSViewController callGPSView, int pRetour, String pNamePort, configProg currConfig)  {
         myConfig = currConfig;
         this.gpsController = callGPSView;
+        listFlights = FXCollections.observableArrayList();  
          switch (myConfig.getOS()) {
             case WINDOWS :
                 this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
@@ -84,7 +93,10 @@ public class gpsdump {
     public String getStrLog() {
         return strLog;
     }
-        
+
+    public ObservableList<Gpsmodel> getListFlights() {
+        return listFlights;
+    }            
         
     public boolean testGpsDump() {
         boolean gpsdumpOK = false;
@@ -377,6 +389,257 @@ public class gpsdump {
         return res;
     }
     
+    public void askFlightsList(int idGPS) {
+        
+        int res = getRawList(idGPS);
+        
+        if (res ==0) {            
+            switch (idGPS) {
+                case 1 :
+                    // Flymaster SD
+                    formattingList();
+                    break;
+                case 3 :
+                    formattingList();
+                    for (Gpsmodel nbItem : listFlights){
+                        System.out.println(nbItem.getDate()+" "+nbItem.getHeure()+" "+nbItem.getCol4());
+                    }                                              
+                   // System.exit(res);
+                    break;
+            }
+        } // if error read strLog;
+    }     
+    
+    private void formattingList() {
+        int nbFlights = 0;
+        
+        for (int i = 0; i < listPFM.size(); i++) {
+            String ligPFM = listPFM.get(i);            
+            Pattern pDate = Pattern.compile("Flight date\\s\\d{2}.\\d{2}.\\d{2}");
+            Matcher mDate = pDate.matcher(ligPFM);
+            if (mDate.find()) {   
+                String sDate = mDate.group(0).substring(12);
+                nbFlights++;
+                String sTime = null;
+                String sDur = null;
+                Pattern pTime = Pattern.compile("time\\s\\d{2}:\\d{2}:\\d{2}");
+                Matcher mTime = pTime.matcher(ligPFM);
+                if (mTime.find()) {
+                    sTime = mTime.group(0).substring(5);
+                    Pattern pDur = Pattern.compile("duration\\s\\d{2}:\\d{2}:\\d{2}");
+
+                    Matcher mDur = pDur.matcher(ligPFM);
+                    if (mDur.find()) {
+                        sDur = mDur.group(0).substring(9);
+                    }
+                }
+                Gpsmodel oneFlight = new Gpsmodel();                                             
+                oneFlight.setChecked(false);
+                oneFlight.setDate(sDate);
+                oneFlight.setHeure(sTime);
+                oneFlight.setCol4(sDur);
+                oneFlight.setCol5(null);                
+                listFlights.add(oneFlight);                
+            }             
+        }
+        if (nbFlights == 0) {
+            sbError = new StringBuilder();
+            for (int i = 0; i < listPFM.size(); i++) {                
+                sbError.append(listPFM.get(i)).append(CF);                
+            }              
+            System.out.println("Sb error "+sbError.toString());
+            strLog = sbError.toString();
+        }                
+    }
+    
+    private int getRawList(int idGPS)  {   
+        
+        int res = -1; 
+        String[] arrayParam = null;
+        boolean gpsDumpOK = false;
+        String wNoWin = "/win=0";  
+        String wComPort = "/com="+portNumber;
+        String wExit = "/exit";        
+        String sTypeGps = "";       
+        String sAction = "";
+        StringBuilder sbLog = new StringBuilder();
+        switch (idGPS) {
+            case 1:
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS :
+                        sTypeGps = "/gps=flymaster";
+                        break;
+                    case LINUX : 
+                        sTypeGps = "-gyn"; 
+                        break;
+                }
+                break;
+            case 2:
+                 switch (myConfig.getOS()) {
+                    case MACOS :
+                        sTypeGps = "/gps=flymasterold";
+                        break;
+                    case WINDOWS :                     
+                        sTypeGps = "/gps=flymasterold";
+                        break;
+                    case LINUX : 
+                        sTypeGps = "-gy";    // A vérifier
+                        break;
+                }
+                break;               
+            case 3:
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        sTypeGps = "/gps=iqcompeo";	// Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
+                        break;
+                    case MACOS :
+                        sTypeGps = "/gps=flytec";
+                        break;
+                    case LINUX :
+                        sTypeGps = "-gc";
+                        break;                        
+                }
+                break;
+            case 4:
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS : 
+                        sTypeGps = "/gps=ascent";
+                        break;
+                }
+                break; 
+            case 5:
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS : 
+                        sTypeGps = "/gps=syride";
+                        break;
+                    case LINUX :
+                        sTypeGps = "-gsy";
+                        break;                        
+                }
+                break;
+            case 6:
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS :                 
+                        sTypeGps = "/gps=leonardo";
+                        break;
+                }
+                break; 
+            case 7:
+                switch (myConfig.getOS()) {
+                    case MACOS :
+                    case WINDOWS : 
+                        sTypeGps = "/gps=digiflyair";
+                        break;
+                }
+                break;   
+            case 8:
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
+                        break;
+                    case MACOS :
+                        sTypeGps = "/gps=iqbasic";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
+                        break;
+                    case LINUX :
+                        sTypeGps = "-giq";
+                        break;
+                }
+                break;                
+        }        
+        switch (myConfig.getOS()) {
+            case MACOS :
+                sAction = "/flightlist";
+                break;
+            case WINDOWS :
+                //
+                break;
+            case LINUX :
+                //
+                break;
+        }        
+        try {
+            String executionPath = System.getProperty("user.dir");
+            switch (myConfig.getOS()) {
+                case WINDOWS :
+                    // to do windows path testing
+                    pathGpsDump = executionPath+File.separator+"GpsDump.exe";    // Windows
+                    File fwGpsDump = new File(pathGpsDump);
+                    if(fwGpsDump.exists()) gpsDumpOK = true;         
+                    break;                
+                case MACOS :
+                    pathGpsDump = executionPath+File.separator+"GpsDump";
+                    File fmGpsDump = new File(pathGpsDump);
+                    if(fmGpsDump.exists()) gpsDumpOK = true;  
+                    break;
+                case LINUX :
+                    pathGpsDump = executionPath+File.separator+"gpsdump";
+                    System.out.println(pathGpsDump);
+                    File flGpsDump = new File(pathGpsDump);
+                    if(flGpsDump.exists()) gpsDumpOK = true;                        
+                    break;                    
+            }    
+            if (gpsDumpOK) {
+                listPFM =new ArrayList<String>();
+                // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
+                // the author has serious doubts : ok only if program run correctly or crashes
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        //arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        break;
+                    case MACOS : 
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
+                        break;
+                    case LINUX :                         
+                        //arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
+                        break;                        
+                }
+                sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
+                System.out.println(java.util.Arrays.toString(arrayParam));
+                Process p = Runtime.getRuntime().exec(arrayParam);   
+                p.waitFor();
+                res = p.exitValue();  // 0 if all is OK  
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        //arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        break;
+                    case MACOS : 
+                        String ligne = ""; 
+                        if (res == 0) {
+                            BufferedReader output = getOutput(p);                    
+                            while ((ligne = output.readLine()) != null) {
+                                listPFM.add(ligne);
+                            }
+                        } else {
+                            BufferedReader error = getError(p);
+                            while ((ligne = error.readLine()) != null) {
+                                listPFM.add(ligne);
+                            }
+                        }                                               
+                        break;
+                    case LINUX :                         
+                        //arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
+                        break;   
+                }                
+            } else {
+                sbLog.append("Error 1201 ").append(CF);
+                res = 1201;
+                errorGpsDump = 1201;                
+            }    
+        } catch (Exception ex) {
+            sbLog.append("Error 1 ").append(CF);
+            res = 1;
+            errorGpsDump = 1;
+        }  
+        
+        strLog = sbLog.toString();
+        return res;            
+        
+    } 
+    
     public void start(int idGPS, int idFlight)  {                        
         ProgressForm pForm = new ProgressForm();
            
@@ -437,7 +700,7 @@ public class gpsdump {
                     } catch (Exception e) {
                         
                     }
-                    break;                      
+                    break;                        
             }
         else {
             alertbox aError = new alertbox(myConfig.getLocale());
