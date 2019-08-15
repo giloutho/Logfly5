@@ -6,9 +6,6 @@
  */
 package littlewins;
 
-import com.serialpundit.core.SerialComPlatform;
-import com.serialpundit.core.SerialComSystemProperty;
-import com.serialpundit.serial.SerialComManager;
 import gps.compass;
 import gps.connect;
 import gps.element;
@@ -24,7 +21,6 @@ import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
 import gps.xctracer;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -43,9 +39,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import jssc.SerialPortList;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
 import settings.listGPS;
+import settings.osType;
 import systemio.mylogging;
 
 /**
@@ -62,7 +60,11 @@ import systemio.mylogging;
  *             - Flytec 6020/6030 and 6015 -> serial port choiceboix become visible [listSerialPort()]
  *             - Reversale and other USB GPS detetc flights and waypoint folders
  * listSerialPort : fill the choicebox with available ports
- *      
+ * 
+ * 10/08/2019 Il faut abandonner SerialPundit qui pose trop de problème au profit de jssc
+ * Pour l'instant très complex à gérer on tente systématiquement la liste des vols Flymaster sans tester le GPS
+ * WinGPS n'est appelé que par GPSViewController (wpCall false) et WaypViewController (wpCall true)
+ * donc si wpCall false on renvoie connection OK pour le Flymaster
  */
 public class winGPS {
     
@@ -79,7 +81,7 @@ public class winGPS {
     private I18n i18n; 
     private configProg myConfig;   
     
-    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus}    
+    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer}    
     private ObservableList <listGPS.idGPS> allGPS;
     // current GPS
     private gpsType currGPS;
@@ -107,7 +109,7 @@ public class winGPS {
      * 
      * @param pConfig   Send Logfly settings
      * @param pI18n     Send current language
-     * @param wpCall    True if calling by WaypViewController
+     * @param pWpCall    True if calling by WaypViewController
      */
     public winGPS(configProg pConfig, I18n pI18n, boolean pWpCall)  {
         myConfig = pConfig;        
@@ -291,14 +293,28 @@ public class winGPS {
             case 1:
                 // 6020/6030
                 currGPS = gpsType.Flytec20;
-                if (wpCall) hBox3.setVisible(true);
-                listSerialPort();
+                if (wpCall) {
+                    hBox3.setVisible(true);
+                    listSerialPort();
+                } else {
+                    // Initially we test serial port and GPS answer
+                    // finally, for flight list we let GPSDump check GPS answer
+                    currNamePort = "nil";
+                    gpsPresent();
+                }
                 break;
             case 2:
                 // 6015
                 currGPS = gpsType.Flytec15;
-                if (wpCall) hBox3.setVisible(true);
-                listSerialPort();                
+                if (wpCall) {
+                    hBox3.setVisible(true);                
+                    listSerialPort();                
+                } else {
+                    // Initially we test serial port and GPS answer
+                    // finally, for flight list we let GPSDump check GPS answer
+                    currNamePort = "nil";
+                    gpsPresent();                    
+                }    
                 break;
             case 3:
                 currGPS = gpsType.Flynet; 
@@ -309,8 +325,15 @@ public class winGPS {
             case 4:    
                 // Flymaster old series
                 currGPS = gpsType.FlymOld;
-                if (wpCall) hBox3.setVisible(true);
-                listSerialPort();                
+                if (wpCall) {
+                    hBox3.setVisible(true);                
+                    listSerialPort();          
+                } else {
+                    // Initially we test serial port and GPS answer
+                    // finally, for flight list we let GPSDump check GPS answer
+                    currNamePort = "nil";
+                    gpsPresent();                    
+                }
                 break;
             case 5:
                 // Reversale
@@ -352,8 +375,15 @@ public class winGPS {
             case 11:
                 // Flymaster SD will be read with GPSDump
                 currGPS = currGPS = gpsType.FlymSD;  
-                if (wpCall) hBox3.setVisible(true);
-                listSerialPort();
+                if (wpCall) {
+                    hBox3.setVisible(true);                
+                    listSerialPort();
+                } else {
+                    // Initially we test serial port and GPS answer
+                    // finally, for flight list we let GPSDump check GPS answer
+                    currNamePort = "nil";
+                    gpsPresent();                    
+                }                    
                 break;
             case 12:  // Connect
                 currGPS = gpsType.Connect;  
@@ -378,13 +408,7 @@ public class winGPS {
                 hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
-                break;   
-            case 16:
-                // Flymaster will be read with Flymaster.java
-                currGPS = gpsType.FlymPlus;  
-                if (wpCall) hBox3.setVisible(true);
-                listSerialPort();
-                break;                 
+                break;              
         }                
     }    
     
@@ -393,14 +417,10 @@ public class winGPS {
      * a filter is applied based on OS
      */
     private void listSerialPort() {
-        SerialComManager scm;     
         int idxSerialList = 0;
         int idxListPort = 0;
         try {
-            scm = new SerialComManager();
-            SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
-            int osType = scp.getOSType();
-            String[] ports = scm.listAvailableComPorts();
+            String[] ports = SerialPortList.getPortNames();
             int idx = 0;
             if (ports.length > 0) {
                 ObservableList <String> portList;
@@ -415,7 +435,7 @@ public class winGPS {
                 Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
                 Pattern p6 = Pattern.compile("^/dev/ptmx.*");
                 for(String port: ports){
-                    if(osType == SerialComPlatform.OS_MAC_OS_X) {
+                    if (myConfig.getOS() == osType.MACOS) {                    
                         // Pour éviter de lister 25000 ports inutilisables
                         if (ports[idx].substring(0,8).equals("/dev/cu."))  {                 
                             portList.add(port);
@@ -424,7 +444,7 @@ public class winGPS {
                             } 
                             idxListPort++;
                         }
-                    }else if(osType == SerialComPlatform.OS_LINUX) {
+                    }else if (myConfig.getOS() == osType.LINUX)  {
                         // Pour éviter de lister 25000 ports inutilisables
                         if (!p1.matcher(port).matches() && !p2.matcher(port).matches() && !p3.matcher(port).matches()
                              && !p4.matcher(port).matches() && !p5.matcher(port).matches() && !p6.matcher(port).matches())
@@ -466,11 +486,7 @@ public class winGPS {
             sbError.append("\r\n").append(ex.toString());
             mylogging.log(Level.SEVERE, sbError.toString());
 
-        } catch (IOException ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-        }
+        } 
     }
     
     private void gpsNotPresent() {
@@ -522,17 +538,16 @@ public class winGPS {
                         }   
                     }
                     break;
-                case FlymSD :
-                case FlymPlus :
+                case FlymSD  :
                     if (currNamePort != null && !currNamePort.equals("")) {
-                        try {
+                        try {                            
                             flymaster fms = new flymaster();
                             if (fms.isPresent(currNamePort)) {    
                                 gpsPresent();
                             } else {
                                 gpsNotPresent();
                             } 
-                            fms.closePort();
+                            fms.closePort();                           
                         } catch (Exception e) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                             sbError.append("\r\n").append(e.toString());
