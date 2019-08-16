@@ -41,6 +41,7 @@ import org.json.simple.parser.JSONParser;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import settings.listLeague;
 import systemio.mylogging;
 import trackgps.checkAirspace;
@@ -359,7 +360,7 @@ public class FullMapController {
     private void airChecking() {
         int res = -1;
         
-        winFileChoose wf = new winFileChoose(myConfig, i18n, 3, configProg.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OACheck, configProg.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {           
             checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile);
