@@ -101,6 +101,7 @@ import littlewins.winSiteChoice;
 import model.Sitemodel;
 import photos.imgmanip;
 import photos.filesUtils;
+import settings.fileType;
 import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
@@ -769,7 +770,7 @@ public class CarnetViewController  {
     private void exportTrace() {
         alertbox aError = new alertbox(myConfig.getLocale());
         int res = -1;
-        winFileSave wfs = new winFileSave(myConfig, i18n, 1, null);  
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.IgcGpx, null, null);  
         File saveTrack = wfs.getSelectedFile();
         if (saveTrack != null) {
             try {
