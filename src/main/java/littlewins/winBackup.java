@@ -27,6 +27,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
+import settings.fileType;
 import systemio.mylogging;
 
 /**
@@ -127,7 +128,7 @@ public class winBackup {
     private void restoreLogFile() {
         alertbox aError = new alertbox(myConfig.getLocale());
         if (myConfig.isValidConfig()) { 
-            winFileChoose wf = new winFileChoose(myConfig, i18n, 5, null);  
+            winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.dbk, null);  
             File selectedFile = wf.getSelectedFile();
             if (selectedFile != null && selectedFile.exists()) { 
                 try {
