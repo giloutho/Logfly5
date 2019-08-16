@@ -45,6 +45,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import java.util.logging.Level;
 import littlewins.winFileChoose;
+import littlewins.winFileSave;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -475,17 +476,12 @@ public class TraceViewController {
      */
     private void exportTrace() {
         int res = -1;
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(i18n.tr("IGC format"), "*.igc"),
-                new FileChooser.ExtensionFilter(i18n.tr("GPX format"), "*.gpx")
-        );              
-        File selectedFile = fileChooser.showSaveDialog(null);        
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.IgcGpx, null, null);  
+        File selectedFile = wfs.getSelectedFile();      
         if(selectedFile != null){
-            String selExt = systemio.textio.getFileExtension(selectedFile);
-            selExt = selExt.toUpperCase();
+            String selExt = wfs.getExtFormat();                
             switch (selExt) {
-                case "IGC":
+                case ".igc":
                     try {
                         FileWriter fileWriter = null;
                         fileWriter = new FileWriter(selectedFile);
@@ -496,7 +492,7 @@ public class TraceViewController {
                         res = 2;
                     }
                     break;
-                case "GPX":
+                case ".gpx":
                    String exportGPX = null;
                     if (extTrace.getOrigine().equals("IGC")) {
                         res = extTrace.encodeGPX();
