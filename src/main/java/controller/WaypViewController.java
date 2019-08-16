@@ -68,6 +68,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import leaflet.map_waypoints;
+import littlewins.winFileChoose;
+import littlewins.winFileSave;
 import littlewins.winGPS;
 import littlewins.winMail;
 import littlewins.winOsmCities;
@@ -81,6 +83,7 @@ import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import systemio.mylogging;
 import waypio.pointRecord;
 import waypio.wpreadfile;
@@ -310,8 +313,8 @@ public class WaypViewController {
     
     @FXML
     private void handleReadFile() {
-        FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(dialogStage);        
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.wpt, null);  
+        File selectedFile = wf.getSelectedFile();     
         if(selectedFile != null){ 
             readFromFile(selectedFile.getAbsolutePath());
         }       
@@ -423,7 +426,7 @@ public class WaypViewController {
         String ficType = null;                                    
         String pFichier = readTxt8859(file);   
         ficType = "nil";
-        if (pFichier != null)  {
+        if (pFichier != null)  {            
             if (pFichier.indexOf("OziExplorer") > -1) {
                 ficType = "OZI";
             } else if (pFichier.indexOf("PCX5") > -1) {
@@ -488,21 +491,11 @@ public class WaypViewController {
     
     @FXML
     private void handleWriteFile() {
-        boolean resWrite = false;
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choisir le format de fichier...");
-        FileChooser.ExtensionFilter wptFilter = new FileChooser.ExtensionFilter("1. format OziExplorer (*.wpt)", "*.wpt");
-        FileChooser.ExtensionFilter compFilter = new FileChooser.ExtensionFilter("2. format CompeGPS (*.wpt)", "*.wpt");
-        FileChooser.ExtensionFilter pcxFilter = new FileChooser.ExtensionFilter("3. format PCX5 (*.pcx)", "*.pcx");
-        FileChooser.ExtensionFilter kmlFilter = new FileChooser.ExtensionFilter("4. format KML (*.kml)", "*.kml");
-        FileChooser.ExtensionFilter gpxFilter = new FileChooser.ExtensionFilter("5. format GPX (*.gpx)", "*.gpx");
-        FileChooser.ExtensionFilter cupFilter = new FileChooser.ExtensionFilter("6. format CUP (*.cup)", "*.cup");
-       // FileChooser.ExtensionFilter xcpFilter = new FileChooser.ExtensionFilter("fichiers waypoint (*.xcp)", "*.xcp");
-        fileChooser.getExtensionFilters().addAll(wptFilter,compFilter,pcxFilter,kmlFilter,gpxFilter,cupFilter);
-        File selectedFile = fileChooser.showSaveDialog(dialogStage);        
-        if(selectedFile != null){  
-            String sType = fileChooser.getSelectedExtensionFilter().getDescription().substring(0,1);
-            writeToFile(sType, selectedFile.getAbsolutePath());
+        
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.wpt, null, null);  
+        File saveWpt = wfs.getSelectedFile();
+        if (saveWpt != null) {        
+            writeToFile(wfs.getWptFormat(), saveWpt.getAbsolutePath());
         }
     }    
     
