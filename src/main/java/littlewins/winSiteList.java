@@ -178,7 +178,7 @@ public class winSiteList {
         webdown myLoad = new webdown(sUrl,tmpUpdateFiles, i18n, msg);
         if (myLoad.isDownSuccess()) {
             File downFile = new File(myLoad.getDownPath());
-            dbImport myImport = new dbImport(myConfig, i18n);
+            dbImport myImport = new dbImport(myConfig, i18n, null);
             myImport.importCsv(downFile);
         }
     }
