@@ -23,16 +23,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import kml.makingKml;
+import littlewins.winFileSave;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import trackgps.traceGPS;
 
 /**
@@ -276,9 +274,8 @@ public class KmlViewController implements Initializable {
             finalName = suggName+".kml"; 
         }        
         
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialFileName(finalName);
-        File savedFile = fileChooser.showSaveDialog(dialogStage);
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.Kml, null, finalName);  
+        File savedFile =  wfs.getSelectedFile();
         if (savedFile != null) {
             String sPath = savedFile.getAbsolutePath();
             if (!sPath.toLowerCase().contains(".kml")) sPath = sPath + ".kml";
