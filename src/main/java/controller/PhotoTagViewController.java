@@ -59,6 +59,7 @@ import javafx.stage.Stage;
 import leaflet.map_markers;
 import leaflet.map_photos;
 import littlewins.winCoord;
+import littlewins.winFileChoose;
 import littlewins.winMapPhotoPoint;
 import littlewins.winPhoto;
 import littlewins.winTrackFile;
@@ -70,6 +71,7 @@ import org.xnap.commons.i18n.I18nFactory;
 import photos.exifReader;
 import photos.filesUtils;
 import settings.configProg;
+import settings.fileType;
 import systemio.checking;
 import systemio.mylogging;
 import static systemio.textio.getFileExtension;
@@ -284,8 +286,8 @@ public class PhotoTagViewController {
     
     @FXML
     private void handleChoiceTrack(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(dialogStage);        
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, null);  
+        File selectedFile = wf.getSelectedFile();        
         if(selectedFile != null){ 
             String extension = getFileExtension(selectedFile);
             if (extension.equals("IGC") || extension.equals("igc") || extension.equals("GPX") || extension.equals("gpx")) {
