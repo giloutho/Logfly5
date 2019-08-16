@@ -30,6 +30,7 @@ import littlewins.winTrackFile;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import systemio.mylogging;
 import trackgps.simpleGPX;
 import trackgps.traceGPS;
@@ -89,7 +90,7 @@ public class CartoViewController {
     private void handleTrack(ActionEvent event) {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        winFileChoose wf = new winFileChoose(myConfig, i18n, 1, null);  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, null);  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
             try {
