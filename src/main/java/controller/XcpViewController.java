@@ -29,6 +29,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import littlewins.winFileChoose;
 import littlewins.winOsmCities;
 import littlewins.winSaveXcp;
 import model.Sitemodel;
@@ -37,6 +38,7 @@ import org.json.simple.parser.JSONParser;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import settings.privateData;
 import systemio.mylogging;
 
@@ -129,10 +131,8 @@ public class XcpViewController {
     @FXML
     private void handleRead() {
         // il faudra ajouter http://alpidev.com/xcplanner/  et le symbole ?
-        FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter xcpFilter = new FileChooser.ExtensionFilter(i18n.tr("Track files (*.xcp)"), "*.xcp");
-        fileChooser.getExtensionFilters().addAll(xcpFilter);
-        File selectedFile = fileChooser.showOpenDialog(null);        
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.xcp, null);  
+        File selectedFile = wf.getSelectedFile();
         if(selectedFile != null){    
             try {
                 JSONParser parser = new JSONParser();
