@@ -7,6 +7,7 @@
 package controller;
 
 import Logfly.Main;
+import database.dbImport;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import igc.pointIGC;
@@ -53,18 +54,19 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import leaflet.map_X_markers;
 import leaflet.map_markers;
-import littlewins.winChoose;
+import littlewins.winFileChoose;
+import littlewins.winFileSave;
 import littlewins.winSiteList;
 import model.Sitemodel;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import settings.osType;
 import systemio.mylogging;
 
@@ -262,6 +264,7 @@ public class SitesViewController {
     private void fillTable(String sReq) {
         Statement stmt = null;
         ResultSet rs = null;
+        int iDebug = 0;
         try {
             stmt = myConfig.getDbConn().createStatement();
             rs = stmt.executeQuery(sReq);
@@ -277,9 +280,12 @@ public class SitesViewController {
                     si.setType(rs.getString("S_Type"));         
                     si.setLatitude(rs.getDouble("S_Latitude"));
                     si.setLongitude(rs.getDouble("S_Longitude"));
-                    dataSites.add(si);                
+                    dataSites.add(si);      
+                    iDebug++;
                 }    
                 tableSites.setItems(sortedData);
+                tableSites.refresh();
+                System.out.println("J'ai rafraichi "+iDebug);
                 if (tableSites.getItems().size() > 0) {
                     tableSites.getSelectionModel().select(0);                    
                 }                
@@ -412,13 +418,12 @@ public class SitesViewController {
     }
 
     @FXML
-    private void pushAll() {
-        if (rdAll.isSelected()) {
-            String sReq = "SELECT * FROM Site ORDER BY S_Nom";
-            dataSites.clear();
-            mapViewer.getEngine().load("about:blank");  
-            fillTable(sReq);
-        }
+    public void pushAll() {
+        if (!rdAll.isSelected()) rdAll.setSelected(true); 
+        String sReq = "SELECT * FROM Site ORDER BY S_Nom";
+        dataSites.clear();
+        mapViewer.getEngine().load("about:blank");  
+        fillTable(sReq);
     }       
 
     @FXML
@@ -695,12 +700,8 @@ public class SitesViewController {
         StringBuilder sbMsg = new StringBuilder(); 
         sbMsg.append(String.valueOf(nbSites)).append(" ").append(" ").append(i18n.tr("selected sites")).append(" - ").append(i18n.tr("Export")).append(" ?");
         if (dConfirm.YesNo("", sbMsg.toString()))   { 
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(i18n.tr("Csv format"), "*.csv"),
-                new FileChooser.ExtensionFilter(i18n.tr("Text format"), "*.txt")
-            );  
-            File selectedFile = fileChooser.showSaveDialog(null);        
+            winFileSave wfs = new winFileSave(myConfig, i18n, fileType.csv, myConfig.getPathOpenAir(), null);  
+            File selectedFile = wfs.getSelectedFile();
             if(selectedFile != null){
                 String selExt = systemio.textio.getFileExtension(selectedFile);
                 selExt = selExt.toUpperCase();            
@@ -758,9 +759,14 @@ public class SitesViewController {
     }
            
     private void fileImportCsv() {
-        winChoose myWinChoose = new winChoose(myConfig, i18n);
-        rdAll.setSelected(true);        
-        pushAll();
+
+        rdAll.setSelected(false);
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.csv, null);  
+        File selectedFile = wf.getSelectedFile();
+        if (selectedFile != null) {    
+            dbImport myImport = new dbImport(myConfig, i18n, this);
+            myImport.importCsv(selectedFile);             
+        }
     }
            
     /**
@@ -850,6 +856,7 @@ public class SitesViewController {
         cmItem3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 fileImportCsv();
+                String s = "tata";
             }            
         });
         cm.getItems().add(cmItem3);        
