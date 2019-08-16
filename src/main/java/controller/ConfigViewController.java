@@ -39,6 +39,7 @@ import littlewins.winFileChoose;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import settings.listCarte;
 import settings.listGPS;
 import settings.listLangues;
@@ -577,7 +578,7 @@ public class ConfigViewController {
     private void restoreBackup() {
         alertbox aError = new alertbox(myConfig.getLocale());
         
-        winFileChoose wf = new winFileChoose(myConfig, i18n, 4, null);  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.db, null);  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null) { 
             Path srcPath = Paths.get(selectedFile.getAbsolutePath());
