@@ -37,10 +37,10 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import littlewins.winBackup;
 import littlewins.winCsv;
+import littlewins.winDirChoose;
+import littlewins.winFileChoose;
 import littlewins.winLog;
 import littlewins.winMail;
 import littlewins.winSendDb;
@@ -48,6 +48,7 @@ import littlewins.winWeb;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import systemio.mylogging;
 import trackgps.traceGPS;
 
@@ -466,8 +467,8 @@ public class RootLayoutController {
         
         if (myConfig.isValidConfig()) {
             try {                
-                DirectoryChooser directoryChooser = new DirectoryChooser();
-                File selectedDirectory = directoryChooser.showDialog(null);        
+                winDirChoose wd = new winDirChoose(myConfig, i18n, 6, null);
+                File selectedDirectory = wd.getSelectedFolder();      
                 if(selectedDirectory != null){
                     Path srcPath = Paths.get(myConfig.getFullPathDb());
                     Path dstPath = Paths.get(selectedDirectory.getAbsolutePath()+File.separator+myConfig.getDbName());
@@ -488,10 +489,8 @@ public class RootLayoutController {
     }        
     
     private void importCsv() {
-        FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter csvFilter = new FileChooser.ExtensionFilter(i18n.tr("Flight files (*.csv)"), "*.csv");        
-        fileChooser.getExtensionFilters().add(csvFilter);
-        File selectedFile = fileChooser.showOpenDialog(null);  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.csv, null);  
+        File selectedFile = wf.getSelectedFile();  
         if(selectedFile != null){   
             dbParawing impParawing = new dbParawing(myConfig, i18n, this);
             impParawing.importCsv(selectedFile);
