@@ -6,7 +6,6 @@
 package littlewins;
 
 import airspacelib.AirspaceCategory;
-import com.sun.javafx.scene.traversal.Direction;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,7 +17,6 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
@@ -39,6 +37,8 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import model.airdraw;
 import org.xnap.commons.i18n.I18n;
+import settings.configProg;
+import settings.fileType;
 
 /**
  *
@@ -51,6 +51,7 @@ import org.xnap.commons.i18n.I18n;
  */
 public class winAirDraw {
     
+    private configProg myConfig;
     private I18n i18n; 
     private TableView<airdraw> tableView = new TableView<>();
     private ObservableList<airdraw> drawlist = FXCollections.observableArrayList();
@@ -58,7 +59,8 @@ public class winAirDraw {
     private StringBuilder sbDrawing;
     private double m2ft = 0.3048;
     
-    public winAirDraw(I18n pI18n,ObservableList<airdraw> pList) {  
+    public winAirDraw(configProg pConfig, I18n pI18n,ObservableList<airdraw> pList) {  
+        this.myConfig = pConfig;
         i18n = pI18n;
         drawlist = pList;
         showWin();
@@ -226,9 +228,8 @@ public class winAirDraw {
         sbExp.append("*                                                                    *\r\n");
         sbExp.append("**********************************************************************\r\n\r\n");   
         sbExp.append(sbDrawing.toString());
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(i18n.tr("OpenAir format"), "*.txt"));              
-        File selectedFile = fileChooser.showSaveDialog(null);        
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.OpenAir, myConfig.getPathOpenAir(), null);  
+        File selectedFile = wfs.getSelectedFile();   
         if(selectedFile != null){
             try {
                 FileWriter fileWriter = null;
