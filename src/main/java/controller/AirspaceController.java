@@ -73,6 +73,7 @@ import org.json.simple.parser.ParseException;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import settings.osType;
 import systemio.mylogging;
 import systemio.tempacess;
@@ -229,7 +230,7 @@ public class AirspaceController {
             ch_Flight.getSelectionModel().selectFirst();
             levelFlight = 9999;            
         }
-        winFileChoose wf = new winFileChoose(myConfig, i18n, 2, configProg.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OpenAir, configProg.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
             actionDraw = false;
@@ -508,7 +509,7 @@ public class AirspaceController {
     }    
     
     private void gpxChoose() {
-        winFileSave wfs = new winFileSave(myConfig, i18n, 3, myConfig.getPathOpenAir());  
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.Gpx, myConfig.getPathOpenAir(), null);  
         File selectedFile = wfs.getSelectedFile();
         if (selectedFile != null) buildGPX(selectedFile);       
     }           
@@ -870,7 +871,7 @@ public class AirspaceController {
             } 
         }
         if (lsDraw.size() > 0) {            
-            winAirDraw winAD = new winAirDraw(i18n, lsDraw);        
+            winAirDraw winAD = new winAirDraw(myConfig, i18n, lsDraw);        
         }
     }    
     
@@ -1155,7 +1156,7 @@ public class AirspaceController {
     
     private void fileMerge() {
         alertbox aError = new alertbox(myConfig.getLocale());
-        winFileChoose wf = new winFileChoose(myConfig, i18n, 2, myConfig.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OpenAir, myConfig.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
             try {           
@@ -1183,7 +1184,7 @@ public class AirspaceController {
     } 
     
     private void exportChoose() {
-        winFileSave wfs = new winFileSave(myConfig, i18n, 2, myConfig.getPathOpenAir());  
+        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.OpenAir, myConfig.getPathOpenAir(), null);  
         File selectedFile = wfs.getSelectedFile();
         if (selectedFile != null) exportFile(selectedFile, false);
     }          
