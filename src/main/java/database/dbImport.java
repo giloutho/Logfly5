@@ -6,6 +6,7 @@
  */
 package database;
 
+import controller.SitesViewController;
 import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.File;
@@ -36,6 +37,7 @@ public class dbImport {
 
     // Settings
     private configProg myConfig;
+    private SitesViewController sitesController; 
     private int addNb = 0;
     private int addSitesOK = 0;
     private int addSitesBad = 0;
@@ -44,9 +46,10 @@ public class dbImport {
     private StringBuilder sbError;
     String RC = "\n";
     
-    public dbImport(configProg pConfig, I18n pI18n)  {
+    public dbImport(configProg pConfig, I18n pI18n, SitesViewController pSitesC)  {
         myConfig = pConfig;      
         this.i18n = pI18n;
+        this.sitesController = pSitesC;
     } 
            
     public void importCsv(File pFile) {
@@ -80,8 +83,11 @@ public class dbImport {
             if (writeReject) {
                 String msg = i18n.tr("List saved in")+" <rejectedsites.csv>"+RC+RC;
                 sbDoublons.insert(0,msg);
+                winTrackFile displayDoub = new winTrackFile(sbDoublons.toString()); 
+            } 
+            if (sitesController != null) {
+                sitesController.pushAll();
             }
-            winTrackFile displayDoub = new winTrackFile(sbDoublons.toString());             
         }        
     }
     
@@ -113,8 +119,7 @@ public class dbImport {
                    double dLat = parseDouble(partLine[2]);
                    double dLong = parseDouble(partLine[3]);
                    if (!Double.isNaN(dLat) && !Double.isNaN(dLong)) {
-                        //String siteExist = rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]));
-                        String siteExist = null;
+                        String siteExist = rechSite.existeSite(Double.parseDouble(partLine[2]), Double.parseDouble(partLine[3]));
                         if (siteExist == null) {
                             dbAdd addSite = new dbAdd(myConfig, i18n);
                             boolean addRes = addSite.importSite(partLine);
