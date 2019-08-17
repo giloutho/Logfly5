@@ -315,7 +315,7 @@ public class WaypViewController {
     private void handleReadFile() {
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.wpt, null);  
         File selectedFile = wf.getSelectedFile();     
-        if(selectedFile != null){ 
+        if(selectedFile != null && selectedFile.exists()){ 
             readFromFile(selectedFile.getAbsolutePath());
         }       
     }
