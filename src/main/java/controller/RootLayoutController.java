@@ -491,7 +491,7 @@ public class RootLayoutController {
     private void importCsv() {
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.csv, null);  
         File selectedFile = wf.getSelectedFile();  
-        if(selectedFile != null){   
+        if(selectedFile != null && selectedFile.exists()){   
             dbParawing impParawing = new dbParawing(myConfig, i18n, this);
             impParawing.importCsv(selectedFile);
         }        
