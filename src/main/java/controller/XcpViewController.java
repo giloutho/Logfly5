@@ -133,7 +133,7 @@ public class XcpViewController {
         // il faudra ajouter http://alpidev.com/xcplanner/  et le symbole ?
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.xcp, null);  
         File selectedFile = wf.getSelectedFile();
-        if(selectedFile != null){    
+        if(selectedFile != null && selectedFile.exists()){    
             try {
                 JSONParser parser = new JSONParser();
                 Reader reader = new FileReader(selectedFile.getAbsolutePath());
