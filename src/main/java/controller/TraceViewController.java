@@ -38,9 +38,6 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
-import com.chainstaysoftware.filechooser.FileChooserFx;
-import com.chainstaysoftware.filechooser.FileChooserFxImpl;
-import com.chainstaysoftware.filechooser.ViewType;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import java.util.logging.Level;
@@ -114,7 +111,7 @@ public class TraceViewController {
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, null);  
         File selectedFile = wf.getSelectedFile(); 
         try {            
-            if(selectedFile.exists()){
+            if(selectedFile != null && selectedFile.exists()){
                 String extension = getFileExtension(selectedFile);
                 if (extension.equals("GPX") || extension.equals("gpx")) 
                     isGPX = true;
