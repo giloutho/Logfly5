@@ -716,7 +716,7 @@ public class GPSViewController {
                     case FlymSD :
                     case FlymOld :
                         gpsdReadFlightList();
-                        break;
+                        break;    
                     case Rever :
                     case Sky :
                     case Sky3 :    
