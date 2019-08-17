@@ -288,7 +288,7 @@ public class PhotoTagViewController {
     private void handleChoiceTrack(ActionEvent event) {
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, null);  
         File selectedFile = wf.getSelectedFile();        
-        if(selectedFile != null){ 
+        if(selectedFile != null && selectedFile.exists()){ 
             String extension = getFileExtension(selectedFile);
             if (extension.equals("IGC") || extension.equals("igc") || extension.equals("GPX") || extension.equals("gpx")) {
                 selectTrack(selectedFile);
