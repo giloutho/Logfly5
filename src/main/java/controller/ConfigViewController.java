@@ -580,7 +580,7 @@ public class ConfigViewController {
         
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.db, null);  
         File selectedFile = wf.getSelectedFile();
-        if (selectedFile != null) { 
+        if (selectedFile != null && selectedFile.exists()) { 
             Path srcPath = Paths.get(selectedFile.getAbsolutePath());
             File folderDb = new File(myConfig.getPathDb());
             if (folderDb.exists() && folderDb.isDirectory() ) {
