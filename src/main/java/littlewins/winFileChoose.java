@@ -216,25 +216,36 @@ public class winFileChoose {
         if (initDir != null) fileChooser.setInitialDirectory(initDir);
         switch (winType) {
             case IgcGpx :
-                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("track files (igc or gpx)", "*.igc", "*.IGC", "*.gpx", "*.GPX"));  
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (igc)", "*.igc")); 
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (gpx)", "*.gpx")); 
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Track files (igc ", "*.igc"));  
                 break;
             case OpenAir :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("airspaces files (txt)", "*.txt", "*.TXT"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));        
                 break;
             case OACheck :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("airspaces files (txt)", "*.txt", "*.TXT"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));     
                 break;      
             case db :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("logbook files (db)", "*.db"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Logbook files (db)", "*.db"));  
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Logbook files (db)", "*.db"));  
                 break;      
             case dbk :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("logbook backup (dbk)", "*.dbk"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Logbook backup (dbk)", "*.dbk"));        
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Logbook backup (dbk)", "*.dbk"));        
                 break; 
-            case csv :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("csv files (csv)", "*.csv", "*.CSV"));        
+            case csv : 
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv"));        
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv"));      
                 break;                 
             case xcp :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("xcplanner files (xcp)", "*.xcp", "*.XCP"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Xcplanner files (xcp)", "*.xcp"));  
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Xcplanner files (xcp)", "*.xcp"));  
                 break;                      
         }                
         fileChooser.setShowMountPoints(true);       
