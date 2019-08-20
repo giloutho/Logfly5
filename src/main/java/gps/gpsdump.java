@@ -14,8 +14,10 @@ import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -118,7 +120,7 @@ public class gpsdump {
                 
         return gpsdumpOK;
     }
-
+    
     private static BufferedReader getOutput(Process p) {
         return new BufferedReader(new InputStreamReader(p.getInputStream()));
     }
@@ -394,23 +396,71 @@ public class gpsdump {
         int res = getRawList(idGPS);
         
         if (res ==0) {            
-            switch (idGPS) {
-                case 1 :
-                    // Flymaster SD
-                    formattingList();
-                    break;
-                case 3 :
-                    formattingList();
-                    for (Gpsmodel nbItem : listFlights){
-                        System.out.println(nbItem.getDate()+" "+nbItem.getHeure()+" "+nbItem.getCol4());
-                    }                                              
-                   // System.exit(res);
-                    break;
-            }
-        } // if error read strLog;
+            switch (myConfig.getOS()) {
+                    case WINDOWS :
+                        winListFormatting();
+                        break;
+                    case MACOS :
+                    case LINUX : 
+                        nixListFormatting();
+                        break;
+                }
+        } // if error strLog will be read;
     }     
     
-    private void formattingList() {
+    /**
+     * A line is : 2019.08.10,17:33:03,0:01:36
+     */
+    private void winListFormatting() {
+        int nbFlights = 0;
+        
+        for (int i = 0; i < listPFM.size(); i++) {
+            String ligPFM = listPFM.get(i);    
+            // Sample : 2019.08.14,13:13:32,0:27:25
+            Pattern pDate = Pattern.compile("\\d{2}.\\d{2}.\\d{2}");
+            Matcher mDate = pDate.matcher(ligPFM);
+            if (mDate.find()) {   
+                // date is reverses 
+                String sDate = mDate.group(0).substring(6)+ mDate.group(0).substring(2,6)+ mDate.group(0).substring(0,2);
+                nbFlights++;
+                String sTime = null;
+                String sDur = null;
+                // durée vol supérieure à 9 heures 59 -> 2019.08.03,17:39:54,11:12:15
+                Pattern pTime2 = Pattern.compile("\\d{2}:\\d{2}:\\d{2},\\d{2}:\\d{2}:\\d{2}");
+                Matcher mTime2 = pTime2.matcher(ligPFM);                    
+                if (mTime2.find()) {
+                    sTime = mTime2.group(0).substring(0,8); 
+                    sDur = mTime2.group(0).substring(9);                         
+                } else {
+                    // durée vol inférieure à 9 heures 59 -> 2019.08.10,17:33:03,0:01:36
+                    Pattern pTime1 = Pattern.compile("\\d{2}:\\d{2}:\\d{2},\\d{1}:\\d{2}:\\d{2}");
+                    Matcher mTime1 = pTime1.matcher(ligPFM);                    
+                    if (mTime1.find()) {
+                        sTime = mTime1.group(0).substring(0,8); 
+                        sDur = mTime1.group(0).substring(9);  
+                    }
+                }
+                // System.out.println(sDate+" "+sTime+" "+sDur);
+                Gpsmodel oneFlight = new Gpsmodel();                                             
+                oneFlight.setChecked(false);
+                oneFlight.setDate(sDate);
+                oneFlight.setHeure(sTime);
+                oneFlight.setCol4(sDur);
+                oneFlight.setCol5(null);                
+                listFlights.add(oneFlight);                
+            }                
+        }
+        if (nbFlights == 0) {
+            sbError = new StringBuilder();
+            for (int i = 0; i < listPFM.size(); i++) {                
+                sbError.append(listPFM.get(i)).append(CF);                
+            }              
+            System.out.println("Sb error "+sbError.toString());
+            strLog = sbError.toString();
+        }        
+    }
+    
+    private void nixListFormatting() {
         int nbFlights = 0;
         
         for (int i = 0; i < listPFM.size(); i++) {
@@ -458,8 +508,12 @@ public class gpsdump {
         String[] arrayParam = null;
         boolean gpsDumpOK = false;
         String wNoWin = "/win=0";  
-        String wComPort = "/com="+portNumber;
         String wExit = "/exit";        
+        File listFile = systemio.tempacess.getAppFile("Logfly", "temp.txt");
+        if (listFile.exists())  listFile.delete();          
+        String sNotify = "/notify="+listFile.getAbsolutePath();
+        String wComPort = "/com="+portNumber;
+        String sOverw = "/overwrite";
         String sTypeGps = "";       
         String sAction = "";
         StringBuilder sbLog = new StringBuilder();
@@ -555,7 +609,7 @@ public class gpsdump {
                 sAction = "/flightlist";
                 break;
             case WINDOWS :
-                //
+                sAction = "/flightlist";
                 break;
             case LINUX :
                 //
@@ -588,7 +642,7 @@ public class gpsdump {
                 // the author has serious doubts : ok only if program run correctly or crashes
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        //arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sNotify, sOverw,wExit};
                         break;
                     case MACOS : 
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
@@ -604,7 +658,38 @@ public class gpsdump {
                 res = p.exitValue();  // 0 if all is OK  
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        //arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        if (res == 0) {
+                            System.out.println("res = 0");
+                            if (listFile.exists()) {
+                                try {
+                                    InputStream flux=new FileInputStream(listFile); 
+                                    InputStreamReader lecture=new InputStreamReader(flux);
+                                    BufferedReader buff=new BufferedReader(lecture);
+                                    String ligne;
+                                    while ((ligne=buff.readLine())!=null){
+                                        listPFM.add(ligne);
+                                    }
+                                    buff.close(); 		
+                                } catch (Exception e) {
+                                    res = 1;
+                                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());                                    
+                                    sbError.append("\r\n").append(e.toString());
+                                    sbError.append("\r\n").append("Problem to read flightlist file");
+                                }
+                            } else {
+                                sbError = new StringBuilder("===== GPSDump return Error : No flight list =====\r\n");
+                                sbError = sbError.append(sbLog.toString());
+                                mylogging.log(Level.INFO, sbError.toString());
+                                sbLog.setLength(0);
+                                sbLog.append("GPSDump error").append(" ").append("No flight list returned");                               
+                            }                                 
+                        } else {
+                            sbError = new StringBuilder("===== GPSDump return Error : No response from GPS =====\r\n");
+                            sbError = sbError.append(sbLog.toString());
+                            mylogging.log(Level.INFO, sbError.toString());
+                            sbLog.setLength(0);
+                            sbLog.append(sTypeGps).append(" ").append("No response from GPS");
+                        }    
                         break;
                     case MACOS : 
                         String ligne = ""; 
