@@ -14,6 +14,7 @@ import gps.flymasterold;
 import gps.flynet;
 import gps.flytec15;
 import gps.flytec20;
+import static gps.gpsutils.ajouteChecksum;
 import gps.oudie;
 import gps.reversale;
 import gps.sensbox;
@@ -39,6 +40,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import jssc.SerialPort;
 import jssc.SerialPortList;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
@@ -102,6 +104,7 @@ public class winGPS {
     private xctracer usbXctracer;    
     private boolean wpCall;
     private String usbWaypPath;
+    private String gpsCharac;
     
     private StringBuilder sbError;    
     
@@ -134,7 +137,10 @@ public class winGPS {
     public boolean isGpsConnect() {
         return gpsConnect;
     }
-        
+
+    public String getGpsCharac() {
+        return gpsCharac;
+    }
                 
     private void showWin() {
         subStage = new Stage();   
@@ -293,28 +299,14 @@ public class winGPS {
             case 1:
                 // 6020/6030
                 currGPS = gpsType.Flytec20;
-                if (wpCall) {
-                    hBox3.setVisible(true);
-                    listSerialPort();
-                } else {
-                    // Initially we test serial port and GPS answer
-                    // finally, for flight list we let GPSDump check GPS answer
-                    currNamePort = "nil";
-                    gpsPresent();
-                }
+                if (wpCall) hBox3.setVisible(true);                
+                listSerialPort();  
                 break;
             case 2:
                 // 6015
                 currGPS = gpsType.Flytec15;
-                if (wpCall) {
-                    hBox3.setVisible(true);                
-                    listSerialPort();                
-                } else {
-                    // Initially we test serial port and GPS answer
-                    // finally, for flight list we let GPSDump check GPS answer
-                    currNamePort = "nil";
-                    gpsPresent();                    
-                }    
+                if (wpCall) hBox3.setVisible(true);                
+                listSerialPort();  
                 break;
             case 3:
                 currGPS = gpsType.Flynet; 
@@ -375,15 +367,8 @@ public class winGPS {
             case 11:
                 // Flymaster SD will be read with GPSDump
                 currGPS = currGPS = gpsType.FlymSD;  
-                if (wpCall) {
-                    hBox3.setVisible(true);                
-                    listSerialPort();
-                } else {
-                    // Initially we test serial port and GPS answer
-                    // finally, for flight list we let GPSDump check GPS answer
-                    currNamePort = "nil";
-                    gpsPresent();                    
-                }                    
+                if (wpCall) hBox3.setVisible(true);                
+                listSerialPort();                 
                 break;
             case 12:  // Connect
                 currGPS = gpsType.Connect;  
@@ -507,13 +492,11 @@ public class winGPS {
                 case Flytec20 :        
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {
-                            flytec20 fls = new flytec20();
-                            if (fls.isPresent(currNamePort)) {    
+                            if (getDeviceInfo(currNamePort) != null) {  
                                 gpsPresent();
                             } else {
                                 gpsNotPresent();
-                            } 
-                            fls.closePort();
+                            }                  
                         } catch (Exception e) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                             sbError.append("\r\n").append(e.toString());
@@ -541,13 +524,11 @@ public class winGPS {
                 case FlymSD  :
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {                            
-                            flymaster fms = new flymaster();
-                            if (fms.isPresent(currNamePort)) {    
+                            if (getDeviceInfo(currNamePort) != null) {  
                                 gpsPresent();
                             } else {
                                 gpsNotPresent();
-                            } 
-                            fms.closePort();                           
+                            }                        
                         } catch (Exception e) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                             sbError.append("\r\n").append(e.toString());
@@ -672,6 +653,107 @@ public class winGPS {
                     break;                        
             } 
         }
+    }
+    
+    private String getDeviceInfo(String namePort) {
+        String res = null;
+        String req = null;
+        SerialPort serialPort = new SerialPort(namePort);
+        try {
+            serialPort.openPort();//Open serial port
+            serialPort.setParams(SerialPort.BAUDRATE_57600, 
+                                 SerialPort.DATABITS_8,
+                                 SerialPort.STOPBITS_1,
+                                 SerialPort.PARITY_NONE);
+                                //Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
+            switch (currGPS) {
+                case FlymSD:
+                case FlymOld :    
+                    req = "$PFMSNP,\n";
+                    break;
+                case Flytec20 :
+                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
+                    break;
+                case Flytec15 :
+                    req =  "ACT_BD_00"+"\r\n";
+                    break;
+            }
+            serialPort.writeString(req);
+            Thread.sleep(300); 
+            String gpsRet = serialPort.readString();
+            if (gpsRet != null && !gpsRet.isEmpty()) {
+                switch (currGPS) {
+                    case FlymSD:
+                    case FlymOld :    
+                        req = "$PFMSNP,\n";
+                        if (gpsRet.contains("$PFMSNP")) {
+                            res = setFlymCharac(gpsRet);
+                        } else {
+                            res = null;   
+                        }
+                        break;
+                    case Flytec20 :
+                        if (gpsRet.contains("$PBRSNP")) {
+                            res = setFlytec20Charac(gpsRet);
+                        } else {
+                            res = null;   
+                        }
+                        break;
+                    case Flytec15 :
+                        String[] tbdata = gpsRet.split(" ");
+                        if (tbdata.length > 0) {
+                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
+                                res = gpsRet.replaceAll("\r\n", "");   
+                                gpsCharac = res;
+                            } else {
+                                res = null;
+                            } 
+                        } else {
+                            res = null;
+                        }    
+                        break;
+                }                                
+            } else {
+                res = null;
+            }
+            serialPort.closePort();//Close serial port
+        }
+        catch (Exception ex) {
+            System.out.println(ex);
+        }        
+        
+        return res;
+    }    
+    
+    private String setFlymCharac(String gpsRet) {
+        String res = " ";
+        
+        String[] tbdata = gpsRet.split(",");
+        if (tbdata.length > 3 && tbdata[0].contains("$PFMSNP")) { 
+            res = tbdata[1]+" "+tbdata[3]+" "+tbdata[4];   
+        }
+        gpsCharac = res;
+        
+        return res;
+    }
+    
+    private String setFlytec20Charac(String gpsRet) {
+        String res = " ";
+        
+        StringBuilder sb = new StringBuilder();
+        String[] tbdata = gpsRet.split(",");
+        if (tbdata.length > 4 && tbdata[0].contains("$PBRSNP")) {  
+            sb.append(tbdata[1]).append(" ").append(tbdata[3]);
+            String[] tbFirm = tbdata[4].split("\\*");
+            if (tbFirm.length > 1)
+                sb.append(tbFirm[0]);
+            else
+                sb.append(tbdata[4]);  
+            res = sb.toString();
+        }
+        gpsCharac = res;
+        System.out.println(res);
+        return res;
     }
     
     private void displayDrives(ObservableList <String> driveList, int idxList) {
