@@ -75,7 +75,7 @@ import trackgps.traceGPS;
  * @author gil
  * 
  * setMyConfig : 
- *          Start method, GPS choicebox is initialized [iniChbGPS]
+ *          Start method, displayWinGPS is called. 
  * Select GPS : display winGPS
  * displayWinGPS : return from winGPS, if a GPS is connected, FlyWithProgress is started
  * readGPS : at clic on btnGo, run flightListWithProgress()
@@ -267,7 +267,7 @@ public class GPSViewController {
     }
     
    /**
-     * displayName is a flag for type name textfield display
+     * displayName is a flag for waypoint type name textfield display
      * @param displayName
      * @return 
      */
@@ -278,6 +278,7 @@ public class GPSViewController {
             currGPS = myWin.getCurrGPS();
             if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou");
             currNamePort = myWin.getCurrNamePort();
+            idGPS = myWin.getGpsCharac();
             res = true;
         }
         
