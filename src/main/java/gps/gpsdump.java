@@ -401,8 +401,10 @@ public class gpsdump {
                         winListFormatting();
                         break;
                     case MACOS :
+                        macListFormatting();
+                        break;
                     case LINUX : 
-                        nixListFormatting();
+                        linuxListFormatting();
                         break;
                 }
         } // if error strLog will be read;
@@ -460,7 +462,47 @@ public class gpsdump {
         }        
     }
     
-    private void nixListFormatting() {
+    private void linuxListFormatting() {
+        int nbFlights = 0;
+        
+        for (int i = 0; i < listPFM.size(); i++) {
+            String ligPFM = listPFM.get(i);    
+            // Sample :  1   14.08.19   13:13:32   00:27:25
+            Pattern pDate = Pattern.compile("\\d{2}.\\d{2}.\\d{2}");
+            Matcher mDate = pDate.matcher(ligPFM);
+            if (mDate.find()) {   
+                // date is reverses 
+                String sDate = mDate.group(0);
+                nbFlights++;
+                String sTime = null;
+                String sDur = null;
+                Pattern pTime = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\s\\s\\s\\d{2}:\\d{2}:\\d{2}");
+                Matcher mTime = pTime.matcher(ligPFM);                    
+                if (mTime.find()) {
+                    sTime = mTime.group(0).substring(0,8); 
+                    sDur = mTime.group(0).substring(11);                         
+                } 
+                // System.out.println(sDate+" "+sTime+" "+sDur);
+                Gpsmodel oneFlight = new Gpsmodel();                                             
+                oneFlight.setChecked(false);
+                oneFlight.setDate(sDate);
+                oneFlight.setHeure(sTime);
+                oneFlight.setCol4(sDur);
+                oneFlight.setCol5(null);                
+                listFlights.add(oneFlight);                
+            }                
+        }
+        if (nbFlights == 0) {
+            sbError = new StringBuilder();
+            for (int i = 0; i < listPFM.size(); i++) {                
+                sbError.append(listPFM.get(i)).append(CF);                
+            }              
+            System.out.println("Sb error "+sbError.toString());
+            strLog = sbError.toString();
+        }         
+    }
+    
+    private void macListFormatting() {
         int nbFlights = 0;
         
         for (int i = 0; i < listPFM.size(); i++) {
@@ -507,6 +549,7 @@ public class gpsdump {
         int res = -1; 
         String[] arrayParam = null;
         boolean gpsDumpOK = false;
+        String numberIGC = "";
         String wNoWin = "/win=0";  
         String wExit = "/exit";        
         File listFile = systemio.tempacess.getAppFile("Logfly", "temp.txt");
@@ -612,7 +655,8 @@ public class gpsdump {
                 sAction = "/flightlist";
                 break;
             case LINUX :
-                //
+                // -f“N” Select a specific flight (Brauniger/Flytec/Flymaster). If N=0 a flightlist is displayed.
+                numberIGC = "-f0";
                 break;
         }        
         try {
@@ -647,12 +691,13 @@ public class gpsdump {
                     case MACOS : 
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
                         break;
-                    case LINUX :                         
-                        //arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
+                    case LINUX :   
+                        // result is displayed on the screen but a file path is required
+                        String tempList = "-l"+listFile.getAbsolutePath();   
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempList, numberIGC};
                         break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
-                System.out.println(java.util.Arrays.toString(arrayParam));
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -706,7 +751,20 @@ public class gpsdump {
                         }                                               
                         break;
                     case LINUX :                         
-                        //arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
+                        ligne = ""; 
+                        if (res == 255) {
+                            // GPSDump returned a flightlist with an error code : Flight number out of range 
+                            res = 0;
+                            BufferedReader output = getOutput(p);                    
+                            while ((ligne = output.readLine()) != null) {
+                                listPFM.add(ligne);
+                            }
+                        } else {
+                            BufferedReader error = getError(p);
+                            while ((ligne = error.readLine()) != null) {
+                                listPFM.add(ligne);
+                            }
+                        }                                               
                         break;   
                 }                
             } else {
