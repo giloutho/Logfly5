@@ -200,7 +200,10 @@ public class alertbox {
                 break;
             case 1201:
                 msg = i18n.tr("GpsDump program not found");                          
-                break;             
+                break;     
+            case 1210:
+                msg = i18n.tr("GpsDump did not write the file. Is the waypoints list empty ?");                          
+                break;                    
             // upload igc file for VisuGPS    
             case 1301:
                 msg = i18n.tr("Quota displaying VisuGPS exceeded");                          
