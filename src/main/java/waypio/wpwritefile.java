@@ -14,7 +14,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
@@ -85,19 +84,13 @@ public class wpwritefile {
      * @param pFile
      * @return 
      */
-    public boolean writeOzi(List<pointRecord> wpList, File pFile) {
+    public boolean writeOzi(List<pointRecord> wpList, File pFile, boolean withDesc) {
         boolean res = false;
         String sPart;
         decimalFormatSymbols.setDecimalSeparator('.');       
         df2 = new DecimalFormat("####.000000", decimalFormatSymbols); 
         try
         {
-            FileWriter filewrite = new FileWriter(pFile);
-
-            if(!pFile.exists())
-            {
-                pFile.createNewFile();
-            }
             // Encodage ASCII
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             // header spécifications -> http://www.rus-roads.ru/gps/help_ozi/fileformats.html
@@ -120,6 +113,7 @@ public class wpwritefile {
                 double dLong = Double.parseDouble(wpList.get(i).getFLong());
                 sb.append(df2.format(dLong)).append(",,0,1,3,0,65535,");
                 sPart = wpList.get(i).getFDesc().length() > 40 ? wpList.get(i).getFDesc().substring(0, 41) : wpList.get(i).getFDesc();
+                if (!withDesc) sPart = "";   // Special for GPSDump with short names
                 sb.append(sPart).append(",0,0,0,");
                 int iAlt = (int) (Math.round(Integer.parseInt(wpList.get(i).getFAlt()) * 3.280839895));
                 sb.append(String.valueOf(iAlt)).append(",6,0,17").append(CF);
@@ -146,12 +140,6 @@ public class wpwritefile {
         boolean res = false;   
         try
         {
-            FileWriter filewrite = new FileWriter(pFile);
-
-            if(!pFile.exists())
-            {
-                pFile.createNewFile();
-            }        
             // Encodage ASCII
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             writer.write("name,code,country,lat,lon,elev,style,rwdir,rwlen,freq,desc"+CF);       
@@ -187,13 +175,7 @@ public class wpwritefile {
         String sDate = now.format(parser).toUpperCase();      
         
         try
-        {
-            FileWriter filewrite = new FileWriter(pFile);
-
-            if(!pFile.exists())
-            {
-                pFile.createNewFile();
-            }        
+        {    
             // Encodage ASCII
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             // header                   
@@ -235,12 +217,6 @@ public class wpwritefile {
         
         try
             {
-                FileWriter filewrite = new FileWriter(pFile);
-
-                if(!pFile.exists())
-                {
-                    pFile.createNewFile();
-                }        
                 // Encodage ASCII
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
                 // header                   
@@ -319,13 +295,7 @@ public class wpwritefile {
         DateTimeFormatter parser = new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("dd-MMM-yyyy HH:mm:ss").toFormatter(Locale.ENGLISH);
         String sDate = now.format(parser).toUpperCase();         
         try
-        {
-            FileWriter filewrite = new FileWriter(pFile);
-
-            if(!pFile.exists())
-            {
-                pFile.createNewFile();
-            }        
+        {   
             // Encodage ASCII
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pFile), "ISO-8859-1"));
             // header
@@ -409,7 +379,7 @@ public class wpwritefile {
                 if (res) {
                     waypFormats.add(ficCup);
                     File ficOzi = systemio.tempacess.getAppFile("Logfly", "logflywp.wpt");
-                    res = writeOzi(wpList, ficOzi);      
+                    res = writeOzi(wpList, ficOzi, true);      
                     if (res) {
                         waypFormats.add(ficOzi);
                         try {
