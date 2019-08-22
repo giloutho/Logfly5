@@ -21,6 +21,7 @@ import gps.flymaster;
 import gps.flymasterold;
 import gps.flytec15;
 import gps.flytec20;
+import gps.gpsdump;
 import static gps.gpsutils.ajouteChecksum;
 import gps.oudie;
 import gps.reversale;
@@ -189,6 +190,7 @@ public class WaypViewController {
     private String currNamePort; 
     private ArrayList<pointRecord> gpsReadList;
     private StringBuilder gpsInfo;
+    private String gpsCharac;
     private ArrayList<String> listForGps = new ArrayList<>();
     private int gpsTypeName;   // Name type : long, short or mixed
     private ContextMenu tableContextMenu;
@@ -509,7 +511,7 @@ public class WaypViewController {
                 if (pointList.size() > 0) {
                     wpwritefile wfile = new wpwritefile();
                     sbInfo.append(i18n.tr("Format")).append(" OZI   ");    
-                    resWrite = wfile.writeOzi(pointList, file);                        
+                    resWrite = wfile.writeOzi(pointList, file, true);                        
                 }
                 break;
             case "2":
@@ -674,6 +676,7 @@ public class WaypViewController {
             currGPS = myWin.getCurrGPS();
             currNamePort = myWin.getCurrNamePort();
             gpsTypeName = myWin.getCurrTypeName();
+            gpsCharac = myWin.getGpsCharac();
             res = true;
         }
         
@@ -781,6 +784,82 @@ public class WaypViewController {
             aError.alertInfo(i18n.tr("No waypoints in this GPS"));  
         }
     }
+    
+    private void writeGpsdProgress() {  
+            
+        dialogbox dConfirm = new dialogbox(i18n);
+        StringBuilder sbMsg = new StringBuilder(); 
+        sbMsg.append(i18n.tr("GPS ready [Old Waypoints possibly erased]")).append(" ?");
+        StringBuilder sbTitle = new StringBuilder(); 
+        sbTitle.append(i18n.tr("Sending to GPS")).append(" [");
+        switch (gpsTypeName) {
+            case 0:
+                sbTitle.append(i18n.tr("Long names"));
+                break;
+            case 1 :
+                sbTitle.append(i18n.tr("Short names"));
+                break;
+            case 2 :
+                sbTitle.append(i18n.tr("Mixed"));                
+                break;            
+        }
+        sbTitle.append("]");
+        
+        if (dConfirm.YesNo(sbTitle.toString(), sbMsg.toString()))   {       
+            gpsInfo = new StringBuilder();
+            gpsInfo.append(gpsCharac);
+            File wptFile = systemio.tempacess.getAppFile("Logfly", "tempwp.wpt"); 
+            if (wptFile.exists()) wptFile.delete();
+            wpwritefile wfile = new wpwritefile();
+            boolean resw = false;
+            if (gpsTypeName == 1)
+                // short names
+                resw = wfile.writeOzi(pointList, wptFile, false);
+            else
+                resw = wfile.writeOzi(pointList, wptFile, true);
+            if (resw) {
+                ProgressForm pForm = new ProgressForm();
+
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    public Void call() throws InterruptedException { 
+                    gpsdump gpsd = new gpsdump(currNamePort,myConfig);                  
+                    switch (currGPS) {
+                        case FlymSD :
+                            gpsd.setOziWpt(1, wptFile.getAbsolutePath(),gpsTypeName);
+                            break;
+                        case FlymOld :
+                            gpsd.setOziWpt(2, wptFile.getAbsolutePath(),gpsTypeName);
+                            break;
+                        case Flytec20 :
+                            gpsd.setOziWpt(3, wptFile.getAbsolutePath(),gpsTypeName);
+                            break;   
+                        case Flytec15 :
+                            gpsd.setOziWpt(8, wptFile.getAbsolutePath(),gpsTypeName);
+                            break;
+                    }       
+                        return null ;                
+                    }
+                };
+                // binds progress of progress bars to progress of task:
+                pForm.activateProgressBar(task);
+
+                // we update the UI based on result of the task
+                task.setOnSucceeded(event -> {
+                    pForm.getDialogStage().close();
+                    writeEnd();
+                });
+
+                pForm.getDialogStage().show();
+
+                Thread thread = new Thread(task);
+                thread.start();
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(9);   // Unable to create temporary file
+            }            
+        }
+    }   
     
     private void writeFlymaster() {
        
@@ -1051,15 +1130,16 @@ public class WaypViewController {
         alertbox aError = new alertbox(myConfig.getLocale());             
         switch (currGPS) {
             case Flytec20 :
-                writeToGpsProgress();                
+                writeGpsdProgress();                
                 break;
             case Flytec15 :
-                writeToGpsProgress();                
+                writeGpsdProgress();               
                 break;
             case FlymSD :
-                writeToGpsProgress();
+                writeGpsdProgress();
                 break;
             case FlymOld :
+                writeGpsdProgress();
                 break;
             case Rever :
                 writeToGpsSimple();
@@ -1106,7 +1186,7 @@ public class WaypViewController {
         
         int lg = pointList.size();
         StringBuilder sbMsg = new StringBuilder();
-        sbMsg.append(i18n.tr("Sending to")).append("  ").append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints"));
+        sbMsg.append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints")).append(" ").append(i18n.tr("sent to GPS"));
         switch (currGPS) {
             case FlymOld :
             case FlymSD:               
@@ -1209,6 +1289,59 @@ public class WaypViewController {
         }                
     }           
    
+    private void returnGpsdump(File wptFile) {
+        
+        if (wptFile.exists()) {
+            readFromFile(wptFile.getAbsolutePath());
+        }
+        else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(1210);    // GpsDump did not write the file    
+        }
+    }
+    
+    private void readGpsdProgress() {          
+        errorComMsg = null;
+        File wptFile = systemio.tempacess.getAppFile("Logfly", "tempwp.wpt"); 
+        
+        ProgressForm pForm = new ProgressForm();
+           
+        Task<Void> task = new Task<Void>() {
+            @Override
+            public Void call() throws InterruptedException { 
+            gpsdump gpsd = new gpsdump(currNamePort,myConfig);                  
+            switch (currGPS) {
+                case FlymSD :
+                    gpsd.getOziWpt(1, wptFile);
+                    break;
+                case FlymOld :
+                    gpsd.getOziWpt(2, wptFile);
+                    break;
+                case Flytec20 :
+                    gpsd.getOziWpt(3, wptFile);
+                    break;   
+                case Flytec15 :
+                    gpsd.getOziWpt(8, wptFile);
+                    break;
+            }       
+                return null ;                
+            }
+        };
+        // binds progress of progress bars to progress of task:
+        pForm.activateProgressBar(task);
+
+        // we update the UI based on result of the task
+        task.setOnSucceeded(event -> {
+            pForm.getDialogStage().close();
+            returnGpsdump(wptFile);
+        });
+
+        pForm.getDialogStage().show();
+
+        Thread thread = new Thread(task);
+        thread.start();         
+    }   
+   
     private void readFromGpsProgress() {          
         errorComMsg = null;
         
@@ -1307,16 +1440,16 @@ public class WaypViewController {
         alertbox aError = new alertbox(myConfig.getLocale());             
         switch (currGPS) {
             case Flytec20 :
-                readFromGpsProgress();
+                readGpsdProgress();
                 break;
             case Flytec15 :
-                readFromGpsProgress();                
+                readGpsdProgress();
                 break;
             case FlymSD :
-                readFromGpsProgress();
+                readGpsdProgress();
                 break;
             case FlymOld :
-                readFlymOld();
+                readGpsdProgress();
                 break;
             case Rever :
                 readFromGpsSimple();
