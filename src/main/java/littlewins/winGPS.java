@@ -9,11 +9,8 @@ package littlewins;
 import gps.compass;
 import gps.connect;
 import gps.element;
-import gps.flymaster;
 import gps.flymasterold;
 import gps.flynet;
-import gps.flytec15;
-import gps.flytec20;
 import static gps.gpsutils.ajouteChecksum;
 import gps.oudie;
 import gps.reversale;
@@ -119,6 +116,7 @@ public class winGPS {
         this.i18n = pI18n;
         this.wpCall = pWpCall;
         gpsConnect = false;
+        gpsCharac = "";
         showWin();        
     }   
 
@@ -507,13 +505,11 @@ public class winGPS {
                 case Flytec15 :
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {
-                            flytec15 fl15 = new flytec15();
-                            if (fl15.isPresent(currNamePort)) {    
+                            if (getDeviceInfo(currNamePort) != null) {  
                                 gpsPresent();
                             } else {
                                 gpsNotPresent();
-                            } 
-                            fl15.closePort();
+                            }   
                         } catch (Exception e) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                             sbError.append("\r\n").append(e.toString());
@@ -539,13 +535,11 @@ public class winGPS {
                 case FlymOld :
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {
-                            flymasterold fmsold = new flymasterold();
-                            if (fmsold.isPresent(currNamePort)) {    
+                            if (getDeviceInfo(currNamePort) != null) {  
                                 gpsPresent();
                             } else {
                                 gpsNotPresent();
-                            } 
-                            fmsold.closePort();
+                            }   
                         } catch (Exception e) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                             sbError.append("\r\n").append(e.toString());
