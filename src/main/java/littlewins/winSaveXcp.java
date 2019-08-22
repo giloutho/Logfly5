@@ -275,7 +275,7 @@ public class winSaveXcp {
             try {
                 wfile = new wpwritefile();    
                 file = new File(sPath+".wpt");    
-                resWrite = wfile.writeOzi(pointList, file);                 
+                resWrite = wfile.writeOzi(pointList, file, true);                 
             } catch (Exception e) {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                 sbError.append("\r\n").append(e.toString());
