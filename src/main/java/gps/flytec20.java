@@ -23,6 +23,13 @@ import waypio.pointRecord;
 
 /**
  *
+ * ==================================== DEPRECATED ===========================================
+ * Many problems with serialpundit on Windows 
+ * Many users have this error : com.serialpundit.core.SerialComException: 
+ *           C:\xx\spcomwinx64.dll: Can''t find dependent libraries
+ * Unable to solve this error with Visual C++ Redistributable For Visual Studio.
+ * ============================================================================================
+ * 
  * @author Rishi Gupta https://github.com/RishiGupta12/SerialPundit
  * without Rishi help, this class doesn't exist
  *  
