@@ -253,7 +253,7 @@ public class GPSViewController {
     }
    
     public void displayWinGPS() {    
-        if (selectGPS(false)) {
+        if (selectGPS()) {
             flightListWithProgress();    
         }
     }   
@@ -272,9 +272,9 @@ public class GPSViewController {
      * @param displayName
      * @return 
      */
-    private boolean selectGPS(boolean displayName) {
+    private boolean selectGPS() {
         boolean res = false;   
-        winGPS myWin = new winGPS(myConfig, i18n, displayName);    
+        winGPS myWin = new winGPS(myConfig, i18n);    
         if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {
             currGPS = myWin.getCurrGPS();
             if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou");
