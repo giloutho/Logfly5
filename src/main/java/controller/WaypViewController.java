@@ -998,6 +998,8 @@ public class WaypViewController {
                             writeFlymaster();
                             break;
                         case FlymOld :
+                            // A priori le protocole est identique au Flymaster SD
+                            writeFlymaster();
                             break;                   
                     }       
                     return null ;                
@@ -1268,28 +1270,6 @@ public class WaypViewController {
         }
               
     }
-
-    private void readFlymOld()  {
-        gpsReadList = new ArrayList<>();
-        try {
-            flymasterold fmsold = new flymasterold();
-            if (fmsold.isPresent(currNamePort)) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flymaster ").append(fmsold.getDeviceType()).append(" ").append(fmsold.getDeviceFirm()).append("  ");            
-                int nbWayp = fmsold.getListWaypoints();
-                fmsold.closePort();
-                if (nbWayp > 0) {
-                    gpsReadList = fmsold.getWpreadList();
-                } 
-            } else {
-                gpsInfo.append(fmsold.getError());
-            }            
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }                
-    }    
     
     private void readFlymaster()  {
         gpsReadList = new ArrayList<>();
@@ -1424,7 +1404,8 @@ public class WaypViewController {
                         readFlymaster();
                         break;
                     case FlymOld :
-                        readFlymOld();
+                        // A priori protocole identique au Flymaster SD
+                        readFlymaster();
                         break;                  
                 }       
                 return null ;                
@@ -1539,7 +1520,16 @@ public class WaypViewController {
                 }                 
                 break;
             case FlymOld :
-                readGpsdProgress();
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case LINUX :
+                        readGpsdProgress();
+                        break;
+                    case MACOS :     
+                        // lecture waypoints non supportée sur Mac
+                        readFromGpsProgress();
+                        break;
+                }                 
                 break;
             case Rever :
                 readFromGpsSimple();
