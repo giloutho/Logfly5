@@ -69,7 +69,6 @@ public class winGPS {
     
     private Stage subStage;
     private HBox hBox2;
-    private HBox hBox3;
     private ChoiceBox<listGPS.idGPS> chbGPS;  
     private int idxChbGPS;
     private Button btConnexion;    
@@ -99,7 +98,6 @@ public class winGPS {
     private compass usbCompass;
     private element usbElem;
     private xctracer usbXctracer;    
-    private boolean wpCall;
     private String usbWaypPath;
     private String gpsCharac;
     
@@ -109,12 +107,10 @@ public class winGPS {
      * 
      * @param pConfig   Send Logfly settings
      * @param pI18n     Send current language
-     * @param pWpCall    True if calling by WaypViewController
      */
-    public winGPS(configProg pConfig, I18n pI18n, boolean pWpCall)  {
+    public winGPS(configProg pConfig, I18n pI18n)  {
         myConfig = pConfig;        
         this.i18n = pI18n;
-        this.wpCall = pWpCall;
         gpsConnect = false;
         gpsCharac = "";
         showWin();        
@@ -173,36 +169,7 @@ public class winGPS {
         hBox2.setMaxHeight(25);
         hBox2.setMinWidth(260);
         hBox2.setAlignment(Pos.CENTER_LEFT);
-        
-        Label lbName = new Label(i18n.tr("Format"));
-        lbName.setMinWidth(50);
-        
-        ChoiceBox cbName = new ChoiceBox();
-
-        cbName.getItems().add(i18n.tr("Long names"));
-        cbName.getItems().add(i18n.tr("Short names"));
-        cbName.getItems().add(i18n.tr("Mixed"));
-        cbName.getSelectionModel().selectedIndexProperty()
-        .addListener(new ChangeListener<Number>() {
-          public void changed(ObservableValue ov, Number value, Number new_value) {
-              currTypeName = new_value.intValue();
-          }
-        }); 
-        cbName.getSelectionModel().select(0);
-        
-        cbName.setMinWidth(150);
-        
-        // Positionne au premier
-        cbName.getSelectionModel().select(0);  
-                
-        hBox3 = new HBox();
-        hBox3.getChildren().addAll(lbName, cbName);
-        hBox3.setSpacing(10);
-        hBox3.setMaxHeight(25);
-        hBox3.setMinWidth(260);
-        hBox3.setAlignment(Pos.CENTER_LEFT);        
-        
-        
+                               
         final VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
         vbox.setSpacing(5);                
@@ -240,15 +207,13 @@ public class winGPS {
         
         buttonBar.getChildren().addAll(btRefresh, btConnexion, btCancel);
         
-        vbox.getChildren().addAll(hBox1, hBox2, hBox3, buttonBar);
+        vbox.getChildren().addAll(hBox1, hBox2,  buttonBar);
         
-        // visibilité
-        hBox3.setVisible(false);
         btConnexion.setVisible(false);    
         
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
-        subStage.setScene(new Scene(subRoot, 280, 150));
+        subStage.setScene(new Scene(subRoot, 330, 130));
         iniChbGPS();
         if (!gpsConnect) subStage.showAndWait();         
     }    
@@ -296,99 +261,77 @@ public class winGPS {
                 break;
             case 1:
                 // 6020/6030
-                currGPS = gpsType.Flytec20;
-                if (wpCall) hBox3.setVisible(true);                
+                currGPS = gpsType.Flytec20;              
                 listSerialPort();  
                 break;
             case 2:
                 // 6015
-                currGPS = gpsType.Flytec15;
-                if (wpCall) hBox3.setVisible(true);                
+                currGPS = gpsType.Flytec15;               
                 listSerialPort();  
                 break;
             case 3:
                 currGPS = gpsType.Flynet; 
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();
                 break;
             case 4:    
                 // Flymaster old series
-                currGPS = gpsType.FlymOld;
-                if (wpCall) {
-                    hBox3.setVisible(true);                
-                    listSerialPort();          
-                } else {
-                    // Initially we test serial port and GPS answer
-                    // finally, for flight list we let GPSDump check GPS answer
-                    currNamePort = "nil";
-                    gpsPresent();                    
-                }
+                currGPS = gpsType.FlymOld;               
+                listSerialPort();                          
                 break;
             case 5:
                 // Reversale
                 currGPS = gpsType.Rever;   
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();
                 break;
             case 6:
                 currGPS = gpsType.Sky;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;
             case 7:
                 currGPS = gpsType.Oudie;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;                
             case 8:
                 currGPS = gpsType.Element;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;
             case 9:
                 currGPS = gpsType.Sensbox;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;
             case 10:
                 currGPS = gpsType.Syride;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS(); 
                 break;
             case 11:
                 // Flymaster SD will be read with GPSDump
-                currGPS = currGPS = gpsType.FlymSD;  
-                if (wpCall) hBox3.setVisible(true);                
+                currGPS = currGPS = gpsType.FlymSD;                 
                 listSerialPort();                 
                 break;
             case 12:  // Connect
                 currGPS = gpsType.Connect;  
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;
             case 13:
                 currGPS = gpsType.Sky3;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;
             case 14:
                 currGPS = gpsType.CPilot;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;
             case 15:
                 currGPS = gpsType.XCTracer;
-                hBox3.setVisible(false);
                 currNamePort = "nil";
                 testGPS();   
                 break;              
@@ -418,16 +361,7 @@ public class winGPS {
                 Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
                 Pattern p6 = Pattern.compile("^/dev/ptmx.*");
                 for(String port: ports){
-                    if (myConfig.getOS() == osType.MACOS) {                    
-                        // Pour éviter de lister 25000 ports inutilisables
-                        if (ports[idx].substring(0,8).equals("/dev/cu."))  {                 
-                            portList.add(port);
-                            if (lastSerialUsed.equals(port)) {
-                                idxSerialList = idxListPort;
-                            } 
-                            idxListPort++;
-                        }
-                    }else if (myConfig.getOS() == osType.LINUX)  {
+                    if (myConfig.getOS() == osType.LINUX)  {
                         // Pour éviter de lister 25000 ports inutilisables
                         if (!p1.matcher(port).matches() && !p2.matcher(port).matches() && !p3.matcher(port).matches()
                              && !p4.matcher(port).matches() && !p5.matcher(port).matches() && !p6.matcher(port).matches())
@@ -687,6 +621,9 @@ public class winGPS {
                         }
                         break;
                     case Flytec20 :
+                        // si l'on envoie la requête Flytec 20 sur un Flymaster
+                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
+                        // Etonnant et non prévu
                         if (gpsRet.contains("$PBRSNP")) {
                             res = setFlytec20Charac(gpsRet);
                         } else {
@@ -732,11 +669,14 @@ public class winGPS {
     }
     
     private String setFlytec20Charac(String gpsRet) {
-        String res = " ";
+        String res = null;
         
         StringBuilder sb = new StringBuilder();
         String[] tbdata = gpsRet.split(",");
-        if (tbdata.length > 4 && tbdata[0].contains("$PBRSNP")) {  
+        if (tbdata.length > 5) {
+            // Un Flymaster peut répondre, tbdata.length vaudra 7
+            res = null;
+        } else if (tbdata.length > 4 && tbdata[0].contains("$PBRSNP")) {  
             sb.append(tbdata[1]).append(" ").append(tbdata[3]);
             String[] tbFirm = tbdata[4].split("\\*");
             if (tbFirm.length > 1)
@@ -744,9 +684,9 @@ public class winGPS {
             else
                 sb.append(tbdata[4]);  
             res = sb.toString();
-        }
-        gpsCharac = res;
-        System.out.println(res);
+            gpsCharac = res;
+        }       
+        
         return res;
     }
     
