@@ -424,7 +424,7 @@ public class gpsdump {
                         macListFormatting();
                         break;
                     case LINUX : 
-                        linuxListFormatting();
+                        linuxListFormatting(idGPS);
                         break;
                 }
         } // if error strLog will be read;
@@ -482,12 +482,11 @@ public class gpsdump {
         }        
     }
     
-    private void linuxListFormatting() {
+    private void linuxListFormatting(int idGPS) {
         int nbFlights = 0;
         
         for (int i = 0; i < listPFM.size(); i++) {
             String ligPFM = listPFM.get(i);    
-            // Sample :  1   14.08.19   13:13:32   00:27:25
             Pattern pDate = Pattern.compile("\\d{2}.\\d{2}.\\d{2}");
             Matcher mDate = pDate.matcher(ligPFM);
             if (mDate.find()) {   
@@ -496,13 +495,28 @@ public class gpsdump {
                 nbFlights++;
                 String sTime = null;
                 String sDur = null;
-                Pattern pTime = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\s\\s\\s\\d{2}:\\d{2}:\\d{2}");
-                Matcher mTime = pTime.matcher(ligPFM);                    
-                if (mTime.find()) {
-                    sTime = mTime.group(0).substring(0,8); 
-                    sDur = mTime.group(0).substring(11);                         
-                } 
-                // System.out.println(sDate+" "+sTime+" "+sDur);
+                switch (idGPS) {
+                    case 1 :
+                    case 2 :
+                        // Sample :  1   14.08.19   13:13:32   00:27:25
+                        Pattern pTime = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\s\\s\\s\\d{2}:\\d{2}:\\d{2}");
+                        Matcher mTime = pTime.matcher(ligPFM);                    
+                        if (mTime.find()) {
+                            sTime = mTime.group(0).substring(0,8); 
+                            sDur = mTime.group(0).substring(11);                         
+                        } 
+                        break;
+                    case 8 :
+                        // sample      1; 19.07.19; 07:37:24;        2; 0
+                        Pattern pTime8 = Pattern.compile("\\d{2}:\\d{2}:\\d{2};");
+                        Matcher mTime8 = pTime8.matcher(ligPFM);                    
+                        if (mTime8.find()) {
+                            sTime = mTime8.group(0).substring(0,8);                       
+                        } 
+                        break;                        
+
+                }
+                System.out.println(sDate+" "+sTime+" "+sDur);
                 Gpsmodel oneFlight = new Gpsmodel();                                             
                 oneFlight.setChecked(false);
                 oneFlight.setDate(sDate);
@@ -718,6 +732,7 @@ public class gpsdump {
                         break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
+                System.out.println("Call : "+java.util.Arrays.toString(arrayParam));
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -772,6 +787,7 @@ public class gpsdump {
                         break;
                     case LINUX :                         
                         ligne = ""; 
+                        System.out.println(res);
                         if (res == 255) {
                             // GPSDump returned a flightlist with an error code : Flight number out of range 
                             res = 0;
@@ -779,6 +795,7 @@ public class gpsdump {
                             while ((ligne = output.readLine()) != null) {
                                 listPFM.add(ligne);
                             }
+                            System.out.println("listPFM size : "+listPFM.size());
                         } else {
                             BufferedReader error = getError(p);
                             while ((ligne = error.readLine()) != null) {
@@ -912,8 +929,7 @@ public class gpsdump {
                 sAction = "/rd_wpt="+wptFile.getAbsolutePath();
                 break;
             case LINUX :
-                // -f“N” Select a specific flight (Brauniger/Flytec/Flymaster). If N=0 a flightlist is displayed.
-                numberIGC = "-f0";
+                sAction = "-w"+wptFile.getAbsolutePath();
                 break;
         }        
         try {
@@ -948,9 +964,8 @@ public class gpsdump {
                     case MACOS : 
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
                         break;
-                    case LINUX :   
-                        // result is displayed on the screen but a file path is required  
-                     //   arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempList, numberIGC};
+                    case LINUX :    
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
                         break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
@@ -1104,8 +1119,7 @@ public class gpsdump {
                 }                    
                 break;
             case LINUX :
-                // -f“N” Select a specific flight (Brauniger/Flytec/Flymaster). If N=0 a flightlist is displayed.
-                numberIGC = "-f0";
+                sAction ="-r"+wptFile.getAbsolutePath();
                 break;
         }        
         try {
@@ -1141,8 +1155,7 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
                         break;
                     case LINUX :   
-                        // result is displayed on the screen but a file path is required  
-                     //   arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempList, numberIGC};
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
                         break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
