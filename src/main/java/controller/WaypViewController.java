@@ -312,8 +312,8 @@ public class WaypViewController {
                 List<CommandLinksDialog.CommandLinksButtonType> links = new ArrayList<>();
                 CommandLinksDialog dg;
                 Optional<ButtonType> result;
-                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("1. Long names"),i18n.tr("Only long names are written e.g. MONTMIN FORCLAZ"),false)); 
-                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("2. Short names"),i18n.tr("Only short names are written e.g. D01127"),true));       
+                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("1. Long names"),i18n.tr("Only long names are written e.g. MONTMIN FORCLAZ"),true)); 
+                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("2. Short names"),i18n.tr("Only short names are written e.g. D01127"),false));       
                 links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("3. Mixed"),i18n.tr("Short name and the beginning of long name e.g. D01127 MONTMIN F"),false));   
                 dg = new CommandLinksDialog(links);
                 dg.setTitle(i18n.tr("Type of names"));
