@@ -104,8 +104,7 @@ public class listGPS {
             new idGPS("Connect",12),
             new idGPS("Skytraxx 3",13),
             new idGPS("C-Pilot Evo",14),
-            new idGPS("XC Tracer II",15),  
-            new idGPS("Flymaster +",16)
+            new idGPS("XC Tracer II",15)
         ); 
         
         Comparator<? super idGPS> comparatorAlpha = new Comparator<idGPS>() {
