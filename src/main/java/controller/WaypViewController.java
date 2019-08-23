@@ -16,12 +16,12 @@ import geoutils.position;
 import gps.compass;
 import gps.connect;
 import gps.element;
-import gps.flymaster;
 import gps.flymasterold;
-import gps.flytec20;
 import gps.gpsdump;
 import static gps.gpsutils.ajouteChecksum;
+import gps.jsFlymaster;
 import gps.jsFlytec15;
+import gps.jsFlytec20;
 import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
@@ -36,6 +36,8 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -47,6 +49,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -64,8 +67,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import leaflet.map_waypoints;
 import littlewins.winFileChoose;
@@ -80,6 +81,7 @@ import littlewins.winUsbWayp;
 import model.Balisemodel;
 import model.Sitemodel;
 import netscape.javascript.JSObject;
+import org.controlsfx.dialog.CommandLinksDialog;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -298,7 +300,7 @@ public class WaypViewController {
     
     @FXML
     private void handleReadGPS() {    
-        if (selectGPS(false)) {
+        if (selectGPS()) {
             readFromGPS();    
         }
     }
@@ -306,8 +308,27 @@ public class WaypViewController {
     @FXML
     private void handleWriteGPS() {
         if (pointList.size() > 0) {
-            if (selectGPS(true)) {
-                writeToGPS();    
+            if (selectGPS()) {
+                List<CommandLinksDialog.CommandLinksButtonType> links = new ArrayList<>();
+                CommandLinksDialog dg;
+                Optional<ButtonType> result;
+                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("1. Long names"),i18n.tr("Only long names are written e.g. MONTMIN FORCLAZ"),false)); 
+                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("2. Short names"),i18n.tr("Only short names are written e.g. D01127"),true));       
+                links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("3. Mixed"),i18n.tr("Short name and the beginning of long name e.g. D01127 MONTMIN F"),false));   
+                dg = new CommandLinksDialog(links);
+                dg.setTitle(i18n.tr("Type of names"));
+                result = dg.showAndWait();              
+                String resDg = result.get().getText();
+                if (resDg != null && resDg != "") {
+                    if (resDg.contains("1")) {
+                       gpsTypeName = 0;
+                    } else if (resDg.contains("2")) {
+                       gpsTypeName = 1;
+                    } else if (resDg.contains("3")) {
+                       gpsTypeName = 2;
+                    }
+                    writeToGPS();
+                }    
             }
         }    
     }
@@ -668,9 +689,9 @@ public class WaypViewController {
      * @param displayName
      * @return 
      */
-    private boolean selectGPS(boolean displayName) {
+    private boolean selectGPS() {
         boolean res = false;   
-        winGPS myWin = new winGPS(myConfig, i18n, displayName);    
+        winGPS myWin = new winGPS(myConfig, i18n);    
         if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {
             currGPS = myWin.getCurrGPS();
             currNamePort = myWin.getCurrNamePort();
@@ -864,13 +885,12 @@ public class WaypViewController {
        
         try {
             prepWritingFlym();
-            flymaster fms = new flymaster();
-            if (listForGps.size() > 0 && fms.isPresent(currNamePort)) {             
+            jsFlymaster flym = new jsFlymaster(currNamePort);
+            if (listForGps.size() > 0 ) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");
-                fms.setListPFMWP(listForGps);
-                fms.sendWaypoint();
-                fms.closePort();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
+                flym.setListPFMWP(listForGps);
+                flym.sendWaypoint();                
             }    
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -902,13 +922,12 @@ public class WaypViewController {
        
         try {
             prepWritingFly20();
-            flytec20 fls = new flytec20();
-            if (listForGps.size() > 0 && fls.isPresent(currNamePort)) {             
+            jsFlytec20 fls = new jsFlytec20(currNamePort);
+            if (listForGps.size() > 0 ) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6020/30 ").append("  ");
                 fls.setListPBRWP(listForGps);
                 fls.sendWaypoint();
-                fls.closePort();
             }    
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -943,7 +962,7 @@ public class WaypViewController {
     private void writeToGpsProgress() {
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
-        sbMsg.append(i18n.tr("Old Waypoints possibly erased")).append(" ?");
+        sbMsg.append(i18n.tr("Ready")).append(" ?  ").append("(").append(i18n.tr("Gps memory cleared")).append(")");
         StringBuilder sbTitle = new StringBuilder(); 
         sbTitle.append(i18n.tr("Sending to GPS")).append(" [");
         switch (gpsTypeName) {
@@ -1131,9 +1150,24 @@ public class WaypViewController {
         alertbox aError = new alertbox(myConfig.getLocale());             
         switch (currGPS) {
             case Flytec20 :
-                writeGpsdProgress();                
-                break;
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6020/30 ").append("  ");
+                displayInfo(gpsInfo.toString());
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case LINUX :
+                        writeGpsdProgress();  
+                        break;
+                    case MACOS : 
+                        // Ecriture waypoints non supportée sur Mac
+                        writeToGpsProgress();
+                        break;
+                } 
+                break;  
             case Flytec15 :
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
+                displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
                     case MACOS :
@@ -1146,11 +1180,35 @@ public class WaypViewController {
                 } 
                 break;
             case FlymSD :
-                writeGpsdProgress();
-                break;
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
+                displayInfo(gpsInfo.toString());
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case LINUX :
+                        writeGpsdProgress();  
+                        break;
+                    case MACOS : 
+                        // Ecriture waypoints non supportée sur Mac
+                        writeToGpsProgress();
+                        break;
+                } 
+                break;                
             case FlymOld :
-                writeGpsdProgress();
-                break;
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
+                displayInfo(gpsInfo.toString());
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case LINUX :
+                        writeGpsdProgress();  
+                        break;
+                    case MACOS : 
+                        // Ecriture waypoints non supportée sur Mac
+                        writeToGpsProgress();
+                        break;
+                } 
+                break;    
             case Rever :
                 writeToGpsSimple();
                 break;
@@ -1236,37 +1294,31 @@ public class WaypViewController {
     private void readFlymaster()  {
         gpsReadList = new ArrayList<>();
         try {
-            flymaster fms = new flymaster();
-            if (fms.isPresent(currNamePort)) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");            
-                int nbWayp = fms.getListWaypoints();
-                fms.closePort();
-                if (nbWayp > 0) {
-                    gpsReadList = fms.getWpreadList();
-                }
+            gpsInfo = new StringBuilder();
+            gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flymaster ");                  
+            jsFlymaster flym = new jsFlymaster(currNamePort); 
+            int nbWayp = flym.getListWaypoints();
+            if (nbWayp > 0) {
+                gpsReadList = flym.getWpreadList();            
             } else {
-                gpsInfo.append(fms.getError());
-            }            
+                gpsInfo.append(flym.getError());
+            }                            
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
-        }                
+        }         
     }    
     
    private void readFlytec20()  {
         gpsReadList = new ArrayList<>();
         try {
-            flytec20 fls = new flytec20();
-            if (fls.isPresent(currNamePort)) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");            
-                int nbWayp = fls.getListWaypoints();
-                fls.closePort();
-                if (nbWayp > 0) {
-                    gpsReadList = fls.getWpreadList();
-                }
+            gpsInfo = new StringBuilder();
+            gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6020/30 ").append("  "); 
+            jsFlytec20 fls = new jsFlytec20(currNamePort);                     
+            int nbWayp = fls.getListWaypoints();            
+            if (nbWayp > 0) {
+                gpsReadList = fls.getWpreadList();
             } else {
                 gpsInfo.append(fls.getError());
             }            
@@ -1451,22 +1503,40 @@ public class WaypViewController {
         alertbox aError = new alertbox(myConfig.getLocale());             
         switch (currGPS) {
             case Flytec20 :
-                readGpsdProgress();
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case LINUX :
+                        readGpsdProgress();
+                        break;
+                    case MACOS :     
+                        // lecture waypoints non supportée sur Mac
+                        readFromGpsProgress();
+                        break;
+                }                 
                 break;
             case Flytec15 :
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                    case MACOS :
                         readGpsdProgress();
                         break;
-                case LINUX : 
-                    // lecture waypoints non supportée sur Linux
-                    readFromGpsProgress();
-                    break;
+                    case MACOS :    
+                    case LINUX : 
+                        // lecture waypoints non supportée sur Linux
+                        readFromGpsProgress();
+                        break;
                 } 
                 break;
             case FlymSD :
-                readGpsdProgress();
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case LINUX :
+                        readGpsdProgress();
+                        break;
+                    case MACOS :     
+                        // lecture waypoints non supportée sur Mac
+                        readFromGpsProgress();
+                        break;
+                }                 
                 break;
             case FlymOld :
                 readGpsdProgress();
