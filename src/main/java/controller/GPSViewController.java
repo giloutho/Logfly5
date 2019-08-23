@@ -20,6 +20,7 @@ import gps.flynet;
 import gps.flytec15;
 import gps.flytec20;
 import gps.gpsdump;
+import gps.jsFlytec15;
 import gps.oudie;
 import gps.reversale;
 import gps.sensbox;
@@ -385,15 +386,9 @@ public class GPSViewController {
      */
     private void readFlytec15()  {
         try {
-            flytec15 fliq = new flytec15();
-            if (fliq.init(currNamePort)) {     
-                // Communication OK
-                resCom = 1;
-                // flight list of GPS is dowloaded from fls.getDeviceInfo method
-                // fls fills the observable list 
-                // serial port is closed
-                idGPS = fliq.getDeviceId();
-                fliq.getListFlights(dataImport);
+            jsFlytec15 fly15 = new jsFlytec15(currNamePort);
+            if (fly15.reqFlightList()) {
+                dataImport = fly15.getListFlights();
                 if (dataImport.size() > 0) {
                      // Checking of already stored flights in logbook 
                     for (Gpsmodel nbItem : dataImport){
@@ -408,7 +403,7 @@ public class GPSViewController {
                     // Flyctec 6015 communication is OK
                     // GPS model and serial port are stored in settings
                     myConfig.setIdxGPS(2);
-                    myConfig.setLastSerialCom(currNamePort);
+     //               myConfig.setLastSerialCom(currNamePort);
                 } else {
                     // Errror will be displayed in AfficheFlyList 
                     resCom = 6;                       
@@ -712,12 +707,23 @@ public class GPSViewController {
             @Override
             public Void call() throws InterruptedException { 
                 switch (currGPS) {
-                    case Flytec20 :                         
-                    case Flytec15 :                        
+                    case Flytec20 :                                                 
                     case FlymSD :
                     case FlymOld :
                         gpsdReadFlightList();
                         break;    
+                    case Flytec15 :
+                        switch (myConfig.getOS()) {
+                            case WINDOWS :
+                            case MACOS :
+                                gpsdReadFlightList();
+                                break;
+                        case LINUX : 
+                            // A cause du bug GPSDump, on utilise notre propre code avec jssc
+                            readFlytec15();
+                            break;
+                        } 
+                        break;
                     case Rever :
                     case Sky :
                     case Sky3 :    
