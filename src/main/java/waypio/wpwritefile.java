@@ -107,16 +107,18 @@ public class wpwritefile {
                 // limit to six characters but not absolutely required -> use the correct length name to suit the GPS type.
                 sPart = wpList.get(i).getFBalise();
                 sPart = wpList.get(i).getFBalise().length() > 6 ? wpList.get(i).getFBalise().substring(0, 7) : wpList.get(i).getFBalise();
+                sPart = String.format("%-14s",sPart);   // Cadreage obligatoire pour GPSDump Linux
                 sb.append(String.format("%4s", i+1)).append(",").append(sPart).append(",");
                 double dLat = Double.parseDouble(wpList.get(i).getFLat());
-                sb.append(df2.format(dLat)).append(",");
+                sb.append(String.format("%11s",df2.format(dLat))).append(",");
                 double dLong = Double.parseDouble(wpList.get(i).getFLong());
-                sb.append(df2.format(dLong)).append(",,0,1,3,0,65535,");
+                sb.append(String.format("%11s",df2.format(dLong))).append(",39589.90758, 0, 1, 3,         0,     65535,");
                 sPart = wpList.get(i).getFDesc().length() > 40 ? wpList.get(i).getFDesc().substring(0, 41) : wpList.get(i).getFDesc();
+                sPart = String.format("%-40s",sPart);   // Cadreage obligatoire pour GPSDump Linux
                 if (!withDesc) sPart = "";   // Special for GPSDump with short names
-                sb.append(sPart).append(",0,0,0,");
+                sb.append(sPart).append(", 0, 0,    0,");
                 int iAlt = (int) (Math.round(Integer.parseInt(wpList.get(i).getFAlt()) * 3.280839895));
-                sb.append(String.valueOf(iAlt)).append(",6,0,17").append(CF);
+                sb.append(String.format("%5s",iAlt)).append(",6,0,17").append(CF);
                 writer.write(sb.toString());
             }
             writer.close();
