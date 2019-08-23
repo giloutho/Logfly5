@@ -202,7 +202,7 @@ public class alertbox {
                 msg = i18n.tr("GpsDump program not found");                          
                 break;     
             case 1210:
-                msg = i18n.tr("GpsDump did not write the file. Is the waypoints list empty ?");                          
+                msg = i18n.tr("GpsDump did not return data. Is the waypoints list empty ?");                          
                 break;                    
             // upload igc file for VisuGPS    
             case 1301:
