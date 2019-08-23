@@ -12,17 +12,16 @@ import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.elevationapi;
 import geoutils.geonominatim;
-import geoutils.googlegeo;
 import geoutils.position;
 import gps.compass;
 import gps.connect;
 import gps.element;
 import gps.flymaster;
 import gps.flymasterold;
-import gps.flytec15;
 import gps.flytec20;
 import gps.gpsdump;
 import static gps.gpsutils.ajouteChecksum;
+import gps.jsFlytec15;
 import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
@@ -923,13 +922,12 @@ public class WaypViewController {
        
         try {
             prepWritingFly15();
-            flytec15 fl15 = new flytec15();
-            if (listForGps.size() > 0 && fl15.isPresent(currNamePort)) {
+            jsFlytec15 fly15 = new jsFlytec15(currNamePort);
+            if (listForGps.size() > 0 ) {
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
-                fl15.setListPBRWP(listForGps);
-                fl15.sendWaypoint();
-                fl15.closePort();
+                fly15.setListPBRWP(listForGps);
+                fly15.sendWaypoint();
             }    
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -938,7 +936,10 @@ public class WaypViewController {
         }          
     }   
 
-    
+    /**
+     * Used to send wapoints with our own code
+     * Currently used for a single device : 6015 (GPSDump Linux  don't support this GPS)
+     */
     private void writeToGpsProgress() {
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
@@ -1133,7 +1134,16 @@ public class WaypViewController {
                 writeGpsdProgress();                
                 break;
             case Flytec15 :
-                writeGpsdProgress();               
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case MACOS :
+                        writeGpsdProgress();  
+                        break;
+                case LINUX : 
+                    // Ecriture waypoints non supportée sur Linux
+                    writeToGpsProgress();
+                    break;
+                } 
                 break;
             case FlymSD :
                 writeGpsdProgress();
@@ -1270,17 +1280,14 @@ public class WaypViewController {
    private void readFlytec15()  {
         gpsReadList = new ArrayList<>();
         try {
-            flytec15 fl15 = new flytec15();
-            if (fl15.isPresent(currNamePort)) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6015 / IQ Basic ");          
-                int nbWayp = fl15.getListWaypoints();
-                fl15.closePort();
-                if (nbWayp > 0) {
-                    gpsReadList = fl15.getWpreadList();
-                }
+            gpsInfo = new StringBuilder();
+            gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6015 / IQ Basic ");                  
+            jsFlytec15 fly15 = new jsFlytec15(currNamePort); 
+            int nbWayp = fly15.getListWaypoints();
+            if (nbWayp > 0) {
+                gpsReadList = fly15.getWpreadList();            
             } else {
-                gpsInfo.append(fl15.getError());
+                gpsInfo.append(fly15.getError());
             }            
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -1342,6 +1349,10 @@ public class WaypViewController {
         thread.start();         
     }   
    
+    /**
+     * Used to download wapoints with our own code
+     * Currently used for a single device : 6015 (GPSDump Linux  don't support this GPS)
+     */
     private void readFromGpsProgress() {          
         errorComMsg = null;
         
@@ -1443,7 +1454,16 @@ public class WaypViewController {
                 readGpsdProgress();
                 break;
             case Flytec15 :
-                readGpsdProgress();
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case MACOS :
+                        readGpsdProgress();
+                        break;
+                case LINUX : 
+                    // lecture waypoints non supportée sur Linux
+                    readFromGpsProgress();
+                    break;
+                } 
                 break;
             case FlymSD :
                 readGpsdProgress();
