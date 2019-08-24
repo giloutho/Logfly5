@@ -6,6 +6,7 @@
  */
 package littlewins;
 
+import dialogues.alertbox;
 import gps.compass;
 import gps.connect;
 import gps.element;
@@ -397,6 +398,8 @@ public class winGPS {
                  //   resCom = 3;
                  //   actuLed();   
                 }
+            } else {
+                gpsNotPresent();
             }                         
         } catch (SecurityException ex) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -410,7 +413,7 @@ public class winGPS {
         gpsConnect = false;
         btRefresh.setVisible(true);
         btConnexion.setVisible(true);  
-        subStage.setTitle(i18n.tr("GPS not detected"));        
+        subStage.setTitle(i18n.tr("GPS not detected"));            
     }
     
     private void gpsPresent() {
@@ -434,7 +437,7 @@ public class winGPS {
                             sbError.append("\r\n").append(e.toString());
                             mylogging.log(Level.SEVERE, sbError.toString());            
                         }   
-                    }                    
+                    }                
                     break;
                 case Flytec15 :
                     if (currNamePort != null && !currNamePort.equals("")) {
@@ -464,7 +467,9 @@ public class winGPS {
                             sbError.append("\r\n").append(e.toString());
                             mylogging.log(Level.SEVERE, sbError.toString());            
                         }   
-                    }                    
+                    }  else {
+                        listSerialPort();
+                    }                      
                     break;
                 case FlymOld :
                     if (currNamePort != null && !currNamePort.equals("")) {
