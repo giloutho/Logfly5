@@ -216,18 +216,18 @@ public class winFileChoose {
         if (initDir != null) fileChooser.setInitialDirectory(initDir);
         switch (winType) {
             case IgcGpx :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (igc)", "*.igc")); 
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (gpx)", "*.gpx")); 
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (igc)", "*.igc", "*.IGC")); 
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (gpx)", "*.gpx", "*.GPX")); 
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Track files (igc ", "*.igc"));  
                 break;
             case OpenAir :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt","*.TXT"));        
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));        
                 break;
             case OACheck :
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt","*.TXT"));        
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt"));     
                 break;      
@@ -240,7 +240,7 @@ public class winFileChoose {
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Logbook backup (dbk)", "*.dbk"));        
                 break; 
             case csv : 
-                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv"));        
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv","*.CSV"));        
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv"));      
                 break;                 
             case xcp :
