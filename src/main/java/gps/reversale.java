@@ -8,14 +8,19 @@ package gps;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
+import trackgps.traceGPS;
 
 /**
  *
@@ -305,9 +310,10 @@ public class reversale {
             if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                    
                 // Problem of dot files writed by MacOS 
                 if (files[i].isFile() && !fileName.startsWith("._")) {
-                    if (files[i].getName().substring(0,7).compareTo(closingDate) > 0) {
+                    // To manage the bug we can't use ClosingDate
+                    //if (files[i].getName().substring(0,7).compareTo(closingDate) > 0) {
                         trackPathList.add(files[i].getPath());
-                    }
+                   // }
                 }
             }
             if (files[i].isDirectory()) {
@@ -315,7 +321,7 @@ public class reversale {
             }
         }        
     }
-    
+            
     /**
      * Different from exploreFolder, not only an extension file difference
      * We don't take care of closingDate
