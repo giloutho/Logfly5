@@ -1029,6 +1029,18 @@ public class GPSViewController {
         
         return newTrack; 
     }    
+    
+    private LocalDateTime calcGoodDate(int iYear, int iMonth, int iDay)  {
+        
+        LocalDateTime bugLdt = LocalDateTime.of(iYear, iMonth, iDay,0,0,0);
+        LocalDateTime wnro = LocalDateTime.of(1999, 8, 22, 00, 00, 00);
+        LocalDateTime newWnro = LocalDateTime.of(2019, 4, 7, 00, 00, 00);
+        long weeks = ChronoUnit.WEEKS.between(wnro, bugLdt);
+        long days = ChronoUnit.DAYS.between(wnro,bugLdt);
+        LocalDateTime goodDate = newWnro.plusDays(days);
+        
+        return goodDate;
+    }
         
     private void archiveSyride() {
         
