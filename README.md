@@ -1,6 +1,8 @@
 # Logfly
 Logfly is a log book which stores paragliding flights with GPS tracks or not. It's possible to visualize flights and evaluate the score for online contest.
 
+![Logfly screenshot](http://logfly.org/download/Divers/Logfly_uk.jpg)
+
 **Build and run requirements :**   
 The optimization task (finding largest free flight, flat or FAI triangle) on the tracklogs is computed by an external program writen by [Ondrej Palkovsky](http://www.penguin.cz/~ondrap/paragliding.php) called ***points***. 
 Flymaster and Flytec communication are made with ***GPSDump*** writen by [Stein Sorensen](http://www.gpsdump.no/).
