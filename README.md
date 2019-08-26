@@ -1,5 +1,5 @@
 # Logfly
-Logfly is a log book which stores paragliding flights with GPS tracks or not. It's possible to visualize flights and evaluate the score for online contest.
+Logfly is a log book which stores paragliding flights with GPS tracks or not. It's possible to visualize flights and evaluate the score for online contest. It works on Windows, Mac and Linux.
 
 ![Logfly screenshot](http://logfly.org/download/Divers/Logfly_uk.jpg)
 
