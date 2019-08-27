@@ -69,9 +69,9 @@ public class Main extends Application {
         // Current version
         Release release = new Release();
         release.setpkgver("5.0");        
-        release.setPkgrel("19");
+        release.setPkgrel("20");
         // last bundle
-        release.setseverity("5.19");
+        release.setseverity("5.20");
         
         String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel();
         this.primaryStage.setTitle(currVersion);
