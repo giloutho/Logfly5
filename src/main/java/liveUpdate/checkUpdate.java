@@ -113,7 +113,7 @@ public class checkUpdate {
                     answer = dInfo.YesNo(dHeader,dText); 
                     if (answer == true) {
                         tmpUpdateFiles = tempacess.getTemPath(null);
-                        String msg = i18n.tr("You need to restart the program")+"...";
+                        String msg = i18n.tr("Run the installation of the new version")+"...";
                         String sUrl=null;
                         // Get bundle.xml with download url
                         bundleXMLParser bParser = new bundleXMLParser();
