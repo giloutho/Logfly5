@@ -279,6 +279,7 @@ public class GPSViewController {
             currGPS = myWin.getCurrGPS();
             if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou");
             currNamePort = myWin.getCurrNamePort();
+            myConfig.setLastSerialCom(currNamePort);
             idGPS = myWin.getGpsCharac();
             res = true;
         }
