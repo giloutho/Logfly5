@@ -21,6 +21,8 @@ import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
 import gps.xctracer;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -39,8 +41,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-//import jssc.SerialPort;
-//import jssc.SerialPortList;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
 import settings.listGPS;
@@ -438,8 +438,7 @@ public class winGPS {
                     String sPort = ports[i].getSystemPortName();
                     if(myConfig.getOS() == osType.MACOS) {
                         // Pour éviter de lister des ports inutilisables
-                        if (pMac.matcher(sPort).matches()) {
-                      //  if (sPort.substring(0,8).equals("/dev/cu."))  {                 
+                        if (pMac.matcher(sPort).matches()) {                
                             portList.add(sPort);
                             if (lastSerialUsed.equals(sPort)) {
                                 idxSerialList = idxListPort;
@@ -474,7 +473,7 @@ public class winGPS {
                     currNamePort = cbSerial.getSelectionModel().getSelectedItem().toString();
                     System.out.println("CuurNamePort "+currNamePort);
                     
-                   // testGPS();
+                    testGPS();
                 } else {
                     currNamePort = "nil";
                     // Rafriachr les listes
@@ -499,7 +498,7 @@ public class winGPS {
         gpsConnect = false;
         btRefresh.setVisible(true);
         btConnexion.setVisible(true);  
-        subStage.setTitle(i18n.tr("GPS not detected"));            
+        subStage.setTitle(i18n.tr("GPS not detected"));   
     }
     
     private void gpsPresent() {
@@ -676,74 +675,86 @@ public class winGPS {
     
     private String getDeviceInfo(String namePort) {
         String res = null;
-//        String req = null;
-//        SerialPort serialPort = new SerialPort(namePort);
-//        try {
-//            serialPort.openPort();//Open serial port
-//            serialPort.setParams(SerialPort.BAUDRATE_57600, 
-//                                 SerialPort.DATABITS_8,
-//                                 SerialPort.STOPBITS_1,
-//                                 SerialPort.PARITY_NONE);
-//                                //Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
-//            switch (currGPS) {
-//                case FlymSD:
-//                case FlymOld :    
-//                    req = "$PFMSNP,\n";
-//                    break;
-//                case Flytec20 :
-//                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
-//                    break;
-//                case Flytec15 :
-//                    req =  "ACT_BD_00"+"\r\n";
-//                    break;
-//            }
-//            serialPort.writeString(req);
-//            Thread.sleep(300); 
-//            String gpsRet = serialPort.readString();
-//            if (gpsRet != null && !gpsRet.isEmpty()) {
-//                switch (currGPS) {
-//                    case FlymSD:
-//                    case FlymOld :    
-//                        req = "$PFMSNP,\n";
-//                        if (gpsRet.contains("$PFMSNP")) {
-//                            res = setFlymCharac(gpsRet);
-//                        } else {
-//                            res = null;   
-//                        }
-//                        break;
-//                    case Flytec20 :
-//                        // si l'on envoie la requête Flytec 20 sur un Flymaster
-//                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
-//                        // Etonnant et non prévu
-//                        if (gpsRet.contains("$PBRSNP")) {
-//                            res = setFlytec20Charac(gpsRet);
-//                        } else {
-//                            res = null;   
-//                        }
-//                        break;
-//                    case Flytec15 :
-//                        String[] tbdata = gpsRet.split(" ");
-//                        if (tbdata.length > 0) {
-//                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
-//                                res = gpsRet.replaceAll("\r\n", "");   
-//                                gpsCharac = res;
-//                            } else {
-//                                res = null;
-//                            } 
-//                        } else {
-//                            res = null;
-//                        }    
-//                        break;
-//                }                                
-//            } else {
-//                res = null;
-//            }
-//            serialPort.closePort();//Close serial port
-//        }
-//        catch (Exception ex) {
-//            System.out.println(ex);
-//        }        
-//        
+        String req = null;        
+        try {
+            SerialPort serialPort = SerialPort.getCommPort(namePort);
+            serialPort.openPort();//Open serial port
+            serialPort.setComPortParameters(57600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 100, 0);
+            switch (currGPS) {
+                case FlymSD:
+                case FlymOld :    
+                    req = "$PFMSNP,\n";
+                    break;
+                case Flytec20 :
+                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
+                    break;
+                case Flytec15 :
+                    req =  "ACT_BD_00"+"\r\n";
+                    break;
+            }
+            byte[] b = req.getBytes(StandardCharsets.UTF_8); 
+            serialPort.writeBytes(b, b.length);
+     //      Thread.sleep(300); 
+            
+            InputStream in = serialPort.getInputStream();
+            StringBuilder sbRead = new StringBuilder();
+            String gpsRet;
+            try
+            {
+               for (int j = 0; j < 100; ++j)
+                   sbRead.append((char)in.read());
+               in.close();
+            } catch (Exception e) { 
+               // We finish here with timeout                
+            } finally {
+                gpsRet = sbRead.toString();
+                serialPort.closePort();  
+            }
+
+            if (gpsRet != null && !gpsRet.isEmpty()) {
+                switch (currGPS) {
+                    case FlymSD:
+                    case FlymOld :    
+                        req = "$PFMSNP,\n";
+                        if (gpsRet.contains("$PFMSNP")) {
+                            res = setFlymCharac(gpsRet);
+                        } else {
+                            res = null;   
+                        }
+                        break;
+                    case Flytec20 :
+                        // si l'on envoie la requête Flytec 20 sur un Flymaster
+                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
+                        // Etonnant et non prévu
+                        if (gpsRet.contains("$PBRSNP")) {
+                            res = setFlytec20Charac(gpsRet);
+                        } else {
+                            res = null;   
+                        }
+                        break;
+                    case Flytec15 :
+                        String[] tbdata = gpsRet.split(" ");
+                        if (tbdata.length > 0) {
+                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
+                                res = gpsRet.replaceAll("\r\n", "");   
+                                gpsCharac = res;
+                            } else {
+                                res = null;
+                            } 
+                        } else {
+                            res = null;
+                        }    
+                        break;
+                }                                
+            } else {
+                res = null;
+            }
+        }
+        catch (Exception ex) {
+            System.out.println(ex);
+        }        
+        
        return res;
     }    
     
