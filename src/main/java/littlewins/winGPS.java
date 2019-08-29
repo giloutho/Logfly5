@@ -76,6 +76,7 @@ public class winGPS {
     private Button btConnexion;    
     private Button btRefresh;
     private Label lbPort;
+    private Label lbInfo; 
     private ChoiceBox cbSerial;  
     
     private I18n i18n; 
@@ -183,6 +184,7 @@ public class winGPS {
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
         btConnexion = new Button("Connexion");
         btConnexion.setOnAction((event) -> {
+            lbInfo.setText("");
             testGPS();
         });
         Tooltip connToolTip = new Tooltip();
@@ -199,6 +201,7 @@ public class winGPS {
         });
         btRefresh = new Button(i18n.tr("Update"));
         btRefresh.setOnAction((event) -> {
+            lbInfo.setText("");
             choixGPS(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
         });        
         btRefresh.setVisible(false);
@@ -209,13 +212,25 @@ public class winGPS {
         
         buttonBar.getChildren().addAll(btRefresh, btConnexion, btCancel);
         
-        vbox.getChildren().addAll(hBox1, hBox2,  buttonBar);
-        
         btConnexion.setVisible(false);    
+        
+        lbInfo = new Label();
+        lbInfo.setAlignment(Pos.CENTER);
+        lbInfo.setMinWidth(200);
+        
+        HBox hBox3 = new HBox();
+        
+        hBox3.setSpacing(10);
+        hBox3.setMaxHeight(25);
+        hBox3.setMinWidth(220);
+        hBox3.setAlignment(Pos.CENTER);
+        hBox3.getChildren().addAll(lbInfo);        
+        
+        vbox.getChildren().addAll(hBox1, hBox2, buttonBar, hBox3);
         
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
-        subStage.setScene(new Scene(subRoot, 330, 130));
+        subStage.setScene(new Scene(subRoot, 330, 150));
         iniChbGPS();
         if (!gpsConnect) subStage.showAndWait();         
     }    
@@ -450,6 +465,7 @@ public class winGPS {
                         if (!p1.matcher(sPort).matches() && !p2.matcher(sPort).matches() && !p3.matcher(sPort).matches()
                              && !p4.matcher(sPort).matches() && !p5.matcher(sPort).matches() && !p6.matcher(sPort).matches())
                         {
+                            if (!sPort.contains("//dev//")) sPort = "/dev/"+sPort;
                             portList.add(sPort);   
                             if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
                             idxListPort++;
@@ -476,14 +492,14 @@ public class winGPS {
                     testGPS();
                 } else {
                     currNamePort = "nil";
-                    // Rafriachr les listes
-                    // pas sûr que ce soit pertinent...
-                    // on devrait afficher un msg erreur et demander relance totale
-                 //   resCom = 3;
-                 //   actuLed();   
+                    lbInfo.setText(i18n.tr("No usable serial ports detected"));
+                    System.out.println("No usable serial ports detected");
                 }
             } else {
-                gpsNotPresent();
+                lbInfo.setText(i18n.tr("No usable serial ports detected"));
+                gpsConnect = false;
+                btRefresh.setVisible(true);
+                btConnexion.setVisible(true);  
             }                         
         } catch (SecurityException ex) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -498,7 +514,7 @@ public class winGPS {
         gpsConnect = false;
         btRefresh.setVisible(true);
         btConnexion.setVisible(true);  
-        subStage.setTitle(i18n.tr("GPS not detected"));   
+        lbInfo.setText(i18n.tr("GPS not detected"));   
     }
     
     private void gpsPresent() {
