@@ -68,8 +68,19 @@ public class winFileSave {
                 initDir = f;
             else
                 initDir = null;                   
-        } else
-            initDir = null;
+        } else {
+            switch (myConfig.getOS()) {
+                case WINDOWS :
+                    initDir = new File (System.getProperty("user.home")+"\\Documents");                      
+                    break;
+                case MACOS :
+                    initDir = new File (System.getProperty("user.home")+"/Documents");   
+                    break;
+                case LINUX :
+                    initDir = new File (System.getProperty("user.home")+"/.logfly");                    
+                    break;
+            }
+        }
         initName = pInitName;
         setInfos();
         if (!noDisplay) {
