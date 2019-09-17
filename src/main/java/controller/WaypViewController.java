@@ -178,6 +178,8 @@ public class WaypViewController {
     private ObservableList<pointRecord> pointList; 
     private pointRecord currPoint;
     private wpreadfile waypFile;
+    private File originalFile = null;
+    private String originalType;
 
     private Stage dialogStage;    
     private String debStatusBar;
@@ -301,6 +303,7 @@ public class WaypViewController {
     @FXML
     private void handleReadGPS() {    
         if (selectGPS()) {
+            originalFile = null;
             readFromGPS();    
         }
     }
@@ -449,22 +452,29 @@ public class WaypViewController {
         String pFichier = readTxt8859(file);   
         ficType = "nil";
         if (pFichier != null)  {            
-            if (pFichier.indexOf("OziExplorer") > -1) {
+            if (pFichier.indexOf("OziExplorer") > -1) {                
                 ficType = "OZI";
+                originalType = "1";
             } else if (pFichier.indexOf("PCX5") > -1) {
                 ficType = "PCX";
+                originalType = "3";
             } else if (pFichier.indexOf("<kml xmlns") > -1) {
                 ficType = "KML";
+                originalType = "4";
             } else if (pFichier.indexOf("<?xml version=\"1.0\"") > -1 && pFichier.indexOf("version=\"1.1\"") > -1) {
                 ficType = "GPX";
+                originalType = "5";
             } else if (pFichier.indexOf("code,country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
                 ficType = "CUP";
+                originalType = "6";
             } else if (pFichier.indexOf("Code,Country") > -1) {    // Vérifier si cela fonctionne sans les majuscules
-                ficType = "CUP";                  
+                ficType = "CUP"; 
+                originalType = "6";
             } else if (pFichier.indexOf("Timestamp=") > -1) {
                 ficType = "XCP";
             } else if (testCompeGPS(pFichier)) {
                 ficType = "COM"; 
+                originalType = "2";
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertInfo(i18n.tr("File format not recognized")); 
@@ -505,6 +515,7 @@ public class WaypViewController {
         }            
         if (goodRead) {
             displayWpFile(waypFile.getWpreadList(), sbInfo.toString());
+            originalFile = file;
         } else {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertInfo(i18n.tr("Unable to decode the file"));                  
@@ -513,11 +524,28 @@ public class WaypViewController {
     
     @FXML
     private void handleWriteFile() {
-        
-        winFileSave wfs = new winFileSave(myConfig, i18n, fileType.wpt, null, null);  
-        File saveWpt = wfs.getSelectedFile();
-        if (saveWpt != null) {        
-            writeToFile(wfs.getWptFormat(), saveWpt.getAbsolutePath());
+        String pInitDir = null;
+        String pInitName = null;
+        if (originalFile != null && originalFile.exists()) {
+            pInitDir = originalFile.getParent();
+            pInitName = originalFile.getName();
+            dialogbox dConfirm = new dialogbox(i18n);
+            StringBuilder sbMsg = new StringBuilder(); 
+            if (dConfirm.YesNo(i18n.tr("Saving"),i18n.tr("Overwrite the existing file")))   { 
+                writeToFile(originalType, originalFile.getAbsolutePath());
+            } else {
+                winFileSave wfs = new winFileSave(myConfig, i18n, fileType.wpt, pInitDir, pInitName);  
+               File saveWpt = wfs.getSelectedFile();
+               if (saveWpt != null) {        
+                   writeToFile(wfs.getWptFormat(), saveWpt.getAbsolutePath());
+               }               
+            }
+        } else { 
+            winFileSave wfs = new winFileSave(myConfig, i18n, fileType.wpt, pInitDir, pInitName);  
+            File saveWpt = wfs.getSelectedFile();
+            if (saveWpt != null) {        
+                writeToFile(wfs.getWptFormat(), saveWpt.getAbsolutePath());
+            }
         }
     }    
     
@@ -1765,6 +1793,7 @@ public class WaypViewController {
     @FXML
     private void handleGo() {
         if (pointList.size() == 0) {
+            originalFile = null;
             if (txLocality.getText() != null && !txLocality.getText().equals("")) {
                 searchOsmName(txLocality.getText().trim());
             } else {
@@ -1776,6 +1805,7 @@ public class WaypViewController {
             sbMsg.append(i18n.tr("Cancel current list"));
             if (dConfirm.YesNo(sbMsg.toString(),""))  { 
                 tablePoints.getItems().clear();
+                originalFile = null;
                 handleGo();
             }            
         }
