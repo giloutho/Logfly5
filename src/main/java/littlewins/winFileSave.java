@@ -107,13 +107,15 @@ public class winFileSave {
                 result = dg.showAndWait();
                 resDg = result.get().getText(); 
                 if (resDg != null && resDg != "") {
-                    if (resDg.contains("IGC")) {
+                    // resDg aura une valeur différente selon la langue utilisée Voir plus bas
+                    String upRes = resDg.toUpperCase();
+                    if (upRes.contains("IGC")) {
                         sbInfo.append(i18n.tr("Supported file types"));
                         sbInfo.append(" : ").append("IGC").append(" (*.igc)");
                         btCaption = i18n.tr("Choose a destination and a filename");
                         sTitle = "";                    
                         extFormat = ".igc";
-                    } else if (resDg.contains("GPX")) {
+                    } else if (upRes.contains("GPX")) {
                         sbInfo.append(i18n.tr("Supported file types"));
                         sbInfo.append(" : ").append("GPX").append(" (*.gpx)");
                         btCaption = i18n.tr("Choose a destination and a filename");
@@ -167,42 +169,46 @@ public class winFileSave {
                 result = dg.showAndWait();
                 resDg = result.get().getText(); 
                 if (resDg != null && resDg != "") {
-                    if (resDg.contains("Ozi")) {
+                    // resDg aura une valeur différente selon la langue utilisée
+                    // Ozi explorer format (english)
+                    // Format OZI (french) it's uppercase !!!
+                    String upRes = resDg.toUpperCase();
+                    if (upRes.contains("OZI")) {
                         sbInfo.append(i18n.tr("OziExplorer Format"));
                         sbInfo.append(" : ").append("WPT").append(" (*.wpt)");
                         btCaption = i18n.tr("Choose a destination and a filename");
                         sTitle = "";                    
                         extFormat = ".wpt";
                         wptFormat = "1";
-                    } else if (resDg.contains("Compe")) {
+                    } else if (upRes.contains("COMPE")) {
                         sbInfo.append(i18n.tr("CompeGPS Format"));
                         sbInfo.append(" : ").append("WPT").append(" (*.wpt)");
                         btCaption = i18n.tr("Choose a destination and a filename");
                         sTitle = "";                    
                         extFormat = ".wpt";
                         wptFormat = "2";
-                    } else if (resDg.contains("PCX")) {
+                    } else if (upRes.contains("PCX")) {
                         sbInfo.append(i18n.tr("PCX5 Format"));
                         sbInfo.append(" : ").append("PCX5").append(" (*.pcx)");
                         btCaption = i18n.tr("Choose a destination and a filename");
                         sTitle = "";                    
                         extFormat = ".pcx";
                         wptFormat = "3";
-                    } else if (resDg.contains("Kml")) {
+                    } else if (upRes.contains("KML")) {
                         sbInfo.append(i18n.tr("Kml Format"));
                         sbInfo.append(" : ").append("KML").append(" (*.kml)");
                         btCaption = i18n.tr("Choose a destination and a filename");
                         sTitle = "";                    
                         extFormat = ".kml";
                         wptFormat = "4";
-                    } else if (resDg.contains("GPX")) {
+                    } else if (upRes.contains("GPX")) {
                         sbInfo.append(i18n.tr("GPX Format"));
                         sbInfo.append(" : ").append("GPX").append(" (*.gpx)");
                         btCaption = i18n.tr("Choose a destination and a filename");
                         sTitle = "";                    
                         extFormat = ".gpx";
                         wptFormat = "5";
-                    } else if (resDg.contains("Cup")) {
+                    } else if (upRes.contains("CUP")) {
                         sbInfo.append(i18n.tr("Cup Format"));
                         sbInfo.append(" : ").append("CUP").append(" (*.cup)");
                         btCaption = i18n.tr("Choose a destination and a filename");
@@ -304,7 +310,7 @@ public class winFileSave {
             case wpt :
                 switch (wptFormat) {
                     case "1":
-                        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("OZI files (wpt)", "*.wpt", "*.WPT"));        
+                        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("OZI files (wpt)", "*.wpt", "*.WPT"));    
                         break;
                     case "2":
                         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("CompeGPS files (wpt)", "*.wpt", "*.WPT"));        
