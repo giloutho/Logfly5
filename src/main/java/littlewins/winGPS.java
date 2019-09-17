@@ -7,11 +7,9 @@
 package littlewins;
 
 import com.fazecast.jSerialComm.SerialPort;
-import dialogues.alertbox;
 import gps.compass;
 import gps.connect;
 import gps.element;
-import gps.flymasterold;
 import gps.flynet;
 import static gps.gpsutils.ajouteChecksum;
 import gps.oudie;
