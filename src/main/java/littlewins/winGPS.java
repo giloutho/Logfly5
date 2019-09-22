@@ -276,13 +276,31 @@ public class winGPS {
                 break;
             case 1:
                 // 6020/6030
-                currGPS = gpsType.Flytec20;              
-                listSerialPort();  
+                currGPS = gpsType.Flytec20;  
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case MACOS :
+                        currNamePort = "nil";
+                        gpsPresent();
+                        break;
+                case LINUX : 
+                    listSerialPort();
+                    break;
+                } 
                 break;
             case 2:
                 // 6015
                 currGPS = gpsType.Flytec15;               
-                listSerialPort();  
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case MACOS :
+                        currNamePort = "nil";
+                        gpsPresent();
+                        break;
+                case LINUX : 
+                    listSerialPort();
+                    break;
+                } 
                 break;
             case 3:
                 currGPS = gpsType.Flynet; 
@@ -292,7 +310,16 @@ public class winGPS {
             case 4:    
                 // Flymaster old series
                 currGPS = gpsType.FlymOld;               
-                listSerialPort();                          
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case MACOS :
+                        currNamePort = "nil";
+                        gpsPresent();
+                        break;
+                case LINUX : 
+                    listSerialPort();
+                    break;
+                }                         
                 break;
             case 5:
                 // Reversale
@@ -327,8 +354,17 @@ public class winGPS {
                 break;
             case 11:
                 // Flymaster SD will be read with GPSDump
-                currGPS = currGPS = gpsType.FlymSD;                 
-                listSerialPort();                 
+                currGPS = gpsType.FlymSD;                 
+                switch (myConfig.getOS()) {
+                    case WINDOWS :
+                    case MACOS :
+                        currNamePort = "nil";
+                        gpsPresent();
+                        break;
+                case LINUX : 
+                    listSerialPort();
+                    break;
+                } 
                 break;
             case 12:  // Connect
                 currGPS = gpsType.Connect;  
