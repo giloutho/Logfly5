@@ -1189,8 +1189,10 @@ public class WaypViewController {
                         writeGpsdProgress();  
                         break;
                     case MACOS : 
-                        // Ecriture waypoints non supportée sur Mac
-                        writeToGpsProgress();
+                        // Up to GPSDump 0.53, waypoint reading was not supported
+                        // writeToGpsProgress();
+                        // now supported
+                        writeGpsdProgress();
                         break;
                 } 
                 break;  
@@ -1219,8 +1221,10 @@ public class WaypViewController {
                         writeGpsdProgress();  
                         break;
                     case MACOS : 
-                        // Ecriture waypoints non supportée sur Mac
-                        writeToGpsProgress();
+                        // Up to GPSDump 0.53, waypoint reading was not supported
+                        // writeToGpsProgress();
+                        // now supported
+                        writeGpsdProgress();  
                         break;
                 } 
                 break;                
@@ -1234,8 +1238,10 @@ public class WaypViewController {
                         writeGpsdProgress();  
                         break;
                     case MACOS : 
-                        // Ecriture waypoints non supportée sur Mac
-                        writeToGpsProgress();
+                        // Up to GPSDump 0.53, waypoint reading was not supported
+                        // writeToGpsProgress();
+                        // now supported
+                        writeGpsdProgress();
                         break;
                 } 
                 break;    
@@ -1518,8 +1524,10 @@ public class WaypViewController {
                         readGpsdProgress();
                         break;
                     case MACOS :     
-                        // lecture waypoints non supportée sur Mac
-                        readFromGpsProgress();
+                        // Up to GPSDump 0.53, waypoint reading was not supported
+                        //readFromGpsProgress();
+                        // now supported
+                        readGpsdProgress();  
                         break;
                 }                 
                 break;
@@ -1542,8 +1550,10 @@ public class WaypViewController {
                         readGpsdProgress();
                         break;
                     case MACOS :     
-                        // lecture waypoints non supportée sur Mac
-                        readFromGpsProgress();
+                        // Up to GPSDump 0.53, waypoint reading was not supported
+                        //readFromGpsProgress();
+                        // now supported
+                        readGpsdProgress();                                                
                         break;
                 }                 
                 break;
@@ -1554,8 +1564,10 @@ public class WaypViewController {
                         readGpsdProgress();
                         break;
                     case MACOS :     
-                        // lecture waypoints non supportée sur Mac
-                        readFromGpsProgress();
+                        // Up to GPSDump 0.53, waypoint reading was not supported
+                        //readFromGpsProgress();
+                        // now supported
+                        readGpsdProgress();  
                         break;
                 }                 
                 break;
