@@ -14,11 +14,7 @@ import dialogues.dialogbox;
 import gps.compass;
 import gps.connect;
 import gps.element;
-import gps.flymaster;
-import gps.flymasterold;
 import gps.flynet;
-import gps.flytec15;
-import gps.flytec20;
 import gps.gpsdump;
 import gps.jsFlytec15;
 import gps.oudie;
@@ -286,52 +282,7 @@ public class GPSViewController {
         
         return res;
     }    
-                                
-    /**
-     * Old Flymaster series communication method
-     */
-    private void readFlymOld()  {
-        try {
-            flymasterold fmold = new flymasterold();
-            if (fmold.init(currNamePort)) {     
-                // Communication OK
-                resCom = 1;
-                // flight list of GPS is dowloaded from fms.getDeviceInfo method
-                // fms fills the observable list 
-                // serial port is closed
-                idGPS = "Flymaster "+fmold.getDeviceType()+" "+fmold.getDeviceFirm();
-                fmold.getListFlights(dataImport);
-                if (dataImport.size() > 0) {
-                    // Checking of already stored flights in logbook 
-                    for (Gpsmodel nbItem : dataImport){                        
-                        if (!checkInCarnet(nbItem.getDate(),nbItem.getHeure(),nbItem.getCol4())) {
-                            String sdebug = "";
-                            nbItem.setChecked(Boolean.TRUE);
-                            nbItem.setCol6("NON");
-                        } else {
-                            nbItem.setCol6("OUI");
-                        }
-                        
-                    }                                      
-                    // Flymaster communication is OK
-                    // GPS model and serial port are stored in settings
-                    myConfig.setIdxGPS(4);
-                    myConfig.setLastSerialCom(currNamePort);
-                } else {
-                    // Errror will be displayed in AfficheFlyList 
-                    resCom = 6;
-                }
-            } else {
-                // Errror will be displayed in AfficheFlyList 
-                resCom = 2;
-            }
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }                
-    }
-    
+                                    
     private void gpsdReadFlightList() {
         
         gpsdump gpsd = new gpsdump(this, 8, currNamePort, myConfig);
@@ -768,40 +719,23 @@ public class GPSViewController {
         
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         try {
-            flytec20 fls = new flytec20();                      
-            flytec15 fliq = new flytec15();
-            flymaster fms = new flymaster();
-            flymasterold fmold = new flymasterold();
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig);
             switch (currGPS) {
                     case Flytec20 :
-                        if (fls.isPresent(currNamePort)) {
-                            gpsOK = true;
-                            // We release the port for GPSDump
-                            fls.closePort();
-                        }  
+                        // if we're here, it's because the flightlist has been posted
+                        gpsOK = true;                        
                         break;
                     case Flytec15 :
-                        if (fliq.isPresent(currNamePort)) {
-                            gpsOK = true;
-                            // if GPSDump used, we must release the port 
-                            // Otherwise, port must stay open
-                            fliq.closePort();
-                        }  
+                        // if we're here, it's because the flightlist has been posted
+                        gpsOK = true;                            
                         break;    
                     case FlymSD :
-                        if (fms.isPresent(currNamePort)) {
-                            gpsOK = true;  
-                            // We release the port for GPSDump
-                            fms.closePort();
-                        }
+                        // if we're here, it's because the flightlist has been posted
+                        gpsOK = true;  
                         break;                      
                     case FlymOld :
-                        if (fmold.isPresent(currNamePort)) {
-                            gpsOK = true;
-                            // We release the port for GPSDump
-                            fmold.closePort();
-                        }
+                        // if we're here, it's because the flightlist has been posted
+                        gpsOK = true;
                         break;  
                     case Rever :
                         gpsOK = usbRever.isConnected();
@@ -1175,43 +1109,6 @@ public class GPSViewController {
             public Void call() throws InterruptedException { 
                 try {
                     switch (currGPS) {
-                    case Flytec20 :
-                        // deprecated unused
-                        flytec20 fls = new flytec20();
-                        if (fls.isPresent(currNamePort)) { 
-                            // Download instruction of the flight is stored in column 5
-                            strTrack = fls.getIGC(selLineTable.getCol5());
-                            fls.closePort(); 
-                            resCom = 0;
-                        } else {
-                            errorComMsg = fls.getError();
-                        }
-                        break;
-                    case Flytec15 :
-                        // deprecated unused
-                        flytec15 fliq = new flytec15();
-                        if (fliq.isPresent(currNamePort)) { 
-                            // Download instruction of the flight is stored in column 5
-                            strTrack = fliq.getIGC(selLineTable.getCol5());
-                            fliq.closePort(); 
-                            resCom = 0;
-                        } else {
-                            errorComMsg = fliq.getError();
-                        }
-                        break;
-                    case FlymOld :
-                        // deprecated unused
-                        flymasterold fmold = new flymasterold();
-                        if (fmold.isPresent(currNamePort)) {          
-                            if (fmold.getIGC(selLineTable.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                strTrack = fmold.getFinalIGC();
-                                fmold.closePort(); 
-                                resCom = 0;
-                            } else {
-                                resCom = 2;   // No GPS answer
-                            }
-                        }
-                        break;
                     case Rever :
                         strTrack = usbRever.getTrackFile(selLineTable.getCol5());
                         if (strTrack != null && !strTrack.isEmpty()) {
