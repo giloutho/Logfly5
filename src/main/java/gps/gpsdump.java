@@ -28,6 +28,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import model.Gpsmodel;
+import org.xnap.commons.i18n.I18n;
 import settings.configProg;
 import systemio.mylogging;
 import systemio.textio;
@@ -570,10 +571,11 @@ public class gpsdump {
         }
         if (nbFlights == 0) {
             sbError = new StringBuilder();
+            sbError.append("GPSDump error").append(" :").append(CF);    
             for (int i = 0; i < listPFM.size(); i++) {                
                 sbError.append(listPFM.get(i)).append(CF);                
             }              
-            System.out.println("Sb error "+sbError.toString());
+            System.out.println(sbError.toString());
             strLog = sbError.toString();
         }                
     }
@@ -833,6 +835,8 @@ public class gpsdump {
         String sOverw = "/overwrite";
         String sTypeGps = "";       
         String sAction = "";
+        String macType = "/wpttype=ozi";
+        String macFile = "/wptname="+wptFile.getAbsolutePath();
         StringBuilder sbLog = new StringBuilder();
         switch (idGPS) {
             case 1:
@@ -923,7 +927,7 @@ public class gpsdump {
         }        
         switch (myConfig.getOS()) {
             case MACOS :
-                sAction = "/flightlist";
+                sAction = "/rdwpt";
                 break;
             case WINDOWS :
                 sAction = "/rd_wpt="+wptFile.getAbsolutePath();
@@ -962,7 +966,7 @@ public class gpsdump {
                         arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sOverw,wExit};
                         break;
                     case MACOS : 
-                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};                        
                         break;
                     case LINUX :    
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
@@ -1015,6 +1019,8 @@ public class gpsdump {
         String wComPort = "/com="+portNumber;
         String sTypeGps = "";       
         String sAction = "";
+        String macType = "/wpttype=ozi";
+        String macFile = "/wptname="+wptFile.getAbsolutePath();
         StringBuilder sbLog = new StringBuilder();
         switch (idGPS) {
             case 1:
@@ -1105,7 +1111,7 @@ public class gpsdump {
         }        
         switch (myConfig.getOS()) {
             case MACOS :
-                sAction = "/flightlist";
+                sAction = "/wrwpt";
                 break;
             case WINDOWS :
                 switch (gpsTypeName) {
@@ -1152,7 +1158,7 @@ public class gpsdump {
                         arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, wExit};
                         break;
                     case MACOS : 
-                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};                        
                         break;
                     case LINUX :   
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
