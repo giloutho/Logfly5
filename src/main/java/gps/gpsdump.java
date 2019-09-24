@@ -10,8 +10,6 @@ import controller.CarnetViewController;
 import controller.FullMapController;
 import controller.TraceViewController;
 import controller.GPSViewController;
-import controller.WaypViewController;
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,8 +25,12 @@ import java.util.regex.Pattern;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import model.Gpsmodel;
+import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
+import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.mylogging;
 import systemio.textio;
@@ -45,7 +47,9 @@ public class gpsdump {
     private FullMapController mapController;
 
     // Settings
-    configProg myConfig;
+    private configProg myConfig;
+    // Localization
+    private I18n i18n; 
 
     private StringBuilder sbError;
     private int errorGpsDump;    
@@ -60,8 +64,9 @@ public class gpsdump {
     private ObservableList <Gpsmodel> listFlights;   
     
 
-    public gpsdump(String pNamePort, configProg currConfig)  {
-        myConfig = currConfig;
+    public gpsdump(String pNamePort, configProg currConfig, I18n pI18n)  {
+        this.myConfig = currConfig;
+        i18n = pI18n;
         switch (myConfig.getOS()) {
             case WINDOWS :
                 this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
@@ -83,8 +88,9 @@ public class gpsdump {
         }
     }
     
-    public gpsdump(GPSViewController callGPSView, int pRetour, String pNamePort, configProg currConfig)  {
+    public gpsdump(GPSViewController callGPSView, int pRetour, String pNamePort, configProg currConfig, I18n pI18n)  {
         myConfig = currConfig;
+        i18n = pI18n;
         this.gpsController = callGPSView;
         listFlights = FXCollections.observableArrayList();  
          switch (myConfig.getOS()) {
@@ -1200,29 +1206,29 @@ public class gpsdump {
     }         
      
     public void start(int idGPS, int idFlight)  {                        
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 int res = getFlight(idGPS,idFlight);
                 return null ;                
             }
         
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
+        
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                gpsdumpClose();
+            }
+        });        
 
-        // task is finished 
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            gpsdumpClose();
-        });
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("GPS import"));
+        dlg.setTitle("");
 
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();       
     }    
     
     private void gpsdumpClose() {
