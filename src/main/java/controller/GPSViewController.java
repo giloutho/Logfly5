@@ -37,6 +37,8 @@ import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
@@ -59,6 +61,7 @@ import javafx.stage.Stage;
 import leaflet.map_visu;
 import littlewins.winGPS;
 import model.Gpsmodel;
+import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -250,7 +253,7 @@ public class GPSViewController {
    
     public void displayWinGPS() {    
         if (selectGPS()) {
-            flightListWithProgress();    
+            FlightListWithProgress();    
         }
     }   
     
@@ -271,9 +274,8 @@ public class GPSViewController {
     private boolean selectGPS() {
         boolean res = false;   
         winGPS myWin = new winGPS(myConfig, i18n);    
-        if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {
+        if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {            
             currGPS = myWin.getCurrGPS();
-            if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou");
             currNamePort = myWin.getCurrNamePort();
             myConfig.setLastSerialCom(currNamePort);
             idGPS = myWin.getGpsCharac();
@@ -285,7 +287,7 @@ public class GPSViewController {
                                     
     private void gpsdReadFlightList() {
         
-        gpsdump gpsd = new gpsdump(this, 8, currNamePort, myConfig);
+        gpsdump gpsd = new gpsdump(this, 8, currNamePort, myConfig, i18n);
         switch (currGPS) {
             case FlymSD :
                 gpsd.askFlightsList(1);
@@ -645,19 +647,17 @@ public class GPSViewController {
         }
         
     }
-            
+    
     /**
      * download flights list from GPS in a different thread with a progressbar
+     * This is a second version. First version crashed in MacOS versions < 10.14 with update JDK 212
+     * Code development and debugging in controlprog project
      */
-    private void flightListWithProgress() {
-        
-        errorComMsg = null;
-        
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+    private void FlightListWithProgress() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
+                updateMessage(i18n.tr("Retrieving the list of flights in progress"));
                 switch (currGPS) {
                     case Flytec20 :                                                 
                     case FlymSD :
@@ -689,26 +689,27 @@ public class GPSViewController {
                     case XCTracer :
                         readUSBGps();
                         break;                        
-                }       
-                return null ;                
+                }
+                return null;
             }
+        };  
         
-        };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
-
-        // we update the UI based on result of the task
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            afficheFlyList();                       
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
-    }
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                afficheFlyList();
+            }
+        });        
         
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("GPS import"));
+        dlg.setTitle("");
+
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();        
+    }    
+                    
     /**
     * For each flight to insert, specific download GPS instruction is called
     * IGC file is inserted in database
@@ -719,7 +720,7 @@ public class GPSViewController {
         
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         try {
-            gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig);
+            gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
                     case Flytec20 :
                         // if we're here, it's because the flightlist has been posted
@@ -772,13 +773,11 @@ public class GPSViewController {
                         break;                        
             }            
             if (gpsOK){                      
-   
-                ProgressForm pForm = new ProgressForm();
-                
-                Task<Void> task = new Task<Void>() {
+                   
+                Task<Object> worker = new Task<Object>()  {
                     
                     @Override
-                    public Void call() throws InterruptedException { 
+                    protected Object call() throws Exception {
                         int idxTable = -1;
                         int nbFlightIn = 0;
                         int nbFlightRead = 0;
@@ -866,7 +865,7 @@ public class GPSViewController {
                                         sbError.append("track is null\r\n");
                                         mylogging.log(Level.SEVERE, sbError.toString());    
                                     }
-                                    updateProgress(nbFlightRead, totalInsert);
+                                    updateMessage(String.valueOf(nbFlightRead)+" "+i18n.tr("flights inserted"));
                                 } catch (Exception e) {
                                     sbError = new StringBuilder("GPS download problem for track : ");
                                     sbError.append(item.getDate()+" "+item.getHeure()+"\r\n");
@@ -881,35 +880,31 @@ public class GPSViewController {
                     }                
                 };
                 
-                // binds progress of progress bars to progress of task:
-                pForm.activateProgressBar(task);
-                
-                // when task ended, return to logbook view
-                task.setOnSucceeded(event -> {
-                    pForm.getDialogStage().close();
-                    String resInsertion = nbInserted+" / "+nbToInsert+" "+i18n.tr("flights inserted in logbook");
-                    alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
-                    if (currGPS != winGPS.gpsType.Syride)  {
-                        // Display number of flights inserted
-                        aInsFlights.alertInfo(resInsertion);                
-                    } else {
-                        dialogbox dConfirm = new dialogbox(i18n); 
-                        // Display number of flights inserted and for moving tracks in archives folder
-                        if (dConfirm.YesNo(resInsertion,i18n.tr("Start archiving")+" ?")) {
-                            archiveSyride();
+                worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent t) {
+                        if (currGPS == winGPS.gpsType.Syride)  {
+                            String resInsertion = nbInserted+" / "+nbToInsert+" "+i18n.tr("flights inserted in logbook");
+                            dialogbox dConfirm = new dialogbox(i18n); 
+                            // Display number of flights inserted and for moving tracks in archives folder
+                            if (dConfirm.YesNo(resInsertion,i18n.tr("Start archiving")+" ?")) {
+                                archiveSyride();
+                            }
                         }
+                        if(errInsertion != null && !errInsertion.isEmpty())  {
+                            alertbox aInsFlights = new alertbox(myConfig.getLocale()); 
+                            aInsFlights.alertInfo("  "+i18n.tr("tracks not inserted in the logbook")+"\r\n"+errInsertion);
+                        }
+                        rootController.changeCarnetView();
                     }
-                    if(errInsertion != null && !errInsertion.isEmpty())  {
-                        aInsFlights.alertInfo("  "+i18n.tr("tracks not inserted in the logbook")+"\r\n"+errInsertion);
-                    }
-                    rootController.changeCarnetView();
-                });   
-                
-                pForm.getDialogStage().show();
+                });                
 
-                Thread thread = new Thread(task);
-                thread.start(); 
-                
+                ProgressDialog dlg = new ProgressDialog(worker);
+                dlg.setHeaderText(i18n.tr("GPS import"));
+                dlg.setTitle("");
+                Thread th = new Thread(worker);
+                th.setDaemon(true);
+                th.start();                
             }
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -1101,12 +1096,10 @@ public class GPSViewController {
     private void oneFlightWithProgress(Gpsmodel selLineTable) {        
         strTrack = null;   
         errorComMsg = null;
-        
-        ProgressForm pForm = new ProgressForm();
            
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 try {
                     switch (currGPS) {
                     case Rever :
@@ -1212,45 +1205,47 @@ public class GPSViewController {
             }
         
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
-
-        // we update the UI based on result of the task
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();         
-            if (resCom == 0 && strTrack != null && !strTrack.isEmpty()) {                       
-                traceGPS reqIGC = new traceGPS(strTrack, "", true, myConfig);
-                if (reqIGC.isDecodage()) { 
-                    showOneTrack(reqIGC);
+        
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                if (resCom == 0 && strTrack != null && !strTrack.isEmpty()) {                       
+                    traceGPS reqIGC = new traceGPS(strTrack, "", true, myConfig);
+                    if (reqIGC.isDecodage()) { 
+                        showOneTrack(reqIGC);
+                    } else {
+                        displayErrDwnl(reqIGC);
+                    }
                 } else {
-                    displayErrDwnl(reqIGC);
-                }
-            } else {
-                if (errorComMsg != null)  {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertError(errorComMsg);
-                } else if (strTrack == null) {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertNumError(1054);  // track file is empty       
-                } else if (resCom == 2)  {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertNumError(1052);  // No GPS answer
-                } else {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertNumError(-1);  // Undefined error
+                    if (errorComMsg != null)  {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertError(errorComMsg);
+                    } else if (strTrack == null) {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertNumError(1054);  // track file is empty       
+                    } else if (resCom == 2)  {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertNumError(1052);  // No GPS answer
+                    } else {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertNumError(-1);  // Undefined error
+                    }
                 }
             }
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
+        }); 
+        
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("GPS import"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();               
+      
     }
     
     private void oneFlightWithGpsDump(int idGPS, int idFlight) {
         // 6 is a flag for GpsDump -> calling method is oneFlightWithGpsDump
-        gpsdump gpsd = new gpsdump(this, 6, currNamePort, myConfig);
+        gpsdump gpsd = new gpsdump(this, 6, currNamePort, myConfig,i18n);
         gpsd.start(idGPS, idFlight);        
     }
     
