@@ -7,7 +7,6 @@ package controller;
 
 import Logfly.Main;
 import airspacelib.dbAirspace;
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import geoutils.position;
 import gps.reversale;
@@ -37,6 +36,7 @@ import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -66,6 +66,7 @@ import littlewins.winFileChoose;
 import littlewins.winFileSave;
 import model.airdraw;
 import model.airspacetree;
+import org.controlsfx.dialog.ProgressDialog;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -1088,29 +1089,27 @@ public class AirspaceController {
     }
     
     private void reversaleCom() {
-        ProgressForm pForm = new ProgressForm();
-
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 reversaleTransfer();
                 return null ;
             }
 
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                reversaleResult();
+            }
+        }); 
 
-        // task is finished 
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            reversaleResult();
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();           
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText("Reversale");
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();          
     }
     
     private BufferedReader getError(Process p) {
