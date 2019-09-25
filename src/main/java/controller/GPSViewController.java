@@ -8,7 +8,6 @@ package controller;
 
 import database.dbAdd;
 import database.dbSearch;
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import gps.compass;
