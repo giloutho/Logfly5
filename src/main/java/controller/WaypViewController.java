@@ -526,7 +526,7 @@ public class WaypViewController {
     private void handleWriteFile() {
         String pInitDir = null;
         String pInitName = null;
-        if (originalFile != null && originalFile.exists()) {
+        if (originalFile != null && originalFile.exists() && !originalFile.getName().contains("tempwp.wpt")) {
             pInitDir = originalFile.getParent();
             pInitName = originalFile.getName();
             dialogbox dConfirm = new dialogbox(i18n);
