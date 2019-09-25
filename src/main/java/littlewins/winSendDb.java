@@ -6,7 +6,6 @@
  */
 package littlewins;
 
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.File;
 import java.net.URL;
@@ -18,6 +17,8 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -31,6 +32,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -239,32 +241,29 @@ public class winSendDb {
     }    
     
     public void startSending()  {
-        
-                
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+                        
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 sendMail();
                 if (mailSended) sendDb();
                 return null ;                
             }
         
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
-
-        // task is finished 
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            sendDbClosing();
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                sendDbClosing();
+            }
         });
 
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("Loading in progress"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();      
     }        
     
 }
