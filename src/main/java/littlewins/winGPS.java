@@ -552,7 +552,7 @@ public class winGPS {
     }
     
     private void gpsPresent() {
-        gpsConnect= true;
+        gpsConnect= true;           
         subStage.close();        
     }
     
