@@ -837,6 +837,7 @@ public class winGPS {
                 sb.append(tbdata[4]);  
             res = sb.toString();
             gpsCharac = res;
+            System.out.println(gpsCharac);
         }       
         
         return res;
