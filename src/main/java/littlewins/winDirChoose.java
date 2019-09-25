@@ -78,7 +78,8 @@ public class winDirChoose {
         switch (winType) {
             case 1 :
                 // ImportViewController
-                sbInfo.append(i18n.tr("Select the folder of GPS tracks to import"));            
+                sbInfo.append(i18n.tr("Select the folder of GPS tracks to import")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");
                 btCaption = i18n.tr("Select a folder");
                 sTitle = "";
                 break;      
