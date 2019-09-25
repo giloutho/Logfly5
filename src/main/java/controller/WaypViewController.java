@@ -17,9 +17,7 @@ import gps.connect;
 import gps.element;
 import gps.gpsdump;
 import static gps.gpsutils.ajouteChecksum;
-import gps.jsFlymaster;
 import gps.jsFlytec15;
-import gps.jsFlytec20;
 import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
@@ -907,44 +905,7 @@ public class WaypViewController {
             }            
         }
     }   
-    
-    private void writeFlymaster() {
-       
-        try {
-            prepWritingFlym();
-            jsFlymaster flym = new jsFlymaster(currNamePort);
-            if (listForGps.size() > 0 ) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
-                flym.setListPFMWP(listForGps);
-                flym.sendWaypoint();                
-            }    
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }          
-    }
-         
-    private void writeFlytec20() {
-       
-        try {
-            prepWritingFly20();
-            jsFlytec20 fls = new jsFlytec20(currNamePort);
-            if (listForGps.size() > 0 ) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6020/30 ").append("  ");
-                fls.setListPBRWP(listForGps);
-                fls.sendWaypoint();
-            }    
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }  
-        
-    }    
-
+            
     private void writeFlytec15() {
        
         try {
@@ -994,19 +955,9 @@ public class WaypViewController {
                 @Override
                 protected Object call() throws Exception {
                     switch (currGPS) {
-                        case Flytec20 :
-                            writeFlytec20();
-                            break;
                         case Flytec15 :
                             writeFlytec15();                            
-                            break;
-                        case FlymSD :
-                            writeFlymaster();
-                            break;
-                        case FlymOld :
-                            // A priori le protocole est identique au Flymaster SD
-                            writeFlymaster();
-                            break;                   
+                            break;                 
                     }       
                     return null ;                
                 }
@@ -1284,44 +1235,6 @@ public class WaypViewController {
               
     }
     
-    private void readFlymaster()  {
-        gpsReadList = new ArrayList<>();
-        try {
-            gpsInfo = new StringBuilder();
-            gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flymaster ");                  
-            jsFlymaster flym = new jsFlymaster(currNamePort); 
-            int nbWayp = flym.getListWaypoints();
-            if (nbWayp > 0) {
-                gpsReadList = flym.getWpreadList();            
-            } else {
-                gpsInfo.append(flym.getError());
-            }                            
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }         
-    }    
-    
-   private void readFlytec20()  {
-        gpsReadList = new ArrayList<>();
-        try {
-            gpsInfo = new StringBuilder();
-            gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6020/30 ").append("  "); 
-            jsFlytec20 fls = new jsFlytec20(currNamePort);                     
-            int nbWayp = fls.getListWaypoints();            
-            if (nbWayp > 0) {
-                gpsReadList = fls.getWpreadList();
-            } else {
-                gpsInfo.append(fls.getError());
-            }            
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }                
-    }        
-    
    private void readFlytec15()  {
         gpsReadList = new ArrayList<>();
         try {
@@ -1403,19 +1316,9 @@ public class WaypViewController {
             @Override
             protected Object call() throws Exception {
                 switch (currGPS) {
-                    case Flytec20 :
-                        readFlytec20();
-                        break;
                     case Flytec15 :
                         readFlytec15();                        
-                        break;
-                    case FlymSD :
-                        readFlymaster();
-                        break;
-                    case FlymOld :
-                        // A priori protocole identique au Flymaster SD
-                        readFlymaster();
-                        break;                  
+                        break;                
                 }       
                 return null ;                
             }
