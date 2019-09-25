@@ -7,7 +7,6 @@
 package controller;
 
 import Logfly.Main;
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.elevationapi;
@@ -16,7 +15,6 @@ import geoutils.position;
 import gps.compass;
 import gps.connect;
 import gps.element;
-import gps.flymasterold;
 import gps.gpsdump;
 import static gps.gpsutils.ajouteChecksum;
 import gps.jsFlymaster;
@@ -42,6 +40,7 @@ import java.util.logging.Level;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -82,6 +81,7 @@ import model.Balisemodel;
 import model.Sitemodel;
 import netscape.javascript.JSObject;
 import org.controlsfx.dialog.CommandLinksDialog;
+import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -320,7 +320,7 @@ public class WaypViewController {
                 links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("3. Mixed"),i18n.tr("Short name and the beginning of long name e.g. D01127 MONTMIN F"),false));   
                 dg = new CommandLinksDialog(links);
                 dg.setTitle(i18n.tr("Type of names"));
-                result = dg.showAndWait();              
+                result = dg.showAndWait();   
                 String resDg = result.get().getText();
                 if (resDg != null && resDg != "") {
                     if (resDg.contains("1")) {
@@ -866,12 +866,10 @@ public class WaypViewController {
             else
                 resw = wfile.writeOzi(pointList, wptFile, true);
             if (resw) {
-                ProgressForm pForm = new ProgressForm();
-
-                Task<Void> task = new Task<Void>() {
+                Task<Object> worker = new Task<Object>() {
                     @Override
-                    public Void call() throws InterruptedException { 
-                    gpsdump gpsd = new gpsdump(currNamePort,myConfig);                  
+                    protected Object call() throws Exception {
+                    gpsdump gpsd = new gpsdump(currNamePort,myConfig, i18n);                  
                     switch (currGPS) {
                         case FlymSD :
                             gpsd.setOziWpt(1, wptFile.getAbsolutePath(),gpsTypeName);
@@ -889,19 +887,20 @@ public class WaypViewController {
                         return null ;                
                     }
                 };
-                // binds progress of progress bars to progress of task:
-                pForm.activateProgressBar(task);
 
-                // we update the UI based on result of the task
-                task.setOnSucceeded(event -> {
-                    pForm.getDialogStage().close();
-                    writeEnd();
-                });
+                worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent t) {
+                        writeEnd();
+                    }
+                });  
 
-                pForm.getDialogStage().show();
-
-                Thread thread = new Thread(task);
-                thread.start();
+                ProgressDialog dlg = new ProgressDialog(worker);
+                dlg.setHeaderText(i18n.tr("Send to GPS"));
+                dlg.setTitle("");
+                Thread th = new Thread(worker);
+                th.setDaemon(true);
+                th.start();  
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
                 aError.alertNumError(9);   // Unable to create temporary file
@@ -926,26 +925,7 @@ public class WaypViewController {
             mylogging.log(Level.SEVERE, sbError.toString());            
         }          
     }
-    
-    private void writeFlymOld() {
-       
-        try {
-            prepWritingFlym();
-            flymasterold fmold = new flymasterold();
-            if (listForGps.size() > 0 && fmold.isPresent(currNamePort)) {             
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
-                fmold.setListPFMWP(listForGps);
-                fmold.sendWaypoint();
-                fmold.closePort();
-            }    
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());            
-        }          
-    }    
-    
+         
     private void writeFlytec20() {
        
         try {
@@ -1010,11 +990,9 @@ public class WaypViewController {
 
             errorComMsg = null;
 
-            ProgressForm pForm = new ProgressForm();
-
-            Task<Void> task = new Task<Void>() {
+            Task<Object> worker = new Task<Object>() {
                 @Override
-                public Void call() throws InterruptedException { 
+                protected Object call() throws Exception {
                     switch (currGPS) {
                         case Flytec20 :
                             writeFlytec20();
@@ -1034,19 +1012,20 @@ public class WaypViewController {
                 }
 
             };
-            // binds progress of progress bars to progress of task:
-            pForm.activateProgressBar(task);
 
-            // we update the UI based on result of the task
-            task.setOnSucceeded(event -> {
-                pForm.getDialogStage().close();
-                writeEnd();                       
+            worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                @Override
+                public void handle(WorkerStateEvent t) {
+                    writeEnd();
+                }
             });
-
-            pForm.getDialogStage().show();
-
-            Thread thread = new Thread(task);
-            thread.start();  
+            
+            ProgressDialog dlg = new ProgressDialog(worker);
+            dlg.setHeaderText(i18n.tr("Send to GPS"));
+            dlg.setTitle("");
+            Thread th = new Thread(worker);
+            th.setDaemon(true);
+            th.start();
         }                
     }
     
@@ -1377,12 +1356,10 @@ public class WaypViewController {
         errorComMsg = null;
         File wptFile = systemio.tempacess.getAppFile("Logfly", "tempwp.wpt"); 
         
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
-            gpsdump gpsd = new gpsdump(currNamePort,myConfig);                  
+            protected Object call() throws Exception {
+            gpsdump gpsd = new gpsdump(currNamePort,myConfig, i18n);                  
             switch (currGPS) {
                 case FlymSD :
                     gpsd.getOziWpt(1, wptFile);
@@ -1400,19 +1377,19 @@ public class WaypViewController {
                 return null ;                
             }
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                returnGpsdump(wptFile);
+            }
+        });  
 
-        // we update the UI based on result of the task
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            returnGpsdump(wptFile);
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();         
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("GPS import"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();         
     }   
    
     /**
@@ -1422,11 +1399,9 @@ public class WaypViewController {
     private void readFromGpsProgress() {          
         errorComMsg = null;
         
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 switch (currGPS) {
                     case Flytec20 :
                         readFlytec20();
@@ -1445,19 +1420,21 @@ public class WaypViewController {
                 return null ;                
             }
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
+        
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                displayGpsWaypList();
+            }
+        }); 
 
-        // we update the UI based on result of the task
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            displayGpsWaypList();                       
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();         
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("GPS import"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();  
+        
     }   
     
     private void readFromGpsSimple() {
