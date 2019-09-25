@@ -6,7 +6,6 @@
  */
 package trackgps;
 
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import igc.fileIGC;
 import java.io.BufferedReader;
@@ -19,10 +18,15 @@ import javafx.concurrent.Task;
 import controller.CarnetViewController;
 import controller.FullMapController;
 import controller.TraceViewController;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+import org.controlsfx.dialog.ProgressDialog;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.xnap.commons.i18n.I18n;
+import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.textio;
 
@@ -44,14 +48,18 @@ public class scoring {
     
     // Settings
     configProg myConfig;
+    // Localization
+    private I18n i18n;
     
     public scoring (int myParam, configProg currConfig)  {
         // myParam unused... this is just a new constructor
         myConfig = currConfig;
+        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
     }
     
     public scoring (CarnetViewController callCarnet, int pRetour, configProg currConfig)  {
         myConfig = currConfig;
+        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         this.carnetController = callCarnet;
         // 0 only for test ...
         // 1 when process finished, display a fullmao in CarnetViewController 
@@ -61,12 +69,14 @@ public class scoring {
     
     public scoring (FullMapController callFullMap, configProg currConfig)  {
         myConfig = currConfig;
+        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         this.mapController = callFullMap;
         codeRetour = 5;
     }    
     
     public scoring (TraceViewController callExterne, int pRetour, int myParam, configProg currConfig)  {
         myConfig = currConfig;
+        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         this.extController = callExterne;
         // myParam unused... this is just a new constructor
         
@@ -188,30 +198,28 @@ public class scoring {
         
         String scoreType = stringListLeague(idxScoreType);
                 
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 int res = runScoring(evalTrace, scoreType);
                 return null ;
                 
             }
         
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
-
-        // task is finished 
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            scoreClosing();
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                scoreClosing();
+            }
         });
 
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("Score evaluation"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();   
     }
     
     private void scoreClosing() {
