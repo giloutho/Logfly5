@@ -341,7 +341,9 @@ public class gpsdump {
                 switch (myConfig.getOS()) {
                     case WINDOWS :
                         String logIGC = "/igc_log="+igcFile.getAbsolutePath();  
-                        arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        //  wComPort is useless
+                        // arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
+                        arrayParam = new String[]{pathGpsDump,wNoWin,sTypeGps, logIGC, numberIGC, wExit};
                         break;
                     case MACOS : 
                         String nameIGC = "/name="+igcFile.getAbsolutePath();   
@@ -728,7 +730,9 @@ public class gpsdump {
                 // the author has serious doubts : ok only if program run correctly or crashes
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sNotify, sOverw,wExit};
+                        //  wComPort is useless
+                        // arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sNotify, sOverw,wExit};
+                        arrayParam = new String[]{pathGpsDump,wNoWin, sTypeGps, sAction, sNotify, sOverw,wExit};
                         break;
                     case MACOS : 
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
@@ -969,7 +973,9 @@ public class gpsdump {
                 // the author has serious doubts : ok only if program run correctly or crashes
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sOverw,wExit};
+                        //  wComPort is useless
+                        // arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sOverw,wExit};
+                        arrayParam = new String[]{pathGpsDump,wNoWin, sTypeGps, sAction, sOverw,wExit};
                         break;
                     case MACOS : 
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};                        
@@ -1161,7 +1167,9 @@ public class gpsdump {
                 // the author has serious doubts : ok only if program run correctly or crashes
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, wExit};
+                        //  wComPort is useless 
+                        // arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, wExit};
+                        arrayParam = new String[]{pathGpsDump,wNoWin, sTypeGps, sAction, wExit};
                         break;
                     case MACOS : 
                         arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};                        
