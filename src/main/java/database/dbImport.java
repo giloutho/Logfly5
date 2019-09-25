@@ -7,7 +7,6 @@
 package database;
 
 import controller.SitesViewController;
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,7 +19,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Level;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import littlewins.winTrackFile;
+import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
 import systemio.mylogging;
@@ -145,29 +147,27 @@ public class dbImport {
     
     private void csvImport(File pFile) {
         
-        ProgressForm pForm = new ProgressForm();
-
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 csvImportFile(pFile);
                 return null ;
             }
 
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                csvCloseImport();
+            }
+        }); 
 
-        // task is finished 
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            csvCloseImport();
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();                                       
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("Csv import"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();                                  
     }    
         
 }
