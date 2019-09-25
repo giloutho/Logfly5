@@ -507,6 +507,7 @@ public class gpsdump {
                 switch (idGPS) {
                     case 1 :
                     case 2 :
+                    case 3 :                        
                         // Sample :  1   14.08.19   13:13:32   00:27:25
                         Pattern pTime = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\s\\s\\s\\d{2}:\\d{2}:\\d{2}");
                         Matcher mTime = pTime.matcher(ligPFM);                    
@@ -805,6 +806,7 @@ public class gpsdump {
                             res = 0;
                             BufferedReader output = getOutput(p);                    
                             while ((ligne = output.readLine()) != null) {
+                                System.out.println(ligne);
                                 listPFM.add(ligne);
                             }
                             System.out.println("listPFM size : "+listPFM.size());
