@@ -6,7 +6,6 @@
  */
 package littlewins;
 
-import dialogues.ProgressForm;
 import dialogues.alertbox;
 import java.io.File;
 import java.io.FileWriter;
@@ -18,6 +17,8 @@ import java.time.format.DateTimeFormatter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -31,6 +32,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
 
@@ -62,8 +64,8 @@ public class winCsv {
     private void showWin() {
         subStage = new Stage();   
         subStage.initModality(Modality.APPLICATION_MODAL);        
-        Label lbYears = new Label("Periods");   // Years déjà pris et dtraduit pas "ans" donc pas top
-        lbYears.setMinWidth(50);
+        Label lbYears = new Label(i18n.tr("Calendar year"));   // Years déjà pris et dtraduit pas "ans" donc pas top
+        lbYears.setMinWidth(100);
         
         chbYears = new ChoiceBox(); 
         
@@ -117,7 +119,7 @@ public class winCsv {
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
         
-        Scene secondScene = new Scene(subRoot, 200, 150);
+        Scene secondScene = new Scene(subRoot, 300, 150);
 
         // modal mode
         subStage.initModality(Modality.APPLICATION_MODAL);        
@@ -216,29 +218,27 @@ public class winCsv {
     public void exportCsv()  {
         
                 
-        ProgressForm pForm = new ProgressForm();
-           
-        Task<Void> task = new Task<Void>() {
+        Task<Object> worker = new Task<Object>() {
             @Override
-            public Void call() throws InterruptedException { 
+            protected Object call() throws Exception {
                 genCsv();
                 return null ;                
             }
         
         };
-        // binds progress of progress bars to progress of task:
-        pForm.activateProgressBar(task);
+        worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                endExport();
+            }
+        }); 
 
-        // task is finished 
-        task.setOnSucceeded(event -> {
-            pForm.getDialogStage().close();
-            endExport();
-        });
-
-        pForm.getDialogStage().show();
-
-        Thread thread = new Thread(task);
-        thread.start();        
+        ProgressDialog dlg = new ProgressDialog(worker);
+        dlg.setHeaderText(i18n.tr("Csv export"));
+        dlg.setTitle("");
+        Thread th = new Thread(worker);
+        th.setDaemon(true);
+        th.start();    
     }        
         
     private boolean checkExportFolder() {
