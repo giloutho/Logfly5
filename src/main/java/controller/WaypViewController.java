@@ -72,6 +72,7 @@ import littlewins.winGPS;
 import littlewins.winMail;
 import littlewins.winOsmCities;
 import littlewins.winPoint;
+import littlewins.winSearchCities;
 import littlewins.winTrackFile;
 import littlewins.winUsbWWayp;
 import littlewins.winUsbWayp;
@@ -106,13 +107,11 @@ import waypio.wpwritefile;
  *      
  */
 public class WaypViewController {
-    
-    @FXML   
-    private TextField txLocality;   
+      
     @FXML
     private TextField txPrefix;
     @FXML
-    private Button btGo;        
+    private Button btNewSet;        
     @FXML
     private Label lbInfo;
     @FXML
@@ -1683,40 +1682,11 @@ public class WaypViewController {
     }
     
     @FXML
-    private void handleGo() {
-        if (pointList.size() == 0) {
-            originalFile = null;
-            if (txLocality.getText() != null && !txLocality.getText().equals("")) {
-                searchOsmName(txLocality.getText().trim());
-            } else {
-                displayDefault(i18n.tr("Default"));
-            }
-        } else {
-            dialogbox dConfirm = new dialogbox(i18n);
-            StringBuilder sbMsg = new StringBuilder(); 
-            sbMsg.append(i18n.tr("Cancel current list"));
-            if (dConfirm.YesNo(sbMsg.toString(),""))  { 
-                tablePoints.getItems().clear();
-                originalFile = null;
-                handleGo();
-            }            
-        }
+    private void handleNewSet() {
+            winSearchCities wCities = new winSearchCities(i18n, this);  
     }  
-    
-    private void searchOsmName(String pSearch) {
-        geonominatim debGeo = new geonominatim();         
-        debGeo.askGeo(pSearch.trim());
-        ObservableList<Sitemodel> osmCities = debGeo.getOsmTowns(); 
-        int lsSize = osmCities.size();         
-        if (lsSize > 0) {
-            winOsmCities wCities = new winOsmCities(i18n, osmCities, this);  
-        } else {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertNumError(debGeo.getGeoError());
-        }
-    }
-    
-    public void returnFromOsmCities(Sitemodel pSelectedCity) {
+        
+    public void returnFromSearchCities(Sitemodel pSelectedCity) {
         
         try {
             if (pSelectedCity.getLatitude() != null && pSelectedCity.getLongitude() != null) {
@@ -1727,18 +1697,16 @@ public class WaypViewController {
                 String infoFile = i18n.tr("New file")+"   ";
                 displayWpFile(emptyList, infoFile); 
             } else {
-                displayDefault(i18n.tr("Location not found"));
+                displayDefault();
             }
         } catch ( Exception e) {
-            displayDefault(i18n.tr("Geolocation problem"));
+            displayDefault();
         }            
     }
     
-    private void displayDefault(String sMsg) {    
+    public void displayDefault() {    
         
-        try {
-            txLocality.clear();
-            txLocality.setPromptText(sMsg);     
+        try {    
             if (myConfig.getFinderLat() != null && myConfig.getFinderLong() != null) {
                 defaultPos.setLatitudeDd(Double.parseDouble(myConfig.getFinderLat()));     
                 defaultPos.setLongitudeDd(Double.parseDouble(myConfig.getFinderLong()));  
@@ -1951,14 +1919,12 @@ public class WaypViewController {
     private void winTraduction() {
         btReadFile.setText(i18n.tr("Read file"));
         btReadGps.setText(i18n.tr("Read GPS"));
+        btNewSet.setText(i18n.tr("New"));
         chkNoms.setText(i18n.tr("Auto short names"));
         btNew.setText(i18n.tr("New"));
         btWriteFile.setText(i18n.tr("Write file"));
         btWriteGPS.setText(i18n.tr("Send to GPS"));
         btMail.setText(i18n.tr("Email"));
-        StringBuilder sbLoc = new StringBuilder();
-        sbLoc.append(i18n.tr("New")).append("... ").append(i18n.tr("Enter a city")).append(" + Go");
-        txLocality.setPromptText(sbLoc.toString());
         colBalise.setText(i18n.tr("Turnpoint"));
         colAlt.setText(i18n.tr("Alt")+".");
         colDesc.setText(i18n.tr("Name"));
