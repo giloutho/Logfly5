@@ -29,12 +29,7 @@
                         <Insets left="8.0" top="8.0" />
                      </HBox.margin>
                   </Button>
-                  <TextField fx:id="txLocality" prefWidth="250.0" promptText="fNouveau... Saisir une ville + Go">
-                     <HBox.margin>
-                        <Insets left="10.0" top="9.0" />
-                     </HBox.margin>
-                  </TextField>
-                  <Button fx:id="btGo" mnemonicParsing="false" onAction="#handleGo" text="Go...">
+                  <Button fx:id="btNewSet" mnemonicParsing="false" onAction="#handleNewSet" text="fNouveau">
                      <HBox.margin>
                         <Insets left="8.0" top="8.0" />
                      </HBox.margin>
