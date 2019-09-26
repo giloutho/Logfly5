@@ -7,7 +7,6 @@
 package littlewins;
 
 import controller.SiteFormController;
-import controller.WaypViewController;
 import controller.XcpViewController;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
@@ -37,7 +36,6 @@ public class winOsmCities {
     private ObservableList <Sitemodel> dataCities;
     
     // Reference to Controllers
-    private WaypViewController waypController;
     private SiteFormController sitefController;
     private XcpViewController xcpController;
     private int typeController;
@@ -49,14 +47,6 @@ public class winOsmCities {
     configProg myConfig;
     StringBuilder sbError;
     String RC = "\n";
-
-    public winOsmCities(I18n pI18n, ObservableList <Sitemodel> pDataCities, WaypViewController pWaypController)  {       
-        this.i18n = pI18n;     
-        dataCities = pDataCities;
-        this.waypController = pWaypController; 
-        typeController = 1;
-        showWin();
-    }       
     
     public winOsmCities(I18n pI18n, ObservableList <Sitemodel> pDataCities, SiteFormController pSiteController)  {  
         this.i18n = pI18n;     
@@ -110,10 +100,6 @@ public class winOsmCities {
                     Sitemodel rowData = row.getItem();
                     subStage.close();
                     switch (typeController) {
-                        case 1:
-                            System.out.println("Lat : "+rowData.getLatitude());
-                            waypController.returnFromOsmCities(rowData);
-                            break;
                         case 2:
                             sitefController.returnFromOsmCities(rowData);
                             break;
