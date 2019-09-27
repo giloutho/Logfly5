@@ -85,34 +85,53 @@ public class winDirChoose {
                 break;      
             case 2 :
                 // ConfigViewController  Change PathW
-                sbInfo.append(i18n.tr("Select the default Logfly folder"));            
+                sbInfo.append(i18n.tr("Select the default Logfly folder")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");           
                 btCaption = i18n.tr("Select a folder");
                 sTitle = "";
                 break;
             case 3 :
                 // ConfigViewController  copyInNewFolder  selectNewFolderDb
-                sbInfo.append(i18n.tr("Select the new logbook folder"));            
+                sbInfo.append(i18n.tr("Select the new logbook folder")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");            
                 btCaption = i18n.tr("Select a folder");
                 sTitle = "";
                 break;       
             case 4 :
                 // ConfigViewController  changePathContest
-                sbInfo.append(i18n.tr("Select the folder for online contest"));            
+                sbInfo.append(i18n.tr("Select the folder for online contest")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");            
                 btCaption = i18n.tr("Select a folder");
                 sTitle = "";
                 break;       
             case 5 :
                 // ConfigViewController  moveDb
-                sbInfo.append(i18n.tr("Select the new logbook folder"));            
+                sbInfo.append(i18n.tr("Select the new logbook folder")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");            
                 btCaption = i18n.tr("Select a folder");
                 sTitle = "";
                 break;
             case 6 :
                 // winbackup backupLogFile   and RootLayoutController Copydb
-                sbInfo.append(i18n.tr("Select the folder where the logbook will be saved"));            
+                sbInfo.append(i18n.tr("Select the folder where the logbook will be saved")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");           
                 btCaption = i18n.tr("Select a folder");
                 sTitle = "";
-                break;                                
+                break;    
+            case 7 :
+                // ConfigViewController  Import Folder
+                sbInfo.append(i18n.tr("Select the import folder for GPS tracks")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");            
+                btCaption = i18n.tr("Select a folder");
+                sTitle = "";
+                break;      
+            case 8 :
+                // ConfigViewController  Syride Folder
+                sbInfo.append(i18n.tr("Select the Syride folder for GPS tracks")).append(RC);
+                sbInfo.append("** " ).append(i18n.tr("Please note, only folders are displayed")).append(" **");            
+                btCaption = i18n.tr("Select a folder");
+                sTitle = "";
+                break;                     
             default:
                 throw new AssertionError();
         }
