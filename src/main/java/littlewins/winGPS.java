@@ -676,7 +676,7 @@ public class winGPS {
                     }                                
                     break;  
                 case Syride :                        
-                    diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit());                    
+                    diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit(), myConfig.getPathSyride());                    
                     if (diskSyr.isConnected()) {
                         gpsPresent();
                     } else {
