@@ -498,7 +498,7 @@ public class GPSViewController {
                 }  
                 break;
             case Syride :
-                diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit()); 
+                diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit(),myConfig.getPathSyride()); 
                 if (currGPS.equals(winGPS.gpsType.Syride)) System.out.println("Coucou 2 ");
                 if (diskSyr.isConnected()) {                
                     idGPS = "Sys PC Tool";
@@ -633,7 +633,7 @@ public class GPSViewController {
             } else {
                 // No alert box possible in this thread
                 if (currGPS == winGPS.gpsType.Syride) {
-                    errorComMsg = i18n.tr("No tracks in the selected folder");
+                    errorComMsg = i18n.tr("No tracks in the Syride folder");
                 } else {
                     errorComMsg = i18n.tr("No tracks since the")+"  "+limitMsg;
                 }
