@@ -360,7 +360,7 @@ public class FullMapController {
     private void airChecking() {
         int res = -1;
         
-        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OACheck, configProg.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OACheck, myConfig.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {           
             checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile);
