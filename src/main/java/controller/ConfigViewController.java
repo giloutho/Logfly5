@@ -27,7 +27,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.paint.Paint;
@@ -44,6 +43,9 @@ import settings.listCarte;
 import settings.listGPS;
 import settings.listLangues;
 import settings.listLeague;
+import settings.listStartwin;
+import settings.listSynthese;
+import settings.listTypeYear;
 import systemio.filesmove;
 import systemio.mylogging;
 
@@ -59,7 +61,9 @@ public class ConfigViewController {
     @FXML
     private Label lbWorkingPath;
     @FXML
-    private Label lbWorkingLog;    
+    private Label lbWorkingLog;   
+    @FXML
+    private Label lbByYear;
     @FXML
     private Button btNewLog;    
     @FXML
@@ -109,6 +113,12 @@ public class ConfigViewController {
     @FXML
     private ChoiceBox chbCarnet;    
     @FXML
+    private ChoiceBox chbByYear;
+    @FXML
+    private Label lbStartwin;
+    @FXML
+    private ChoiceBox chbStartwin;
+    @FXML
     private TextField txPilote;    
     @FXML
     private TextField txVoile;    
@@ -129,7 +139,9 @@ public class ConfigViewController {
     @FXML
     private CheckBox checkBrowser;    
     @FXML
-    private ChoiceBox chbCarte;     
+    private ChoiceBox chbCarte;  
+    @FXML
+    private Label lbLocMap;
     @FXML
     private TextField txFinderLat;    
     @FXML
@@ -137,9 +149,17 @@ public class ConfigViewController {
     @FXML
     private TextField txSeuilAb;    
     @FXML
-    private ChoiceBox chbLang;    
+    private ChoiceBox chbLang;  
+    @FXML
+    private Label lbSynthese;
+    @FXML
+    private ChoiceBox chbSynthese;
     @FXML
     private Label lbImpFolder;    
+    @FXML
+    private Label lbSyride;
+    @FXML
+    private Label lbSyridePath;
     @FXML
     private TextField txUrlSite;    
     @FXML
@@ -209,15 +229,7 @@ public class ConfigViewController {
     @FXML
     private Button btWebAnnuler;
     @FXML
-    private Button btWebOk;      
-    @FXML
-    private Tab tabLog;     
-    @FXML
-    private TextArea txLog;
-    @FXML
-    private Button btLogAnnuler;
-    @FXML
-    private Button btLogOk; 
+    private Button btWebOk;       
     
     // Reference to the main application.
     private RootLayoutController rootController;
@@ -300,7 +312,11 @@ public class ConfigViewController {
                     txSeuilAb.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
-        });          
+        });
+        
+        chbByYear.setOnAction((event) -> {
+            myConfig.setIdxTypeYear(chbByYear.getSelectionModel().getSelectedIndex());
+        });
         
     }    
     
@@ -332,6 +348,7 @@ public class ConfigViewController {
         // Logbook Tab
         lbCurrFolder.setText(myConfig.getPathW());
         lbCurrDbPath.setText(myConfig.getPathDb());
+        iniChbYear();
         
         // Pilot Tab
         txPilote.setText(myConfig.getDefaultPilote());
@@ -357,7 +374,10 @@ public class ConfigViewController {
         
         // Miscellaneous Tab
         iniChbLang();
+        iniChbSynthese();
+        iniChbStartwin();
         lbImpFolder.setText(myConfig.getPathImport());
+        lbSyridePath.setText(myConfig.getPathSyride());
         if (myConfig.isPhotoAuto())  {
             checkPhoto.setSelected(true);
         } else {
@@ -378,8 +398,6 @@ public class ConfigViewController {
         txUrlContest.setText(myConfig.getUrlContest());
         lbContestPath.setText(myConfig.getPathContest());     
         
-        // Log Tab
-        txLog.setText(systemio.mylogging.readLogFile());
     }
     
     /**
@@ -415,8 +433,11 @@ public class ConfigViewController {
             myConfig.setSeuilAberrants(Integer.parseInt(txSeuilAb.getText()));
             // Onglet Divers
             myConfig.setIdxLang(chbLang.getSelectionModel().getSelectedIndex());
+            myConfig.setIdxSynthese(chbSynthese.getSelectionModel().getSelectedIndex());
+            myConfig.setIdxStartwin(chbStartwin.getSelectionModel().getSelectedIndex());
             myConfig.setLocale(chbLang.getSelectionModel().getSelectedIndex());
             myConfig.setPathImport(lbImpFolder.getText());
+            myConfig.setPathSyride(lbSyridePath.getText());
             myConfig.setPhotoAuto(checkPhoto.isSelected());
             myConfig.setUpdateAuto(checkUpdate.isSelected());
             // Onglet Internet
@@ -511,11 +532,10 @@ public class ConfigViewController {
      */
     @FXML
     private void changePathImport() {
-        winDirChoose wd = new winDirChoose(myConfig, i18n, 1, null);
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 7, null);
         File selectedDirectory = wd.getSelectedFolder();
         if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
             lbImpFolder.setText(selectedDirectory.getAbsolutePath());   
-            myConfig.setPathImport(selectedDirectory.getAbsolutePath());
         }        
     }  
     
@@ -542,6 +562,15 @@ public class ConfigViewController {
                 }
             }                         
         }
+    }
+    
+    @FXML
+    private void changePathSyride() {
+        winDirChoose wd = new winDirChoose(myConfig, i18n, 8, null);
+        File selectedDirectory = wd.getSelectedFolder();
+        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
+            lbSyridePath.setText(selectedDirectory.getAbsolutePath());   
+        }                       
     }
     
     private void copyInNewFolder(Path srcPath, File selectedFile) {
@@ -574,6 +603,9 @@ public class ConfigViewController {
         }        
     }
     
+    /*
+    * In version
+    */
     @FXML
     private void restoreBackup() {
         alertbox aError = new alertbox(myConfig.getLocale());
@@ -589,9 +621,6 @@ public class ConfigViewController {
                 sbMsg.append(i18n.tr("Copy in")).append(" :").append(myConfig.getPathDb());
                 int myChoice = dConfirm.twoChoices(i18n.tr("Logbook restore"), sbMsg.toString(), i18n.tr("Yes"), i18n.tr("Other folder"), i18n.tr("Cancel"));
                 switch (myChoice) {
-                    case  0:
-                        System.exit(0);
-                        break;
                     case 1 :
                         try {
                             Path dstPath = Paths.get(myConfig.getPathDb()+File.separator+selectedFile.getName());
@@ -775,6 +804,38 @@ public class ConfigViewController {
         
     }
     
+    private void iniChbSynthese()  { 
+        
+        listSynthese suppSynthese = new listSynthese(myConfig.getLocale());
+        ObservableList <String> allSynthese = suppSynthese.fill(i18n);        
+        chbSynthese.getItems().clear();
+        chbSynthese.setItems(allSynthese);
+        chbSynthese.getSelectionModel().select(myConfig.getIdxSynthese());                       
+        
+    }
+    
+    private void iniChbStartwin()  { 
+        
+        listStartwin suppStartw = new listStartwin(myConfig.getLocale());
+        ObservableList <String> allSynthese = suppStartw.fill(i18n);        
+        chbStartwin.getItems().clear();
+        chbStartwin.setItems(allSynthese);
+        chbStartwin.getSelectionModel().select(myConfig.getIdxStartwin());                       
+        
+    }    
+    
+    /**
+     * Choicebox to choose All years or Year by year
+     */
+    private void iniChbYear()  { 
+        
+        listTypeYear suppYears = new listTypeYear(myConfig.getLocale());
+        ObservableList <String> allTypeYears = suppYears.fill(i18n);        
+        chbByYear.getItems().clear();
+        chbByYear.setItems(allTypeYears);
+        chbByYear.getSelectionModel().select(myConfig.getIdxTypeYear());                               
+    }
+    
     /**
      * Choicebox is filled by supported maps     
      */
@@ -834,15 +895,15 @@ public class ConfigViewController {
         tabCarnet.setText(i18n.tr("Logbook"));        
         tabCarte.setText(i18n.tr("Map"));
         tabDivers.setText(i18n.tr("Miscellaneous"));
-        tabInternet.setText(i18n.tr("Web"));
-        tabLog.setText(i18n.tr("Log file"));        
+        tabInternet.setText(i18n.tr("Web"));      
         lbWorkingPath.setText(i18n.tr("Working folder path"));
+        lbByYear.setText(i18n.tr("Logbook presentation"));
         btCarnetEdit.setText(i18n.tr("Modify"));
         lbWorkingLog.setText(i18n.tr("Logbook(s) path"));
         btNewLog.setText(i18n.tr("Create a new logbook"));
         btMoveLog.setText(i18n.tr("Move logbook(s) to a different folder"));
         btSelectLog.setText(i18n.tr("Choose a new logbook folder"));
-        btRestore.setText(i18n.tr("Restore a backup"));
+        btRestore.setText(i18n.tr("Repatriate a copy"));
         btCarnetClose.setText(i18n.tr("Close"));
         tabPilote.setText(i18n.tr("Pilot"));
         lbPilote.setText(i18n.tr("Pilot name"));
@@ -858,6 +919,7 @@ public class ConfigViewController {
         btPilotOK.setText(i18n.tr("Ok"));
         lbNavigateur.setText(i18n.tr("VisuGPS in browser"));
         lbDefaultMap.setText(i18n.tr("Default map"));
+        lbLocMap.setText(i18n.tr("Default map location"));
         lbLatitude.setText(i18n.tr("Latitude"));
         lbLongitude.setText(i18n.tr("Longitude"));
         btMapMap.setText(i18n.tr("Map"));
@@ -865,7 +927,10 @@ public class ConfigViewController {
         btMapOK.setText(i18n.tr("OK"));
         btMapAnnuler.setText(i18n.tr("Cancel"));
         lbLanguage.setText(i18n.tr("Language"));
+        lbSynthese.setText(i18n.tr("Overview"));
+        lbStartwin.setText(i18n.tr("Start window"));
         lbImport.setText(i18n.tr("Import folder"));
+        lbSyride.setText(i18n.tr("Syride folder"));
         lbPhotoAuto.setText(i18n.tr("Automatic display of photos"));
         lbUpdateAuto.setText(i18n.tr("Automatic update"));
         btDiversAnnuler.setText(i18n.tr("Cancel"));
@@ -878,8 +943,6 @@ public class ConfigViewController {
         lbDeclaration.setText(i18n.tr("Claim url"));
         lbExport.setText(i18n.tr("Export IGC folder"));
         btWebAnnuler.setText(i18n.tr("Cancel"));
-        btWebOk.setText(i18n.tr("OK"));    
-        btLogAnnuler.setText(i18n.tr("Cancel"));
-        btLogOk.setText(i18n.tr("OK"));            
+        btWebOk.setText(i18n.tr("OK"));               
     }
 }
