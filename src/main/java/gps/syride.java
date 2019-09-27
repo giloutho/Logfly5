@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
+import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
@@ -37,6 +38,8 @@ public class syride {
     private ArrayList<String> flightFolderList;
     private StringBuilder sbError;
     private osType currentOS;
+    private configProg myConfig;
+    private String pathSyride;
 
     public boolean isConnected() {
         return connected;
@@ -63,11 +66,27 @@ public class syride {
         return driveList;
     }
     
-    public syride (osType currOs, int gpsLimit) {
+    public syride (osType currOs, int gpsLimit, String pPathSyride) {
         boolean conn = false;
         fFlights = null;    
         currentOS = currOs;
-                
+        pathSyride = pPathSyride;
+        // S of Syride can be s or S
+        if (pathSyride == null || !pathSyride.contains("yride") ) {
+            // https://stackoverflow.com/questions/9677692/getting-my-documents-path-in-java 
+            // System.getProperty("user.home")+File.separatorChar + "Documents"  
+            switch (currentOS) {
+                case WINDOWS:
+                    pathSyride = System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride";
+                    break;
+                case MACOS :
+                    pathSyride = System.getProperty("user.home")+"/syride";
+                    break;
+                case LINUX :
+                    pathSyride = System.getProperty("user.home")+"/syride";  
+                break;                
+            }
+        }
         conn = testSysPCTools();
                      
     }
@@ -77,14 +96,12 @@ public class syride {
         boolean res = false;
         
         switch (currentOS) {
-            case WINDOWS:
-                // https://stackoverflow.com/questions/9677692/getting-my-documents-path-in-java 
-                // System.getProperty("user.home")+File.separatorChar + "Documents"  
-                fFlights = new File(System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride\\Parapente");
+            case WINDOWS:               
+                fFlights = new File(pathSyride+"\\Parapente");
                 if (fFlights.exists() && fFlights.isDirectory()) {
                     res = true;
                     setConnected(res);
-                    fArchives = new File(System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride\\archives");
+                    fArchives = new File(pathSyride+"\\archives");
                     if (!fArchives.exists()) {
                         try {
                             boolean okArchives = fArchives.mkdir();
@@ -101,14 +118,14 @@ public class syride {
                 }
                 break;
             case MACOS :
-                fFlights = new File(System.getProperty("user.home")+"/syride/parapente");
+                fFlights = new File(pathSyride+"/parapente");
                 if (fFlights.exists() && fFlights.isDirectory()) {
                     res = true;
                     setConnected(res);                     
-                    fArchives = new File(System.getProperty("user.home")+"/syride/archives");
+                    fArchives = new File(pathSyride+"/archives");
                     if (!fArchives.exists()) {
                         try {
-                            fArchives = new File(System.getProperty("user.home")+"/syride/archives");
+                            fArchives = new File(pathSyride+"/archives");
                             boolean okArchives = fArchives.mkdir();
                             if (!okArchives) {
                                 fArchives = null;
@@ -123,14 +140,14 @@ public class syride {
                 }
                 break;
             case LINUX :
-                fFlights = new File(System.getProperty("user.home")+"/syride/parapente");
+                fFlights = new File(pathSyride+"/parapente");
                 if (fFlights.exists() && fFlights.isDirectory()) {
                     res = true;
                     setConnected(res);                     
-                    fArchives = new File(System.getProperty("user.home")+"/syride/archives");
+                    fArchives = new File(pathSyride+"/archives");
                     if (!fArchives.exists()) {
                         try {
-                            fArchives = new File(System.getProperty("user.home")+"/syride/archives");
+                            fArchives = new File(pathSyride+"/archives");
                             boolean okArchives = fArchives.mkdir();
                             if (!okArchives) {
                                 fArchives = null;
