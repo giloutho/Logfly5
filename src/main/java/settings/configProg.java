@@ -25,55 +25,59 @@ import systemio.mylogging;
 
 public class configProg {
     
-    private static String pathConfig;       // Settings path file
-    private static boolean readConfig;      // Settings file read
-    private static boolean validConfig;     // Configuration validated (db path)
-    private static boolean configDefault;
-    private static osType currOS;                
-    private static String osSeparator;
+    private  String pathConfig;       // Settings path file
+    private  boolean readConfig;      // Settings file read
+    private  boolean validConfig;     // Configuration validated (db path)
+    private  boolean configDefault;
+    private  osType currOS;                
+    private  String osSeparator;
                                             // App refers to xLogfly parameters
-    private static String pathW;            // App.Wpath
-    private static String dbName;           // App.db_Name  
-    private static String pathDb;           // App.WpathDb
-    private static String fullPathDb;       // pathDb + dbName
-    private static String finderLat;        // App.FinderLat       
-    private static String finderLong;       // App.FinderLong      
-    private static String pathImport;       // WImport
-    private static int  idxLang;            // Language index
-    private static Locale locale;
-    private static String defaultPilote;    // Default pilote name
-    private static String defaultVoile;     // App.Def_Voile
-    private static int decGMT;              // App.GMT_Plus    
-    private static boolean gmtCEST;         // App.GMT_CEST  Heure été 
-    private static int mainWidth;           // Main window width App.Main_Width 
-    private static int mainHeight;          // Main window height App.Main_Height = 681                       
-    private static String urlLogflyIGC;     // App.ServerURL
-    private static String urlVisu;          // App.VisuURL
-    private static String urlLogfly;        // App.urlSite  url du site de base de Logfly
-    private static String urlIcones;        // App.urlIcones Recup url des icônes utilisées dans les cartes Google    
-    private static String mailPass;         // App.MailPass     
-    private static String lastNotif;        // App.LastNotif
-    private static int idxLeague;           // App.NumLeague 
-    private static int idxGPS;              // App.MonGPS    
-    private static int seuilAberrants;      // App.Seuil_Aberrants 
-    private static String pathOpenAir;      // App.WOpenAir
-    private static String urlContest;       // App.Contest_URL =  "http://parapente.ffvl.fr/user/746/cfd/declaration"
-    private static String pathContest;      // App.Contest_Path  Export path file for a contest
-    private static int integration;         // App.Integration 
-    private static boolean visuGPSinNav;    // App.VisuGPSNav  VisuGPS will be displayed in default browser
-    private static boolean photoAuto;       // Automatic display of the flight photo
-    private static String piloteMail;       // App.MailPilote
-    private static String lastSerialCom;    // App.SerialCom  
-    private static int idxMap;              // App.Default_Map map layer default index
-    private static String piloteID;         // App.Id_Pilote  Contest pilot id 
-    private static String pilotePass;       // App.Id_Pass    Contest pilot password 
-    private static String lastTrace;        // App.LastTrace 
-    private static String lastOpenAir;      // App.LastOpenAir    
-    private static final int distDeco = 300;// distance for take off research
-    private static boolean updateAuto;      // new in V5
-    private static int gpsLimit;            // new in V5 date track search depth for usb GPS
-    private static String version;
-    private static Connection dbConn;
+    private  String pathW;            // App.Wpath
+    private  String dbName;           // App.db_Name  
+    private  String pathDb;           // App.WpathDb
+    private  String fullPathDb;       // pathDb + dbName
+    private  String finderLat;        // App.FinderLat       
+    private  String finderLong;       // App.FinderLong      
+    private  String pathImport;       // WImport
+    private  int  idxLang;            // Language index
+    private  int idxTypeYear;         // Logbook presentation Year by Year or all years
+    private  int idxSynthese;         // Overview presentation (Calendar or last twelve months)
+    private  int idxStartwin;         // Start windows : logbook, overview...
+    private  Locale locale;
+    private  String defaultPilote;    // Default pilote name
+    private  String defaultVoile;     // App.Def_Voile
+    private  int decGMT;              // App.GMT_Plus    
+    private  boolean gmtCEST;         // App.GMT_CEST  Heure été 
+    private  int mainWidth;           // Main window width App.Main_Width 
+    private  int mainHeight;          // Main window height App.Main_Height = 681                       
+    private  String urlLogflyIGC;     // App.ServerURL
+    private  String urlVisu;          // App.VisuURL
+    private  String urlLogfly;        // App.urlSite  url du site de base de Logfly
+    private  String urlIcones;        // App.urlIcones Recup url des icônes utilisées dans les cartes Google    
+    private  String mailPass;         // App.MailPass     
+    private  String lastNotif;        // App.LastNotif
+    private  int idxLeague;           // App.NumLeague 
+    private  int idxGPS;              // App.MonGPS    
+    private  int seuilAberrants;      // App.Seuil_Aberrants 
+    private  String pathOpenAir;      // App.WOpenAir
+    private  String urlContest;       // App.Contest_URL =  "http://parapente.ffvl.fr/user/746/cfd/declaration"
+    private  String pathContest;      // App.Contest_Path  Export path file for a contest
+    private  int integration;         // App.Integration 
+    private  boolean visuGPSinNav;    // App.VisuGPSNav  VisuGPS will be displayed in default browser
+    private  boolean photoAuto;       // Automatic display of the flight photo
+    private  String piloteMail;       // App.MailPilote
+    private  String lastSerialCom;    // App.SerialCom  
+    private  int idxMap;              // App.Default_Map map layer default index
+    private  String piloteID;         // App.Id_Pilote  Contest pilot id 
+    private  String pilotePass;       // App.Id_Pass    Contest pilot password 
+    private  String lastTrace;        // App.LastTrace 
+    private  String lastOpenAir;      // App.LastOpenAir    
+    private  String pathSyride;    
+    private  final int distDeco = 300;// distance for take off research
+    private  boolean updateAuto;      // new in V5
+    private  int gpsLimit;            // new in V5 date track search depth for usb GPS
+    private  String version;
+    private  Connection dbConn;
     private StringBuilder sbError;
     
     public void whichOS()  {
@@ -94,171 +98,194 @@ public class configProg {
         
     }        
 
-    public static boolean isValidConfig() {
+    public boolean isValidConfig() {
         return validConfig;
     }
 
-    public static void setValidConfig(boolean validConfig) {
-        configProg.validConfig = validConfig;
-    }        
+    public void setValidConfig(boolean validConfig) {
+        this.validConfig = validConfig;
+    }    
     
-    public static String getPathConfig() {
+    public  String getPathConfig() {
         return pathConfig;
     }
 
-    public static boolean isReadConfig() {
+    public  boolean isReadConfig() {
         return readConfig;
     }
 
-    public static boolean isConfigDefault() {
+    public  boolean isConfigDefault() {
         return configDefault;
     }    
 
-    public static String getPathW() {
+    public  String getPathW() {
         return pathW;
     }
 
-    public static void setPathW(String pathW) {
-        configProg.pathW = pathW;
+    public  void setPathW(String pathW) {
+        this.pathW = pathW;
     }
     
     
-    public static String getPathDb() {
+    public  String getPathDb() {
         return pathDb;
     }
 
-    public static void setPathDb(String PathDb) {
-        configProg.pathDb = PathDb;
+    public  void setPathDb(String PathDb) {
+        this.pathDb = PathDb;
     }
 
-    public static String getOsSeparator() {
+    public  String getOsSeparator() {
         return osSeparator;
     }
 
-    public static osType getOS() {
+    public  osType getOS() {
         return currOS;
     }
             
-    public static String getFullPathDb() {
+    public  String getFullPathDb() {
         return fullPathDb;
     }   
     
-    public static void setFullPathDb(String fullPathDb) {
-        configProg.fullPathDb = fullPathDb;
+    public  void setFullPathDb(String fullPathDb) {
+        this.fullPathDb = fullPathDb;
     }
     
-    public static String getDbName() {
+    public  String getDbName() {
         return dbName;
     }
 
-    public static void setDbName(String dbName) {
-        configProg.dbName = dbName;
+    public  void setDbName(String dbName) {
+        this.dbName = dbName;
     }
 
-    public static Connection getDbConn() {
+    public  Connection getDbConn() {
         return dbConn;
     }
 
-    public static void setDbConn(Connection dbConn) {
+    public  void setDbConn(Connection dbConn) {
         // Procédure à utiliser UNIQUEMENT pour les tests
-        configProg.dbConn = dbConn;
+        this.dbConn = dbConn;
     }
+
+    public  int getIdxSynthese() {
+        return idxSynthese;
+    }
+
+    public  void setIdxSynthese(int idxSynthese) {
+        this.idxSynthese = idxSynthese;
+    }
+
+    public int getIdxStartwin() {
+        return idxStartwin;
+    }
+
+    public void setIdxStartwin(int idxStartwin) {
+        this.idxStartwin = idxStartwin;
+    }
+        
     
-    
-    
-    public static String getDefaultPilote() {
+    public  String getDefaultPilote() {
         return defaultPilote;
     }
 
-    public static void setDefaultPilote(String defaultPilote) {
-        configProg.defaultPilote = defaultPilote;
+    public  void setDefaultPilote(String defaultPilote) {
+        this.defaultPilote = defaultPilote;
     }
 
-    public static String getDefaultVoile() {
+    public  String getDefaultVoile() {
         return defaultVoile;
     }
 
-    public static void setDefaultVoile(String defaultVoile) {
-        configProg.defaultVoile = defaultVoile;
+    public  void setDefaultVoile(String defaultVoile) {
+        this.defaultVoile = defaultVoile;
     }
 
-    public static int getIdxGPS() {
+    public  int getIdxGPS() {
         return idxGPS;
     }
 
-    public static void setIdxGPS(int idxGPS) {
-        configProg.idxGPS = idxGPS;
+    public  void setIdxGPS(int idxGPS) {
+        this.idxGPS = idxGPS;
     }
 
-    public static int getIdxLeague() {
+    public  int getIdxLeague() {
         return idxLeague;
     }
 
-    public static void setIdxLeague(int idxLeague) {
-        configProg.idxLeague = idxLeague;
+    public  void setIdxLeague(int idxLeague) {
+        this.idxLeague = idxLeague;
     }
 
-    public static boolean isVisuGPSinNav() {
+    public  boolean isVisuGPSinNav() {
         return visuGPSinNav;
     }
 
-    public static void setVisuGPSinNav(boolean visuGPSinNav) {
-        configProg.visuGPSinNav = visuGPSinNav;
+    public  void setVisuGPSinNav(boolean visuGPSinNav) {
+        this.visuGPSinNav = visuGPSinNav;
     }
 
-    public static int getIdxMap() {
+    public  int getIdxMap() {
         return idxMap;
     }
 
-    public static void setIdxMap(int idxMap) {
-        configProg.idxMap = idxMap;
+    public  void setIdxMap(int idxMap) {
+        this.idxMap = idxMap;
     }
 
-    public static String getFinderLat() {
+    public  int getIdxTypeYear() {
+        return idxTypeYear;
+    }
+
+    public  void setIdxTypeYear(int idxTypeYear) {
+        this.idxTypeYear = idxTypeYear;
+    }
+        
+    public  String getFinderLat() {
         return finderLat;
     }
 
-    public static void setFinderLat(String finderLat) {
-        configProg.finderLat = finderLat;
+    public  void setFinderLat(String finderLat) {
+        this.finderLat = finderLat;
     }
 
-    public static String getFinderLong() {
+    public  String getFinderLong() {
         return finderLong;
     }
 
-    public static void setFinderLong(String finderLong) {
-        configProg.finderLong = finderLong;
+    public  void setFinderLong(String finderLong) {
+        this.finderLong = finderLong;
     }
 
-    public static int getSeuilAberrants() {
+    public  int getSeuilAberrants() {
         return seuilAberrants;
     }
 
-    public static void setSeuilAberrants(int seuilAberrants) {
-        configProg.seuilAberrants = seuilAberrants;
+    public  void setSeuilAberrants(int seuilAberrants) {
+        this.seuilAberrants = seuilAberrants;
     }
 
-    public static String getLastSerialCom() {
+    public  String getLastSerialCom() {
         return lastSerialCom;
     }
 
-    public static void setLastSerialCom(String lastSerialCom) {
-        configProg.lastSerialCom = lastSerialCom;
+    public  void setLastSerialCom(String lastSerialCom) {
+        this.lastSerialCom = lastSerialCom;
     }
 
-    public static int getIdxLang() {
+    public  int getIdxLang() {
         return idxLang;
     }
 
-    public static void setIdxLang(int idxLang) {
-        configProg.idxLang = idxLang;
+    public  void setIdxLang(int idxLang) {
+        this.idxLang = idxLang;
     }
 
-    public static Locale getLocale() {
+    public  Locale getLocale() {
         return locale;
     }
 
-    public static void setLocale(int idxLang) {
+    public  void setLocale(int idxLang) {
         switch (idxLang) {
             case 0 :
                // locale = new Locale("de");  
@@ -282,161 +309,169 @@ public class configProg {
        
     }
 
-    public static int getGpsLimit() {
+    public  int getGpsLimit() {
         return gpsLimit;
     }
 
-    public static void setGpsLimit(int gpsLimit) {
-        configProg.gpsLimit = gpsLimit;
+    public  void setGpsLimit(int gpsLimit) {
+        this.gpsLimit = gpsLimit;
     }
         
     
-    public static String getPathImport() {
+    public  String getPathImport() {
         return pathImport;
     }
 
-    public static void setPathImport(String pathImport) {
-        configProg.pathImport = pathImport;
+    public  void setPathImport(String pathImport) {
+        this.pathImport = pathImport;
     }
 
-    public static String getUrlLogflyIGC() {
+    public String getPathSyride() {
+        return pathSyride;
+    }
+
+    public void setPathSyride(String pathSyride) {
+        this.pathSyride = pathSyride;
+    }    
+    
+    public  String getUrlLogflyIGC() {
         return urlLogflyIGC;
     }
 
-    public static void setUrlLogflyIGC(String urlLogflyIGC) {
-        configProg.urlLogflyIGC = urlLogflyIGC;
+    public  void setUrlLogflyIGC(String urlLogflyIGC) {
+        this.urlLogflyIGC = urlLogflyIGC;
     }
 
-    public static String getUrlVisu() {
+    public  String getUrlVisu() {
         return urlVisu;
     }
 
-    public static void setUrlVisu(String urlVisu) {
-        configProg.urlVisu = urlVisu;
+    public  void setUrlVisu(String urlVisu) {
+        this.urlVisu = urlVisu;
     }
 
-    public static String getUrlLogfly() {
+    public  String getUrlLogfly() {
         return urlLogfly;
     }
 
-    public static void setUrlLogfly(String urlLogfly) {
-        configProg.urlLogfly = urlLogfly;
+    public  void setUrlLogfly(String urlLogfly) {
+        this.urlLogfly = urlLogfly;
     }
 
-    public static String getUrlIcones() {
+    public  String getUrlIcones() {
         return urlIcones;
     }
 
-    public static void setUrlIcones(String urlIcones) {
-        configProg.urlIcones = urlIcones;
+    public  void setUrlIcones(String urlIcones) {
+        this.urlIcones = urlIcones;
     }
 
-    public static String getUrlContest() {
+    public  String getUrlContest() {
         return urlContest;
     }
 
-    public static String getMailPass() {
+    public  String getMailPass() {
         return mailPass;
     }
 
-    public static void setMailPass(String mailPass) {
-        configProg.mailPass = mailPass;
+    public  void setMailPass(String mailPass) {
+        this.mailPass = mailPass;
     }
     
-    public static void setUrlContest(String urlContest) {
-        configProg.urlContest = urlContest;
+    public  void setUrlContest(String urlContest) {
+        this.urlContest = urlContest;
     }
 
-    public static String getPathContest() {
+    public  String getPathContest() {
         return pathContest;
     }
 
-    public static void setPathContest(String pathContest) {
-        configProg.pathContest = pathContest;
+    public  void setPathContest(String pathContest) {
+        this.pathContest = pathContest;
     }
 
-    public static int getMainWidth() {
+    public  int getMainWidth() {
         return mainWidth;
     }
 
-    public static void setMainWidth(int mainWidth) {
-        configProg.mainWidth = mainWidth;
+    public  void setMainWidth(int mainWidth) {
+        this.mainWidth = mainWidth;
     }
 
-    public static int getMainHeight() {
+    public  int getMainHeight() {
         return mainHeight;
     }
 
-    public static void setMainHeight(int mainHeight) {
-        configProg.mainHeight = mainHeight;
+    public  void setMainHeight(int mainHeight) {
+        this.mainHeight = mainHeight;
     }
     
-    public static int getIntegration() {
+    public  int getIntegration() {
         return integration;
     }
 
-    public static void setIntegration(int integration) {
-        configProg.integration = integration;
+    public  void setIntegration(int integration) {
+        this.integration = integration;
     }
 
-    public static String getPiloteMail() {
+    public  String getPiloteMail() {
         return piloteMail;
     }
 
-    public static void setPiloteMail(String piloteMail) {
-        configProg.piloteMail = piloteMail;
+    public  void setPiloteMail(String piloteMail) {
+        this.piloteMail = piloteMail;
     }
 
-    public static String getPiloteID() {
+    public  String getPiloteID() {
         return piloteID;
     }
 
-    public static void setPiloteID(String piloteID) {
-        configProg.piloteID = piloteID;
+    public  void setPiloteID(String piloteID) {
+        this.piloteID = piloteID;
     }
 
-    public static String getPilotePass() {
+    public  String getPilotePass() {
         return pilotePass;
     }
 
-    public static void setPilotePass(String pilotePass) {
-        configProg.pilotePass = pilotePass;
+    public  void setPilotePass(String pilotePass) {
+        this.pilotePass = pilotePass;
     }
 
-    public static int getDistDeco() {
+    public  int getDistDeco() {
         return distDeco;
     }
 
-    public static boolean isPhotoAuto() {
+    public  boolean isPhotoAuto() {
         return photoAuto;
     }
 
-    public static void setPhotoAuto(boolean photoAuto) {
-        configProg.photoAuto = photoAuto;
+    public  void setPhotoAuto(boolean photoAuto) {
+        this.photoAuto = photoAuto;
     }
    
-    public static boolean isUpdateAuto() {
+    public  boolean isUpdateAuto() {
         return updateAuto;
     }
 
-    public static void setUpdateAuto(boolean UpdateAuto) {
-        configProg.updateAuto = UpdateAuto;
+    public  void setUpdateAuto(boolean UpdateAuto) {
+        this.updateAuto = UpdateAuto;
     }
 
-    public static String getVersion() {
+    public  String getVersion() {
         return version;
     }
 
-    public static void setVersion(String version) {
-        configProg.version = version;
+    public  void setVersion(String version) {
+        this.version = version;
     }
 
-    public static String getPathOpenAir() {
+    public  String getPathOpenAir() {
         return pathOpenAir;
     }
 
-    public static void setPathOpenAir(String pathOpenAir) {
-        configProg.pathOpenAir = pathOpenAir;
+    public  void setPathOpenAir(String pathOpenAir) {
+        this.pathOpenAir = pathOpenAir;
     }        
     
     private boolean dbCheckField(Connection con, String fieldName) {
@@ -977,7 +1012,7 @@ public class configProg {
                 updateAuto = false;
                 photoAuto = true;
                 gpsLimit = 6;
-                configDefault = dbCreation(fullPathDb);            
+                configDefault = dbCreation(fullPathDb);              
             } else {
                 configDefault = false;
             }    
@@ -1087,7 +1122,7 @@ public class configProg {
      * Set properties 
      * @param prop 
      */
-    private static void setAllProperties(Properties prop)  {                
+    private  void setAllProperties(Properties prop)  {                
         prop.setProperty("pathw",pathW);
         prop.setProperty("dbname",dbName);
         prop.setProperty("pathdb",pathDb);
@@ -1126,13 +1161,17 @@ public class configProg {
         prop.setProperty("lastopenair",lastOpenAir);
         prop.setProperty("updateauto",String.valueOf(updateAuto));
         prop.setProperty("gpslimit",String.valueOf(gpsLimit));
+        prop.setProperty("idxtypeyear",String.valueOf(idxTypeYear));
+        prop.setProperty("idxsynthese",String.valueOf(idxSynthese));
+        prop.setProperty("idxstartwin",String.valueOf(idxStartwin));
+        prop.setProperty("pathsyride",pathSyride);
     }
     
     /**
      * Get properties
      * @param prop 
      */
-    private static void getAllProperties(Properties prop)  {                
+    private  void getAllProperties(Properties prop)  {                
               
         pathW = prop.getProperty("pathw");
         dbName = prop.getProperty("dbname");
@@ -1215,6 +1254,36 @@ public class configProg {
             gpsLimit = Integer.parseInt(prop.getProperty("gpslimit"));
         else
             gpsLimit = 6;
+        if (prop.getProperty("idxtypeyear") != null)
+            idxTypeYear = Integer.parseInt(prop.getProperty("idxtypeyear"));
+        else
+            idxTypeYear = 0;    
+        if (prop.getProperty("idxsynthese") != null)
+            idxSynthese = Integer.parseInt(prop.getProperty("idxsynthese"));
+        else
+            idxSynthese = 0;      
+        if (prop.getProperty("idxstartwin") != null)
+            idxStartwin = Integer.parseInt(prop.getProperty("idxstartwin"));
+        else
+            idxStartwin = 0;         
+        if (prop.getProperty("pathsyride") != null)
+            pathSyride = prop.getProperty("pathsyride");
+        else {
+            switch (currOS) {                
+                case WINDOWS:
+                    // https://stackoverflow.com/questions/9677692/getting-my-documents-path-in-java 
+                    // System.getProperty("user.home")+File.separatorChar + "Documents"  
+                    pathSyride = System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride"; 
+                    break;
+                case MACOS :
+                    pathSyride = System.getProperty("user.home")+"/syride";                
+                    break;
+                case LINUX :
+                    pathSyride = System.getProperty("user.home")+"/syride";
+                    break;
+                }            
+        }             
+        
     }
     
     /**
