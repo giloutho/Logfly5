@@ -231,7 +231,7 @@ public class AirspaceController {
             ch_Flight.getSelectionModel().selectFirst();
             levelFlight = 9999;            
         }
-        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OpenAir, configProg.getPathOpenAir());  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OpenAir, myConfig.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
             actionDraw = false;
