@@ -7,7 +7,6 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -22,20 +21,22 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Label fx:id="lbWorkingPath" layoutX="94.0" layoutY="46.0" prefHeight="17.0" prefWidth="249.0" text="fDossier de travail" />
-                        <Label fx:id="lbWorkingLog" layoutX="94.0" layoutY="100.0" text="fDossier Carnet(s)" />
+                        <Label fx:id="lbWorkingPath" layoutX="94.0" layoutY="24.0" prefHeight="17.0" prefWidth="249.0" text="fDossier de travail" />
+                        <Label fx:id="lbWorkingLog" layoutX="94.0" layoutY="68.0" text="fDossier Carnet(s)" />
                         <Button fx:id="btNewLog" layoutX="94.0" layoutY="155.0" mnemonicParsing="false" onAction="#displayTextCarnet" text="fCréer un nouveau carnet" />
                         <Button fx:id="btSelectLog" layoutX="96.0" layoutY="248.0" mnemonicParsing="false" onAction="#selectNewFolderDb" text="fSélectionner un nouveau dossier de carnets" />
                         <Button fx:id="btMoveLog" layoutX="94.0" layoutY="201.0" mnemonicParsing="false" onAction="#moveDb" text="Déplacer le(s) carnet(s) vers un autre dossier" />
                         <Button fx:id="btRestore" layoutX="96.0" layoutY="296.0" mnemonicParsing="false" onAction="#restoreBackup" text="fRestaurer une sauvegarde" />
-                        <Label fx:id="lbCurrFolder" layoutX="94.0" layoutY="63.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
-                        <Label fx:id="lbCurrDbPath" layoutX="94.0" layoutY="122.0" prefHeight="17.0" prefWidth="296.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
-                        <Button fx:id="btCarnetEdit" layoutX="411.0" layoutY="49.0" mnemonicParsing="false" onAction="#changePathW" text="Modifier" />
+                        <Label fx:id="lbCurrFolder" layoutX="94.0" layoutY="41.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
+                        <Label fx:id="lbCurrDbPath" layoutX="94.0" layoutY="87.0" prefHeight="17.0" prefWidth="296.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
+                        <Button fx:id="btCarnetEdit" layoutX="411.0" layoutY="27.0" mnemonicParsing="false" onAction="#changePathW" text="Modifier" />
                         <Button fx:id="btCarnetClose" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="Fermer" />
-                        <ChoiceBox fx:id="chbCarnet" layoutX="411.0" layoutY="108.0" prefHeight="27.0" prefWidth="146.0" />
+                        <ChoiceBox fx:id="chbCarnet" layoutX="411.0" layoutY="72.0" prefHeight="27.0" prefWidth="146.0" />
                         <TextField fx:id="txnewdb" layoutX="397.0" layoutY="155.0" prefHeight="27.0" prefWidth="132.0" visible="false" />
                         <Button fx:id="btnewcarnetcancel" layoutX="408.0" layoutY="191.0" mnemonicParsing="false" onAction="#annulNewCarnet" text="Annuler" visible="false" />
                         <Button fx:id="btnewcarnetok" layoutX="493.0" layoutY="191.0" mnemonicParsing="false" onAction="#createNewCarnet" text="Ok" visible="false" />
+                        <Label fx:id="lbByYear" layoutX="94.0" layoutY="121.0" prefHeight="17.0" prefWidth="249.0" text="fPrésentation carnet" />
+                        <ChoiceBox fx:id="chbByYear" layoutX="411.0" layoutY="117.0" prefHeight="27.0" prefWidth="171.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -95,15 +96,16 @@
                         <Label fx:id="lbDefaultMap" layoutX="101.0" layoutY="98.0" text="fCarte par defaut" />
                         <CheckBox fx:id="checkBrowser" contentDisplay="GRAPHIC_ONLY" layoutX="300.0" layoutY="47.0" mnemonicParsing="false" text="CheckBox" />
                         <ChoiceBox fx:id="chbCarte" layoutX="300.0" layoutY="93.0" prefWidth="150.0" />
-                        <Label fx:id="lbLatitude" layoutX="90.0" layoutY="160.0" text="fLatitude" />
-                        <Label fx:id="lbLongitude" layoutX="300.0" layoutY="160.0" text="fLongitude" />
-                        <TextField fx:id="txFinderLat" layoutX="173.0" layoutY="155.0" prefHeight="27.0" prefWidth="90.0" />
-                        <TextField fx:id="txFinderLong" layoutX="386.0" layoutY="155.0" prefHeight="27.0" prefWidth="90.0" />
-                        <TextField fx:id="txSeuilAb" layoutX="362.0" layoutY="211.0" prefHeight="27.0" prefWidth="61.0" />
-                        <Label fx:id="lbAberrants" layoutX="110.0" layoutY="216.0" text="fSeuil points aberrants" />
+                        <Label fx:id="lbLatitude" layoutX="90.0" layoutY="175.0" text="fLatitude" />
+                        <Label fx:id="lbLongitude" layoutX="300.0" layoutY="175.0" text="fLongitude" />
+                        <TextField fx:id="txFinderLat" layoutX="173.0" layoutY="170.0" prefHeight="27.0" prefWidth="90.0" />
+                        <TextField fx:id="txFinderLong" layoutX="386.0" layoutY="170.0" prefHeight="27.0" prefWidth="90.0" />
+                        <TextField fx:id="txSeuilAb" layoutX="362.0" layoutY="221.0" prefHeight="27.0" prefWidth="61.0" />
+                        <Label fx:id="lbAberrants" layoutX="110.0" layoutY="226.0" text="fSeuil points aberrants" />
                         <Button fx:id="btMapOK" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
                         <Button fx:id="btMapAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
-                        <Button fx:id="btMapMap" layoutX="495.0" layoutY="155.0" mnemonicParsing="false" onAction="#handleMapMap" text="fCarte" />
+                        <Button fx:id="btMapMap" layoutX="495.0" layoutY="170.0" mnemonicParsing="false" onAction="#handleMapMap" text="fCarte" />
+                        <Label fx:id="lbLocMap" layoutX="207.0" layoutY="144.0" text="fLocalisation des cartes par défaut" />
                      </children></AnchorPane>
                </content>
             </Tab>
@@ -111,17 +113,24 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Label fx:id="lbLanguage" layoutX="122.0" layoutY="62.0" text="fLangue" />
-                        <ChoiceBox fx:id="chbLang" layoutX="216.0" layoutY="57.0" prefWidth="150.0" />
-                        <Label fx:id="lbImport" layoutX="100.0" layoutY="103.0" text="fDossier Import" />
-                        <Button layoutX="480.0" layoutY="107.0" mnemonicParsing="false" onAction="#changePathImport" text="..." />
-                        <Label fx:id="lbImpFolder" layoutX="100.0" layoutY="125.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
+                        <Label fx:id="lbLanguage" layoutX="100.0" layoutY="32.0" text="fLangue" />
+                        <ChoiceBox fx:id="chbLang" layoutX="303.0" layoutY="27.0" prefWidth="150.0" />
+                        <Label fx:id="lbImport" layoutX="100.0" layoutY="147.0" text="fDossier Import" />
+                        <Button layoutX="480.0" layoutY="151.0" mnemonicParsing="false" onAction="#changePathImport" text="..." />
+                        <Label fx:id="lbImpFolder" layoutX="100.0" layoutY="166.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
                         <Button fx:id="btDiversOk" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
                         <Button fx:id="btDiversAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
-                        <Label fx:id="lbPhotoAuto" layoutX="100.0" layoutY="164.0" prefHeight="17.0" prefWidth="250.0" text="fAffichage automatique des photos" />
-                        <CheckBox fx:id="checkPhoto" contentDisplay="GRAPHIC_ONLY" layoutX="485.0" layoutY="164.0" mnemonicParsing="false" text="CheckBox" />
-                        <Label fx:id="lbUpdateAuto" layoutX="100.0" layoutY="212.0" prefHeight="17.0" prefWidth="250.0" text="fMise à jour automatiques" />
-                        <CheckBox fx:id="checkUpdate" contentDisplay="GRAPHIC_ONLY" layoutX="485.0" layoutY="211.0" mnemonicParsing="false" text="CheckBox" />
+                        <Label fx:id="lbPhotoAuto" layoutX="100.0" layoutY="241.0" prefHeight="17.0" prefWidth="250.0" text="fAffichage automatique des photos" />
+                        <CheckBox fx:id="checkPhoto" contentDisplay="GRAPHIC_ONLY" layoutX="485.0" layoutY="240.0" mnemonicParsing="false" text="CheckBox" />
+                        <Label fx:id="lbUpdateAuto" layoutX="100.0" layoutY="273.0" prefHeight="17.0" prefWidth="250.0" text="fMise à jour automatiques" />
+                        <CheckBox fx:id="checkUpdate" contentDisplay="GRAPHIC_ONLY" layoutX="485.0" layoutY="272.0" mnemonicParsing="false" text="CheckBox" />
+                        <Label fx:id="lbSynthese" layoutX="100.0" layoutY="111.0" text="fSynthèse" />
+                        <ChoiceBox fx:id="chbSynthese" layoutX="303.0" layoutY="106.0" prefHeight="27.0" prefWidth="207.0" />
+                        <Label fx:id="lbSyride" layoutX="100.0" layoutY="195.0" text="fDossier Syride" />
+                        <Button layoutX="480.0" layoutY="199.0" mnemonicParsing="false" onAction="#changePathSyride" text="..." />
+                        <Label fx:id="lbSyridePath" layoutX="100.0" layoutY="214.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Syride" />
+                        <Label fx:id="lbStartwin" layoutX="100.0" layoutY="72.0" text="fFenêtre démarrage" />
+                        <ChoiceBox fx:id="chbStartwin" layoutX="303.0" layoutY="67.0" prefHeight="27.0" prefWidth="179.0" />
                      </children></AnchorPane>
                </content>
             </Tab>
@@ -164,17 +173,6 @@
                         <Button fx:id="btWebAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
                         <Button layoutX="526.0" layoutY="200.0" mnemonicParsing="false" onAction="#changePathContest" text="..." />
                      </children></AnchorPane>
-               </content>
-            </Tab>
-            <Tab fx:id="tabLog" text="fFichier Log">
-               <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <TextArea fx:id="txLog" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
-                        <Button fx:id="btLogOk" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleOk" text="fValider" />
-                        <Button fx:id="btLogAnnuler" layoutX="395.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="fAnnuler" />
-                     </children>
-                  </AnchorPane>
                </content>
             </Tab>
         </tabs>
