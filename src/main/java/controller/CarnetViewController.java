@@ -317,7 +317,8 @@ public class CarnetViewController  {
         // --------------------------------------------------------------------------------------
                             
         Statement stmt = null;
-        ResultSet rsYear = null;                
+        ResultSet rsYear = null; 
+        String yearFiltre = null;
         try {
             stmt = myConfig.getDbConn().createStatement();                        
             // We search years in the logbook
@@ -333,9 +334,10 @@ public class CarnetViewController  {
                     String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
                     newVolsContent(selectedYear);
                 });
-                // Most recent year
-                String yearFiltre = (String) top_chbYear.getSelectionModel().getSelectedItem();
-                
+               if (myConfig.getIdxTypeYear() == 0) {
+                    // Most recent year
+                    yearFiltre = (String) top_chbYear.getSelectionModel().getSelectedItem();                    
+                }
                 // Listener for line changes and  display relevant details
                 tableVols.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showCarnetDetails((Carnet) newValue));   
