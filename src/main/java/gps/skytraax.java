@@ -192,21 +192,26 @@ public class skytraax {
                         {
                             if ( !listFile[i].getName().startsWith("."))
                             {
-                                if (listFile[i].getName().equals("SYSTEM") && listFile[i].isDirectory()) {
-                                    try {
-                                        if (exploreFolderSystem(listFile[i])) cond1 = true;
-                                    } catch (Exception e) {
-
-                                    }
+                                if (listFile[i].getName().equals("ELEVATION") && listFile[i].isDirectory()) {
+                                    // Sytraxx 2.0 Uppercase Skytraxx 2.1 lowercase
+                                    cond1 = true;
+                                } else if (listFile[i].getName().equals("elevation") && listFile[i].isDirectory()) {
+                                    cond1 = true;
                                 }
                                 if (listFile[i].getName().equals("FLIGHTS") && listFile[i].isDirectory()) {
+                                    fFlights = listFile[i];
+                                    cond2 = true;
+                                } else if (listFile[i].getName().equals("flights") && listFile[i].isDirectory()) {
                                     fFlights = listFile[i];
                                     cond2 = true;
                                 }
                                 if (listFile[i].getName().equals("WAYPOINTS") && listFile[i].isDirectory()) {
                                     fWayp = listFile[i];
                                     wpExist = true;
-                                }                                
+                                } else if (listFile[i].getName().equals("waypoints") && listFile[i].isDirectory()) {
+                                    fWayp = listFile[i];
+                                    wpExist = true;
+                                }                              
                             }
                         }
                         if (cond1 == true && cond2 == true) {
@@ -227,6 +232,7 @@ public class skytraax {
     }    
     
     /** 
+     **** DEPRECATED in Skytraxx 2.1 SYSTEM folder is not present ****
      * SD card of Skytraax has a folder called SYSTEM with a settings file called system.txt 
      * @param dir
      * @return
