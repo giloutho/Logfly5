@@ -272,7 +272,7 @@ public class GPSViewController {
      */
     private boolean selectGPS() {
         boolean res = false;   
-        winGPS myWin = new winGPS(myConfig, i18n);    
+        winGPS myWin = new winGPS(myConfig, i18n, false);    
         if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {            
             currGPS = myWin.getCurrGPS();
             currNamePort = myWin.getCurrNamePort();
