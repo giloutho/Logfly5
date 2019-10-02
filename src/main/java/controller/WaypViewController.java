@@ -10,7 +10,6 @@ import Logfly.Main;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.elevationapi;
-import geoutils.geonominatim;
 import geoutils.position;
 import gps.compass;
 import gps.connect;
@@ -716,7 +715,7 @@ public class WaypViewController {
      */
     private boolean selectGPS() {
         boolean res = false;   
-        winGPS myWin = new winGPS(myConfig, i18n);    
+        winGPS myWin = new winGPS(myConfig, i18n, true);    
         if (myWin.getCurrGPS() != null && myWin.getCurrNamePort() != null && myWin.isGpsConnect()) {
             currGPS = myWin.getCurrGPS();
             currNamePort = myWin.getCurrNamePort();
@@ -1131,9 +1130,9 @@ public class WaypViewController {
                 displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                    case MACOS :
                         writeGpsdProgress();  
                         break;
+                case MACOS :        
                 case LINUX : 
                     // Ecriture waypoints non supportée sur Linux
                     writeToGpsProgress();
@@ -1417,8 +1416,12 @@ public class WaypViewController {
                         break;
                     case MACOS :    
                     case LINUX : 
-                        // lecture waypoints non supportée sur Linux
+                        // Old code
                         readFromGpsProgress();
+                        // lecture waypoints non supportée sur Linux/Mac par GpsDump
+//                        Alert alert = new Alert(Alert.AlertType.ERROR);                       
+//                        alert.setContentText(i18n.tr("Waypoints transfer not supported on this operating system"));
+//                        alert.showAndWait(); 
                         break;
                 } 
                 break;
