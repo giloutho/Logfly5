@@ -21,8 +21,6 @@ import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
 import gps.xctracer;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -288,11 +286,11 @@ public class winGPS {
                 // 6020/6030
                 currGPS = gpsType.Flytec20;  
                 switch (myConfig.getOS()) {
-                    case WINDOWS :
                     case MACOS :
                         currNamePort = "nil";
                         gpsPresent();
                         break;
+                case WINDOWS :
                 case LINUX : 
                     listSerialPort();
                     break;
@@ -302,7 +300,6 @@ public class winGPS {
                 // 6015
                 currGPS = gpsType.Flytec15;               
                 switch (myConfig.getOS()) {
-                    case WINDOWS :
                     case MACOS :
                         if (waypCall) {
                             listSerialPort();
@@ -311,6 +308,7 @@ public class winGPS {
                             gpsPresent();
                         }
                         break;
+                case WINDOWS :        
                 case LINUX : 
                     listSerialPort();
                     break;
@@ -325,11 +323,11 @@ public class winGPS {
                 // Flymaster old series
                 currGPS = gpsType.FlymOld;               
                 switch (myConfig.getOS()) {
-                    case WINDOWS :
                     case MACOS :
                         currNamePort = "nil";
                         gpsPresent();
                         break;
+                case WINDOWS :        
                 case LINUX : 
                     listSerialPort();
                     break;
@@ -370,13 +368,13 @@ public class winGPS {
                 // Flymaster SD will be read with GPSDump
                 currGPS = gpsType.FlymSD;                 
                 switch (myConfig.getOS()) {
-                    case WINDOWS :
                     case MACOS :
                         currNamePort = "nil";
                         gpsPresent();
                         break;
-                case LINUX : 
-                    listSerialPort();
+                    case WINDOWS :                              
+                    case LINUX : 
+                        listSerialPort();
                     break;
                 } 
                 break;
