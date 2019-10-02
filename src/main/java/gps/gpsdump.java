@@ -430,7 +430,7 @@ public class gpsdump {
                         winListFormatting();
                         break;
                     case MACOS :
-                        macListFormatting();
+                        macListFormatting(idGPS);
                         break;
                     case LINUX : 
                         linuxListFormatting(idGPS);
@@ -546,15 +546,18 @@ public class gpsdump {
         }         
     }
     
-    private void macListFormatting() {
+    private void macListFormatting(int idGPS) {
         int nbFlights = 0;
         
         for (int i = 0; i < listPFM.size(); i++) {
             String ligPFM = listPFM.get(i);            
             Pattern pDate = Pattern.compile("Flight date\\s\\d{2}.\\d{2}.\\d{2}");
             Matcher mDate = pDate.matcher(ligPFM);
-            if (mDate.find()) {   
+            if (mDate.find()) {  
                 String sDate = mDate.group(0).substring(12);
+                if (idGPS == 8) {
+                    sDate = mDate.group(0).substring(18)+mDate.group(0).substring(14,17)+"."+mDate.group(0).substring(12,14);
+                }
                 nbFlights++;
                 String sTime = null;
                 String sDur = null;
