@@ -69,7 +69,6 @@ import littlewins.winFileChoose;
 import littlewins.winFileSave;
 import littlewins.winGPS;
 import littlewins.winMail;
-import littlewins.winOsmCities;
 import littlewins.winPoint;
 import littlewins.winSearchCities;
 import littlewins.winTrackFile;
