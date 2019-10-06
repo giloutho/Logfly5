@@ -10,7 +10,6 @@ import Logfly.Main;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import java.io.IOException;
-import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -21,12 +20,10 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -151,10 +148,7 @@ public class ManualViewController  {
             if (!newV) { 
                 cbGliders.setStyle("-fx-control-inner-background: #"+valueWhite.toString().substring(2));
            }
-        });          
-        
-        fillCbGlider();
-                 
+        });                                   
     }
     
     private void fillCbGlider() {
@@ -519,6 +513,7 @@ public class ManualViewController  {
         this.myConfig = mainConfig;
         i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
+        fillCbGlider();
         rootController.updateMsgBar("", false,50);      
         if (pModeEdit == 1) {
             if (!dbRead()) {
