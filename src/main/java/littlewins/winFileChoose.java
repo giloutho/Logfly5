@@ -242,7 +242,7 @@ public class winFileChoose {
             case csv : 
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv","*.CSV"));        
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Csv files (csv)", "*.csv"));      
-                break;                 
+                break;                                
             case xcp :
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Xcplanner files (xcp)", "*.xcp"));  
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Xcplanner files (xcp)", "*.xcp"));  
