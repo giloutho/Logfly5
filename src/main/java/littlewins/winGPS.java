@@ -6,9 +6,7 @@
  */
 package littlewins;
 
-//import com.fazecast.jSerialComm.SerialPort;
-import jssc.SerialPort;
-import jssc.SerialPortList;
+import com.fazecast.jSerialComm.SerialPort;
 import gps.compass;
 import gps.connect;
 import gps.element;
@@ -21,6 +19,8 @@ import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
 import gps.xctracer;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javafx.beans.value.ChangeListener;
@@ -402,86 +402,15 @@ public class winGPS {
     }    
     
     /**
+     * jssc
      * choicebox is filled with available ports
      * a filter is applied based on OS
      */
-    private void listSerialPort() {
-        int idxSerialList = 0;
-        int idxListPort = 0;
-        try {
-            String[] ports = SerialPortList.getPortNames();
-            int idx = 0;
-            if (ports.length > 0) {
-                ObservableList <String> portList;
-                portList = FXCollections.observableArrayList();
-                // Dernier port série utilisé
-                String lastSerialUsed = myConfig.getLastSerialCom();
-                // Pour Linux, on prépare tous les ports qui ne devront pas être affichés
-                Pattern p1 = Pattern.compile("^/dev/tty[0-9].*");
-                Pattern p2 = Pattern.compile("^/dev/ttyS[0-9].*");
-                Pattern p3 = Pattern.compile("^/dev/pts.*");
-                Pattern p4 = Pattern.compile("^/dev/console.*");
-                Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
-                Pattern p6 = Pattern.compile("^/dev/ptmx.*");
-                for(String port: ports){
-                   if (myConfig.getOS() == osType.LINUX)  {
-                        // Pour éviter de lister 25000 ports inutilisables
-                        if (!p1.matcher(port).matches() && !p2.matcher(port).matches() && !p3.matcher(port).matches()
-                             && !p4.matcher(port).matches() && !p5.matcher(port).matches() && !p6.matcher(port).matches())
-                        {
-                            portList.add(port);   
-                            if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
-                            idxListPort++;
-                        }   
-                    } else {
-                        portList.add(port);
-                        if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
-                        idxListPort++;
-                    }
-                    idx ++; 
-                }    
-                if (portList.size() > 0) {                  
-                    cbSerial.getItems().clear();
-                    cbSerial.setItems(portList);  
-                    cbSerial.setVisible(true);
-                    cbSerial.getSelectionModel().select(idxSerialList); 
-                    lbPort.setVisible(true);                           
-                    cbSerial.getSelectionModel().selectedItemProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
-                        currNamePort = (String) newValue;
-                    });                                        
-                    currNamePort = cbSerial.getSelectionModel().getSelectedItem().toString();
-                    System.out.println("CuurNamePort "+currNamePort);
-                    
-                    testGPS();
-                } else {
-                    currNamePort = "nil";
-                    // Rafriachr les listes
-                    // pas sûr que ce soit pertinent...
-                    // on devrait afficher un msg erreur et demander relance totale
-                 //   resCom = 3;
-                 //   actuLed();   
-                }
-            } else {
-                gpsNotPresent();
-            }                         
-        } catch (SecurityException ex) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(ex.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-
-        } 
-    }    
-
-//    /**
-//     * jSerialcomm function
-//     * choicebox is filled with available ports
-//     * a filter is applied based on OS
-//     */
 //    private void listSerialPort() {
 //        int idxSerialList = 0;
 //        int idxListPort = 0;
 //        try {
-//            SerialPort[] ports = SerialPort.getCommPorts();
+//            String[] ports = SerialPortList.getPortNames();
 //            int idx = 0;
 //            if (ports.length > 0) {
 //                ObservableList <String> portList;
@@ -495,35 +424,23 @@ public class winGPS {
 //                Pattern p4 = Pattern.compile("^/dev/console.*");
 //                Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
 //                Pattern p6 = Pattern.compile("^/dev/ptmx.*");
-//                Pattern pMac = Pattern.compile("cu.*");
-//                for (int i = 0; i < ports.length; ++i) {
-//                    String sPort = ports[i].getSystemPortName();
-//                    if(myConfig.getOS() == osType.MACOS) {
-//                        // Pour éviter de lister des ports inutilisables
-//                        if (pMac.matcher(sPort).matches()) {                
-//                            portList.add(sPort);
-//                            if (lastSerialUsed.equals(sPort)) {
-//                                idxSerialList = idxListPort;
-//                            } 
-//                            idxListPort++;
-//                        }
-//                    } else if (myConfig.getOS() == osType.LINUX)  {
+//                for(String port: ports){
+//                   if (myConfig.getOS() == osType.LINUX)  {
 //                        // Pour éviter de lister 25000 ports inutilisables
-//                        if (!p1.matcher(sPort).matches() && !p2.matcher(sPort).matches() && !p3.matcher(sPort).matches()
-//                             && !p4.matcher(sPort).matches() && !p5.matcher(sPort).matches() && !p6.matcher(sPort).matches())
+//                        if (!p1.matcher(port).matches() && !p2.matcher(port).matches() && !p3.matcher(port).matches()
+//                             && !p4.matcher(port).matches() && !p5.matcher(port).matches() && !p6.matcher(port).matches())
 //                        {
-//                            if (!sPort.contains("//dev//")) sPort = "/dev/"+sPort;
-//                            portList.add(sPort);   
-//                            if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
+//                            portList.add(port);   
+//                            if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
 //                            idxListPort++;
 //                        }   
 //                    } else {
-//                        portList.add(sPort);
-//                        if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
+//                        portList.add(port);
+//                        if (lastSerialUsed.equals(port)) idxSerialList = idxListPort; 
 //                        idxListPort++;
 //                    }
-//                    idx ++;                     
-//                }
+//                    idx ++; 
+//                }    
 //                if (portList.size() > 0) {                  
 //                    cbSerial.getItems().clear();
 //                    cbSerial.setItems(portList);  
@@ -539,14 +456,14 @@ public class winGPS {
 //                    testGPS();
 //                } else {
 //                    currNamePort = "nil";
-//                    lbInfo.setText(i18n.tr("No usable serial ports detected"));
-//                    System.out.println("No usable serial ports detected");
+//                    // Rafriachr les listes
+//                    // pas sûr que ce soit pertinent...
+//                    // on devrait afficher un msg erreur et demander relance totale
+//                 //   resCom = 3;
+//                 //   actuLed();   
 //                }
 //            } else {
-//                lbInfo.setText(i18n.tr("No usable serial ports detected"));
-//                gpsConnect = false;
-//                btRefresh.setVisible(true);
-//                btConnexion.setVisible(true);  
+//                gpsNotPresent();
 //            }                         
 //        } catch (SecurityException ex) {
 //            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -554,7 +471,91 @@ public class winGPS {
 //            mylogging.log(Level.SEVERE, sbError.toString());
 //
 //        } 
-//    }
+//    }    
+
+    /**
+     * jSerialcomm function
+     * choicebox is filled with available ports
+     * a filter is applied based on OS
+     */
+    private void listSerialPort() {
+        int idxSerialList = 0;
+        int idxListPort = 0;
+        try {
+            SerialPort[] ports = SerialPort.getCommPorts();
+            int idx = 0;
+            if (ports.length > 0) {
+                ObservableList <String> portList;
+                portList = FXCollections.observableArrayList();
+                // Dernier port série utilisé
+                String lastSerialUsed = myConfig.getLastSerialCom();
+                // Pour Linux, on prépare tous les ports qui ne devront pas être affichés
+                Pattern p1 = Pattern.compile("^/dev/tty[0-9].*");
+                Pattern p2 = Pattern.compile("^/dev/ttyS[0-9].*");
+                Pattern p3 = Pattern.compile("^/dev/pts.*");
+                Pattern p4 = Pattern.compile("^/dev/console.*");
+                Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
+                Pattern p6 = Pattern.compile("^/dev/ptmx.*");
+                Pattern pMac = Pattern.compile("cu.*");
+                for (int i = 0; i < ports.length; ++i) {
+                    String sPort = ports[i].getSystemPortName();
+                    if(myConfig.getOS() == osType.MACOS) {
+                        // Pour éviter de lister des ports inutilisables
+                        if (pMac.matcher(sPort).matches()) {                
+                            portList.add(sPort);
+                            if (lastSerialUsed.equals(sPort)) {
+                                idxSerialList = idxListPort;
+                            } 
+                            idxListPort++;
+                        }
+                    } else if (myConfig.getOS() == osType.LINUX)  {
+                        // Pour éviter de lister 25000 ports inutilisables
+                        if (!p1.matcher(sPort).matches() && !p2.matcher(sPort).matches() && !p3.matcher(sPort).matches()
+                             && !p4.matcher(sPort).matches() && !p5.matcher(sPort).matches() && !p6.matcher(sPort).matches())
+                        {
+                            if (!sPort.contains("//dev//")) sPort = "/dev/"+sPort;
+                            portList.add(sPort);   
+                            if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
+                            idxListPort++;
+                        }   
+                    } else {
+                        portList.add(sPort);
+                        if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
+                        idxListPort++;
+                    }
+                    idx ++;                     
+                }
+                if (portList.size() > 0) {                  
+                    cbSerial.getItems().clear();
+                    cbSerial.setItems(portList);  
+                    cbSerial.setVisible(true);
+                    cbSerial.getSelectionModel().select(idxSerialList); 
+                    lbPort.setVisible(true);                           
+                    cbSerial.getSelectionModel().selectedItemProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
+                        currNamePort = (String) newValue;
+                    });                                        
+                    currNamePort = cbSerial.getSelectionModel().getSelectedItem().toString();
+                    System.out.println("CuurNamePort "+currNamePort);
+                    
+                    testGPS();
+                } else {
+                    currNamePort = "nil";
+                    lbInfo.setText(i18n.tr("No usable serial ports detected"));
+                    System.out.println("No usable serial ports detected");
+                }
+            } else {
+                lbInfo.setText(i18n.tr("No usable serial ports detected"));
+                gpsConnect = false;
+                btRefresh.setVisible(true);
+                btConnexion.setVisible(true);  
+            }                         
+        } catch (SecurityException ex) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(ex.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+
+        } 
+    }
 
     
     private void gpsNotPresent() {
@@ -736,87 +737,17 @@ public class winGPS {
         }
     }
     
-    private String getDeviceInfo(String namePort) {
-        String res = null;
-        String req = null;        
-        try {
-            SerialPort serialPort = new SerialPort(namePort);
-            serialPort.openPort();//Open serial port
-            serialPort.setParams(SerialPort.BAUDRATE_57600, 
-                                 SerialPort.DATABITS_8,
-                                 SerialPort.STOPBITS_1,
-                                 SerialPort.PARITY_NONE);
-                                //Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
-            switch (currGPS) {
-                case FlymSD:
-                case FlymOld :    
-                    req = "$PFMSNP,\n";
-                    break;
-                case Flytec20 :
-                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
-                    break;
-                case Flytec15 :
-                    req =  "ACT_BD_00"+"\r\n";
-                    break;
-            }
-            serialPort.writeString(req);
-            Thread.sleep(300); 
-            String gpsRet = serialPort.readString();
-            if (gpsRet != null && !gpsRet.isEmpty()) {
-                switch (currGPS) {
-                    case FlymSD:
-                    case FlymOld :    
-                        req = "$PFMSNP,\n";
-                        if (gpsRet.contains("$PFMSNP")) {
-                            res = setFlymCharac(gpsRet);
-                        } else {
-                            res = null;   
-                        }
-                        break;
-                    case Flytec20 :
-                        // si l'on envoie la requête Flytec 20 sur un Flymaster
-                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
-                        // Etonnant et non prévu
-                        if (gpsRet.contains("$PBRSNP")) {
-                            res = setFlytec20Charac(gpsRet);
-                        } else {
-                            res = null;   
-                        }
-                        break;
-                    case Flytec15 :
-                        String[] tbdata = gpsRet.split(" ");
-                        if (tbdata.length > 0) {
-                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
-                                res = gpsRet.replaceAll("\r\n", "");   
-                                gpsCharac = res;
-                            } else {
-                                res = null;
-                            } 
-                        } else {
-                            res = null;
-                        }    
-                        break;
-                }                                
-            } else {
-                res = null;
-            }
-            serialPort.closePort();//Close serial port
-        }
-        catch (Exception ex) {
-            System.out.println(ex);
-        }        
-        
-        return res;
-    }    
-    
 //    private String getDeviceInfo(String namePort) {
 //        String res = null;
 //        String req = null;        
 //        try {
-//            SerialPort serialPort = SerialPort.getCommPort(namePort);
+//            SerialPort serialPort = new SerialPort(namePort);
 //            serialPort.openPort();//Open serial port
-//            serialPort.setComPortParameters(57600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-//            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 100, 0);
+//            serialPort.setParams(SerialPort.BAUDRATE_57600, 
+//                                 SerialPort.DATABITS_8,
+//                                 SerialPort.STOPBITS_1,
+//                                 SerialPort.PARITY_NONE);
+//                                //Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
 //            switch (currGPS) {
 //                case FlymSD:
 //                case FlymOld :    
@@ -829,25 +760,9 @@ public class winGPS {
 //                    req =  "ACT_BD_00"+"\r\n";
 //                    break;
 //            }
-//            byte[] b = req.getBytes(StandardCharsets.UTF_8); 
-//            serialPort.writeBytes(b, b.length);
+//            serialPort.writeString(req);
 //            Thread.sleep(300); 
-//            
-//            InputStream in = serialPort.getInputStream();
-//            StringBuilder sbRead = new StringBuilder();
-//            String gpsRet;
-//            try
-//            {
-//               for (int j = 0; j < 100; ++j)
-//                   sbRead.append((char)in.read());
-//               in.close();
-//            } catch (Exception e) { 
-//               // We finish here with timeout                
-//            } finally {
-//                gpsRet = sbRead.toString();
-//                serialPort.closePort();  
-//            }
-//
+//            String gpsRet = serialPort.readString();
 //            if (gpsRet != null && !gpsRet.isEmpty()) {
 //                switch (currGPS) {
 //                    case FlymSD:
@@ -886,13 +801,99 @@ public class winGPS {
 //            } else {
 //                res = null;
 //            }
+//            serialPort.closePort();//Close serial port
 //        }
 //        catch (Exception ex) {
 //            System.out.println(ex);
 //        }        
 //        
-//       return res;
+//        return res;
 //    }    
+    
+    private String getDeviceInfo(String namePort) {
+        String res = null;
+        String req = null;        
+        try {
+            SerialPort serialPort = SerialPort.getCommPort(namePort);
+            serialPort.openPort();//Open serial port
+            serialPort.setComPortParameters(57600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 100, 0);
+            switch (currGPS) {
+                case FlymSD:
+                case FlymOld :    
+                    req = "$PFMSNP,\n";
+                    break;
+                case Flytec20 :
+                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
+                    break;
+                case Flytec15 :
+                    req =  "ACT_BD_00"+"\r\n";
+                    break;
+            }
+            byte[] b = req.getBytes(StandardCharsets.UTF_8); 
+            serialPort.writeBytes(b, b.length);
+            Thread.sleep(300); 
+            
+            InputStream in = serialPort.getInputStream();
+            StringBuilder sbRead = new StringBuilder();
+            String gpsRet;
+            try
+            {
+               for (int j = 0; j < 100; ++j)
+                   sbRead.append((char)in.read());
+               in.close();
+            } catch (Exception e) { 
+               // We finish here with timeout                
+            } finally {
+                gpsRet = sbRead.toString();
+                serialPort.closePort();  
+            }
+
+            if (gpsRet != null && !gpsRet.isEmpty()) {
+                switch (currGPS) {
+                    case FlymSD:
+                    case FlymOld :    
+                        req = "$PFMSNP,\n";
+                        if (gpsRet.contains("$PFMSNP")) {
+                            res = setFlymCharac(gpsRet);
+                        } else {
+                            res = null;   
+                        }
+                        break;
+                    case Flytec20 :
+                        // si l'on envoie la requête Flytec 20 sur un Flymaster
+                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
+                        // Etonnant et non prévu
+                        if (gpsRet.contains("$PBRSNP")) {
+                            res = setFlytec20Charac(gpsRet);
+                        } else {
+                            res = null;   
+                        }
+                        break;
+                    case Flytec15 :
+                        String[] tbdata = gpsRet.split(" ");
+                        if (tbdata.length > 0) {
+                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
+                                res = gpsRet.replaceAll("\r\n", "");   
+                                gpsCharac = res;
+                            } else {
+                                res = null;
+                            } 
+                        } else {
+                            res = null;
+                        }    
+                        break;
+                }                                
+            } else {
+                res = null;
+            }
+        }
+        catch (Exception ex) {
+            System.out.println(ex);
+        }        
+        
+       return res;
+    }    
     
     private String setFlymCharac(String gpsRet) {
         String res = " ";
