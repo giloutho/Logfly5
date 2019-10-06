@@ -151,6 +151,12 @@ public class ManualViewController  {
         });                                   
     }
     
+    /**
+     * It was first placed in code initialize() but from 5.022, it crashed. 
+     * Normal, myConfig was not initalized. 
+     * Why did it work until 5.021 ? Mystery !
+     * Now it's called in setMyConfig, after myConfig initialization
+     */
     private void fillCbGlider() {
         Statement stmt = null;
         ResultSet rs = null;
