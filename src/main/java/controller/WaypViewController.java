@@ -192,6 +192,7 @@ public class WaypViewController {
     private ArrayList<String> listForGps = new ArrayList<>();
     private int gpsTypeName;   // Name type : long, short or mixed
     private ContextMenu tableContextMenu;
+    private String gpsdWaypWriteReport;
     
     @FXML
     public void initialize() {
@@ -830,6 +831,7 @@ public class WaypViewController {
     
     private void writeGpsdProgress() {  
             
+        gpsdWaypWriteReport = null;
         dialogbox dConfirm = new dialogbox(i18n);
         StringBuilder sbMsg = new StringBuilder(); 
         sbMsg.append(i18n.tr("GPS ready [Old Waypoints possibly erased]")).append(" ?");
@@ -868,15 +870,19 @@ public class WaypViewController {
                     switch (currGPS) {
                         case FlymSD :
                             gpsd.setOziWpt(1, wptFile.getAbsolutePath(),gpsTypeName);
+                            gpsdWaypWriteReport = gpsd.getWaypWriteReport();
                             break;
                         case FlymOld :
                             gpsd.setOziWpt(2, wptFile.getAbsolutePath(),gpsTypeName);
+                            gpsdWaypWriteReport = gpsd.getWaypWriteReport();
                             break;
                         case Flytec20 :
                             gpsd.setOziWpt(3, wptFile.getAbsolutePath(),gpsTypeName);
+                            gpsdWaypWriteReport = gpsd.getWaypWriteReport();
                             break;   
                         case Flytec15 :
                             gpsd.setOziWpt(8, wptFile.getAbsolutePath(),gpsTypeName);
+                            gpsdWaypWriteReport = gpsd.getWaypWriteReport();
                             break;
                     }       
                         return null ;                
@@ -885,7 +891,7 @@ public class WaypViewController {
 
                 worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     @Override
-                    public void handle(WorkerStateEvent t) {
+                    public void handle(WorkerStateEvent t) {                        
                         writeEnd();
                     }
                 });  
@@ -1124,17 +1130,16 @@ public class WaypViewController {
                 } 
                 break;  
             case Flytec15 :
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
-                displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
+                        gpsInfo = new StringBuilder();
+                        gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
+                        displayInfo(gpsInfo.toString());
                         writeGpsdProgress();  
                         break;
                 case MACOS :        
                 case LINUX : 
-                    // Ecriture waypoints non supportée sur Linux
-                    writeToGpsProgress();
+                    // writeToGpsProgress();
                     break;
                 } 
                 break;
@@ -1218,13 +1223,15 @@ public class WaypViewController {
         int lg = pointList.size();
         StringBuilder sbMsg = new StringBuilder();
         sbMsg.append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints")).append(" ").append(i18n.tr("sent to GPS"));
+        alertbox aInfo = new alertbox(myConfig.getLocale());
+        aInfo.alertWithTitle(i18n.tr("GPSDump report"), gpsdWaypWriteReport);
         switch (currGPS) {
             case FlymOld :
             case FlymSD:               
             case Flytec15:
             case Flytec20:
                 dialogbox dConfirm = new dialogbox(i18n);        
-                if (dConfirm.YesNo(i18n.tr("Check GPS content"), sbMsg.toString())) { 
+                if (dConfirm.YesNo("",i18n.tr("Check GPS content"))) { 
                     readFromGPS();
                 }                  
                 break;                                 
@@ -1409,20 +1416,21 @@ public class WaypViewController {
                 }                 
                 break;
             case Flytec15 :
+                // we arrive here only on Windows, 
+                // not supported in Mac or Linux
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
+                displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        readGpsdProgress();
+                        writeGpsdProgress();  
                         break;
-                    case MACOS :    
+                    case MACOS :        
                     case LINUX : 
-                        // Old code
-                        readFromGpsProgress();
-                        // lecture waypoints non supportée sur Linux/Mac par GpsDump
-//                        Alert alert = new Alert(Alert.AlertType.ERROR);                       
-//                        alert.setContentText(i18n.tr("Waypoints transfer not supported on this operating system"));
-//                        alert.showAndWait(); 
+                        // Ecriture waypoints non supportée sur Linux et Mac 
+                        //writeToGpsProgress();
                         break;
-                } 
+                }
                 break;
             case FlymSD :
                 switch (myConfig.getOS()) {
