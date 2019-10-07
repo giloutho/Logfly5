@@ -62,6 +62,7 @@ public class gpsdump {
     private String linuxPort;
     private ArrayList<String> listPFM;
     private ObservableList <Gpsmodel> listFlights;   
+    private String waypWriteReport = null;
     
 
     public gpsdump(String pNamePort, configProg currConfig, I18n pI18n)  {
@@ -126,6 +127,10 @@ public class gpsdump {
     public ObservableList<Gpsmodel> getListFlights() {
         return listFlights;
     }            
+
+    public String getWaypWriteReport() {
+        return waypWriteReport;
+    }
         
     public boolean testGpsDump() {
         boolean gpsdumpOK = false;
@@ -1020,7 +1025,7 @@ public class gpsdump {
         
     }    
 
-     public int setOziWpt(int idGPS, String pPath, int gpsTypeName)  {   
+    public int setOziWpt(int idGPS, String pPath, int gpsTypeName)  {   
         
         int res = -1;   
         String[] arrayParam = null;
@@ -1035,6 +1040,7 @@ public class gpsdump {
         String macType = "/wpttype=ozi";
         String macFile = "/wptname="+wptFile.getAbsolutePath();
         StringBuilder sbLog = new StringBuilder();
+        StringBuilder sbRep = new StringBuilder();
         switch (idGPS) {
             case 1:
                 switch (myConfig.getOS()) {
@@ -1182,20 +1188,23 @@ public class gpsdump {
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
-                System.out.println("res = "+res);
                 String ligne = ""; 
                 if (res == 0) {
+                    // even in case of error the returned code by GPSDump is 0
                     BufferedReader output = getOutput(p);                    
                     while ((ligne = output.readLine()) != null) {
                         sbLog.append(ligne).append(CF);
+                        sbRep.append(ligne).append(CF);
                     }
                 } else {
                     BufferedReader error = getError(p);
                     while ((ligne = error.readLine()) != null) {
                         sbLog.append(ligne).append(CF);
+                        sbRep.append(ligne).append(CF);
                     }
                 }
-                strLog = sbLog.toString();               
+                strLog = sbLog.toString();  
+                waypWriteReport = sbRep.toString();
             } else {
                 sbLog.append("Error 1201 ").append(CF);
                 res = 1201;
