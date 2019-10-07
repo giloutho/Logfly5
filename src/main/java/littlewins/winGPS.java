@@ -7,6 +7,7 @@
 package littlewins;
 
 import com.fazecast.jSerialComm.SerialPort;
+import dialogues.alertbox;
 import gps.compass;
 import gps.connect;
 import gps.element;
@@ -302,15 +303,21 @@ public class winGPS {
                 switch (myConfig.getOS()) {
                     case MACOS :
                         if (waypCall) {
-                            listSerialPort();
+                            reject6015();
                         } else {
                             currNamePort = "nil";
                             gpsPresent();
                         }
                         break;
-                case WINDOWS :        
-                case LINUX : 
+                case WINDOWS :      
                     listSerialPort();
+                    break;                    
+                case LINUX : 
+                    if (waypCall) {
+                        reject6015();
+                    } else {
+                        listSerialPort();
+                    }                    
                     break;
                 } 
                 break;
@@ -563,6 +570,18 @@ public class winGPS {
         btRefresh.setVisible(true);
         btConnexion.setVisible(true);  
         lbInfo.setText(i18n.tr("GPS not detected"));   
+    }
+    
+    private void reject6015() {
+        StringBuilder sbAlert = new StringBuilder();
+        // For i18n, it's forbidden to put /r/n in the string
+        sbAlert.append(i18n.tr("Waypoint management is not supported"));
+        sbAlert.append("\r\n");
+        sbAlert.append(i18n.tr("on this operating system for GPS 6015"));
+        alertbox aError = new alertbox(myConfig.getLocale());  
+        aError.alertInfo(sbAlert.toString());
+        gpsConnect= false;           
+        subStage.close();         
     }
     
     private void gpsPresent() {
