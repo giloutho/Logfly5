@@ -943,16 +943,19 @@ public class configProg {
                     targetPath = System.getProperty("user.home")+"\\Documents\\Logfly";  
                     fullPathDb = System.getProperty("user.home")+"\\Documents\\Logfly\\Logfly.db"; 
                     importPath = System.getProperty("user.home")+"\\Documents\\Logfly\\Import";
+                    pathSyride = System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride"; 
                     break;
                 case MACOS :
                     targetPath = System.getProperty("user.home")+"/Documents/Logfly";   
                     fullPathDb = System.getProperty("user.home")+"/Documents/Logfly/Logfly.db";  
                     importPath = System.getProperty("user.home")+"/Documents/Logfly/Import";
+                    pathSyride = System.getProperty("user.home")+"/syride";
                     break;
                 case LINUX :
                     targetPath = System.getProperty("user.home")+"/.logfly";
                     fullPathDb = System.getProperty("user.home")+"/.logfly/Logfly.db";  
                     importPath = System.getProperty("user.home")+"/.logfly/Import";
+                    pathSyride = System.getProperty("user.home")+"/syride";
                     break;
                 default: 
                     targetPath = null;
