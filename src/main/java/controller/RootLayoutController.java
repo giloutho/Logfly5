@@ -112,7 +112,7 @@ public class RootLayoutController {
     @FXML
     private void initialize() {           
         // At startup, default display is logbook table, logbook option is highlighted
-        mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+   //     mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
         //Initialization of click areas with lambda expressions
         mnCarnet.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(1);            
@@ -178,13 +178,26 @@ public class RootLayoutController {
      * 
      * @param mainApp
      */
-    public void setMainApp(Main mainApp) {
+    public void setMainApp(Main mainApp, int idStartScreen) {
         this.mainApp = mainApp;  
         myConfig = mainApp.myConfig;       
         mainApp.getPrimaryStage().setWidth(myConfig.getMainWidth());
         mainApp.getPrimaryStage().setHeight(myConfig.getMainHeight());
         i18n = I18nFactory.getI18n("","lang/Messages",RootLayoutController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
+        switch (idStartScreen) {
+            case 0 :
+                // display is logbook table, logbook option is highlighted
+                mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
+                break;
+            case 1 :
+                // display is dashview
+                mnSynthese.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");                
+                break;                
+            default:
+                throw new AssertionError();
+        }
+        
     }
     
     /**
