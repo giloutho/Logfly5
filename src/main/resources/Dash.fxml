@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.AreaChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="592.0" prefWidth="880.0" stylesheets="@Menu.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.DashController">
+   <children>
+      <GridPane layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="588.0" prefWidth="828.0" style="-fx-background-color: black;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="42.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="411.0" minWidth="10.0" prefWidth="60.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="0.0" prefWidth="0.0" />
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="282.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="33.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="30.0" minWidth="10.0" prefWidth="30.0" />
+            <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="880.0" minWidth="10.0" prefWidth="300.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="880.0" minWidth="60.0" prefWidth="60.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints maxHeight="159.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="40.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="433.0" minHeight="10.0" prefHeight="250.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="293.0" minHeight="10.0" prefHeight="219.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="276.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label fx:id="lbSyntheseDate11" alignment="CENTER_RIGHT" text="Last twelve months since" textFill="WHITE" GridPane.columnIndex="6">
+               <padding>
+                  <Insets right="5.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="lbCurrYear1" alignment="CENTER" maxWidth="220.0" minWidth="180.0" prefWidth="180.0" text="pAnnée en cours" textFill="WHITE" GridPane.columnIndex="3">
+               <padding>
+                  <Insets right="5.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <HBox alignment="CENTER" maxHeight="40.0" minHeight="30.0" prefHeight="30.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+               <children>
+                  <ChoiceBox fx:id="chAllYears" layoutX="315.0" layoutY="10.0" minWidth="100.0" prefWidth="100.0">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </ChoiceBox>
+                  <ChoiceBox fx:id="chOldYears1" layoutX="195.0" layoutY="10.0" minWidth="100.0" prefWidth="100.0">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </ChoiceBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="1">
+               <children>
+                  <DatePicker fx:id="dpDate" minWidth="120.0" prefWidth="120.0">
+                     <HBox.margin>
+                        <Insets right="20.0" />
+                     </HBox.margin>
+                  </DatePicker>
+                  <ChoiceBox fx:id="chOldYears2" minWidth="100.0" prefWidth="100.0" />
+               </children>
+            </HBox>
+            <TableView fx:id="tableMonths" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+              <columns>
+                <TableColumn fx:id="mMonthsCol" prefWidth="75.0" text="pMois" />
+                <TableColumn fx:id="mFlightsCol" prefWidth="75.0" text="pVols" />
+                  <TableColumn fx:id="mDurCol" prefWidth="75.0" text="pDuree" />
+              </columns>
+            </TableView>
+            <BarChart fx:id="barChart1" animated="false" barGap="2.0" categoryGap="4.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+               <xAxis>
+                  <CategoryAxis fx:id="bc_xAxis" animated="false" side="BOTTOM" tickLabelFill="WHITE" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis side="LEFT" tickLabelFill="WHITE" />
+               </yAxis>
+            </BarChart>
+            <AreaChart fx:id="areaChart1" GridPane.columnIndex="6" GridPane.rowIndex="2">
+               <xAxis>
+                  <CategoryAxis fx:id="ac_xAxis" side="BOTTOM" tickLabelFill="WHITE" />
+               </xAxis>
+               <yAxis>
+                  <NumberAxis side="LEFT" tickLabelFill="WHITE" />
+               </yAxis>
+            </AreaChart>
+            <PieChart fx:id="pieChart2" labelLineLength="5.0" labelsVisible="false" layoutX="36.0" layoutY="368.0" legendSide="RIGHT" GridPane.columnIndex="5" GridPane.columnSpan="3" GridPane.rowIndex="3" GridPane.rowSpan="2" />
+            <ImageView fitHeight="25.0" fitWidth="132.0" pickOnBounds="true" preserveRatio="true" visible="false" GridPane.rowIndex="1">
+               <image>
+                  <Image url="@images/dashboard2.png" />
+               </image>
+               <GridPane.margin>
+                  <Insets left="25.0" />
+               </GridPane.margin>
+            </ImageView>
+            <Button fx:id="btnBestFlight" mnemonicParsing="false" text="Meilleur vol : 12/12/2015 LA LUNE SUR TERRE" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="4">
+               <children>
+                  <Button mnemonicParsing="false" text="pVoiles">
+                     <HBox.margin>
+                        <Insets right="20.0" top="4.0" />
+                     </HBox.margin>
+                  </Button>
+                  <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" text="pSites">
+                     <HBox.margin>
+                        <Insets right="10.0" top="4.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+            <TableView fx:id="tableGliders" layoutX="112.0" layoutY="322.0" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="3">
+               <columns>
+                  <TableColumn fx:id="gGlidersCol" prefWidth="75.0" text="pVoiles" />
+                  <TableColumn fx:id="gFlightsCol" prefWidth="75.0" text="pVols" />
+                  <TableColumn fx:id="gDurCol" prefWidth="75.0" text="pDuree" />
+               </columns>
+            </TableView>
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>
