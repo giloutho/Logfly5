@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <information>
-    <pubDate>2017-12-28 13:30:00</pubDate>
+    <pubDate>2019-10-11 23:30:00</pubDate>
     <pkgver>5.0</pkgver>
-    <pkgrel>14</pkgrel>
-    <severity>5.13</severity>
+    <pkgrel>23</pkgrel>
+    <severity>5.23</severity>
     <extra>
         <message></message>
     </extra>
