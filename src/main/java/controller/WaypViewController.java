@@ -1423,7 +1423,7 @@ public class WaypViewController {
                 displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        writeGpsdProgress();  
+                        readGpsdProgress();  
                         break;
                     case MACOS :        
                     case LINUX : 
