@@ -17,6 +17,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import controller.CarnetViewController;
 import controller.CartoViewController;
+import controller.DashController;
 import controller.DashViewController;
 import controller.GPSViewController;
 import controller.ImportViewController;
@@ -56,6 +57,7 @@ public class Main extends Application {
     private AirspaceController controlAirSp;
     private CartoViewController controlCarto;
     private StringBuilder sbError;
+    private int idStartScreen;
     
     
     public configProg myConfig;
@@ -69,11 +71,11 @@ public class Main extends Application {
         // Current version
         Release release = new Release();
         release.setpkgver("5.0");        
-        release.setPkgrel("22");    // enlever beta en dessous
+        release.setPkgrel("23");
         // last bundle
-        release.setseverity("5.22");
+        release.setseverity("5.23");
         
-        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" jSerial";
+        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel();
         this.primaryStage.setTitle(currVersion);
         
         // Reading settings
@@ -84,8 +86,17 @@ public class Main extends Application {
             myConfig.setVersion(currVersion);           
             i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
                                     
-            initRootLayout();        
-            showCarnetOverview();  
+            initRootLayout();   
+            switch (idStartScreen) {
+                case 0 :
+                    showCarnetOverview(); 
+                    break;
+                case 1 :
+                    showDash(); 
+                    break;                    
+                default:
+                    throw new AssertionError();
+            }           
                         
             try {
                 checkUpdate checkUpgrade = new checkUpdate(release, myConfig);
@@ -135,7 +146,8 @@ public class Main extends Application {
             // mainApp.getPrimaryStage() in RootLayoutController                        
            
             rootLayoutController = loader.getController();
-            rootLayoutController.setMainApp(this);
+            idStartScreen = myConfig.getIdxStartwin();            
+            rootLayoutController.setMainApp(this,idStartScreen);
 
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
@@ -203,6 +215,7 @@ public class Main extends Application {
     public void showManualview(int editMode, String idVol) {
         try {
             FXMLLoader loader = new FXMLLoader();            
+        //    loader.setLocation(Logfly.Main.class.getResource("/CarnetView.fxml"));
             loader.setLocation(Logfly.Main.class.getResource("/ManualView.fxml"));
             AnchorPane manualOverview = (AnchorPane) loader.load();     
             
@@ -241,6 +254,28 @@ public class Main extends Application {
         }        
         
     }
+    
+    public void showDash() {
+        
+        try {
+            FXMLLoader loader = new FXMLLoader();            
+            loader.setLocation(Logfly.Main.class.getResource("/Dash.fxml"));
+            AnchorPane dashOverview = (AnchorPane) loader.load();  
+            
+            // Initialization of a communication bridge between DashView and RootLayout
+            DashController controlDash = loader.getController(); 
+            controlDash.setRootBridge(rootLayoutController, this);
+            // Place Import window in center of RootLayout.
+            rootLayout.setCenter(dashOverview); 
+            controlDash.setMyConfig(myConfig);
+                                                                             
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }        
+        
+    }    
     
     public void showStatView() {
         
