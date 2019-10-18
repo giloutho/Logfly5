@@ -14,9 +14,12 @@ import geoutils.position;
 import gps.compass;
 import gps.connect;
 import gps.element;
+import gps.flymaster;
+import gps.flymasterold;
+import gps.flytec15;
+import gps.flytec20;
 import gps.gpsdump;
 import static gps.gpsutils.ajouteChecksum;
-import gps.jsFlytec15;
 import gps.oudie;
 import gps.reversale;
 import gps.skytraax;
@@ -892,7 +895,7 @@ public class WaypViewController {
                 worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     @Override
                     public void handle(WorkerStateEvent t) {                        
-                        writeEnd();
+                        writeEndGpsD();
                     }
                 });  
 
@@ -908,25 +911,77 @@ public class WaypViewController {
             }            
         }
     }   
-            
+    
+    private void writeFlytec20() {
+       
+        try {
+            prepWritingFly20();
+            flytec20 fls = new flytec20();
+            if (listForGps.size() > 0 && fls.isPresent(currNamePort)) {             
+                fls.setListPBRWP(listForGps);
+                fls.sendWaypoint();
+                fls.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }  
+        
+    }    
+
     private void writeFlytec15() {
        
         try {
             prepWritingFly15();
-            jsFlytec15 fly15 = new jsFlytec15(currNamePort);
-            if (listForGps.size() > 0 ) {
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
-                fly15.setListPBRWP(listForGps);
-                fly15.sendWaypoint();
+            flytec15 fl15 = new flytec15();
+            if (listForGps.size() > 0 && fl15.isPresent(currNamePort)) {
+                fl15.setListPBRWP(listForGps);
+                fl15.sendWaypoint();
+                fl15.closePort();
             }    
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
         }          
-    }   
-
+    }       
+    
+    private void writeFlymOld() {
+       
+        try {
+            prepWritingFlym();
+            flymasterold fmold = new flymasterold();
+            if (listForGps.size() > 0 && fmold.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
+                fmold.setListPFMWP(listForGps);
+                fmold.sendWaypoint();
+                fmold.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }          
+    }        
+    
+    private void writeFlymaster() {
+        try {
+            prepWritingFlym();
+            flymaster fms = new flymaster();
+            if (listForGps.size() > 0 && fms.isPresent(currNamePort)) {             
+                fms.setListPFMWP(listForGps);
+                fms.sendWaypoint();
+                fms.closePort();
+            }    
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }          
+    }    
+            
     /**
      * Used to send wapoints with our own code
      * Currently used for a single device : 6015 (GPSDump Linux  don't support this GPS)
@@ -958,9 +1013,18 @@ public class WaypViewController {
                 @Override
                 protected Object call() throws Exception {
                     switch (currGPS) {
+                        case FlymSD :
+                            writeFlymaster();
+                            break;      
+                        case FlymOld :
+                            writeFlymOld();
+                            break;                                 
                         case Flytec15 :
-                            writeFlytec15();                            
-                            break;                 
+                            writeFlytec15();                
+                            break;       
+                        case Flytec20 :
+                            writeFlytec20();                
+                            break;                             
                     }       
                     return null ;                
                 }
@@ -970,7 +1034,7 @@ public class WaypViewController {
             worker.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                 @Override
                 public void handle(WorkerStateEvent t) {
-                    writeEnd();
+                    writeEndSerial();
                 }
             });
             
@@ -1122,24 +1186,21 @@ public class WaypViewController {
                         writeGpsdProgress();  
                         break;
                     case MACOS : 
-                        // Up to GPSDump 0.53, waypoint reading was not supported
-                        // writeToGpsProgress();
-                        // now supported
-                        writeGpsdProgress();
+                        writeToGpsProgress();
                         break;
                 } 
                 break;  
             case Flytec15 :
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
+                displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        gpsInfo = new StringBuilder();
-                        gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
-                        displayInfo(gpsInfo.toString());
                         writeGpsdProgress();  
                         break;
                 case MACOS :        
                 case LINUX : 
-                    // writeToGpsProgress();
+                    writeToGpsProgress();
                     break;
                 } 
                 break;
@@ -1153,10 +1214,7 @@ public class WaypViewController {
                         writeGpsdProgress();  
                         break;
                     case MACOS : 
-                        // Up to GPSDump 0.53, waypoint reading was not supported
-                        // writeToGpsProgress();
-                        // now supported
-                        writeGpsdProgress();  
+                        writeToGpsProgress();
                         break;
                 } 
                 break;                
@@ -1170,10 +1228,7 @@ public class WaypViewController {
                         writeGpsdProgress();  
                         break;
                     case MACOS : 
-                        // Up to GPSDump 0.53, waypoint reading was not supported
-                        // writeToGpsProgress();
-                        // now supported
-                        writeGpsdProgress();
+                        writeToGpsProgress();
                         break;
                 } 
                 break;    
@@ -1218,7 +1273,7 @@ public class WaypViewController {
         }               
     }            
     
-    private void writeEnd() {
+    private void writeEndGpsD() {
         
         int lg = pointList.size();
         StringBuilder sbMsg = new StringBuilder();
@@ -1239,25 +1294,113 @@ public class WaypViewController {
               
     }
     
-   private void readFlytec15()  {
+    private void writeEndSerial() {
+        
+        int lg = pointList.size();
+        StringBuilder sbMsg = new StringBuilder();
+        sbMsg.append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints")).append(" ").append(i18n.tr("sent to GPS"));
+        switch (currGPS) {
+            case FlymOld :
+            case FlymSD:               
+            case Flytec15:
+            case Flytec20:
+                dialogbox dConfirm = new dialogbox(i18n);        
+                if (dConfirm.YesNo(i18n.tr("Check GPS content"), sbMsg.toString())) { 
+                    readFromGPS();
+                }                  
+                break;                                 
+        }
+              
+    }    
+    
+   private void readFlytec20()  {
         gpsReadList = new ArrayList<>();
         try {
-            gpsInfo = new StringBuilder();
-            gpsInfo.append(i18n.tr("Incoming")).append("  ").append("Flytec 6015 / IQ Basic ");                  
-            jsFlytec15 fly15 = new jsFlytec15(currNamePort); 
-            int nbWayp = fly15.getListWaypoints();
-            if (nbWayp > 0) {
-                gpsReadList = fly15.getWpreadList();            
+            flytec20 fls = new flytec20();
+            if (fls.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flytec 6020/30 ").append(fls.getDeviceType()).append(" ").append(fls.getDeviceFirm()).append("  ");            
+                int nbWayp = fls.getListWaypoints();
+                fls.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fls.getWpreadList();
+                }
             } else {
-                gpsInfo.append(fly15.getError());
+                gpsInfo.append(fls.getError());
             }            
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
         }                
-    }           
+    }        
+    
+   private void readFlytec15()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flytec15 fl15 = new flytec15();
+            if (fl15.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flytec 6015 / IQ Basic ");          
+                int nbWayp = fl15.getListWaypoints();
+                fl15.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fl15.getWpreadList();
+                }
+            } else {
+                gpsInfo.append(fl15.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }         
+    
+    private void readFlymOld()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flymasterold fmsold = new flymasterold();
+            if (fmsold.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fmsold.getDeviceType()).append(" ").append(fmsold.getDeviceFirm()).append("  ");            
+                int nbWayp = fmsold.getListWaypoints();
+                fmsold.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fmsold.getWpreadList();
+                } 
+            } else {
+                gpsInfo.append(fmsold.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }       
    
+    private void readFlymaster()  {
+        gpsReadList = new ArrayList<>();
+        try {
+            flymaster fms = new flymaster();
+            if (fms.isPresent(currNamePort)) {             
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");            
+                int nbWayp = fms.getListWaypoints();
+                fms.closePort();
+                if (nbWayp > 0) {
+                    gpsReadList = fms.getWpreadList();
+                }
+            } else {
+                gpsInfo.append(fms.getError());
+            }            
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                
+    }      
+        
     private void returnGpsdump(File wptFile) {
         
         if (wptFile.exists()) {
@@ -1320,9 +1463,18 @@ public class WaypViewController {
             @Override
             protected Object call() throws Exception {
                 switch (currGPS) {
-                    case Flytec15 :
-                        readFlytec15();                        
-                        break;                
+                    case Flytec20 : 
+                        readFlytec20();
+                        break;                       
+                    case Flytec15 : 
+                        readFlytec15();
+                        break;   
+                    case FlymSD :
+                        readFlymaster();
+                        break;           
+                    case FlymOld :
+                        readFlymOld();
+                        break;                           
                 }       
                 return null ;                
             }
@@ -1408,29 +1560,20 @@ public class WaypViewController {
                         readGpsdProgress();
                         break;
                     case MACOS :     
-                        // Up to GPSDump 0.53, waypoint reading was not supported
-                        //readFromGpsProgress();
-                        // now supported
-                        readGpsdProgress();  
+                        readFromGpsProgress();
                         break;
                 }                 
                 break;
             case Flytec15 :
-                // we arrive here only on Windows, 
-                // not supported in Mac or Linux
-                gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6015/ IQ Basic ");
-                displayInfo(gpsInfo.toString());
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                        writeGpsdProgress();  
+                    case LINUX :
+                        readGpsdProgress();
                         break;
-                    case MACOS :        
-                    case LINUX : 
-                        // Ecriture waypoints non supportée sur Linux et Mac 
-                        //writeToGpsProgress();
+                    case MACOS :     
+                        readFromGpsProgress();                                               
                         break;
-                }
+                }      
                 break;
             case FlymSD :
                 switch (myConfig.getOS()) {
@@ -1439,10 +1582,7 @@ public class WaypViewController {
                         readGpsdProgress();
                         break;
                     case MACOS :     
-                        // Up to GPSDump 0.53, waypoint reading was not supported
-                        //readFromGpsProgress();
-                        // now supported
-                        readGpsdProgress();                                                
+                        readFromGpsProgress();                                               
                         break;
                 }                 
                 break;
@@ -1453,10 +1593,7 @@ public class WaypViewController {
                         readGpsdProgress();
                         break;
                     case MACOS :     
-                        // Up to GPSDump 0.53, waypoint reading was not supported
-                        //readFromGpsProgress();
-                        // now supported
-                        readGpsdProgress();  
+                        readFromGpsProgress(); 
                         break;
                 }                 
                 break;
@@ -1495,7 +1632,7 @@ public class WaypViewController {
                 break;                        
         }               
     }
-    
+        
     private void prepWritingFlym() {        
         listForGps = new ArrayList<>();
         String sName;
