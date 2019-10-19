@@ -82,7 +82,7 @@ public class winGPS {
     private I18n i18n; 
     private configProg myConfig;   
     
-    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer}    
+    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus }    
     private ObservableList <listGPS.idGPS> allGPS;
     // current GPS
     private gpsType currGPS;
@@ -392,7 +392,12 @@ public class winGPS {
                 currGPS = gpsType.XCTracer;
                 currNamePort = "nil";
                 testSpGPS();   
-                break;              
+                break;   
+            case 16:
+                // Flymaster will be read with Flymaster.java
+                currGPS = gpsType.FlymPlus;  
+                listSpSerialPort();
+                break;                     
         }                
     }    
         
@@ -475,93 +480,7 @@ public class winGPS {
             mylogging.log(Level.SEVERE, sbError.toString());
         }
     }    
-    
-
-    /**
-     * jSerialcomm function
-     * choicebox is filled with available ports
-     * a filter is applied based on OS
-     */
-//    private void listSerialPort() {
-//        int idxSerialList = 0;
-//        int idxListPort = 0;
-//        try {
-//            SerialPort[] ports = SerialPort.getCommPorts();
-//            int idx = 0;
-//            if (ports.length > 0) {
-//                ObservableList <String> portList;
-//                portList = FXCollections.observableArrayList();
-//                // Dernier port série utilisé
-//                String lastSerialUsed = myConfig.getLastSerialCom();
-//                // Pour Linux, on prépare tous les ports qui ne devront pas être affichés
-//                Pattern p1 = Pattern.compile("^/dev/tty[0-9].*");
-//                Pattern p2 = Pattern.compile("^/dev/ttyS[0-9].*");
-//                Pattern p3 = Pattern.compile("^/dev/pts.*");
-//                Pattern p4 = Pattern.compile("^/dev/console.*");
-//                Pattern p5 = Pattern.compile("^/dev/ttyprintk.*");
-//                Pattern p6 = Pattern.compile("^/dev/ptmx.*");
-//                Pattern pMac = Pattern.compile("cu.*");
-//                for (int i = 0; i < ports.length; ++i) {
-//                    String sPort = ports[i].getSystemPortName();
-//                    if(myConfig.getOS() == osType.MACOS) {
-//                        // Pour éviter de lister des ports inutilisables
-//                        if (pMac.matcher(sPort).matches()) {                
-//                            portList.add(sPort);
-//                            if (lastSerialUsed.equals(sPort)) {
-//                                idxSerialList = idxListPort;
-//                            } 
-//                            idxListPort++;
-//                        }
-//                    } else if (myConfig.getOS() == osType.LINUX)  {
-//                        // Pour éviter de lister 25000 ports inutilisables
-//                        if (!p1.matcher(sPort).matches() && !p2.matcher(sPort).matches() && !p3.matcher(sPort).matches()
-//                             && !p4.matcher(sPort).matches() && !p5.matcher(sPort).matches() && !p6.matcher(sPort).matches())
-//                        {
-//                            if (!sPort.contains("//dev//")) sPort = "/dev/"+sPort;
-//                            portList.add(sPort);   
-//                            if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
-//                            idxListPort++;
-//                        }   
-//                    } else {
-//                        portList.add(sPort);
-//                        if (lastSerialUsed.equals(sPort)) idxSerialList = idxListPort; 
-//                        idxListPort++;
-//                    }
-//                    idx ++;                     
-//                }
-//                if (portList.size() > 0) {                  
-//                    cbSerial.getItems().clear();
-//                    cbSerial.setItems(portList);  
-//                    cbSerial.setVisible(true);
-//                    cbSerial.getSelectionModel().select(idxSerialList); 
-//                    lbPort.setVisible(true);                           
-//                    cbSerial.getSelectionModel().selectedItemProperty().addListener((ObservableValue observable, Object oldValue, Object newValue) -> {
-//                        currNamePort = (String) newValue;
-//                    });                                        
-//                    currNamePort = cbSerial.getSelectionModel().getSelectedItem().toString();
-//                    System.out.println("CurrNamePort in list "+currNamePort);
-//                    
-//                    testGPS();
-//                } else {
-//                    currNamePort = "nil";
-//                    lbInfo.setText(i18n.tr("No usable serial ports detected"));
-//                    System.out.println("No usable serial ports detected");
-//                }
-//            } else {
-//                lbInfo.setText(i18n.tr("No usable serial ports detected"));
-//                gpsConnect = false;
-//                btRefresh.setVisible(true);
-//                btConnexion.setVisible(true);  
-//            }                         
-//        } catch (SecurityException ex) {
-//            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//            sbError.append("\r\n").append(ex.toString());
-//            mylogging.log(Level.SEVERE, sbError.toString());
-//
-//        } 
-//    }
-
-    
+        
     private void gpsNotPresent() {
         gpsConnect = false;
         btRefresh.setVisible(true);
@@ -632,7 +551,7 @@ public class winGPS {
                         }
                     }
                     break;
-                case FlymSD  :
+                case FlymPlus :   
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {            
                             flymaster fms = new flymaster();
@@ -648,6 +567,32 @@ public class winGPS {
                             mylogging.log(Level.SEVERE, sbError.toString());            
                         }   
                     }              
+                    break;                    
+                case FlymSD  :
+                    switch (myConfig.getOS()) {
+                            case MACOS :
+                                alertbox aError = new alertbox(myConfig.getLocale());  
+                                aError.alertInfo(i18n.tr("Firmware > 2.0 You must use Flymaster +"));                                
+                                break;
+                            case WINDOWS :
+                            case LINUX : 
+                                if (currNamePort != null && !currNamePort.equals("")) {
+                                    try {            
+                                        flymaster fms = new flymaster();
+                                        if (fms.isPresent(currNamePort)) {    
+                                            gpsPresent();
+                                        } else {
+                                            gpsNotPresent();
+                                        } 
+                                        fms.closePort();               
+                                    } catch (Exception e) {
+                                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                                        sbError.append("\r\n").append(e.toString());
+                                        mylogging.log(Level.SEVERE, sbError.toString());            
+                                    }   
+                                } 
+                                break;
+                    }
                     break;
                 case FlymOld :
                     if (currNamePort != null && !currNamePort.equals("")) {
@@ -761,331 +706,6 @@ public class winGPS {
             } 
         }
     }
-    
-//    private void testGPS() {
-//        if (currGPS != null) {
-//            switch (currGPS) {
-//                case Flytec20 :        
-//                    if (currNamePort != null && !currNamePort.equals("")) {
-//                        try {
-//                            if (getDeviceInfo(currNamePort) != null) {  
-//                                gpsPresent();
-//                            } else {
-//                                gpsNotPresent();
-//                            }                  
-//                        } catch (Exception e) {
-//                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//                            sbError.append("\r\n").append(e.toString());
-//                            mylogging.log(Level.SEVERE, sbError.toString());            
-//                        }   
-//                    }                
-//                    break;
-//                case Flytec15 :
-//                    if (currNamePort != null && !currNamePort.equals("")) {
-//                        try {
-//                            if (getDeviceInfo(currNamePort) != null) {  
-//                                gpsPresent();
-//                            } else {
-//                                gpsNotPresent();
-//                            }   
-//                        } catch (Exception e) {
-//                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//                            sbError.append("\r\n").append(e.toString());
-//                            mylogging.log(Level.SEVERE, sbError.toString());            
-//                        }   
-//                    }
-//                    break;
-//                case FlymSD  :
-//                    if (currNamePort != null && !currNamePort.equals("")) {
-//                        try {            
-//                            if (getDeviceInfo(currNamePort) != null) {  
-//                                gpsPresent();
-//                            } else {
-//                                gpsNotPresent();
-//                            }                        
-//                        } catch (Exception e) {
-//                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//                            sbError.append("\r\n").append(e.toString());
-//                            mylogging.log(Level.SEVERE, sbError.toString());            
-//                        }   
-//                    }  else {
-//                        listSerialPort();
-//                    }                      
-//                    break;
-//                case FlymOld :
-//                    if (currNamePort != null && !currNamePort.equals("")) {
-//                        try {
-//                            if (getDeviceInfo(currNamePort) != null) {  
-//                                gpsPresent();
-//                            } else {
-//                                gpsNotPresent();
-//                            }   
-//                        } catch (Exception e) {
-//                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-//                            sbError.append("\r\n").append(e.toString());
-//                            mylogging.log(Level.SEVERE, sbError.toString());            
-//                        }   
-//                    }                                                            
-//                    break;
-//                case Rever :  
-//                    usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbRever.getDriveList(),usbRever.getIdxDrive());          
-//                    if (usbRever.isConnected()) {
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();
-//                    }                    
-//                    break;
-//                case Sky :
-//                    usbSky = new skytraax(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbSky.getDriveList(),usbSky.getIdxDrive());  
-//                    if (usbSky.isConnected()) {
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();
-//                    }                                                   
-//                    break;
-//                case Sky3 :          
-//                    usbSky3 = new skytraxx3(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbSky3.getDriveList(),usbSky3.getIdxDrive());  
-//                    if (usbSky3.isConnected()) {      
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();
-//                    }                                                             
-//                    break;       
-//                case Flynet :  
-//                    usbFlynet = new flynet(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbFlynet.getDriveList(),usbFlynet.getIdxDrive());                      
-//                    if (usbFlynet.isConnected()) {    
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();                        
-//                    }                
-//                    break;  
-//                case Sensbox :        
-//                    usbSensbox = new sensbox(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbSensbox.getDriveList(),usbSensbox.getIdxDrive());                     
-//                    if (usbSensbox.isConnected()) {  
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();                        
-//                    }                  
-//                    break;                         
-//                case Oudie :   
-//                    usbOudie = new oudie(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbOudie.getDriveList(),usbOudie.getIdxDrive());  
-//                    if (usbOudie.isConnected()) {
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();
-//                    }                                
-//                    break;  
-//                case Syride :                        
-//                    diskSyr = new syride(myConfig.getOS(), myConfig.getGpsLimit(), myConfig.getPathSyride());                    
-//                    if (diskSyr.isConnected()) {
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();                        
-//                    }
-//                    break;                            
-//                case Connect :
-//                    usbConnect = new connect(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbConnect.getDriveList(),usbConnect.getIdxDrive());  
-//                    if (usbConnect.isConnected()) { 
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();
-//                    }                    
-//                    break;   
-//                case Element :     
-//                    usbElem = new element(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbElem.getDriveList(),usbElem.getIdxDrive()); 
-//                    if (usbElem.isConnected()) {   
-//                        gpsPresent();
-//                    } else {
-//                        gpsNotPresent();                        
-//                    }                 
-//                    break;                         
-//                case CPilot :     
-//                    usbCompass = new compass(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbCompass.getDriveList(),usbCompass.getIdxDrive());                      
-//                    if (usbCompass.isConnected()) { 
-//                       gpsPresent();
-//                    } else {
-//                        gpsNotPresent();                        
-//                    }                   
-//                    break;  
-//                case XCTracer :
-//                    usbXctracer = new xctracer(myConfig.getOS(), myConfig.getGpsLimit());
-//                    displayDrives(usbXctracer.getDriveList(),usbXctracer.getIdxDrive()); 
-//                    if (usbXctracer.isConnected()) { 
-//                       gpsPresent();
-//                    } else {
-//                        gpsNotPresent();                           
-//                    }                   
-//                    break;                        
-//            } 
-//        }
-//    }
-    
-//    private String getDeviceInfo(String namePort) {
-//        String res = null;
-//        String req = null;        
-//        try {
-//            SerialPort serialPort = new SerialPort(namePort);
-//            serialPort.openPort();//Open serial port
-//            serialPort.setParams(SerialPort.BAUDRATE_57600, 
-//                                 SerialPort.DATABITS_8,
-//                                 SerialPort.STOPBITS_1,
-//                                 SerialPort.PARITY_NONE);
-//                                //Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
-//            switch (currGPS) {
-//                case FlymSD:
-//                case FlymOld :    
-//                    req = "$PFMSNP,\n";
-//                    break;
-//                case Flytec20 :
-//                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
-//                    break;
-//                case Flytec15 :
-//                    req =  "ACT_BD_00"+"\r\n";
-//                    break;
-//            }
-//            serialPort.writeString(req);
-//            Thread.sleep(300); 
-//            String gpsRet = serialPort.readString();
-//            if (gpsRet != null && !gpsRet.isEmpty()) {
-//                switch (currGPS) {
-//                    case FlymSD:
-//                    case FlymOld :    
-//                        req = "$PFMSNP,\n";
-//                        if (gpsRet.contains("$PFMSNP")) {
-//                            res = setFlymCharac(gpsRet);
-//                        } else {
-//                            res = null;   
-//                        }
-//                        break;
-//                    case Flytec20 :
-//                        // si l'on envoie la requête Flytec 20 sur un Flymaster
-//                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
-//                        // Etonnant et non prévu
-//                        if (gpsRet.contains("$PBRSNP")) {
-//                            res = setFlytec20Charac(gpsRet);
-//                        } else {
-//                            res = null;   
-//                        }
-//                        break;
-//                    case Flytec15 :
-//                        String[] tbdata = gpsRet.split(" ");
-//                        if (tbdata.length > 0) {
-//                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
-//                                res = gpsRet.replaceAll("\r\n", "");   
-//                                gpsCharac = res;
-//                            } else {
-//                                res = null;
-//                            } 
-//                        } else {
-//                            res = null;
-//                        }    
-//                        break;
-//                }                                
-//            } else {
-//                res = null;
-//            }
-//            serialPort.closePort();//Close serial port
-//        }
-//        catch (Exception ex) {
-//            System.out.println(ex);
-//        }        
-//        
-//        return res;
-//    }    
-    
-//    private String getDeviceInfo(String namePort) {
-//        String res = null;
-//        String req = null;        
-//        try {
-//            SerialPort serialPort = SerialPort.getCommPort(namePort);
-//            serialPort.openPort();//Open serial port
-//            serialPort.setComPortParameters(57600, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-//            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 100, 0);
-//            switch (currGPS) {
-//                case FlymSD:
-//                case FlymOld :    
-//                    req = "$PFMSNP,\n";
-//                    break;
-//                case Flytec20 :
-//                    req = ajouteChecksum("$PBRSNP,*")+"\r\n";
-//                    break;
-//                case Flytec15 :
-//                    req =  "ACT_BD_00"+"\r\n";
-//                    break;
-//            }
-//            byte[] b = req.getBytes(StandardCharsets.UTF_8); 
-//            serialPort.writeBytes(b, b.length);
-//            Thread.sleep(300); 
-//            
-//            InputStream in = serialPort.getInputStream();
-//            StringBuilder sbRead = new StringBuilder();
-//            String gpsRet;
-//            try
-//            {
-//               for (int j = 0; j < 100; ++j)
-//                   sbRead.append((char)in.read());
-//               in.close();
-//            } catch (Exception e) { 
-//               // We finish here with timeout                
-//            } finally {
-//                gpsRet = sbRead.toString();
-//                serialPort.closePort();  
-//            }
-//
-//            if (gpsRet != null && !gpsRet.isEmpty()) {
-//                switch (currGPS) {
-//                    case FlymSD:
-//                    case FlymOld :    
-//                        req = "$PFMSNP,\n";
-//                        if (gpsRet.contains("$PFMSNP")) {
-//                            res = setFlymCharac(gpsRet);
-//                        } else {
-//                            res = null;   
-//                        }
-//                        break;
-//                    case Flytec20 :
-//                        // si l'on envoie la requête Flytec 20 sur un Flymaster
-//                        // on obtient $PBRSNP,NavSD,,00571,2.03b, 880.43,b302*67
-//                        // Etonnant et non prévu
-//                        if (gpsRet.contains("$PBRSNP")) {
-//                            res = setFlytec20Charac(gpsRet);
-//                        } else {
-//                            res = null;   
-//                        }
-//                        break;
-//                    case Flytec15 :
-//                        String[] tbdata = gpsRet.split(" ");
-//                        if (tbdata.length > 0) {
-//                            if (tbdata[0].equals("Flytec") || tbdata[0].equals("IQ-Basic")) {      
-//                                res = gpsRet.replaceAll("\r\n", "");   
-//                                gpsCharac = res;
-//                            } else {
-//                                res = null;
-//                            } 
-//                        } else {
-//                            res = null;
-//                        }    
-//                        break;
-//                }                                
-//            } else {
-//                res = null;
-//            }
-//        }
-//        catch (Exception ex) {
-//            System.out.println(ex);
-//        }        
-//        
-//       return res;
-//    }    
     
     private String setFlymCharac(String gpsRet) {
         String res = " ";
