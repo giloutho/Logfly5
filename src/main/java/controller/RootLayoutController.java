@@ -307,6 +307,7 @@ public class RootLayoutController {
             case 6:
                 mnSynthese.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");     
                 mainApp.showDashView();
+                //mainApp.showDash();
                 break;
             case 7:
                 mnStat.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");       
