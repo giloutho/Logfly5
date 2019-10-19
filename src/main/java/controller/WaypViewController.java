@@ -1013,6 +1013,7 @@ public class WaypViewController {
                 @Override
                 protected Object call() throws Exception {
                     switch (currGPS) {
+                        case FlymPlus:
                         case FlymSD :
                             writeFlymaster();
                             break;      
@@ -1204,6 +1205,7 @@ public class WaypViewController {
                     break;
                 } 
                 break;
+            case FlymPlus:
             case FlymSD :
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
@@ -1299,8 +1301,9 @@ public class WaypViewController {
         int lg = pointList.size();
         StringBuilder sbMsg = new StringBuilder();
         sbMsg.append(String.valueOf(lg)).append(" ").append(i18n.tr("waypoints")).append(" ").append(i18n.tr("sent to GPS"));
-        switch (currGPS) {
+        switch (currGPS) {            
             case FlymOld :
+            case FlymPlus:
             case FlymSD:               
             case Flytec15:
             case Flytec20:
@@ -1468,7 +1471,8 @@ public class WaypViewController {
                         break;                       
                     case Flytec15 : 
                         readFlytec15();
-                        break;   
+                        break;  
+                    case FlymPlus:
                     case FlymSD :
                         readFlymaster();
                         break;           
@@ -1575,6 +1579,7 @@ public class WaypViewController {
                         break;
                 }      
                 break;
+            case FlymPlus:
             case FlymSD :
                 switch (myConfig.getOS()) {
                     case WINDOWS :
