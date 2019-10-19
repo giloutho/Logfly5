@@ -1,0 +1,59 @@
+/* From https://stackoverflow.com/questions/33938811/styling-a-tableview-in-css-javafx */
+
+.root{
+    -fx-background-color: #262626;
+}
+
+.list-view{
+   -fx-background-color: transparent;
+}
+
+.list-view:focused{
+    -fx-background-color: transparent;
+}
+
+
+.list-view .list-cell{
+    -fx-text-fill: white;
+  /*  -fx-font-size:10px;  */  
+}
+
+.list-row-cell{
+    -fx-background-color: -fx-list-cell-border-color, #616161;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em; /* 0 */
+    -fx-cell-size: 20px;   
+}
+
+.list-cell:odd{
+    -fx-background-color: #424242;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em; /* 0 */  
+}
+
+.list-cell:even{
+    -fx-background-color: #ABABAB;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em; /* 0 */  
+}
+
+.list-cell:selected {
+    -fx-background-color: transparent;
+}
+
+.list-view > .virtual-flow > .scroll-bar:vertical,
+.list-view > .virtual-flow > .scroll-bar:vertical > .track,
+.list-view > .virtual-flow > .scroll-bar:vertical > .track-background, 
+.list-view > .virtual-flow > .scroll-bar:horizontal,
+.list-view > .virtual-flow > .scroll-bar:horizontal > .track,
+.list-view > .virtual-flow > .scroll-bar:horizontal > .track-background {
+    -fx-background-color: transparent;
+}
+
+
+
+.list-view > .virtual-flow > .scroll-bar > .increment-button, 
+.list-view > .virtual-flow > .scroll-bar > .decrement-button {
+    -fx-opacity: 0;
+}
+
