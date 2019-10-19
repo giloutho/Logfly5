@@ -1567,9 +1567,9 @@ public class WaypViewController {
             case Flytec15 :
                 switch (myConfig.getOS()) {
                     case WINDOWS :
-                    case LINUX :
                         readGpsdProgress();
                         break;
+                    case LINUX :                        
                     case MACOS :     
                         readFromGpsProgress();                                               
                         break;
