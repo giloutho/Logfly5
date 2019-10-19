@@ -232,8 +232,7 @@ public class WaypViewController {
                 //any other click cause hiding menu 
                 tableContextMenu.hide(); 
             } 
-        });      
-        // --------------------------------------------------------------------------------------        
+        });          
     }    
     
     
@@ -1206,6 +1205,11 @@ public class WaypViewController {
                 } 
                 break;
             case FlymPlus:
+                gpsInfo = new StringBuilder();
+                gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
+                displayInfo(gpsInfo.toString());
+                writeToGpsProgress();
+                break;                   
             case FlymSD :
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
@@ -1580,6 +1584,8 @@ public class WaypViewController {
                 }      
                 break;
             case FlymPlus:
+                readFromGpsProgress();                                               
+                break;                       
             case FlymSD :
                 switch (myConfig.getOS()) {
                     case WINDOWS :
