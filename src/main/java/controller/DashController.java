@@ -25,6 +25,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -64,15 +65,17 @@ public class DashController {
     @FXML
     private TableColumn<dashMonths, LocalTime> mDurCol;    
     @FXML
-    private TableView<dashGliders> tableGliders;
-    @FXML
-    private TableColumn<dashGliders, String> gGlidersCol;
-    @FXML
-    private TableColumn<dashGliders, LocalDate> gFlightsCol;
-    @FXML
-    private TableColumn<dashGliders, String> gDurCol; 
-    @FXML
-    private Button btnBestFlight;
+    private ListView<dashMonths> lstMonths;
+//    @FXML
+//    private TableView<dashGliders> tableGliders;
+//    @FXML
+//    private TableColumn<dashGliders, String> gGlidersCol;
+//    @FXML
+//    private TableColumn<dashGliders, LocalDate> gFlightsCol;
+//    @FXML
+//    private TableColumn<dashGliders, String> gDurCol; 
+//    @FXML
+//    private Button btnBestFlight;
 
     // Reference to the main application.
     private Main mainApp;    
@@ -95,7 +98,8 @@ public class DashController {
         // For this reason we put building code in iniTable() 
         // This procedure will be called after setMainApp()           
         lstAllYears = FXCollections.observableArrayList();        
-        lstOldYears = FXCollections.observableArrayList();   
+        lstOldYears = FXCollections.observableArrayList();  
+        tableMonths.setSelectionModel(null);
     }    
     
     private void winStart() {        
@@ -140,6 +144,7 @@ public class DashController {
                 cal.add(Calendar.MONTH, 1);
             }
             tableMonths.setItems(currMonthsList); 
+            lstMonths.setItems(currMonthsList);
             System.out.println("table size "+tableMonths.getItems().size());
             if (isCompared) {
               //  compTitle.append(compDebTitle).append("  ").append(compFinTitle);
@@ -344,10 +349,10 @@ public class DashController {
     private void winTraduction() {
         mMonthsCol.setText(i18n.tr("Months"));
         mFlightsCol.setText(i18n.tr("Flights"));      
-        gFlightsCol.setText(i18n.tr("Flights"));    
+//        gFlightsCol.setText(i18n.tr("Flights"));    
         mDurCol.setText(i18n.tr("Duration"));
-        gDurCol.setText(i18n.tr("Duration"));
-        gGlidersCol.setText(i18n.tr("Gliders"));
+  //      gDurCol.setText(i18n.tr("Duration"));
+  //      gGlidersCol.setText(i18n.tr("Gliders"));
     }        
     
 }
