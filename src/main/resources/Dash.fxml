@@ -10,6 +10,7 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.Image?>
@@ -38,7 +39,7 @@
             <RowConstraints maxHeight="159.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="40.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="433.0" minHeight="10.0" prefHeight="250.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="293.0" minHeight="10.0" prefHeight="219.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="220.0" minHeight="10.0" prefHeight="220.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="276.0" minHeight="10.0" prefHeight="27.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
@@ -82,11 +83,11 @@
                   <ChoiceBox fx:id="chOldYears2" minWidth="100.0" prefWidth="100.0" />
                </children>
             </HBox>
-            <TableView fx:id="tableMonths" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+            <TableView fx:id="tableMonths" maxHeight="270.0" maxWidth="205.0" minHeight="270.0" minWidth="205.0" prefHeight="270.0" prefWidth="205.0" stylesheets="@dashtable.css" GridPane.columnIndex="3" GridPane.rowIndex="3" GridPane.rowSpan="2">
               <columns>
-                <TableColumn fx:id="mMonthsCol" prefWidth="75.0" text="pMois" />
-                <TableColumn fx:id="mFlightsCol" prefWidth="75.0" text="pVols" />
-                  <TableColumn fx:id="mDurCol" prefWidth="75.0" text="pDuree" />
+                <TableColumn fx:id="mMonthsCol" maxWidth="70.0" prefWidth="70.0" text="pMois" />
+                <TableColumn fx:id="mFlightsCol" maxWidth="40.0" prefWidth="40.0" text="pVols" />
+                  <TableColumn fx:id="mDurCol" maxWidth="90.0" prefWidth="90.0" text="pDuree" />
               </columns>
             </TableView>
             <BarChart fx:id="barChart1" animated="false" barGap="2.0" categoryGap="4.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
@@ -114,7 +115,7 @@
                   <Insets left="25.0" />
                </GridPane.margin>
             </ImageView>
-            <Button fx:id="btnBestFlight" mnemonicParsing="false" text="Meilleur vol : 12/12/2015 LA LUNE SUR TERRE" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+            <ListView fx:id="lstMonths" prefHeight="200.0" prefWidth="200.0" stylesheets="@dashlist.css" GridPane.columnIndex="6" GridPane.rowIndex="3" />
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="4">
                <children>
                   <Button mnemonicParsing="false" text="pVoiles">
@@ -129,13 +130,6 @@
                   </Button>
                </children>
             </HBox>
-            <TableView fx:id="tableGliders" layoutX="112.0" layoutY="322.0" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="3">
-               <columns>
-                  <TableColumn fx:id="gGlidersCol" prefWidth="75.0" text="pVoiles" />
-                  <TableColumn fx:id="gFlightsCol" prefWidth="75.0" text="pVols" />
-                  <TableColumn fx:id="gDurCol" prefWidth="75.0" text="pDuree" />
-               </columns>
-            </TableView>
          </children>
       </GridPane>
    </children>
