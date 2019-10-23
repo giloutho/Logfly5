@@ -586,7 +586,7 @@ public class ConfigViewController {
                 myConfig.setPathDb(selectedDirectory.getAbsolutePath()+File.separator);  
                 myConfig.setFullPathDb(selectedDirectory.getAbsolutePath()+File.separator+selectedFile.getName());
                 myConfig.setDbName(selectedFile.getName());    
-                if (myConfig.dbVerif(myConfig.getFullPathDb())) {
+                if (myConfig.dbCheck(myConfig.getFullPathDb())) {
                     myConfig.setValidConfig(true);
                     rootController.changeCarnetView();
                     myConfig.setValidConfig(true);
