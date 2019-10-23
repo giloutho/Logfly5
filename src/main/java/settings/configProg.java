@@ -184,7 +184,10 @@ public class configProg {
         this.idxStartwin = idxStartwin;
     }
         
-    
+    /**
+     * Default pilot name
+     * @return 
+     */
     public  String getDefaultPilote() {
         return defaultPilote;
     }
@@ -193,6 +196,10 @@ public class configProg {
         this.defaultPilote = defaultPilote;
     }
 
+    /**
+     * Default glider name
+     * @return 
+     */
     public  String getDefaultVoile() {
         return defaultVoile;
     }
@@ -257,6 +264,10 @@ public class configProg {
         this.finderLong = finderLong;
     }
 
+    /**
+     * threshold outliers in GPS tracks
+     * @return 
+     */
     public  int getSeuilAberrants() {
         return seuilAberrants;
     }
@@ -358,6 +369,10 @@ public class configProg {
         this.urlLogfly = urlLogfly;
     }
 
+    /**
+     * Specific icons displayed on maps
+     * @return 
+     */
     public  String getUrlIcones() {
         return urlIcones;
     }
@@ -422,6 +437,10 @@ public class configProg {
         this.piloteMail = piloteMail;
     }
 
+    /**
+     * ID pilot for web contest
+     * @return 
+     */
     public  String getPiloteID() {
         return piloteID;
     }
@@ -430,6 +449,10 @@ public class configProg {
         this.piloteID = piloteID;
     }
 
+    /**
+     * Pilot pass for web contest
+     * @return 
+     */
     public  String getPilotePass() {
         return pilotePass;
     }
@@ -442,6 +465,10 @@ public class configProg {
         return distDeco;
     }
 
+    /**
+     * Photo is 
+     * @return 
+     */
     public  boolean isPhotoAuto() {
         return photoAuto;
     }
@@ -540,7 +567,7 @@ public class configProg {
      * @param dbCheckName
      * @return 
      */      
-    public boolean dbVerif(String dbCheckName) {
+    public boolean dbCheck(String dbCheckName) {
         Connection con;
         boolean res = false;
         
@@ -602,7 +629,7 @@ public class configProg {
         boolean res;        
         String newFullPathDb = fullPathDb.replaceAll(dbName, dbNewName);
              
-        res = dbVerif(newFullPathDb);
+        res = dbCheck(newFullPathDb);
         if (res) {
             fullPathDb = newFullPathDb;
             dbName = dbNewName;
@@ -643,7 +670,7 @@ public class configProg {
         File f = new File(dbNewName);
         if(f.exists() && f.isFile()) {            
             // if db is OK, dbConn is initialized
-            res = dbVerif(dbNewName);
+            res = dbCheck(dbNewName);
         }  else  {                         
             try {
                 Class.forName("org.sqlite.JDBC");
@@ -675,13 +702,13 @@ public class configProg {
         
         return res;        
     }
-    
+     
     /**
-     * Read settings of xLogfly
+     * Read settings of Logfly V4 and lower
      * @param prfFile
      * @return 
      */
-    private boolean litOldPrf(File prfFile) {
+    private boolean readOldPrf(File prfFile) {
         boolean res = false;
         int numLigne = 0;
         String cleanLine;
@@ -882,7 +909,7 @@ public class configProg {
                 default :
                     oldDbPath = "";
             }   
-            if (dbVerif(oldDbPath)) {
+            if (dbCheck(oldDbPath)) {
                 // OK dbConn is initialized
                 fullPathDb = oldDbPath;
                 res = true;
@@ -915,12 +942,12 @@ public class configProg {
             case WINDOWS :
                 File fWin = new File(System.getProperty("user.home")+"\\AppData\\Roaming\\logfly.prf");
                 if (fWin.exists() && fWin.isFile()) {
-                    res = litOldPrf(fWin);
+                    res = readOldPrf(fWin);
                 }  
             case MACOS :
                 File fMac = new File(System.getProperty("user.home")+"/Library/Preferences/logfly.prf");
                 if(fMac.exists() && fMac.isFile()) {
-                res = litOldPrf(fMac);
+                res = readOldPrf(fMac);
             }   
                                                     
         }
@@ -1028,6 +1055,19 @@ public class configProg {
             updateAuto = true;
             photoAuto = true;
             gpsLimit = 6;
+            // PathSyride must be defined
+            // It causes a boot bug wrongly attributed to the operating system environment
+            switch (currOS) {
+                case WINDOWS :
+                    pathSyride = System.getProperty("user.home")+File.separatorChar + "Documents"+"\\Syride"; 
+                    break;
+                case MACOS :
+                    pathSyride = System.getProperty("user.home")+"/syride";
+                    break;
+                case LINUX :
+                    pathSyride = System.getProperty("user.home")+"/syride";
+                    break;            
+            }
         }
     }
     
@@ -1110,7 +1150,7 @@ public class configProg {
                 File f = new File(fullPathDb);
                 if(f.exists() && f.isFile()) {
                     // Si la db est OK dbConn est initialisé
-                    validConfig = dbVerif(fullPathDb);
+                    validConfig = dbCheck(fullPathDb);
                 } else {
                     validConfig = false;
                 }
