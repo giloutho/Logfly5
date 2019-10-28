@@ -452,9 +452,13 @@ public class wpreadfile {
             Iterator<String> it = waypoints.iterator();
             while (it.hasNext()) {
                 String[] partWp = it.next().split(",");
-                if (partWp.length == 4) {
+                if (partWp.length >= 3) {
+                    String sAlt = "";
+                    if (partWp.length > 3) {
+                        sAlt = partWp[3];
+                    }
                     cpt++;
-                    pointRecord pr = new pointRecord(partWp[0], partWp[3], partWp[0]);
+                    pointRecord pr = new pointRecord(partWp[0], sAlt, partWp[0]);
                     pr.setFLat(partWp[1]);
                     pr.setFLong(partWp[2]);
                     pr.setFIndex(cpt);
