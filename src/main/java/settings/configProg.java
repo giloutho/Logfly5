@@ -75,6 +75,7 @@ public class configProg {
     private  String pathSyride;    
     private  final int distDeco = 300;// distance for take off research
     private  boolean updateAuto;      // new in V5
+    private  boolean debugMode;      // new in V5
     private  int gpsLimit;            // new in V5 date track search depth for usb GPS
     private  String version;
     private  Connection dbConn;
@@ -484,6 +485,14 @@ public class configProg {
     public  void setUpdateAuto(boolean UpdateAuto) {
         this.updateAuto = UpdateAuto;
     }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }    
 
     public  String getVersion() {
         return version;
@@ -1040,6 +1049,7 @@ public class configProg {
                 lastTrace = ""; 
                 lastOpenAir = "";
                 updateAuto = false;
+                debugMode = false;
                 photoAuto = true;
                 gpsLimit = 6;
                 configDefault = dbCreation(fullPathDb);              
@@ -1054,6 +1064,7 @@ public class configProg {
             mainHeight = 650;  
             updateAuto = true;
             photoAuto = true;
+            debugMode = false;
             gpsLimit = 6;
             // PathSyride must be defined
             // It causes a boot bug wrongly attributed to the operating system environment
@@ -1203,6 +1214,7 @@ public class configProg {
         prop.setProperty("lasttrace",lastTrace);
         prop.setProperty("lastopenair",lastOpenAir);
         prop.setProperty("updateauto",String.valueOf(updateAuto));
+        prop.setProperty("debugmode",String.valueOf(debugMode));        
         prop.setProperty("gpslimit",String.valueOf(gpsLimit));
         prop.setProperty("idxtypeyear",String.valueOf(idxTypeYear));
         prop.setProperty("idxsynthese",String.valueOf(idxSynthese));
@@ -1293,6 +1305,10 @@ public class configProg {
             updateAuto = Boolean.parseBoolean(prop.getProperty("updateauto"));
         else
             updateAuto = false;
+        if (prop.getProperty("debugmode") != null)
+            debugMode = Boolean.parseBoolean(prop.getProperty("debugmode"));
+        else
+            debugMode = false;        
         if (prop.getProperty("gpslimit") != null)
             gpsLimit = Integer.parseInt(prop.getProperty("gpslimit"));
         else
