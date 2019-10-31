@@ -209,6 +209,10 @@ public class ConfigViewController {
     @FXML
     private CheckBox checkUpdate;
     @FXML
+    private Label lbDebug;  
+    @FXML
+    private CheckBox checkDebug;    
+    @FXML
     private Button btDiversAnnuler;
     @FXML
     private Button btDiversOk;
@@ -388,7 +392,11 @@ public class ConfigViewController {
         } else {
             checkUpdate.setSelected(false);
         }
-        
+        if (myConfig.isDebugMode())  {
+            checkDebug.setSelected(true);
+        } else {
+            checkDebug.setSelected(false);
+        }        
         // Internet Tab
         txUrlSite.setText(myConfig.getUrlLogfly());
         txUrlIcones.setText(myConfig.getUrlIcones());
@@ -440,6 +448,7 @@ public class ConfigViewController {
             myConfig.setPathSyride(lbSyridePath.getText());
             myConfig.setPhotoAuto(checkPhoto.isSelected());
             myConfig.setUpdateAuto(checkUpdate.isSelected());
+            myConfig.setDebugMode(checkDebug.isSelected());
             // Onglet Internet
             myConfig.setUrlLogfly(txUrlSite.getText());
             myConfig.setUrlIcones(txUrlIcones.getText());
@@ -933,6 +942,7 @@ public class ConfigViewController {
         lbSyride.setText(i18n.tr("Syride folder"));
         lbPhotoAuto.setText(i18n.tr("Automatic display of photos"));
         lbUpdateAuto.setText(i18n.tr("Automatic update"));
+        lbDebug.setText(i18n.tr("Mode debug"));
         btDiversAnnuler.setText(i18n.tr("Cancel"));
         btDiversOk.setText(i18n.tr("OK"));
         lbLogfly.setText(i18n.tr("Logfly site url"));
