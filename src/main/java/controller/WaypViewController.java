@@ -196,6 +196,7 @@ public class WaypViewController {
     private int gpsTypeName;   // Name type : long, short or mixed
     private ContextMenu tableContextMenu;
     private String gpsdWaypWriteReport;
+    private File fDebug = null;
     
     @FXML
     public void initialize() {
@@ -968,7 +969,9 @@ public class WaypViewController {
     private void writeFlymaster() {
         try {
             prepWritingFlym();
-            flymaster fms = new flymaster(myConfig.isDebugMode());
+            String debugPath = "";
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+            flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
             if (listForGps.size() > 0 && fms.isPresent(currNamePort)) {             
                 fms.setListPFMWP(listForGps);
                 fms.sendWaypoint();
@@ -1389,7 +1392,9 @@ public class WaypViewController {
     private void readFlymaster()  {
         gpsReadList = new ArrayList<>();
         try {
-            flymaster fms = new flymaster(myConfig.isDebugMode());
+            String debugPath = "";
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;            
+            flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
             if (fms.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fms.getDeviceType()).append(" ").append(fms.getDeviceFirm()).append("  ");            
