@@ -6,52 +6,47 @@
  */
 package model;
 
-import java.time.LocalTime;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 /**
  *
  * @author gil
  */
+
 public class dashGliders {
 
     public SimpleStringProperty glider = new SimpleStringProperty();
-    public SimpleIntegerProperty flights = new SimpleIntegerProperty();
-    public ObjectProperty<LocalTime> duree = new SimpleObjectProperty();
+    public SimpleStringProperty flights = new SimpleStringProperty();
+    public SimpleStringProperty duration = new SimpleStringProperty();
     
-    public dashGliders(String pGlider, int pFlights, String pDuree) {
+    public dashGliders(String pGlider, int iFlights, int iDuration) {
         this.glider = new SimpleStringProperty(pGlider);
-        this.flights = new SimpleIntegerProperty(pFlights);  
-        setDuree(pDuree);
-    }    
+        this.flights = new SimpleStringProperty(String.valueOf(iFlights));  
+        setDuration(iDuration);
+    }       
 
-    public String getMonth() {
+    public String getGlider() {
         return glider.get();
     }
-
-    public void setMonth(String monthStr) {
-        glider.set(monthStr);
-    }
     
-    public int getFlights() {
-        return flights.get();
+    public String getFlights() {
+        return String.format("%4s", flights.get());
     }
-
-    public void setFlights(int pIdx) {
-        flights.set(pIdx);
-    }        
- 
-    public LocalTime getDuree() {
-        return duree.get();
+     
+    public String getDuration() {
+        return duration.get();
     }
-    
-    public void setDuree(String dureeStr) {
-        int seconds = Integer.parseInt(dureeStr);
-        duree.set(LocalTime.ofSecondOfDay(seconds));     
-    }    
         
-    
+    public void setDuration(int iDuration) {
+        if (iDuration == 0) {
+            duration.set("");
+        } else {
+            int nbHour = iDuration/3600;
+            int nbMn = (iDuration - (nbHour*3600))/60;
+            StringBuilder sbDur = new StringBuilder();
+            sbDur.append(String.format("%3d", nbHour)).append("h");
+            sbDur.append(String.format("%02d", nbMn)).append("mn");
+            duration.set(sbDur.toString());   
+        }
+    }    
 }
