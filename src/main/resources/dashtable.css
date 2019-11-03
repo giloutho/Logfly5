@@ -16,7 +16,8 @@
     Struktur column-header-background -> column-header */
 
 .table-view .column-header-background {
-    -fx-background-color: linear-gradient(#131313 0%, #424141 100%);
+  /*  -fx-background-color: linear-gradient(#131313 0%, #424141 100%); */
+  -fx-background-color:  #000000;
 }
 
 .table-view .column-header-background .filler{
@@ -30,11 +31,13 @@
 
 .table-view .column-header {
     -fx-background-color: transparent;
-  /*  -fx-font-size:10px; */
+  /*  -fx-font-size:10px;  */ 
 }
 
 .table-view .table-cell{
     -fx-text-fill: white;
+    /* remove lines https://stackoverflow.com/questions/39241819/remove-horizontal-lines-in-tableview-in-javafx-8-using-css */
+    -fx-table-cell-border-color:transparent;
   /*  -fx-font-size:10px;  */  
 }
 
