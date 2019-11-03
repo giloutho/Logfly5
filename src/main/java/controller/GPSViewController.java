@@ -191,6 +191,7 @@ public class GPSViewController {
     private int nbNewTracks = 0;
     private String idGPS = "";
     private boolean mDebug;
+    private File fDebug = null;
     
     @FXML
     private void initialize() {               
@@ -342,8 +343,11 @@ public class GPSViewController {
      * Flymaster SD series communication method
      */
     private void readFlymaster()  {
+        
+        String debugPath = "";
         try {
-            flymaster fms = new flymaster(myConfig.isDebugMode());
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+            flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
             String s = "fms called sur "+currNamePort;
             if (mDebug) mylogging.log(Level.INFO, s);   
             System.out.println(s);
@@ -888,6 +892,7 @@ public class GPSViewController {
     */
     private void gpsInsertion() {                        
         boolean gpsOK = false;
+        String debugPath = "";
         StringBuilder errMsg = new StringBuilder();      
         if (mDebug) mylogging.log(Level.INFO, "gpsInsertion begin");
         
@@ -895,7 +900,8 @@ public class GPSViewController {
         try {
             flytec20 fls = new flytec20(); 
             flytec15 fliq = new flytec15();
-            flymaster fms = new flymaster(myConfig.isDebugMode());
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+            flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
             flymasterold fmold = new flymasterold();
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
@@ -1404,7 +1410,9 @@ public class GPSViewController {
                             break; 
                         case FlymPlus :    
                         case FlymSD :
-                            flymaster fms = new flymaster(myConfig.isDebugMode());
+                            String debugPath = "";
+                            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+                            flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
                             if (fms.isPresent(currNamePort)) {
                                 // Download instruction of the flight is stored in column 5
                                 // IGC date is composed with column 1
@@ -1694,9 +1702,11 @@ public class GPSViewController {
      */
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
-        if (myConfig.isDebugMode())
+        if (myConfig.isDebugMode()) {
             mDebug = true;
-        else
+            fDebug = new File(myConfig.getPathW()+File.separator+"Debug");
+            if (!fDebug.exists()) fDebug.mkdirs();            
+        } else
             mDebug = false;
         i18n = I18nFactory.getI18n("","lang/Messages",GPSViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         // clear status bar
