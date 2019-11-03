@@ -190,6 +190,7 @@ public class GPSViewController {
     private int nbTracks = 0;
     private int nbNewTracks = 0;
     private String idGPS = "";
+    private boolean mDebug;
     
     @FXML
     private void initialize() {               
@@ -198,7 +199,7 @@ public class GPSViewController {
         dateCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("date"));
         heureCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel, String>("heure"));
         checkCol.setCellValueFactory(new PropertyValueFactory<Gpsmodel,Boolean>("checked"));
-        checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );       
+        checkCol.setCellFactory( CheckBoxTableCell.forTableColumn( checkCol ) );    
     }
     
     /**
@@ -288,7 +289,7 @@ public class GPSViewController {
     }    
                                     
     private void gpsdReadFlightList() {
-        
+        if (mDebug) mylogging.log(Level.INFO, "gpsdReadFlightList on GPS "+currGPS);
         gpsdump gpsd = new gpsdump(this, 8, currNamePort, myConfig, i18n);
         switch (currGPS) {
             case FlymSD :
@@ -342,8 +343,10 @@ public class GPSViewController {
      */
     private void readFlymaster()  {
         try {
-            flymaster fms = new flymaster();
-            System.out.println("fms called sur "+currNamePort);
+            flymaster fms = new flymaster(myConfig.isDebugMode());
+            String s = "fms called sur "+currNamePort;
+            if (mDebug) mylogging.log(Level.INFO, s);   
+            System.out.println(s);
             if (fms.init(currNamePort)) {     
                 // Communication OK
                 resCom = 1;
@@ -391,6 +394,8 @@ public class GPSViewController {
      * Old Flymaster series communication method
      */
     private void readFlymOld()  {
+        String s = "fmold called sur "+currNamePort;
+        if (mDebug) mylogging.log(Level.INFO, s);   
         try {
             flymasterold fmold = new flymasterold();
             if (fmold.init(currNamePort)) {     
@@ -437,7 +442,9 @@ public class GPSViewController {
      */
     private void readFlytec20()  {
         try {
-            System.out.println("readFlytec 20 sur "+currNamePort);
+            String s = "readFlytec 20 sur "+currNamePort;
+            if (mDebug) mylogging.log(Level.INFO, s);   
+            System.out.println(s);
             flytec20 fls = new flytec20();
             if (fls.init(currNamePort)) {     
                 // Communication OK
@@ -481,7 +488,9 @@ public class GPSViewController {
      */
     private void readFlytec15()  {
         try {
-            System.out.println("readFlytec 15 sur "+currNamePort);
+            String s = "readFlytec 15 sur "+currNamePort;
+            if (mDebug) mylogging.log(Level.INFO, s);   
+            System.out.println(s);
             flytec15 fliq = new flytec15();
             if (fliq.init(currNamePort)) {     
                 // Communication OK
@@ -812,12 +821,22 @@ public class GPSViewController {
                         readFlytec20();
                         break;
                     case FlymOld :
-                        readFlymOld();
+                        switch (myConfig.getOS()) {
+                            case WINDOWS :
+                            case LINUX :  
+                                gpsdReadFlightList();
+                                break;   
+                            case MACOS :
+                                readFlymOld();
+                                break;                                
+                        }                         
                         break;  
                     case FlymPlus :    
-                    case FlymSD :
                         readFlymaster();
                         break;
+                    case FlymSD :
+                         gpsdReadFlightList();
+                        break;                        
                     case Flytec15 :
                         switch (myConfig.getOS()) {
                             case WINDOWS :
@@ -869,13 +888,14 @@ public class GPSViewController {
     */
     private void gpsInsertion() {                        
         boolean gpsOK = false;
-        StringBuilder errMsg = new StringBuilder();         
+        StringBuilder errMsg = new StringBuilder();      
+        if (mDebug) mylogging.log(Level.INFO, "gpsInsertion begin");
         
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         try {
             flytec20 fls = new flytec20(); 
             flytec15 fliq = new flytec15();
-            flymaster fms = new flymaster();
+            flymaster fms = new flymaster(myConfig.isDebugMode());
             flymasterold fmold = new flymasterold();
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
@@ -913,22 +933,8 @@ public class GPSViewController {
                         break;    
                     case FlymSD :
                         // if we're here, it's because the flightlist has been posted
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                                gpsOK = true; 
-                                break;
-                            case LINUX :
-                            case MACOS :
-                                if (fms.isPresent(currNamePort)) {
-                                    gpsOK = true;  
-                                    // We release the port for GPSDump
-                                    // if GPSDump used, we must release the port 
-                                    // Otherwise, port must stay open
-                                    //fms.closePort();
-                                }
-                                break;                                
-                        }                                                 
-                        break;       
+                        gpsOK = true; 
+                        break;                                                                     
                     case FlymPlus :
                         if (fms.isPresent(currNamePort)) {
                             gpsOK = true;  
@@ -988,6 +994,7 @@ public class GPSViewController {
             }            
             if (gpsOK){                      
                    
+                if (mDebug) mylogging.log(Level.INFO, "gpsInsertion begin loop");
                 Task<Object> worker = new Task<Object>()  {
                     
                     @Override
@@ -1007,13 +1014,12 @@ public class GPSViewController {
                                 try {
                                     // Download instruction of the flight is stored in column 5
                                     switch (currGPS) {
-                                    case Flytec20 :   
+                                    case Flytec20 :                                           
                                         switch (myConfig.getOS()) {
                                             case WINDOWS :                                        
                                                 strTrack = gpsd.directFlight(3,idxTable);
                                             case LINUX :
                                             case MACOS :
-                                                 System.out.println("flytec20 sur "+currNamePort);
                                                 strTrack = fls.getIGC(item.getCol5());
                                                 break;
                                         }                                        
@@ -1029,26 +1035,8 @@ public class GPSViewController {
                                         }
                                         break;    
                                     case FlymSD :
-                                        switch (myConfig.getOS()) {
-                                            case WINDOWS :
-                                                strTrack = gpsd.directFlight(1,idxTable);
-                                                break;
-                                            case MACOS :
-                                                // Download instruction of the flight is stored in column 5
-                                                // IGC date is compsed with column 1
-                                                // Col 1 [26.04.17] -> [260417]
-                                                String sDate = item.getDate().replaceAll("\\.", "");
-                                                if (fms.getIGC(item.getCol5(), sDate, myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
-                                                    strTrack = fms.getFinalIGC();
-                                                } else {
-                                                    strTrack = null;
-                                                }                                                    
-                                                break;                                
-                                            case LINUX : 
-                                                strTrack = gpsd.directFlight(1,idxTable);
-                                            break;
-                                        }                                                                               
-                                        break;     
+                                        strTrack = gpsd.directFlight(1,idxTable);
+                                        break;                                          
                                     case FlymPlus :
                                         // Download instruction of the flight is stored in column 5
                                         // IGC date is compsed with column 1
@@ -1151,9 +1139,6 @@ public class GPSViewController {
                                         break;
                                     case Flytec15 :
                                         fliq.closePort();
-                                        break;
-                                    case FlymSD :
-                                        fms.closePort();
                                         break;
                                     case FlymPlus :
                                         fms.closePort();
@@ -1419,7 +1404,7 @@ public class GPSViewController {
                             break; 
                         case FlymPlus :    
                         case FlymSD :
-                            flymaster fms = new flymaster();
+                            flymaster fms = new flymaster(myConfig.isDebugMode());
                             if (fms.isPresent(currNamePort)) {
                                 // Download instruction of the flight is stored in column 5
                                 // IGC date is composed with column 1
@@ -1709,10 +1694,15 @@ public class GPSViewController {
      */
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
+        if (myConfig.isDebugMode())
+            mDebug = true;
+        else
+            mDebug = false;
         i18n = I18nFactory.getI18n("","lang/Messages",GPSViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         // clear status bar
         rootController.updateMsgBar("", false, 60);
         winTraduction();
+                
     }
     
     /**
