@@ -104,6 +104,7 @@ public class winGPS {
     private String usbWaypPath;
     private String gpsCharac;
     private boolean waypCall;
+    private boolean mDebug;
     
     private StringBuilder sbError;    
     
@@ -113,7 +114,11 @@ public class winGPS {
      * @param pI18n     Send current language
      */
     public winGPS(configProg pConfig, I18n pI18n, boolean pWaypCall)  {
-        myConfig = pConfig;        
+        myConfig = pConfig;   
+        if (myConfig.isDebugMode())
+            mDebug = true;
+        else
+            mDebug = false;
         this.i18n = pI18n;
         this.waypCall = pWaypCall;
         gpsConnect = false;
@@ -276,6 +281,7 @@ public class winGPS {
     private void choixGPS(int idxGPS) {
         lbPort.setVisible(false);
         cbSerial.setVisible(false);
+        if (mDebug) mylogging.log(Level.INFO, "GPS index : "+idxGPS);
                 
         switch (idxGPS) {
             case 0:
@@ -506,6 +512,7 @@ public class winGPS {
     }
     
     private void testSpGPS() {
+        if (mDebug) mylogging.log(Level.INFO, "testGPS() on "+currNamePort);
         String bluePort = "BLUETOOTH";
         if (currGPS != null) {
             switch (currGPS) {
@@ -554,7 +561,7 @@ public class winGPS {
                 case FlymPlus :   
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {            
-                            flymaster fms = new flymaster();
+                            flymaster fms = new flymaster(mDebug);
                             if (fms.isPresent(currNamePort)) {    
                                 gpsPresent();
                             } else {
@@ -569,31 +576,23 @@ public class winGPS {
                     }              
                     break;                    
                 case FlymSD  :
-                    switch (myConfig.getOS()) {
-                            case MACOS :
-                                alertbox aError = new alertbox(myConfig.getLocale());  
-                                aError.alertInfo(i18n.tr("Firmware > 2.0 You must use Flymaster +"));                                
-                                break;
-                            case WINDOWS :
-                            case LINUX : 
-                                if (currNamePort != null && !currNamePort.equals("")) {
-                                    try {            
-                                        flymaster fms = new flymaster();
-                                        if (fms.isPresent(currNamePort)) {    
-                                            gpsPresent();
-                                        } else {
-                                            gpsNotPresent();
-                                        } 
-                                        fms.closePort();               
-                                    } catch (Exception e) {
-                                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                                        sbError.append("\r\n").append(e.toString());
-                                        mylogging.log(Level.SEVERE, sbError.toString());            
-                                    }   
+                        if (currNamePort != null && !currNamePort.equals("")) {
+                            try {            
+                                flymaster fms = new flymaster(mDebug);
+                                if (fms.isPresent(currNamePort)) {    
+                                    gpsPresent();
+                                } else {
+                                    gpsNotPresent();
                                 } 
-                                break;
-                    }
-                    break;
+                                fms.closePort();               
+                            } catch (Exception e) {
+                                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                                sbError.append("\r\n").append(e.toString());
+                                mylogging.log(Level.SEVERE, sbError.toString());            
+                            }   
+                        } 
+                        break;
+
                 case FlymOld :
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {
