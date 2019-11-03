@@ -6,10 +6,7 @@
  */
 package model;
 
-import java.time.LocalTime;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 /**
@@ -20,16 +17,18 @@ public class dashMonths {
     
     public SimpleStringProperty month = new SimpleStringProperty();
     public SimpleStringProperty flights = new SimpleStringProperty();
-    public ObjectProperty<LocalTime> duree = new SimpleObjectProperty();
+    public SimpleStringProperty duration = new SimpleStringProperty();
+    public SimpleIntegerProperty Seconds = new SimpleIntegerProperty();
     
-    public dashMonths(String pMonth, String pFlights, String pDuree) {
+    public dashMonths(String pMonth, int iFlights, int iDuration) {
         this.month = new SimpleStringProperty(pMonth);
-        this.flights = new SimpleStringProperty(pFlights);  
-        setDuree(pDuree);
-    }        
+        this.flights = new SimpleStringProperty(String.valueOf(iFlights));  
+        this.Seconds = new SimpleIntegerProperty(iDuration);
+        setDuration(iDuration);
+    }       
 
     public String getMonth() {
-        return month.get();
+        return String.format("%9s", month.get());
     }
 
     public void setMonth(String monthStr) {
@@ -37,20 +36,36 @@ public class dashMonths {
     }
     
     public String getFlights() {
-        return flights.get();
+        return String.format("%4s", flights.get());
+    }
+    
+    public int getIntFlights() {
+        return Integer.parseInt(flights.get());
     }
 
     public void setFlights(String flightStr) {
         flights.set(flightStr);
     }        
- 
-    public LocalTime getDuree() {
-        return duree.get();
+     
+    public String getDuration() {
+        return duration.get();
     }
     
-    public void setDuree(String dureeStr) {
-        int seconds = Integer.parseInt(dureeStr);
-        duree.set(LocalTime.ofSecondOfDay(seconds));     
+    public int getSeconds() {
+        return Seconds.get();
+    }
+        
+    public void setDuration(int iDuration) {
+        if (iDuration == 0) {
+            duration.set("");
+        } else {
+            int nbHour = iDuration/3600;
+            int nbMn = (iDuration - (nbHour*3600))/60;
+            StringBuilder sbDur = new StringBuilder();
+            sbDur.append(String.format("%3d", nbHour)).append("h");
+            sbDur.append(String.format("%02d", nbMn)).append("mn");
+            duration.set(sbDur.toString());   
+        }
     }    
     
 }
