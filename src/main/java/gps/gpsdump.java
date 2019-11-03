@@ -63,10 +63,15 @@ public class gpsdump {
     private ArrayList<String> listPFM;
     private ObservableList <Gpsmodel> listFlights;   
     private String waypWriteReport = null;
+    private boolean mDebug;
     
 
     public gpsdump(String pNamePort, configProg currConfig, I18n pI18n)  {
         this.myConfig = currConfig;
+        if (myConfig.isDebugMode())
+            mDebug = true;
+        else
+            mDebug = false;
         i18n = pI18n;
         switch (myConfig.getOS()) {
             case WINDOWS :
@@ -406,7 +411,7 @@ public class gpsdump {
             int resDown = getFlight(idGPS,idFlight);
             if (resDown == 0 && igcFile.exists()) {
                 // We want to check GPSDump communication
-                mylogging.log(Level.INFO, strLog.toString());
+                if (mDebug) mylogging.log(Level.INFO, strLog.toString());
                 textio fread = new textio();                                    
                 res = fread.readTxt(igcFile);
             } else {
