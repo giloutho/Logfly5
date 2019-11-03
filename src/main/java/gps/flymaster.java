@@ -25,6 +25,7 @@ import systemio.mylogging;
 import static gps.gpsutils.fourBytesToInt;
 import static gps.gpsutils.oneByteToInt;
 import static gps.gpsutils.twoBytesToInt;
+import java.io.File;
 import java.io.FileOutputStream;
 import waypio.pointRecord;
 
@@ -93,16 +94,19 @@ public class flymaster {
     private boolean gotGPSSPEED_HEADING;
     private String finalIGC;
     private StringBuilder sbError = null;
-    
+    private boolean mDebug;
+    private String debugPath;
     //To log binary on flle set to true
-    boolean fileDebug =false;
+    boolean fileDebug = false;
     
     
-    public flymaster() throws Exception {
+    public flymaster(boolean pDebug, String pDebugPath) throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
         scm = null;     
         SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
         osType = scp.getOSType();
+        mDebug = pDebug;
+        debugPath = pDebugPath;
     }
 
     public String getDeviceType() {
@@ -409,7 +413,9 @@ public class flymaster {
                 res = genIGC;
             }else 
             {
-                System.out.println("Error Reading : "+strDate);
+                String dMsg = "Error Reading : "+strDate;
+                if (mDebug) mylogging.log(Level.INFO, dMsg);   
+                System.out.println(dMsg);
             }
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -432,26 +438,34 @@ public class flymaster {
                 byte[] trackData = getTrackData(trackDataRaw);
                 byte[] uChkSum = getCkSum(trackDataRaw);
                 boolean success;
-                if (checkSumFlightData(trackDataRaw, uChkSum)) {
+                if (checkSumFlightData(trackDataRaw, uChkSum)) {                    
+                    if (mDebug) mylogging.log(Level.INFO, "Checksum OK");
                     System.out.println("Checksum OK");
                     success=decodeFlightData(trackData);  
                     if (success)
                     {
+                        if (mDebug) mylogging.log(Level.INFO, "Decode OK");
                         System.out.println("Decode OK!");
                         break;
                     } else {
+                        if (mDebug) mylogging.log(Level.INFO, "ERROR !!! : Bad Decode!! Try Again");
                         System.out.println("ERROR !!! : Bad Decode!! Try Again");
                         Thread.sleep(500);  //Wait 100 ms after error
                     }
                 } else {
-                     System.out.println("ERROR !!! : Checksum KO!! Try Again");
-                     Thread.sleep(500);  //Wait 500 ms after error
+                    if (mDebug) mylogging.log(Level.INFO, "ERROR !!! : Checksum KO!! Try Again");
+                    System.out.println("ERROR !!! : Checksum KO!! Try Again");
+                    Thread.sleep(500);  //Wait 500 ms after error
                 }
               trycount++;
-              System.out.println("ERROR Retry# " + trycount);
+              String dMsg = "ERROR Retry# " + trycount;
+              if (mDebug) mylogging.log(Level.INFO, dMsg);
+              System.out.println(dMsg);
             } while (trycount<5);       //After 5 tries Bye bye
-            if(trycount==5)
+            if(trycount==5) {
+                if (mDebug) mylogging.log(Level.INFO, "ERROR: Givin up sorry!");
                 System.out.println("ERROR: Givin up sorry!");
+            }
 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -482,9 +496,10 @@ public class flymaster {
     
     //KISS Binary Serial real (Keep It Simple and Stupid)
     private byte[] serialRead (String gpsCommand)
-    {
+    {        
         System.out.println("------Start Serial Read------");
         System.out.println("Sending : "+gpsCommand);
+        if (mDebug) mylogging.log(Level.INFO, "------Start Serial Read------ with "+gpsCommand);
         byte[] trackdata = null;   
         int lenBuffer = 0;
         byte[] BufferRead = new byte[1048576];
@@ -506,23 +521,26 @@ public class flymaster {
                     break;
                 }
              }
-             retval = new byte[lenBuffer];
-             System.arraycopy(BufferRead, 0, retval,0 , lenBuffer);
-             
+            retval = new byte[lenBuffer];
+            System.arraycopy(BufferRead, 0, retval,0 , lenBuffer);
              
             //File output for Debug
-            if (fileDebug)
+            if (mDebug)
             {
-                FileOutputStream outf = new FileOutputStream(gpsCommand.replace(",","_").replace("$","").replace("\n",""));
+                String sDest = debugPath+(gpsCommand.replace(",","_").replace("$","").replace("\n",""));
+                FileOutputStream outf = new FileOutputStream(sDest);
                 outf.write(retval);
                 outf.close();
-            }
+                mylogging.log(Level.INFO, "Binary data in "+sDest);                
+            }                        
+            
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
-        }
+        }        
         System.out.println("------End Serial Read------");
+        if (mDebug) mylogging.log(Level.INFO, "------End Serial Read------");
         return retval;
     }
 
@@ -550,6 +568,7 @@ public class flymaster {
         int nbPoints = 0;
         int nbTpoints=0;
         int tpNum=0;
+        if (mDebug) mylogging.log(Level.INFO, "Start of decodeFlightData");
         System.out.println("decodeFlightData");
         trackFw="";
         txtTask = new StringBuilder();
@@ -732,9 +751,11 @@ public class flymaster {
                  
                  if (byteLength==0)
                  {
+                    if (mDebug) mylogging.log(Level.INFO, "0 len Paket DeathLoop ai ai ai!! EXITING!");
                     System.out.println("0 len Paket DeathLoop ai ai ai!! EXITING!");
-                    System.out.println("pkt offst " + (wOffset +dwScan) + " type " + FlyRaw[wOffset+dwScan]  + " len "+byteLength );
-
+                    String dMsg = "pkt offst " + (wOffset +dwScan) + " type " + FlyRaw[wOffset+dwScan]  + " len "+byteLength;
+                    System.out.println(dMsg );
+                    if (mDebug) mylogging.log(Level.INFO, dMsg);
                     listPOS.clear();
                     return false;
                  }
@@ -1035,7 +1056,10 @@ public class flymaster {
                                                    
                     default :
                          System.out.println("Unknown Data Paket");
-                         System.out.println("pkt offst " + (wOffset +dwScan) + " type " + ((int)((FlyRaw[wOffset+dwScan]) >>>5)&0x7)   + " len "+byteLength );
+                         if (mDebug) mylogging.log(Level.INFO, "Unknown Data Paket");
+                         String dMsg = "pkt offst " + (wOffset +dwScan) + " type " + ((int)((FlyRaw[wOffset+dwScan]) >>>5)&0x7)   + " len "+byteLength;
+                         System.out.println(dMsg );
+                         if (mDebug) mylogging.log(Level.INFO, dMsg);
                          return false;
                  }
                 
@@ -1045,6 +1069,7 @@ public class flymaster {
                     case IS_TAS:
                         if((dataRequested & REQUESTING_TAS) == REQUESTING_TAS) {
                             System.out.println("TAS ");
+                            if (mDebug) mylogging.log(Level.INFO, "TAS");
                         }
                         break;
 
@@ -1124,6 +1149,7 @@ public class flymaster {
         }
         
         System.out.println("Points : "+nbPoints);
+        if (mDebug) mylogging.log(Level.INFO, "Points : "+nbPoints);
         
         if (tpNum==0)
             txtTask.delete(0, txtTask.length());
