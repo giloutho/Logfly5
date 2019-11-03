@@ -561,7 +561,8 @@ public class winGPS {
                 case FlymPlus :   
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {            
-                            flymaster fms = new flymaster(mDebug);
+                            // No need for debugging
+                            flymaster fms = new flymaster(false, "");
                             if (fms.isPresent(currNamePort)) {    
                                 gpsPresent();
                             } else {
@@ -578,7 +579,8 @@ public class winGPS {
                 case FlymSD  :
                         if (currNamePort != null && !currNamePort.equals("")) {
                             try {            
-                                flymaster fms = new flymaster(mDebug);
+                                // No need for debugging
+                                flymaster fms = new flymaster(false, "");
                                 if (fms.isPresent(currNamePort)) {    
                                     gpsPresent();
                                 } else {
