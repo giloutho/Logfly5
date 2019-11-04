@@ -36,10 +36,12 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import leaflet.map_visu;
 import littlewins.winDirChoose;
+import littlewins.winFileChoose;
 import model.Import;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
+import settings.fileType;
 import settings.osType;
 import systemio.mylogging;
 import systemio.textio;
@@ -127,10 +129,23 @@ public class ImportViewController {
      */
     @FXML
     private void selectImpFolder() throws Exception {
-        winDirChoose wd = new winDirChoose(myConfig, i18n, 1, myConfig.getPathImport());
-        File selectedDirectory = wd.getSelectedFolder();
-        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
-                displayFlights(selectedDirectory);
+//        winDirChoose wd = new winDirChoose(myConfig, i18n, 1, myConfig.getPathImport());
+//        File selectedDirectory = wd.getSelectedFolder();
+//        if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
+//                displayFlights(selectedDirectory);
+//        }
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.foldertracks, myConfig.getPathImport());  
+        File selectedFile = wf.getSelectedFile(); 
+        try {
+            if (selectedFile != null && selectedFile.exists()){
+                File selectedDirectory = selectedFile.getParentFile();
+                System.out.println(selectedDirectory.getAbsolutePath());
+                if(selectedDirectory.exists() && selectedDirectory.isDirectory()){
+                        displayFlights(selectedDirectory);   
+                }
+            }
+        } catch (Exception e) {
+            
         }
     }
         
@@ -195,14 +210,16 @@ public class ImportViewController {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             String fileName = files[i].getName();
-            // put in your filter here
-            if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                   
-                if (files[i].isFile()) {
-                    trackPathList.add(files[i].getPath());       
+            if (!fileName.startsWith(".")) {
+                // put in your filter here
+                if (fileName.endsWith(".igc") || fileName.endsWith(".IGC") || fileName.endsWith(".gpx") || fileName.endsWith(".GPX")) {                                   
+                    if (files[i].isFile()) {
+                        trackPathList.add(files[i].getPath());       
+                    }
                 }
-            }
-            if (files[i].isDirectory()) {
-                listTracksFiles(files[i]);
+                if (files[i].isDirectory()) {
+                    listTracksFiles(files[i]);
+                }
             }
         }
     }
