@@ -125,11 +125,13 @@ public class xctracer {
                     if (listFile != null) {
                         for (int i=0; i<listFile.length; i++)         
                         {
-                            if (listFile[i].getName().equals("XC_Tracer_II.txt")) {
+                            // we can find XC_Tracer_II.txt or XC_Tracer_MiniIII_GPS.txt
+                            String sName = listFile[i].getName();
+                            if (sName.startsWith("XC_Tracer") && sName.endsWith(".txt")) {
                                 fConfig = listFile[i];
                                 fFlights = aDrive;
                                 cond1 = true;
-                            }                    
+                            }              
                         }
                         if (cond1 == true) {
                             fDrive = aDrive;
