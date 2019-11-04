@@ -150,6 +150,12 @@ public class winFileChoose {
                 sbInfo.append(" : ").append("Xcp");
                 btCaption = i18n.tr("Select a file");
                 sTitle = "";
+                break;  
+            case foldertracks :
+                sbInfo.append(i18n.tr("SELECT ANY FILE")).append(" [IGC,GPX]").append(RC);
+                sbInfo.append(i18n.tr("The whole folder will be explored")); 
+                btCaption = i18n.tr("Select a file");                
+                sTitle = "";
                 break;                  
             default:
                 throw new AssertionError();
@@ -246,7 +252,11 @@ public class winFileChoose {
             case xcp :
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Xcplanner files (xcp)", "*.xcp"));  
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Xcplanner files (xcp)", "*.xcp"));  
-                break;                      
+                break;    
+            case foldertracks :
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (igc, gpx)", "*.igc", "*.IGC","*.gpx", "*.GPX")); 
+                fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Track files (igc, gpx)", "*.igc", "*.IGC","*.gpx", "*.GPX")); 
+                break;                
         }                
         fileChooser.setShowMountPoints(true);       
         fileChooser.setDividerPositions(.15, .30);
