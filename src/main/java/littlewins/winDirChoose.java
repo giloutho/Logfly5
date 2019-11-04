@@ -191,7 +191,7 @@ public class winDirChoose {
         if (initDir != null) dirChooser.setInitialDirectory(initDir);          
         dirChooser.setShowMountPoints(true);       
         dirChooser.setViewType(ViewType.List);
-        dirChooser.setDividerPosition(.15);
+        dirChooser.setDividerPosition(.15);      
         dirChooser.showDialog(null,fileOptional -> { 
             final String res = fileOptional.toString();
             String sPath;
