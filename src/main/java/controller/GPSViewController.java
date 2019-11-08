@@ -12,6 +12,7 @@ import dialogues.alertbox;
 import dialogues.dialogbox;
 import gps.compass;
 import gps.connect;
+import gps.digifly;
 import gps.element;
 import gps.flymaster;
 import gps.flymasterold;
@@ -394,7 +395,7 @@ public class GPSViewController {
         }                
     }   
     
-/**
+    /**
      * Old Flymaster series communication method
      */
     private void readFlymOld()  {
@@ -439,7 +440,55 @@ public class GPSViewController {
             sbError.append("\r\n").append(e.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
         }                
-    }    
+    } 
+    
+    /**
+     * Old Flymaster series communication method
+     */
+    private void readDigifly()  {
+        String debugPath = "";
+        try {
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+            digifly dig = new digifly(myConfig.isDebugMode(), debugPath);
+            String s = "dig called sur "+currNamePort;
+            if (mDebug) mylogging.log(Level.INFO, s);   
+            System.out.println(s);
+            if (dig.init(currNamePort)) {     
+                // Communication OK
+                resCom = 1;
+                // flight list of GPS is dowloaded from fms.getDeviceInfo method
+                // fms fills the observable list 
+                // serial port is closed
+                idGPS = "Flymaster "+dig.getDeviceType()+" "+dig.getDeviceFirm();
+                dig.getListFlights(dataImport);
+                if (dataImport.size() > 0) {
+                    // Checking of already stored flights in logbook 
+                    for (Gpsmodel nbItem : dataImport){
+                        if (!checkInCarnet(nbItem.getDate(),nbItem.getHeure(),nbItem.getCol4())) {
+                            nbItem.setChecked(Boolean.TRUE);
+                            nbItem.setCol6("NON");
+                        } else {
+                            nbItem.setCol6("OUI");
+                        }                        
+                    }                                      
+                    // Digifly communication is OK
+                    // GPS model and serial port are stored in settings
+                    myConfig.setIdxGPS(17);                         
+                    myConfig.setLastSerialCom(currNamePort);
+                } else {
+                    // Errror will be displayed in AfficheFlyList 
+                    resCom = 6;                    
+                }                    
+            } else {
+                // Errror will be displayed in AfficheFlyList 
+                resCom = 2;
+            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());            
+        }                   
+    }     
     
     /**
      * Flytec 6020/6030 communication method
@@ -902,7 +951,8 @@ public class GPSViewController {
             flytec15 fliq = new flytec15();
             if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
             flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
-            flymasterold fmold = new flymasterold();
+            digifly dig = new digifly(myConfig.isDebugMode(), debugPath);            
+            flymasterold fmold = new flymasterold();            
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
                     case Flytec20 :
@@ -945,7 +995,12 @@ public class GPSViewController {
                         if (fms.isPresent(currNamePort)) {
                             gpsOK = true;  
                         }                            
-                        break;                           
+                        break;    
+                    case Digifly :
+                        if (dig.isPresent(currNamePort)) {
+                            gpsOK = true;  
+                        }                            
+                        break;                         
                     case FlymOld :
                         // if we're here, it's because the flightlist has been posted
                         switch (myConfig.getOS()) {
@@ -1054,6 +1109,14 @@ public class GPSViewController {
                                             strTrack = null;
                                         }                                           
                                         break;
+                                    case Digifly :
+                                        // Download instruction of the flight is stored in column 5
+                                        if (dig.getIGC(item.getCol5())) {
+                                            strTrack = fms.getFinalIGC();
+                                        } else {
+                                            strTrack = null;
+                                        }                                           
+                                        break;                                        
                                     case FlymOld :
                                         switch (myConfig.getOS()) {
                                             case WINDOWS :
@@ -1148,7 +1211,10 @@ public class GPSViewController {
                                         break;
                                     case FlymPlus :
                                         fms.closePort();
-                                        break;                                        
+                                        break;   
+                                    case Digifly :
+                                        dig.closePort();
+                                        break;                                           
                                     case FlymOld :
                                         fmold.closePort();
                                         break;
