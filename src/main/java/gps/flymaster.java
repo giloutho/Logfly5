@@ -25,8 +25,13 @@ import systemio.mylogging;
 import static gps.gpsutils.fourBytesToInt;
 import static gps.gpsutils.oneByteToInt;
 import static gps.gpsutils.twoBytesToInt;
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import waypio.pointRecord;
 
 /**
@@ -145,6 +150,36 @@ public class flymaster {
             return "No Error message";
     }
     
+    //function to debug binary tracks, will be called upon gps selection.. 
+    void debugTrack()
+    {
+        String debugFile ="";
+         //insert debug file to debug a flymaster binary, format is file#path
+         //if commented, code will exit
+        
+        //debugFile= "file#c:/jil/PFMDNL_191023065040_2";
+       
+        if (debugFile.length() ==0)
+            return;
+        
+        getFlightData(debugFile);  //Debug stuff
+        makeIGC("2019-01-01","test", "test");
+        String result = txtIGC.toString();
+    }
+        
+    byte[] readFileOnDisk( String filepath)
+    {
+        try
+        {
+            Path path = Paths.get(filepath);
+            byte[] retval =  Files.readAllBytes(path);
+            return retval;
+        } catch (IOException ex)
+        {
+
+        }
+        return null;
+    }
     /**
      * Initialize serial port and request GPS id [getDeviceInfo]
      * @param namePort
@@ -182,12 +217,15 @@ public class flymaster {
         return res;        
     }
 
+
     /**
      * Initialize the serial port for flight downloading operation
      * @param namePort
      * @return 
      */
     public boolean isPresent(String namePort) {
+ 
+        debugTrack();
         boolean res = false;
         listPFMWP = new ArrayList<String>();
         try {
@@ -433,8 +471,18 @@ public class flymaster {
             do {
                 // initialization necessary
                 listPOS = new ArrayList<String>();
-
-                byte[] trackDataRaw = serialRead(gpsCommand);
+                byte[] trackDataRaw=null;
+                
+                if (gpsCommand.startsWith("file#"))
+                {
+                    String[] filePart = gpsCommand.split("#");
+                    String file = filePart[1];
+                    trackDataRaw = readFileOnDisk(file);
+                    
+                }else 
+                {
+                    trackDataRaw = serialRead(gpsCommand);
+                }
                 byte[] trackData = getTrackData(trackDataRaw);
                 byte[] uChkSum = getCkSum(trackDataRaw);
                 boolean success;
@@ -589,8 +637,7 @@ public class flymaster {
         final int HEARTDATA_STORED = 4; //Hearth info
         final int TAS_STORED = 3; //Tas info.. someware
         final int FW_STORED = 3; //Firmware info masked with 0x40;
-		final int SOCFWDEV = 5; //Firmware info masked with 0x60;
-       
+	final int SOCFWDEV = 5; //Firmware info masked with 0x60;
         final int EVENT_STORED = 2; //Event stroed (gforce masked 0x20)
         final int GPSUNK = 1; //no data
         
@@ -731,9 +778,15 @@ public class flymaster {
                         logbookSb.append(sReachedGoal).append(",");
                         logbookSb.append(sReachedEnd);
                         logbookSb.append(RC);
-                        
-                        logbookSb.append(String.format ("LTASK: Speed Section: %d", wSpeedSection));
-                        logbookSb.append(RC);
+                        if (wSpeedSection>0)
+                        {
+                            int taskHours = wSpeedSection / 3600;
+                            int taskMinutes = (wSpeedSection - taskHours * 3600) / 60;
+                            int taskSeconds = (wSpeedSection - taskHours * 3600) - taskMinutes * 60;
+
+                            logbookSb.append(String.format ("LTASK: Speed Section: %d %02d:%02d:%02d", wSpeedSection,taskHours,taskMinutes,taskSeconds));
+                            logbookSb.append(RC);
+                        }
                     }
                     flightInfo = logbookSb.toString();
                     
@@ -901,6 +954,7 @@ public class flymaster {
                         dataType=0;
                         break;
                     }
+                    case DECLARE_STORED | 0x40:
                     case DECLARE_STORED:  //Task Stuff
                     {
                         dataType=0;
@@ -1027,15 +1081,19 @@ public class flymaster {
                         break;
                     }   
 					
-					case SOCFWDEV | 0x60: //Firmware of the track and device ID
+                    case SOCFWDEV | 0x60: //Firmware of the track and device ID
                     {
                         dataType=0;
                         int fwVer = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+1, wOffset+dwScan+3)); 
+                        int fwdevId = twoBytesToInt(Arrays.copyOfRange(FlyRaw, wOffset+dwScan+3, wOffset+dwScan+5)); 
+                        
                         int major =fwVer / 2600;
                         int minor = (fwVer - major * 2600) / 26;
                         int rev = fwVer % 26;
                         char subRev = (char)('a'+ rev);
-                        trackFw  =   String.format("%d",major)+"."+String.format("%02d",minor)+ subRev;
+                        
+                        trackFw  =   String.format("Flymaster %s (0x%02X) FW Ver: %d", getFMModelFromDeviceID(fwdevId) ,fwdevId ,major)+"."+String.format("%02d",minor)+ subRev;
+                        
                         break;
                     }  
 					
@@ -1157,6 +1215,72 @@ public class flymaster {
         return true;
       } 
     
+    public String getFMModelFromDeviceID(int devID)
+    {
+        String strRetVal = "Unknown";
+        switch (devID)
+        {
+            case 0xb301:
+                strRetVal = "LiveSD";
+                break;
+            case 0xb311:
+                strRetVal = "LiveSDII";
+                break;
+            case 0xb302:
+                strRetVal = "NavSD";
+                break;
+            case 0xb312:
+                strRetVal = "NavSDII";
+                break;
+            case 0xb303:
+                strRetVal = "GpsSD+";
+                break;
+            case 0xb313:
+                strRetVal = "GpsSD+II";
+                break;
+            case 0xb304:
+                strRetVal = "GpsSD";
+                break;
+            case 0xb314:
+                strRetVal = "GpsSDII";
+                break;
+            case 0xb305:
+                strRetVal = "VarioSD";
+                break;
+            case 0xb315:
+                strRetVal = "VarioSDII";
+                break;
+            case 0xb306:
+                strRetVal = "Watch";
+                break;
+            case 0xb307:
+                strRetVal = "Tracker";
+                break;
+            case 0xb30a:
+                strRetVal = "VarioLS";
+                break;
+            case 0xb30b:
+                strRetVal = "VarioLSII";
+                break;
+            case 0xb30c:
+                strRetVal = "VarioLS_GPS";
+                break;
+            case 0xb201:
+                strRetVal = "Live";
+                break;
+            case 0xb202:
+                strRetVal = "Nav";
+                break;
+            case 0xb203:
+                strRetVal = "Gps";
+                break;
+            case 0xb204:
+                strRetVal = "Vario";
+                break;
+
+        }
+        return strRetVal;
+    }
     
     private String makeCoordString (int lat, int lon)
     {
