@@ -75,7 +75,7 @@ public class Main extends Application {
         // last bundle
         release.setseverity("5.23");
         
-        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.024c";
+        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.024d";
         this.primaryStage.setTitle(currVersion);
         
         // Reading settings
