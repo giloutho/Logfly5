@@ -12,6 +12,7 @@ import com.serialpundit.serial.SerialComManager;
 import dialogues.alertbox;
 import gps.compass;
 import gps.connect;
+import gps.digifly;
 import gps.element;
 import gps.flymaster;
 import gps.flynet;
@@ -55,7 +56,7 @@ import systemio.mylogging;
  *          Default GPS defined in settings is selected (idxGPS = myConfig.getIdxGPS()) 
  *          First is 1. Index 0 is reserved for -> Select a GPS
  *          when choicebox index change, choixGPS is launched 
- * choixGPS : set the current GPS and run testGPS
+ * gpsChoice : set the current GPS and run testGPS
  * testGPS  : method for each supported GPS
  *             - Flymaster and Flymaster Old -> serial port choiceboix become visible [listSerialPort()]
  *             - Flytec 6020/6030 and 6015 -> serial port choiceboix become visible [listSerialPort()]
@@ -82,7 +83,7 @@ public class winGPS {
     private I18n i18n; 
     private configProg myConfig;   
     
-    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus }    
+    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus, Digifly }    
     private ObservableList <listGPS.idGPS> allGPS;
     // current GPS
     private gpsType currGPS;
@@ -209,7 +210,7 @@ public class winGPS {
         btRefresh = new Button(i18n.tr("Update"));
         btRefresh.setOnAction((event) -> {
             lbInfo.setText("");
-            choixGPS(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
+            gpsChoice(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
         });        
         btRefresh.setVisible(false);
         Tooltip refToolTip = new Tooltip();
@@ -265,20 +266,20 @@ public class winGPS {
           public void changed(ObservableValue ov, Number value, Number new_value) {
               // some troubles with btRefresh.setOnAction chbGPS.getSelectionModel().getSelectedIndex()) returns bad values
               idxChbGPS = new_value.intValue();
-              choixGPS(allGPS.get(new_value.intValue()).getIdModel());              
+              gpsChoice(allGPS.get(new_value.intValue()).getIdModel());              
           }
         });     
         if (waypCall)
-            choixGPS(0);
+            gpsChoice(0);
         else            
-            choixGPS(myConfig.getIdxGPS());
+            gpsChoice(myConfig.getIdxGPS());
     }    
     
     /**
      * triggered by GPS choicebox, if necessary serial choice box becomes visible
      * @param idxGPS 
      */    
-    private void choixGPS(int idxGPS) {
+    private void gpsChoice(int idxGPS) {
         lbPort.setVisible(false);
         cbSerial.setVisible(false);
         if (mDebug) mylogging.log(Level.INFO, "GPS index : "+idxGPS);
@@ -404,7 +405,12 @@ public class winGPS {
                 currGPS = gpsType.FlymPlus;  
                 listSpSerialPort();
                 break;                     
-        }                
+            case 17:
+                // Digifly will be read by Digifly
+                currGPS = gpsType.Digifly;  
+                listSpSerialPort();
+                break;                             
+        }             
     }    
         
     /**
@@ -606,6 +612,23 @@ public class winGPS {
                         }   
                     }                                                            
                     break;
+                case Digifly :   
+                    if (currNamePort != null && !currNamePort.equals("")) {
+                        try {            
+                            digifly dig = new digifly(false, "");
+                            if (dig.isPresent(currNamePort)) {    
+                                gpsPresent();
+                            } else {
+                                gpsNotPresent();
+                            } 
+                            dig.closePort();               
+                        } catch (Exception e) {
+                            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                            sbError.append("\r\n").append(e.toString());
+                            mylogging.log(Level.SEVERE, sbError.toString());            
+                        }   
+                    }              
+                    break;                       
                 case Rever :  
                     usbRever = new reversale(myConfig.getOS(), myConfig.getGpsLimit());
                     displayDrives(usbRever.getDriveList(),usbRever.getIdxDrive());          
