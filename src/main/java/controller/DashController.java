@@ -479,7 +479,7 @@ public class DashController {
         sumGlidersDuration = 0;
         String nameGlider;
         String yearFilter = chAllYears.getSelectionModel().getSelectedItem().toString();
-        String sReq = "SELECT V_Engin,Count(V_ID),Sum(V_Duree) FROM Vol WHERE strftime('%Y',V_date) = ? GROUP BY V_Engin ORDER BY Count(V_ID) DESC";
+        String sReq = "SELECT V_Engin,Count(V_ID),Sum(V_Duree) FROM Vol WHERE strftime('%Y',V_date) = ? GROUP BY V_Engin ORDER BY Sum(V_Duree) DESC";
         try {
             pstmt = myConfig.getDbConn().prepareStatement(sReq);   
             pstmt.setString(1, yearFilter); 
