@@ -172,14 +172,27 @@ public class winGPS {
         
         cbSerial = new ChoiceBox();    
                 
-        cbSerial.setMinWidth(200);
+        cbSerial.setMinWidth(150);
+        cbSerial.setMaxWidth(200);
+        
+        btRefresh = new Button(i18n.tr("Update"));
+        btRefresh.setOnAction((event) -> {
+            lbInfo.setText("");
+            gpsChoice(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
+        });        
+        btRefresh.setVisible(false);
+        Tooltip refToolTip = new Tooltip();
+        refToolTip.setStyle(myConfig.getDecoToolTip());
+        refToolTip.setText(i18n.tr("Refreshes the list of ports or disks"));
+        btRefresh.setTooltip(refToolTip);        
+        
                 
         hBox2 = new HBox();
-        hBox2.getChildren().addAll(lbPort, cbSerial);
         hBox2.setSpacing(10);
         hBox2.setMaxHeight(25);
         hBox2.setMinWidth(260);
         hBox2.setAlignment(Pos.CENTER_LEFT);
+        hBox2.getChildren().addAll(lbPort, cbSerial,btRefresh);
                                
         final VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
@@ -189,7 +202,7 @@ public class winGPS {
         HBox buttonBar = new HBox();
         buttonBar.setPadding(new Insets(6));
         buttonBar.setSpacing(5);
-        buttonBar.setAlignment(Pos.CENTER_RIGHT);
+        buttonBar.setAlignment(Pos.CENTER);
         btConnexion = new Button("Connexion");
         btConnexion.setOnAction((event) -> {
             lbInfo.setText("");
@@ -207,24 +220,25 @@ public class winGPS {
             gpsConnect = false;
             subStage.close();
         });
-        btRefresh = new Button(i18n.tr("Update"));
-        btRefresh.setOnAction((event) -> {
-            lbInfo.setText("");
-            gpsChoice(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
-        });        
-        btRefresh.setVisible(false);
-        Tooltip refToolTip = new Tooltip();
-        refToolTip.setStyle(myConfig.getDecoToolTip());
-        refToolTip.setText(i18n.tr("Refreshes the list of ports or disks"));
-        btRefresh.setTooltip(refToolTip);
-        
-        buttonBar.getChildren().addAll(btRefresh, btConnexion, btCancel);
+//        btRefresh = new Button(i18n.tr("Update"));
+//        btRefresh.setOnAction((event) -> {
+//            lbInfo.setText("");
+//            gpsChoice(allGPS.get(chbGPS.getSelectionModel().getSelectedIndex()).getIdModel());
+//        });        
+//        btRefresh.setVisible(false);
+//        Tooltip refToolTip = new Tooltip();
+//        refToolTip.setStyle(myConfig.getDecoToolTip());
+//        refToolTip.setText(i18n.tr("Refreshes the list of ports or disks"));
+//        btRefresh.setTooltip(refToolTip);
+//        
+//        buttonBar.getChildren().addAll(btRefresh, btConnexion, btCancel);
+        buttonBar.getChildren().addAll(btConnexion, btCancel);
         
         btConnexion.setVisible(false);    
         
         lbInfo = new Label();
         lbInfo.setAlignment(Pos.CENTER);
-        lbInfo.setMinWidth(200);
+        lbInfo.setMinWidth(250);
         
         HBox hBox3 = new HBox();
         
@@ -238,7 +252,7 @@ public class winGPS {
         
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
-        subStage.setScene(new Scene(subRoot, 330, 150));
+        subStage.setScene(new Scene(subRoot, 340, 150));
         iniChbGPS();
         if (!gpsConnect) subStage.showAndWait();         
     }    
