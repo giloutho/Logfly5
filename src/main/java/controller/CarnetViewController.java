@@ -1049,10 +1049,15 @@ public class CarnetViewController  {
         ObservableList<String> lsGliders = FXCollections.observableArrayList();       
         Statement stmt = null;
         ResultSet rs = null;
+        String req;
         
         try {
-            stmt = myConfig.getDbConn().createStatement();                       
-            rs = stmt.executeQuery("SELECT V_Engin,Count(V_ID) FROM Vol GROUP BY upper(V_Engin)");
+            stmt = myConfig.getDbConn().createStatement();  
+            // We want the most recent used in first
+            req = "SELECT V_Engin, strftime('%Y-%m',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y-%m',V_date) DESC";
+            //req = "SELECT V_Engin, strftime('%Y',V_date) FROM Vol GROUP BY upper(V_Engin) ORDER BY strftime('%Y',V_date) DESC";
+            // Original req = "SELECT V_Engin,Count(V_ID) FROM Vol GROUP BY upper(V_Engin)";
+            rs = stmt.executeQuery(req);
             if (rs != null)  {             
                 while (rs.next()) {
                     String gl = rs.getString(1);
