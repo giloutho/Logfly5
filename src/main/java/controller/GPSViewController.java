@@ -459,7 +459,7 @@ public class GPSViewController {
                 // flight list of GPS is dowloaded from fms.getDeviceInfo method
                 // fms fills the observable list 
                 // serial port is closed
-                idGPS = "Flymaster "+dig.getDeviceType()+" "+dig.getDeviceFirm();
+                idGPS = "Digifly Air "+dig.getDeviceType()+" "+dig.getDeviceFirm();
                 dig.getListFlights(dataImport);
                 if (dataImport.size() > 0) {
                     // Checking of already stored flights in logbook 
@@ -901,6 +901,9 @@ public class GPSViewController {
                                 break;                                
                         } 
                         break;
+                   case Digifly:
+                        readDigifly();
+                        break;
                     case Rever :
                     case Sky :
                     case Sky3 :    
@@ -1111,8 +1114,8 @@ public class GPSViewController {
                                         break;
                                     case Digifly :
                                         // Download instruction of the flight is stored in column 5
-                                        if (dig.getIGC(item.getCol5())) {
-                                            strTrack = fms.getFinalIGC();
+                                        if (dig.getIGC(item.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
+                                            strTrack = dig.getFinalIGC();
                                         } else {
                                             strTrack = null;
                                         }                                           
