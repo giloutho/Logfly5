@@ -45,7 +45,10 @@
                   <TableColumn fx:id="gDurCol" maxWidth="90.0" prefWidth="90.0" text="pDuree" />
               </columns>
             </TableView>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" height="366.0" layoutX="102.0" layoutY="393.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="434.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowSpan="3" />
+            <Rectangle arcHeight="5.0" arcWidth="5.0" height="366.0" layoutX="102.0" layoutY="393.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="434.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowSpan="3">
+               <GridPane.margin>
+                  <Insets top="7.0" />
+               </GridPane.margin></Rectangle>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowSpan="2">
                <children>
                   <RadioButton fx:id="rdFlights" minWidth="100.0" mnemonicParsing="false" onAction="#pushFlights" prefWidth="100.0" text="Vols" textFill="WHITE" />
@@ -73,7 +76,10 @@
                 <NumberAxis side="LEFT" tickLabelFill="WHITE" />
               </yAxis>
             </LineChart>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" height="364.0" layoutX="94.0" layoutY="388.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="219.0" GridPane.columnIndex="3" GridPane.rowSpan="3" />
+            <Rectangle arcHeight="5.0" arcWidth="5.0" height="364.0" layoutX="94.0" layoutY="388.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="219.0" GridPane.columnIndex="3" GridPane.rowSpan="3">
+               <GridPane.margin>
+                  <Insets top="7.0" />
+               </GridPane.margin></Rectangle>
             <TableView fx:id="tableMonths" layoutX="147.0" layoutY="319.0" maxHeight="290.0" maxWidth="215.0" minHeight="290.0" minWidth="215.0" prefHeight="290.0" prefWidth="215.0" stylesheets="@dashtable.css" GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.rowSpan="2">
                <columns>
                   <TableColumn fx:id="mMonthsCol" maxWidth="70.0" prefWidth="70.0" text="pMois" />
