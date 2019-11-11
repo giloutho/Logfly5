@@ -1241,6 +1241,14 @@ public class WaypViewController {
                         break;
                 } 
                 break;    
+            case Digifly :
+                StringBuilder sbDigi = new StringBuilder();
+                // For i18n, it's forbidden to put /r/n in the string
+                sbDigi.append(i18n.tr("Save to disk"));
+                sbDigi.append("\r\n");
+                sbDigi.append(i18n.tr("Use an external program to download waypoints"));
+                aError.alertInfo(sbDigi.toString()); 
+                break;                    
             case Rever :
                 writeToGpsSimple();
                 break;
@@ -1613,6 +1621,9 @@ public class WaypViewController {
                         break;
                 }                 
                 break;
+            case Digifly :
+                aError.alertInfo(i18n.tr("Not supported, use an external program"));                
+                break;                                            
             case Rever :
                 readFromGpsSimple();
                 break;
