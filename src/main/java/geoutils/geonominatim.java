@@ -116,9 +116,21 @@ public class geonominatim {
                 } else {
                     geoVille = "";
                 }
-                geoCodepays = adress.get("country_code").toString().toUpperCase();
-                geoPays = adress.get("country").toString();
-                geoCP = adress.get("postcode").toString();
+                if (adress.get("country_code") != null) {
+                    geoCodepays = adress.get("country_code").toString().toUpperCase();
+                } else {
+                    geoCodepays ="";
+                }
+                if (adress.get("country") != null) {
+                    geoPays = adress.get("country").toString();
+                } else {
+                    geoPays = "";
+                }
+                if (adress.get("postcode") != null) {
+                    geoCP = adress.get("postcode").toString();
+                } else {
+                    geoCP = "";
+                }                
                 geoStatus = "OK";
             } catch (ParseException ex) {
                 sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
