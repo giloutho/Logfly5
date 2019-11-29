@@ -25,8 +25,6 @@ import systemio.mylogging;
 import static gps.gpsutils.fourBytesToInt;
 import static gps.gpsutils.oneByteToInt;
 import static gps.gpsutils.twoBytesToInt;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -101,6 +99,8 @@ public class flymaster {
     private StringBuilder sbError = null;
     private boolean mDebug;
     private String debugPath;
+    private boolean portClosed=true;
+    
     //To log binary on flle set to true
     boolean fileDebug = false;
     
@@ -190,24 +190,13 @@ public class flymaster {
         try {
             listPFM = new ArrayList<String>();
             // open and configure serial port
-            serialPortName = namePort;
-            scm = new SerialComManager();
-            handle = scm.openComPort(serialPortName, true, true, true);
-            scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
-            scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-
-            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
-            //if(osType != SerialComPlatform.OS_WINDOWS) {
-                // Prepare serial port for burst style data read of 500 milli-seconds timeout
-                // This line is a problem with Windows
-                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-            //}
+            openPort(namePort);
             // ID GPS request + raw flight list (true)
             if (getDeviceInfo(true)) {
                 res = true;
             }   
             // Closing port mandatory
-            scm.closeComPort(handle);
+            closePort();
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
@@ -229,23 +218,11 @@ public class flymaster {
         boolean res = false;
         listPFMWP = new ArrayList<String>();
         try {
-            // open and configure serial port
-            serialPortName = namePort;
-            scm = new SerialComManager();
-            handle = scm.openComPort(serialPortName, true, true, true);            
-            scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
-            scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
-           // if(osType != SerialComPlatform.OS_WINDOWS) {
-                // Prepare serial port for burst style data read of 500 milli-seconds timeout
-                // This line is a problem with Windows
-                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-                // scm.fineTuneReadBehaviour(handle, 0, 3000, 0, 0, 0);
-          //  }
+            openPort(namePort);
             if (getDeviceInfo(false)) {
                 res = true;
             } else {
-                scm.closeComPort(handle);
+                closePort();
             } 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -254,10 +231,38 @@ public class flymaster {
         }
         return res;        
     }
+    public void openPort(String namePort)
+    {
+        if (!portClosed)
+            return;
+        try {
+            // open and configure serial port
+            serialPortName = namePort;
+            scm = new SerialComManager();
+            handle = scm.openComPort(serialPortName, true, true, true);       
+            portClosed=false;
+            scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
+            scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
+            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
+           // if(osType != SerialComPlatform.OS_WINDOWS) {
+                // Prepare serial port for burst style data read of 500 milli-seconds timeout
+                // This line is a problem with Windows
+                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+                // scm.fineTuneReadBehaviour(handle, 0, 3000, 0, 0, 0);
+
+            } catch (Exception e) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());
+            }
+    }
     
     public void closePort() {
+        if (portClosed)
+            return;
         try {
             scm.closeComPort(handle);
+             portClosed=true;
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
