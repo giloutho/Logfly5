@@ -59,6 +59,7 @@ public class digifly {
     private String finalIGC;
     private String debugPath;
     private boolean is400fw=false;
+    private boolean portClosed=true;
     
     public digifly(boolean pDebug, String pDebugPath) throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
@@ -84,6 +85,13 @@ public class digifly {
     public String getFinalIGC() {
         return finalIGC;
     }
+    
+    public String getError() {
+        if (sbError != null)
+            return sbError.toString();
+        else
+            return "No Error message";
+    }
     /**
      * Initialize the serial port and ask Gps ID
      * @param namePort
@@ -93,25 +101,12 @@ public class digifly {
         boolean res = false;
         listPFMWP = new ArrayList<String>();
         try {
-            // open and configure serial port
-            serialPortName = namePort;
-
-            scm = new SerialComManager();
-            handle = scm.openComPort(serialPortName, true, true, true);            
-            scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B115200, 0);
-            scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
-           // if(osType != SerialComPlatform.OS_WINDOWS) {
-                // Prepare serial port for burst style data read of 500 milli-seconds timeout
-                // This line is a problem with Windows
-                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-                // scm.fineTuneReadBehaviour(handle, 0, 3000, 0, 0, 0);
-          //  }
+            openPort(namePort);
 
             if (getDeviceInfo(false)) {
                 res = true;
             } else {
-                scm.closeComPort(handle);
+                closePort();
             } 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -127,15 +122,35 @@ public class digifly {
      * @return 
      */
     public boolean init(String namePort) {
-        closePort();
         boolean res = false;
         try {
             listFLL = new ArrayList<String>();
-
+            openPort(namePort);
+            // ID GPS request + raw flight list (true)
+            if (getDeviceInfo(true)) {
+                res = true;
+            }   
+            // Closing port mandatory
+            closePort();
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+        
+        return res;        
+    }    
+    public void openPort(String namePort)
+    {
+        if (!portClosed)
+            return;
+        
+         try {
             // open and configure serial port
             serialPortName = namePort;
             scm = new SerialComManager();
             handle = scm.openComPort(serialPortName, true, true, true);
+            portClosed=false;
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B115200, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
 
@@ -146,24 +161,19 @@ public class digifly {
                 scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
             //}
 
-            // ID GPS request + raw flight list (true)
-            if (getDeviceInfo(true)) {
-                res = true;
-            }   
-            // Closing port mandatory
-            scm.closeComPort(handle);
-        } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
-            mylogging.log(Level.SEVERE, sbError.toString());
-        }
-        
-        return res;        
-    }    
-    
+            } catch (Exception e) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());
+            }
+    }
     public void closePort() {
         try {
+            if (portClosed)
+                return;
+            
             scm.closeComPort(handle);
+            portClosed=true;
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
@@ -469,7 +479,7 @@ public class digifly {
         for (byte rb : retval1)
             retval[curs++]=rb;
         
-        closePort();
+        //closePort();
         return retval;
     }
     
