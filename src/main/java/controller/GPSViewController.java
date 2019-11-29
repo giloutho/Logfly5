@@ -1202,30 +1202,28 @@ public class GPSViewController {
                                     mylogging.log(Level.SEVERE, sbError.toString());    
                                 }                    
                             }
-                        }     
-                        if (myConfig.getOS() == osType.MACOS || myConfig.getOS() == osType.LINUX ) {  
-                            try {
-                                switch (currGPS) {  
-                                    case Flytec20 :
-                                        fls.closePort();
-                                        break;
-                                    case Flytec15 :
-                                        fliq.closePort();
-                                        break;
-                                    case FlymPlus :
-                                        fms.closePort();
-                                        break;   
-                                    case Digifly :
-                                        dig.closePort();
-                                        break;                                           
-                                    case FlymOld :
-                                        fmold.closePort();
-                                        break;
-                                }
-                            } catch (Exception e) {
+                        }                          
+                        try {
+                            switch (currGPS) {  
+                                case Flytec20 :
+                                    fls.closePort();
+                                    break;
+                                case Flytec15 :
+                                    fliq.closePort();
+                                    break;
+                                case FlymPlus :
+                                    fms.closePort();
+                                    break;   
+                                case Digifly :
+                                    dig.closePort();
+                                    break;                                           
+                                case FlymOld :
+                                    fmold.closePort();
+                                    break;
+                            }
+                        } catch (Exception e) {
 
-                            }         
-                        }           
+                        }                                            
                         nbInserted = nbFlightIn;
                         
                         return null ;                 
@@ -1477,6 +1475,23 @@ public class GPSViewController {
                                 errorComMsg = fliq.getError();
                             }
                             break; 
+                        case Digifly:
+                            String debugPathdigi = "";
+                            if (fDebug != null && fDebug.exists()) debugPathdigi = fDebug.getAbsolutePath()+File.separator;
+                            digifly digi = new digifly(myConfig.isDebugMode(), debugPathdigi);
+                            if (digi.isPresent(currNamePort)) {
+                                String sDate = selLineTable.getDate().replaceAll("\\.", "");
+                                if (digi.getIGC(selLineTable.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
+                                    strTrack = digi.getFinalIGC();
+                                    digi.closePort(); 
+                                    resCom = 0;
+                                } else {
+                                    errorComMsg = digi.getError();
+                                }
+                            } else {
+                                errorComMsg = digi.getError();
+                            }
+                            break;     
                         case FlymPlus :    
                         case FlymSD :
                             String debugPath = "";
@@ -1734,6 +1749,9 @@ public class GPSViewController {
                                 oneFlightWithProgress(currLineSelection);                                  
                             break;
                         }                                                       
+                        break;
+                    case Digifly:
+                        oneFlightWithProgress(currLineSelection);  
                         break;
                     case Rever :
                     case Sky :
