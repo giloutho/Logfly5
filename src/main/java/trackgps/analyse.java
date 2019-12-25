@@ -40,6 +40,7 @@ public class analyse {
     private int bestGainEnd;
     private double bestGlide = 0.0;
     private int bestGlideEnd;
+    private final double progressValue = 0.7;
     
     public List<remarkable> finalThermals = new ArrayList<remarkable>(); 
     public List<remarkable> finalDives = new ArrayList<remarkable>(); 
@@ -160,7 +161,7 @@ public class analyse {
         boolean inGlide = false; 
         int startPoint = 0;
         for (int j = 1; j < progress.size(); j++) {
-            if (progress.get(j) >= 0.9) {
+            if (progress.get(j) >= progressValue) {
                 if (!inGlide) {                     
                     startPoint = j;     
                     inGlide = true;
@@ -215,7 +216,7 @@ public class analyse {
         // dive detection
         boolean inDive = false;         
         for (int j = 1; j < progress.size(); j++) {
-            if (progress.get(j) < 0.9 && climb.get(j) < 1.0) {
+            if (progress.get(j) < progressValue && climb.get(j) < 1.0) {
                 if (!inDive) {                     
                     startPoint = j;     
                     inDive = true;
@@ -267,19 +268,22 @@ public class analyse {
         // thermal detection
         boolean inThermal = false;         
         for (int j = 1; j < progress.size(); j++) {
-            if ((progress.get(j) < 0.9 && climb.get(j) > 0.0) || (speed.get(j) < 10.0 && climb.get(j) > 0.0) || (climb.get(j) > 1.0)) {
+            //if ((progress.get(j) < progressValue && climb.get(j) > 0.0) || (speed.get(j) < 10.0 && climb.get(j) > 0.0) || (climb.get(j) > 1.0)) {
+            // we remove last condition climb.get(j) > 1.0
+            // In a load-bearing air mass, it is possible to glide with a Vz greater than 1.0 m/s
+            if ((progress.get(j) < progressValue && climb.get(j) > 0.0) || (speed.get(j) < 10.0 && climb.get(j) > 0.0)) {    
                 if (!inThermal) {                     
                     startPoint = j;     
                     inThermal = true;
-                }                
+                }   
             } else {
                 if (inThermal) {
-                    specialSegment pThermal = new specialSegment();
-                    pThermal.idxStart = startPoint;
-                    pThermal.idxEnd = j;
-                    pThermal.typePoint = THERMAL;
-                    lstThermal.add(pThermal);
-                    inThermal = false;
+                        specialSegment pThermal = new specialSegment();
+                        pThermal.idxStart = startPoint;
+                        pThermal.idxEnd = j;
+                        pThermal.typePoint = THERMAL;
+                        lstThermal.add(pThermal);
+                    inThermal = false;                    
                 }
             }
         }        
@@ -329,7 +333,8 @@ public class analyse {
             long diffT = t.get(endPoint) - t.get(startPoint);
             double diffEle = coords.get(endPoint).ele - coords.get(startPoint).ele;
             if (state[i] == THERMAL) {
-                if (diffT >= 60 && diffEle > 50) {
+                // Only gains in altitude above 100 m will be taken into consideration
+                if (diffT >= 60 && diffEle > 100) {
                     addDetails(startPoint, endPoint, THERMAL);
                 }                
             } else {
@@ -387,6 +392,7 @@ public class analyse {
         double climb_min = 0;
         double dz;
         long dt;
+        double dp = distanceTo(coord0, coord1); 
         for (int i = idxStart; i < idxEnd; i++) {
             dz = coords.get(i + 1).ele - coords.get(i).ele;
             dt = t.get(i + 1) - t.get(i);
@@ -399,12 +405,11 @@ public class analyse {
             if (peak_climb < peak_climb_min) peak_climb_min = peak_climb;     
             double currClimb = climb.get(i);
             if (currClimb > climb_max) climb_max = currClimb;
-            if (currClimb < climb_min) climb_min = currClimb;    
+            if (currClimb < climb_min) climb_min = currClimb;  
             
         }
         dz = coords.get(idxEnd).ele - coords.get(idxStart).ele;
-        dt = t.get(idxEnd) - t.get(idxStart);
-        double dp = distanceTo(coord0, coord1);   
+        dt = t.get(idxEnd) - t.get(idxStart);  
         double theta = initial_bearing(coord0,coord1);
         int deltaAlt = (int) Math.round(dz);
         if (deltaAlt > bestGain) {
@@ -439,7 +444,6 @@ public class analyse {
         currRmk.setDrift_direction(rad_to_cardinal(theta + Math.PI));
         currRmk.setDuration(dt);
         currRmk.setCategory(category);
-
         switch (category) {
             case THERMAL:
                 finalThermals.add(currRmk);
@@ -483,6 +487,18 @@ public class analyse {
         
         return res;
     }
+    
+    private double height_triangle(int sideA, int sideB, int sideC) {
+        
+        // compute half triangle perimeter
+        double s = (sideA+sideB+sideC)/2;
+        // the second part of the Heron formula is then used
+        double dArea = Math.sqrt(s*(s-sideA)*(s-sideB)*(s-sideC));
+        double h = (dArea*2)/sideB;
+        
+        return h;
+        
+    }    
     
     private double initial_bearing(transCoord c, transCoord other) {
         // return the initial bearing from self to other
