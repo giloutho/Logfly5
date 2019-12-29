@@ -15,9 +15,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import model.cutting;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -62,6 +65,7 @@ public class map_visu {
     private StringBuilder jsGallery;
     private StringBuilder jsPhotosCode;
     private StringBuilder jsGalleryCode;
+    private StringBuilder jsChronoData;
     
     private analyse trackAnalyze;
     
@@ -109,6 +113,7 @@ public class map_visu {
         jsPhotosCode = new StringBuilder();
         jsGallery = new StringBuilder();
         jsGalleryCode = new StringBuilder();
+        jsChronoData = new StringBuilder();
                
         i18n = I18nFactory.getI18n("","lang/Messages",map_visu.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         
@@ -116,13 +121,8 @@ public class map_visu {
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);       
         
-        trackAnalyze = new analyse(traceVisu);
-        
-//        for (int i = 0; i < trackAnalyze.finalDives.size(); i++) {
-//            System.out.println(trackAnalyze.finalDives.get(i).getHTMLDives(i18n));
-//        }
-        
-        
+        trackAnalyze = new analyse(traceVisu, i18n);
+                        
         carteVisu(traceVisu);       
     } 
     
@@ -321,7 +321,29 @@ public class map_visu {
                   
         return res;
         
-    }                
+    }               
+    
+    public boolean genChronoData(traceGPS currTrack) {  
+           
+        boolean res = false;
+        
+        jsChronoData.append("       <a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>").append(RC);
+        ArrayList<cutting> cuttingList = trackAnalyze.getCuttingList();
+        if (cuttingList.size() > 0) {
+            for (int i = 1; i < cuttingList.size()-1 ; i++) {
+                StringBuilder sblatLong = new StringBuilder();
+                
+                jsChronoData.append("<a href=\"javascript:void(0)\" onclick=\"displaySegment(");
+                jsChronoData.append(cuttingList.get(i).getCCoord().toString()).append(")\">");
+                jsChronoData.append(cuttingList.get(i).toString()).append("</a>").append(RC);                    
+            }
+            res = true;
+        }
+        
+        return res;
+    }    
+    
+    
     /**
      * HTML generation of trunpoints markers
      * in xLogfly -> jsVisuBal
@@ -807,9 +829,15 @@ public class map_visu {
                 } else  {
                     thermiqHTML = glideHTML;
                 }   
+                String chronoHTML;
+                if (genChronoData(traceVisu)) {
+                    chronoHTML = thermiqHTML.replace("//%chronoData%", jsChronoData.toString());
+                } else {
+                    chronoHTML = thermiqHTML;
+                }                    
                 genLegende(traceVisu);
-                map_HTML_NoScore = thermiqHTML;
-                String endHTML = thermiqHTML;
+                map_HTML_NoScore = chronoHTML;
+                String endHTML = chronoHTML;
                 if (traceVisu.isScored())  {
                     String balisesHTML;
                     if (genBalises(traceVisu)) {
