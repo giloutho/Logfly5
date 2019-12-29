@@ -53,7 +53,7 @@ public class trackThermal {
         decimalFormatSymbols.setDecimalSeparator('.');        
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);
         
-        trackAnalyze = new analyse(pTrace);
+        trackAnalyze = new analyse(pTrace, i18n);
     }
     
     /**
