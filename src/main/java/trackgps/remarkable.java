@@ -165,10 +165,19 @@ public class remarkable {
         this.start_time = start_time;
     }
 
+    public LocalDateTime getStart_time() {
+        return start_time;
+    }
+        
+
     public void setFinish_time(LocalDateTime finish_time) {
         this.finish_time = finish_time;
     }
 
+    public LocalDateTime getFinish_time() {
+        return finish_time;
+    }    
+    
     public void setDrift_direction(String drift_direction) {
         this.drift_direction = drift_direction;
     }               
