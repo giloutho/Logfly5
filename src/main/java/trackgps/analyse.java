@@ -6,12 +6,19 @@
  */
 package trackgps;
 
+import igc.pointIGC;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import model.cutting;
+import org.xnap.commons.i18n.I18n;
 
 /**
  * 
@@ -26,9 +33,11 @@ import java.util.List;
 public class analyse {
     
     private traceGPS currTrace;
+    private I18n i18n; 
     private List<transCoord> coords = new ArrayList<transCoord>();
     private List<Long> t = new ArrayList<Long>(); 
     private List<Double> climb = new ArrayList<Double>(); 
+    private ArrayList<cutting> cuttingList = new ArrayList<cutting>();
 
     private double R = 6371000.0;
     private String[] cardinals = {"N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"};
@@ -46,8 +55,15 @@ public class analyse {
     public List<remarkable> finalDives = new ArrayList<remarkable>(); 
     public List<remarkable> finalGlides = new ArrayList<remarkable>();     
     
-    public analyse(traceGPS pTrack) {        
+    private int extractTime;    
+    double percThermals;
+    double percGlides;
+    double percDives;
+    
+    
+    public analyse(traceGPS pTrack, I18n pI18n) {        
         this.currTrace = pTrack;  
+        i18n = pI18n;
         for (int i = 0; i < currTrace.Tb_Good_Points.size(); i++) {
             transCoord c = new transCoord(currTrace.Tb_Good_Points.get(i).Latitude,currTrace.Tb_Good_Points.get(i).Longitude,currTrace.Tb_Good_Points.get(i).AltiGPS,currTrace.Tb_Good_Points.get(i).dHeure);
             coords.add(c);
@@ -62,7 +78,11 @@ public class analyse {
     public double getBestGlideEnd() {
         return bestGlideEnd;
     }
-                    
+
+    public ArrayList<cutting> getCuttingList() {
+        return cuttingList;
+    }
+                            
     private void compute()  {
         int dt = 20;   // dt est le péridoe d'exploration fixé à 20 secondes par défaut  (ligne 39)
         int n = coords.size();
@@ -343,8 +363,9 @@ public class analyse {
                         addDetails(startPoint, endPoint, DIVE);                        
                     }
                 } else {
-                    if (state[i] == GLIDE) {                        
-                        if (diffT >= 120) {
+                    if (state[i] == GLIDE) {   
+                        double dp = distanceTo(coords.get(startPoint), coords.get(endPoint));                                 
+                        if (dp >= 2000) {
                             addDetails(startPoint, endPoint, GLIDE);                            
                         }
                     }
@@ -353,7 +374,111 @@ public class analyse {
 
         }
         currTrace.setBestGain(bestGain);
+        
+        fillCuttingList();
     }
+    
+    private void fillCuttingList() {
+
+        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+        decimalFormatSymbols.setDecimalSeparator('.');        
+        DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);         
+        
+        double totPeriod;
+        double totThermals;
+        double totGlides;
+        double totDives;
+        
+        // Take off
+        String h = currTrace.getDT_Deco().format(DateTimeFormatter.ofPattern("HH:mm:ss"));   
+        cutting cu = new cutting();
+        cu.setCTime(h);
+        cu.setCElapsed("");
+        cu.setCText(i18n.tr("Take off")); 
+        cu.setCLdt(currTrace.getDT_Deco());                      
+        cuttingList.add(cu);
+        
+        cu = new cutting();
+        h = currTrace.getDT_Attero().format(DateTimeFormatter.ofPattern("HH:mm:ss"));         
+        cu.setCTime(h);
+        cu.setCElapsed("");
+        cu.setCText(i18n.tr("Landing")); 
+        cu.setCLdt(currTrace.getDT_Attero());        
+        cuttingList.add(cu);
+        
+        double dLat1, dLong1, dLat2, dLong2;
+        
+        totPeriod = Math.abs(Duration.between(currTrace.getDT_Attero(),currTrace.getDT_Deco()).getSeconds());              
+        
+        totThermals = 0;
+        for (int i = 0; i < finalThermals.size(); i++) {
+            remarkable currRmk = finalThermals.get(i);
+            cu = new cutting();
+            h = currRmk.getStart_time().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            cu.setCTime(h);
+            cu.setCElapsed("xx");
+            cu.setCText(i18n.tr("Thermal")+" "+String.valueOf(i));  
+            cu.setCHTML(currRmk.getHTMLThermal(i18n));
+            cu.setCLdt(currRmk.getFinish_time());
+            int pThermal = (int) Math.abs(Duration.between(currRmk.getFinish_time(),currRmk.getStart_time()).getSeconds());  
+            pointIGC startPoint = currTrace.Tb_Good_Points.get(currRmk.getIdxStart());              
+            pointIGC endPoint = currTrace.Tb_Good_Points.get(currRmk.getIdxEnd());
+            StringBuilder sbCoord = new StringBuilder();
+            sbCoord.append(decimalFormat.format(startPoint.Latitude)).append(",");
+            sbCoord.append(decimalFormat.format(startPoint.Longitude)).append(",");       
+            sbCoord.append(decimalFormat.format(endPoint.Latitude)).append(",");
+            sbCoord.append(decimalFormat.format(endPoint.Longitude));
+            cu.setCCoord(sbCoord.toString());
+            
+            totThermals += pThermal;
+            cuttingList.add(cu);
+        }
+        
+        totGlides = 0;
+        for (int i = 0; i < finalGlides.size(); i++) {
+            remarkable currRmk = finalGlides.get(i);
+            cu = new cutting();
+            h = currRmk.getStart_time().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            cu.setCTime(h);
+            cu.setCElapsed("xx");
+            cu.setCText(i18n.tr("Glide")+" "+String.valueOf(i));  
+            cu.setCHTML(currRmk.getHTMLGlides(i18n));
+            cu.setCLdt(currRmk.getFinish_time());
+            
+            int pGlide = (int) Math.abs(Duration.between(currRmk.getFinish_time(),currRmk.getStart_time()).getSeconds());  
+            if (i == 0) extractTime = (int) Math.abs(Duration.between(currRmk.getStart_time(),currTrace.getDT_Deco()).getSeconds());  
+            pointIGC startPoint = currTrace.Tb_Good_Points.get(currRmk.getIdxStart());              
+            pointIGC endPoint = currTrace.Tb_Good_Points.get(currRmk.getIdxEnd());
+            StringBuilder sbCoord = new StringBuilder();
+            sbCoord.append(decimalFormat.format(startPoint.Latitude)).append(",");
+            sbCoord.append(decimalFormat.format(startPoint.Longitude)).append(",");       
+            sbCoord.append(decimalFormat.format(endPoint.Latitude)).append(",");
+            sbCoord.append(decimalFormat.format(endPoint.Longitude));
+            cu.setCCoord(sbCoord.toString());
+            
+            totGlides += pGlide;            
+            cuttingList.add(cu);
+        }        
+        
+        totDives = 0;
+        for (int i = 0; i < finalDives.size(); i++) {
+            remarkable currRmk = finalDives.get(i);
+            int pDive = (int) Math.abs(Duration.between(currRmk.getFinish_time(),currRmk.getStart_time()).getSeconds());  
+            
+            totDives += pDive;
+        }
+        
+        Collections.sort(cuttingList, cutting.elapsedComparator);
+        for (int i = 1; i < cuttingList.size(); i++) {
+            int period = (int) Math.abs(Duration.between(cuttingList.get(i).getCLdt(),cuttingList.get(0).getCLdt()).getSeconds()); 
+            cuttingList.get(i).setCElapsed(formatPeriod(period));   
+        }
+        
+        percThermals = totThermals/totPeriod;
+        percGlides = totGlides/totPeriod;
+        percDives = totDives/totPeriod;        
+        
+    }    
     
     /*
     *  Only for debug purpose
@@ -547,6 +672,20 @@ public class analyse {
         public int idxEnd;
         public int typePoint;
     }
+    
+    private  String formatPeriod(int iDuration) {
+        String res = "";
+        if (iDuration > 0) {            
+            int nbHour = iDuration/3600;
+            int nbMn = (iDuration - (nbHour*3600))/60;
+            StringBuilder sbDur = new StringBuilder();
+            sbDur.append(String.format("%2d", nbHour)).append("h");
+            sbDur.append(String.format("%02d", nbMn)).append("mn");
+            res = sbDur.toString();   
+        }
+        
+        return res;
+    }    
     
 }
 
