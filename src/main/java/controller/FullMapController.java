@@ -136,7 +136,7 @@ public class FullMapController {
     
     @FXML
     private void showMeasure(ActionEvent event) {
-       viewMap.getEngine().executeScript("startMeasure()");
+        viewMap.getEngine().executeScript("startMeasure()");
     }    
     
     // BtScoring clic
