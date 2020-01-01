@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -850,9 +849,9 @@ public class map_visu {
                 if (traceVisu.isScored())  {
                     String balisesHTML;
                     if (genBalises(traceVisu)) {
-                        balisesHTML = thermiqHTML.replace("//%ScoreBalises%", jsBalises.toString());
+                        balisesHTML = chronoHTML.replace("//%ScoreBalises%", jsBalises.toString());
                     } else {
-                        balisesHTML = thermiqHTML;
+                        balisesHTML = chronoHTML;
                     }           
                     if (genScore(traceVisu)) {
                         String scoreLinesHTML = balisesHTML.replace("//%ScoreLines%", jsScore.toString());
