@@ -89,13 +89,60 @@
             font-size: 20px;
             margin-top: 8px;
         }
+
+        /* Script from https://code.tutsplus.com/fr/tutorials/making-a-sliding-side-navigation-menu-for-responsive-designs--cms-28400 */
+        /* The side navigation menu */
+        .sidenav {
+            height: 100%; /* 100% Full-height */
+            width: 0; /* 0 width - change this with JavaScript */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Stay on top */
+            top: 0;
+            left: 0;
+            background-color: #FFFFFF; /* Black*/
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            overflow-x: hidden; /* Disable horizontal scroll */
+            padding-top: 60px; /* Place content 60px from the top */
+            transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+        }
+        
+        /* The navigation menu links */
+        .sidenav a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 12px;
+            color: #000000;
+            display: block;
+            transition: 0.3s
+        }
+        
+        /* When you mouse over the navigation links, change their color */
+        .sidenav a:hover {
+            color: #000000;
+            background:#fbce52;
+        }
+
+        .sidenav a:focus {
+            background:#fbce52; 
+        }
+        
+        /* Position and style the close button (top right corner) */
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 22px;
+            margin-left: 50px;
+        }
     </style>
 </head>
 <body>
-<div id="carte"></div>
-<div id="graphe"></div>
-
-<script type='text/javascript'>
+    <div id="carte"></div>
+    <div id="graphe"></div>
+    <div id="sideNavigation" class="sidenav">
+       //%chronoData%
+    </div>
+    <script type='text/javascript'>
 
     var map = null;
     var mousemarker = null;
@@ -137,6 +184,39 @@
             layer.bindPopup('<b>Class : '+feature.properties.Class+'</b><BR/>'+feature.properties.Name+'<BR/>Floor : '+feature.properties.Floor+'<BR/>Ceiling : '+feature.properties.Ceiling);
         }
     }
+
+    function openNav() {
+        document.getElementById("sideNavigation").style.width = "200px";
+        document.getElementById("carte").style.marginLeft = "200px";
+        document.getElementById("graphe").style.marginLeft = "200px";
+        $("#graphe").highcharts().reflow();
+        $('.leaflet-control-layers-selector')[10].click();
+        $('.leaflet-control-layers-selector')[11].click();
+    }
+
+    function closeNav() {
+        document.getElementById("sideNavigation").style.width = "0";
+        document.getElementById("carte").style.marginLeft = "0";
+        document.getElementById("graphe").style.marginLeft = "0";
+        $("#graphe").highcharts().reflow();
+        $('.leaflet-control-layers-selector')[10].click();
+        $('.leaflet-control-layers-selector')[11].click();
+    }    
+
+    // Affiche un segment de la trace
+    function displaySegment(lat1,long1,lat2,long2) {
+        map.fitBounds([[lat1, long1],[lat2, long2]]);      
+    }   
+
+    // Centrage décollage
+    function displayTakeOff() {
+        map.fitBounds([tabPoints[0]]);      
+    } 
+
+    // Centrage atterrissage
+    function displayLanding() {
+        map.fitBounds([tabPoints[tabPoints.length-1]]);      
+    }    
 
     // Efface la légende
     function hideLegend() {
@@ -389,7 +469,7 @@
         }]
     });
 
-    toggle.addTo(map);
+    toggle.addTo(map); 
 
     //%btnGallery%
 
