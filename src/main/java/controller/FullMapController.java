@@ -62,6 +62,9 @@ public class FullMapController {
     private Button btMesure;
     
     @FXML
+    private Button btChrono;    
+    
+    @FXML
     private ChoiceBox chbLeague; 
     
     @FXML
@@ -137,6 +140,11 @@ public class FullMapController {
     @FXML
     private void showMeasure(ActionEvent event) {
         viewMap.getEngine().executeScript("startMeasure()");
+    }    
+    
+    @FXML
+    private void showChrono(ActionEvent event) {
+        viewMap.getEngine().executeScript("openNav()()");
     }    
     
     // BtScoring clic
@@ -565,6 +573,11 @@ public class FullMapController {
         msToolTip.setStyle(myConfig.getDecoToolTip());
         msToolTip.setText(i18n.tr("Measure on map"));
         btMesure.setTooltip(msToolTip);          
+        btChrono.setText(i18n.tr("Pathway"));
+        Tooltip chToolTip = new Tooltip();
+        chToolTip.setStyle(myConfig.getDecoToolTip());
+        chToolTip.setText(i18n.tr("Show pathway"));
+        btMesure.setTooltip(msToolTip);                  
         btScoring.setText(i18n.tr("Scoring"));
         Tooltip scToolTip = new Tooltip();
         scToolTip.setStyle(myConfig.getDecoToolTip());
