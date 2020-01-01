@@ -326,10 +326,10 @@ public class map_visu {
     public boolean genChronoData(traceGPS currTrack) {  
            
         boolean res = false;
-        
-        jsChronoData.append("        <a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>").append(RC);
+               
         ArrayList<cutting> cuttingList = trackAnalyze.getCuttingList();
-        if (cuttingList.size() > 0) {
+        if (cuttingList.size() > 2) {
+                jsChronoData.append("        <a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>").append(RC);            
                 jsChronoData.append("        <a href=\"javascript:void(0)\" onclick=\"displayTakeOff()\">");
                 jsChronoData.append(i18n.tr("Take off")).append(" 0h00mn</a>").append(RC);              
             for (int i = 1; i < cuttingList.size()-1 ; i++) {
@@ -341,6 +341,11 @@ public class map_visu {
             }
             jsChronoData.append("        <a href=\"javascript:void(0)\" onclick=\"displayLanding()\">");
             jsChronoData.append(cuttingList.get(cuttingList.size()-1).toString()).append("</a>").append(RC);   
+            res = true;
+        } else {           
+            jsChronoData.append("        <a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>").append(RC);   
+            jsChronoData.append("        <a href=\"javascript:void(0)\" onclick=\"closeNav()\">");
+            jsChronoData.append(i18n.tr("No pathway")).append("</a>").append(RC);    
             res = true;
         }
         
