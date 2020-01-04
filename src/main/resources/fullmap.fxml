@@ -4,21 +4,55 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.FullMapController">
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.FullMapController">
     <children>
       <ToolBar prefHeight="40.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
-          <Button fx:id="btInfo" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#toggleInfos" prefHeight="27.0" prefWidth="80.0" text="fInfos" />
-            <Button fx:id="btMesure" layoutX="10.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showMeasure" prefHeight="27.0" prefWidth="80.0" text="fMesure" />
-            <Button fx:id="btHtml" layoutX="140.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#recHTML" prefHeight="27.0" prefWidth="80.0" text="fHTML" />
-            <Button fx:id="btMail" layoutX="214.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#sendMail" prefHeight="27.0" prefWidth="80.0" text="fMail" />
-            <Button fx:id="btScoring" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showLeague" prefHeight="27.0" prefWidth="80.0" text="fScoring" />
+          <Button fx:id="btInfo" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#toggleInfos" prefHeight="27.0" prefWidth="70.0" text="fInfos">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
+            <Button fx:id="btMesure" layoutX="10.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showMeasure" prefHeight="27.0" prefWidth="70.0" text="fMesure">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
+            <Button fx:id="btSummary" layoutX="84.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showSummary" prefHeight="27.0" prefWidth="80.0" text="fSynthèse">
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Button>
+            <Button fx:id="btChrono" layoutX="94.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showChrono" prefHeight="27.0" prefWidth="90.0" text="fProgression">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
+            <Button fx:id="btHtml" layoutX="140.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#recHTML" prefHeight="27.0" prefWidth="70.0" text="fHTML">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
+            <Button fx:id="btMail" layoutX="214.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#sendMail" prefHeight="27.0" prefWidth="70.0" text="fMail">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
+            <Button fx:id="btScoring" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showLeague" prefHeight="27.0" prefWidth="70.0" text="fScoring">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
             <ChoiceBox fx:id="chbLeague" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="75.0" />
-            <Button fx:id="btXcplanner" layoutX="410.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="90.0" mnemonicParsing="false" onAction="#handleXcp" prefHeight="27.0" prefWidth="90.0" text="XC Planner" />
-            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="100.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="100.0" text="fVérification" />
-            <Button fx:id="btClose" layoutX="278.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#closeMap" prefHeight="27.0" prefWidth="80.0" text="fClose" />
+            <Button fx:id="btXcplanner" layoutX="410.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleXcp" prefHeight="27.0" prefWidth="75.0" text="XC Planner">
+               <font>
+                  <Font size="11.0" />
+               </font></Button>
+            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="90.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="90.0" text="fVérification">
+               <font>
+                  <Font size="11.0" />
+               </font></Button>
+            <Button fx:id="btClose" layoutX="278.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#closeMap" prefHeight="27.0" prefWidth="70.0" text="fClose">
+               <font>
+                  <Font size="12.0" />
+               </font></Button>
         </items>
       </ToolBar>
       <WebView fx:id="viewMap" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0" />
