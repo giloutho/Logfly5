@@ -6,6 +6,7 @@
  */
 package controller;
 
+import Logfly.Main;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.geonominatim;
@@ -20,6 +21,8 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.WritableImage;
@@ -27,7 +30,9 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import leaflet.map_visu;
@@ -60,6 +65,9 @@ public class FullMapController {
     
     @FXML
     private Button btMesure;
+    
+    @FXML
+    private Button btSummary;    
     
     @FXML
     private Button btChrono;    
@@ -146,6 +154,36 @@ public class FullMapController {
     private void showChrono(ActionEvent event) {
         viewMap.getEngine().executeScript("openNav()()");
     }    
+    
+    @FXML 
+    private void showSummary(ActionEvent event) {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/summary.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);       
+            dialogStage.initOwner(btSummary.getScene().getWindow());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Communication bridge between SummaryController and TraceViewController
+            SummaryController controller = loader.getController();
+            controller.setFullMapBridge(this);
+            controller.setForm(myConfig);
+            controller.iniData(mapTrace);
+            controller.setDialogStage(dialogStage); 
+            dialogStage.showAndWait();
+                       
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
+            
+        }        
+    }
     
     // BtScoring clic
     @FXML
@@ -572,7 +610,11 @@ public class FullMapController {
         Tooltip msToolTip = new Tooltip();
         msToolTip.setStyle(myConfig.getDecoToolTip());
         msToolTip.setText(i18n.tr("Measure on map"));
-        btMesure.setTooltip(msToolTip);          
+        btMesure.setTooltip(msToolTip);  
+        btSummary.setText(i18n.tr("Summary"));
+        Tooltip sumToolTip = new Tooltip();
+        sumToolTip.setStyle(myConfig.getDecoToolTip());
+        sumToolTip.setText(i18n.tr("Show a summary of the flight"));        
         btChrono.setText(i18n.tr("Pathway"));
         Tooltip chToolTip = new Tooltip();
         chToolTip.setStyle(myConfig.getDecoToolTip());
