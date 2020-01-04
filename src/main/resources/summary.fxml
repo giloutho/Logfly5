@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="550.0" minWidth="750.0" prefHeight="550.0" prefWidth="750.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SummaryController">
+   <children>
+      <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <AnchorPane minHeight="420.0" prefHeight="420.0" style="-fx-background-color: white;">
+               <children>
+                  <PieChart fx:id="pieChart1" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+               <VBox.margin>
+                  <Insets left="3.0" right="3.0" top="3.0" />
+               </VBox.margin>
+            </AnchorPane>
+            <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white;">
+               <children>
+                  <GridPane>
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="15.0" minWidth="15.0" prefWidth="15.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="180.0" prefWidth="180.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
+                        <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="15.0" minWidth="15.0" prefWidth="15.0" />
+                        <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="15.0" minWidth="120.0" prefWidth="120.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="15.0" minWidth="75.0" prefWidth="75.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="15.0" minWidth="15.0" prefWidth="15.0" />
+                        <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="15.0" minWidth="150.0" prefWidth="150.0" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <children>
+                        <Label fx:id="lbAltiMax" text="fAltitude max GPS" GridPane.columnIndex="1" />
+                        <Label fx:id="lbAltiMini" layoutX="10.0" layoutY="22.0" text="fAltitude min GPS" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label fx:id="lbVarioMax" layoutX="10.0" layoutY="62.0" text="fVario Max" GridPane.columnIndex="4" />
+                        <Label fx:id="lbVarioMini" layoutX="10.0" layoutY="102.0" text="fVario mini" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                        <Label fx:id="lbExtraction" layoutX="10.0" layoutY="142.0" text="fTremps d'extraction" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label fx:id="lbVitMoyenne" layoutX="10.0" layoutY="182.0" text="Vit moyenne transition" GridPane.columnIndex="7" GridPane.rowIndex="2" />
+                        <Label fx:id="lbMonteeMoyen" layoutX="10.0" layoutY="222.0" text="fTaux montée moyen" GridPane.columnIndex="7" />
+                        <Label fx:id="lbEfficacite" layoutX="10.0" layoutY="262.0" text="fEfficacité moyenne" GridPane.columnIndex="7" GridPane.rowIndex="1" />
+                        <Label fx:id="vAltiMax" layoutX="10.0" layoutY="22.0" text="2313 m" GridPane.columnIndex="2" />
+                        <Label fx:id="vAltiMini" layoutX="10.0" layoutY="62.0" text="252 m" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <Label fx:id="vVarioMax" layoutX="10.0" layoutY="302.0" text="5,4 m/s" GridPane.columnIndex="5" />
+                        <Label fx:id="vVarioMini" layoutX="190.0" layoutY="102.0" text="-3,2 m/s" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                        <Label fx:id="vExtraction" layoutX="190.0" layoutY="142.0" text="1h32mn" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                        <Label fx:id="vVitMoyenne" layoutX="190.0" layoutY="182.0" text="54 km/h" GridPane.columnIndex="8" GridPane.rowIndex="2" />
+                        <Label fx:id="vMonteeMoyen" layoutX="190.0" layoutY="222.0" text="4,3 m/s" GridPane.columnIndex="8" />
+                        <Label fx:id="vEfficacite" layoutX="190.0" layoutY="262.0" text="74%" GridPane.columnIndex="8" GridPane.rowIndex="1" />
+                        <Label fx:id="lbShape" layoutX="25.0" layoutY="77.0" text="fTriangle plat" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label fx:id="vDistance" layoutX="679.0" layoutY="77.0" text="54,46 km" GridPane.columnIndex="4" GridPane.rowIndex="3" />
+                        <Label fx:id="vScore" layoutX="679.0" layoutY="77.0" text="72,26" GridPane.columnIndex="5" GridPane.rowIndex="3" />
+                        <Label fx:id="lbLeague" layoutX="439.0" layoutY="107.0" text="XC Contest" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                     </children>
+                  </GridPane>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="3.0" left="3.0" right="3.0" />
+               </VBox.margin>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
