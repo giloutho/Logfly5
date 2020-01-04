@@ -56,6 +56,9 @@ public class analyse {
     public List<remarkable> finalGlides = new ArrayList<remarkable>();     
     
     private int extractTime;    
+    private double avgThermalClimb;
+    private double avgThermalEffi;
+    private double avgTransSpeed;
     double percThermals;
     double percGlides;
     double percDives;
@@ -79,10 +82,38 @@ public class analyse {
         return bestGlideEnd;
     }
 
+    public double getPercThermals() {
+        return percThermals;
+    }
+
+    public double getPercGlides() {
+        return percGlides;
+    }
+
+    public double getPercDives() {
+        return percDives;
+    }
+        
     public ArrayList<cutting> getCuttingList() {
         return cuttingList;
     }
-                            
+
+    public String getExtractTime() {
+        return formatPeriod(extractTime);
+    }
+
+    public double getAvgThermalClimb() {
+        return avgThermalClimb;
+    }
+
+    public double getAvgThermalEffi() {
+        return avgThermalEffi;
+    }
+
+    public double getAvgTransSpeed() {
+        return avgTransSpeed;
+    }
+                                
     private void compute()  {
         int dt = 20;   // dt est le péridoe d'exploration fixé à 20 secondes par défaut  (ligne 39)
         int n = coords.size();
@@ -411,7 +442,10 @@ public class analyse {
         totPeriod = Math.abs(Duration.between(currTrace.getDT_Attero(),currTrace.getDT_Deco()).getSeconds());              
         
         totThermals = 0;
-        for (int i = 0; i < finalThermals.size(); i++) {
+        double totAvgThermalClimb = 0;
+        double totAvgThermalEffi = 0;
+        int nbThermals = finalThermals.size();
+        for (int i = 0; i < nbThermals; i++) {
             remarkable currRmk = finalThermals.get(i);
             cu = new cutting();
             h = currRmk.getStart_time().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
@@ -430,12 +464,22 @@ public class analyse {
             sbCoord.append(decimalFormat.format(endPoint.Longitude));
             cu.setCCoord(sbCoord.toString());
             
+            totAvgThermalClimb += currRmk.getClimbAverage();
+            totAvgThermalEffi += currRmk.getEfficiency();
             totThermals += pThermal;
             cuttingList.add(cu);
         }
         
+        if (nbThermals > 0) {
+            avgThermalClimb = totAvgThermalClimb/nbThermals;
+            avgThermalEffi = totAvgThermalEffi/nbThermals;
+        } else
+            avgThermalClimb = 0.00;
+        
         totGlides = 0;
-        for (int i = 0; i < finalGlides.size(); i++) {
+        int nbGlides = finalGlides.size();
+        double totSpeed = 0;
+        for (int i = 0; i < nbGlides; i++) {
             remarkable currRmk = finalGlides.get(i);
             cu = new cutting();
             h = currRmk.getStart_time().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
@@ -456,9 +500,14 @@ public class analyse {
             sbCoord.append(decimalFormat.format(endPoint.Longitude));
             cu.setCCoord(sbCoord.toString());
             
+            totSpeed += currRmk.getAverage_speed();
             totGlides += pGlide;            
             cuttingList.add(cu);
         }        
+        if (nbGlides > 0)
+            avgTransSpeed = totSpeed/nbGlides;
+        else
+            avgTransSpeed = 0;
         
         totDives = 0;
         for (int i = 0; i < finalDives.size(); i++) {
