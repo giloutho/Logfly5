@@ -519,6 +519,15 @@ public class TraceViewController {
     // http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm    
     private ContextMenu clicTop_Menu()   {
         final ContextMenu cm = new ContextMenu();
+        
+        MenuItem cmItem0 = new MenuItem(i18n.tr("Summary"));        
+        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                showSummary();
+            }
+        });
+        cm.getItems().add(cmItem0);        
+        
         MenuItem cmItem1 = new MenuItem(i18n.tr("Track file"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -548,13 +557,43 @@ public class TraceViewController {
         cmItemMa.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 alertbox aInfo = new alertbox(myConfig.getLocale());
-                aInfo.alertInfo(i18n.tr("Send via e-mail"));                    
+                aInfo.alertInfo(i18n.tr("Send via e-mail"));   
             }
         });
         cm.getItems().add(cmItemMa);
         
         return cm;
     }    
+
+    private void showSummary() {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/summary.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);       
+            dialogStage.initOwner(mainApp.getPrimaryStage());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Communication bridge between SummaryController and TraceViewController
+            SummaryController controller = loader.getController();
+            controller.setTraceBridge(this);
+            controller.setForm(myConfig);
+            controller.iniData(extTrace);
+            controller.setDialogStage(dialogStage); 
+            dialogStage.showAndWait();
+                       
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
+            
+        }
+    }    
+    
     
     /**
      * Is called by the main application to give a reference back to itself.
