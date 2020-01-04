@@ -84,6 +84,10 @@ public class remarkable {
         this.climbAverage = climbAverage;
     }
 
+    public double getClimbAverage() {
+        return climbAverage;
+    }        
+
     public void setClimbMax(double climbMax) {
         this.climbMax = climbMax;
     }
@@ -112,6 +116,10 @@ public class remarkable {
         this.efficiency = efficiency;
     }
 
+    public int getEfficiency() {
+        return efficiency;
+    }
+        
     public void setBruteDistance(double pDistance) {
         this.brute_distance = pDistance;
         distance =  pDistance / 1000.0;
@@ -133,6 +141,10 @@ public class remarkable {
         this.average_speed = average_speed;
     }
 
+    public double getAverage_speed() {
+        return average_speed;
+    }
+    
     public void setMaximum_descent(double maximum_descent) {
         this.maximum_descent = maximum_descent;
     }
