@@ -13,6 +13,8 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -59,11 +61,22 @@ public class SummaryController {
     private Label lbEfficacite;
     @FXML
     private Label vEfficacite;    
+    @FXML
+    private Label lbShape;
+    @FXML
+    private Label lbLeague;
+    @FXML
+    private Label vDistance;
+    @FXML
+    private Label vScore;
     
     
     
     // Reference to TraceViewController
-    private TraceViewController traceController;    
+    private TraceViewController traceController; 
+    
+    // Reference to FullMapController
+    private FullMapController fullMapController;     
     
     private Stage dialogStage;     
     
@@ -101,9 +114,17 @@ public class SummaryController {
         this.traceController = pTraceViewController;        
     }   
     
+    /**
+     * Initialize communication brdige with FullMapController 
+     * @param pFullMapController 
+     */
+    public void setFullMapBridge(FullMapController pFullMapController) {
+        this.fullMapController = pFullMapController;        
+    }      
+    
     public void setForm(configProg mainConfig) {
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",TimeTableController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = I18nFactory.getI18n("","lang/Messages",SummaryController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
         winTraduction();
     }    
 
@@ -144,9 +165,83 @@ public class SummaryController {
         pointIGC ptVarioMini = currTrack.getVario_Mini();
         vVarioMini.setText(String.format("%2.2f",ptVarioMini.Vario)+" m/s");
         vMonteeMoyen.setText(String.format("%2.2f" ,trackAnalyze.getAvgThermalClimb())+" m/s");
-        vEfficacite.setText(String.format("%3.0f" ,trackAnalyze.getAvgThermalEffi())+"%");    
+        vEfficacite.setText(String.format("%3.0f" ,trackAnalyze.getAvgThermalEffi())+"%");   
+        lbShape.setText("");
+        lbLeague.setText("");
+        vDistance.setText("");
+        vScore.setText("");
+        if (currTrack.isScored()) genScoreLabels(currTrack);
             
     }   
+    
+    private void genScoreLabels(traceGPS currTrack) {
+        
+        boolean res = false;
+        
+        try {
+            
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(currTrack.getScore_JSON());
+  
+            // is it a triangle or not ?
+            JSONObject score = (JSONObject) jsonObject.get("drawScore");            
+            String legLeague = score.get("scoreLeague").toString();           
+            String legShape = score.get("scoreShape").toString();
+            String legDistance = score.get("scoreDistance").toString();
+            String legPoints = score.get("scorePoints").toString();        
+            switch (legLeague) {
+                case "FR" :
+                    lbLeague.setText(i18n.tr("French contest"));
+                    break;
+                case "CH" :
+                    lbLeague.setText(i18n.tr("Swiss contest"));
+                    break;
+                case "XC":
+                    lbLeague.setText(i18n.tr("World XContest"));
+                    break;
+                default:
+                    lbLeague.setText(legLeague);    
+            }
+            switch (legShape) {
+                case "FAI Triangle" :
+                    lbShape.setText(i18n.tr("FAI triangle"));
+                    break;
+                case "Free flight 2 wpt" :
+                    lbShape.setText(i18n.tr("Flight 2 points")); 
+                    break;
+                case "Flat Triangle":
+                    lbShape.setText(i18n.tr("Flat triangle"));
+                    break;
+                case "Free flight 1 wpt" :
+                    lbShape.setText(i18n.tr("Flight 1 point"));
+                    break;
+                case "Free flight 3 wpt":
+                    lbShape.setText(i18n.tr("Flight 3 points"));
+                    break;
+                default:
+                    lbShape.setText(legShape);   
+            }
+            // Formatting distance is of the form 21.89160109032659
+            int iLength = legPoints.length();
+            String legFormate = null;
+            if (iLength > legDistance.indexOf(".")+3) {
+                legFormate = legDistance.substring(0,legDistance.indexOf(".")+3);
+            } else {
+                legFormate = legDistance;
+            }
+            vDistance.setText(legFormate+" km");
+            // Formatting score is of the form 9.89160109032659
+            iLength = legPoints.length();        
+            if (iLength > legPoints.indexOf(".")+3) {
+                legFormate = legPoints.substring(0,legPoints.indexOf(".")+3);
+            } else {
+                legFormate = legPoints;
+            }
+            vScore.setText(legFormate+" pts");            
+        } catch (Exception e) {
+            
+        }        
+    }
     
     private void winTraduction() {
         
