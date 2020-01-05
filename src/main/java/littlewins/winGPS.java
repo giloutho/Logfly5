@@ -24,6 +24,7 @@ import gps.sensbox;
 import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
+import gps.varduino;
 import gps.xctracer;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -83,7 +84,7 @@ public class winGPS {
     private I18n i18n; 
     private configProg myConfig;   
     
-    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus, Digifly }    
+    public enum gpsType {Flytec20,Flytec15,Flynet,FlymOld,Rever,Sky,Oudie,Element,Sensbox,Syride,FlymSD,Connect,Sky3,CPilot,XCTracer,FlymPlus, Digifly,Vardui }    
     private ObservableList <listGPS.idGPS> allGPS;
     // current GPS
     private gpsType currGPS;
@@ -101,6 +102,7 @@ public class winGPS {
     private connect usbConnect;
     private compass usbCompass;
     private element usbElem;
+    private varduino usbVarduino;
     private xctracer usbXctracer;    
     private String usbWaypPath;
     private String gpsCharac;
@@ -252,7 +254,7 @@ public class winGPS {
         
         StackPane subRoot = new StackPane();
         subRoot.getChildren().add(vbox);
-        subStage.setScene(new Scene(subRoot, 340, 150));
+        subStage.setScene(new Scene(subRoot, 400, 150));
         iniChbGPS();
         if (!gpsConnect) subStage.showAndWait();         
     }    
@@ -423,7 +425,12 @@ public class winGPS {
                 // Digifly will be read by Digifly
                 currGPS = gpsType.Digifly;  
                 listSpSerialPort();
-                break;                             
+                break;  
+            case 18:
+                currGPS = gpsType.Vardui;
+                currNamePort = "nil";
+                testSpGPS();   
+                break;                
         }             
     }    
         
@@ -736,6 +743,15 @@ public class winGPS {
                     usbXctracer = new xctracer(myConfig.getOS(), myConfig.getGpsLimit());
                     displayDrives(usbXctracer.getDriveList(),usbXctracer.getIdxDrive()); 
                     if (usbXctracer.isConnected()) { 
+                       gpsPresent();
+                    } else {
+                        gpsNotPresent();                           
+                    }                   
+                    break;    
+                case Vardui :
+                    usbVarduino = new varduino(myConfig.getOS(), myConfig.getGpsLimit());
+                    displayDrives(usbVarduino.getDriveList(),usbVarduino.getIdxDrive()); 
+                    if (usbVarduino.isConnected()) { 
                        gpsPresent();
                     } else {
                         gpsNotPresent();                           
