@@ -837,6 +837,14 @@ public class CarnetViewController  {
     private void buildContextMenu() {
         
         tableContextMenu = new ContextMenu();
+
+        MenuItem cmItemSumm = new MenuItem(i18n.tr("Summary"));
+        cmItemSumm.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                showSummary();
+            }
+        });
+        tableContextMenu.getItems().add(cmItemSumm);  
         
         MenuItem cmItemGlider = new MenuItem(i18n.tr("Change glider"));
         cmItemGlider.setOnAction(new EventHandler<ActionEvent>() {
@@ -953,6 +961,14 @@ public class CarnetViewController  {
             }
         });
         cm.getItems().add(cmItem1);
+        
+        MenuItem cmItemSumm = new MenuItem(i18n.tr("Summary"));
+        cmItemSumm.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                showSummary();
+            }
+        });
+        cm.getItems().add(cmItemSumm);          
         
         MenuItem cmItemSup = new MenuItem(i18n.tr("Delete"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
@@ -1110,6 +1126,35 @@ public class CarnetViewController  {
             tableVols.refresh();
         }        
     }
+    
+    private void showSummary() {
+        try {                     
+            // Load the fxml file and create a new stage for the popup dialog.
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("/summary.fxml")); 
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);       
+            dialogStage.initOwner(mainApp.getPrimaryStage());
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            // Communication bridge between SummaryController and TraceViewController
+            SummaryController controller = loader.getController();
+            controller.setCarnetBridge(this);
+            controller.setForm(myConfig);
+            controller.iniData(currTrace);
+            controller.setDialogStage(dialogStage); 
+            dialogStage.showAndWait();
+                       
+        } catch (IOException e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString()); 
+            
+        }
+    }        
     
     public void editSiteReturn(int editMode) {
         switch (editMode) {
