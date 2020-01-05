@@ -26,6 +26,7 @@ import gps.sensbox;
 import gps.skytraax;
 import gps.skytraxx3;
 import gps.syride;
+import gps.varduino;
 import gps.xctracer;
 import java.io.File;
 import java.text.DateFormat;
@@ -180,6 +181,7 @@ public class GPSViewController {
     private skytraxx3 usbSky3;
     private oudie usbOudie;
     private flynet usbFlynet;
+    private varduino usbVarduino;
     private sensbox usbSensbox;
     private syride diskSyr;
     private connect usbConnect;
@@ -687,7 +689,7 @@ public class GPSViewController {
                     limitMsg = usbFlynet.getMsgClosingDate();  
                 } else {
                     resCom = 2;
-                }                       
+                }                                                        
                 break;
             case Sensbox :
                 usbSensbox = new sensbox(myConfig.getOS(), myConfig.getGpsLimit());
@@ -761,6 +763,16 @@ public class GPSViewController {
                     resCom = 2;
                 }                    
                 break;                 
+            case Vardui :
+                usbVarduino = new varduino(myConfig.getOS(), myConfig.getGpsLimit());
+                if (usbVarduino.isConnected()) {
+                    idGPS = "Varduino";
+                    usbVarduino.listTracksFiles(trackPathList);  
+                    limitMsg = usbVarduino.getMsgClosingDate();
+                } else {
+                    resCom = 2;
+                }                    
+                break;                  
             }       
             // each gps track header must be decoded
             if (trackPathList.size() > 0) {
@@ -840,7 +852,10 @@ public class GPSViewController {
                         break;                         
                     case CPilot:                                            
                         myConfig.setIdxGPS(14);
-                        break;                          
+                        break;    
+                    case Vardui:                                            
+                        myConfig.setIdxGPS(18);
+                        break;                            
                 }
             } else {
                 // No alert box possible in this thread
@@ -915,6 +930,7 @@ public class GPSViewController {
                     case Element :                    
                     case CPilot : 
                     case XCTracer :
+                    case Vardui :
                         readUSBGps();
                         break;                        
                 }
@@ -1055,6 +1071,9 @@ public class GPSViewController {
                     case XCTracer :
                         gpsOK = usbXctracer.isConnected();
                         break;                        
+                    case Vardui :
+                        gpsOK = usbVarduino.isConnected();
+                        break;                           
             }            
             if (gpsOK){                      
                    
@@ -1167,7 +1186,10 @@ public class GPSViewController {
                                         break;                                  
                                     case XCTracer :
                                         strTrack = usbXctracer.getTrackFile(item.getCol5());
-                                        break;                                 
+                                        break;  
+                                    case Vardui :
+                                        strTrack = usbVarduino.getTrackFile(item.getCol5());
+                                        break;                                          
                                     }                                  
                                     if (strTrack != null ) {                                
                                         traceGPS downTrack = new traceGPS(strTrack, "", true, myConfig);
@@ -1615,6 +1637,14 @@ public class GPSViewController {
                             resCom = 2;   // No GPS answer
                         }     
                         break;                             
+                    case Vardui :
+                        strTrack = usbVarduino.getTrackFile(selLineTable.getCol5());
+                        if (strTrack != null && !strTrack.isEmpty()) {
+                            resCom = 0;
+                        } else {
+                            resCom = 2;   // No GPS answer
+                        }     
+                        break;                           
                     default:
                         throw new AssertionError();
                     }                    
@@ -1764,6 +1794,7 @@ public class GPSViewController {
                     case Element :                           
                     case CPilot : 
                     case XCTracer :
+                    case Vardui :
                         oneFlightWithProgress(currLineSelection); 
                         break; 
             }
