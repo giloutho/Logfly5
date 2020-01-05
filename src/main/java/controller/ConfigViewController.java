@@ -942,7 +942,7 @@ public class ConfigViewController {
         lbSyride.setText(i18n.tr("Syride folder"));
         lbPhotoAuto.setText(i18n.tr("Automatic display of photos"));
         lbUpdateAuto.setText(i18n.tr("Automatic update"));
-        lbDebug.setText(i18n.tr("Mode debug"));
+        lbDebug.setText(i18n.tr("Debug mode"));
         btDiversAnnuler.setText(i18n.tr("Cancel"));
         btDiversOk.setText(i18n.tr("OK"));
         lbLogfly.setText(i18n.tr("Logfly site url"));
