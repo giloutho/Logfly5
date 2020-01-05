@@ -954,7 +954,7 @@ public class WaypViewController {
             flymasterold fmold = new flymasterold();
             if (listForGps.size() > 0 && fmold.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
-                gpsInfo.append(i18n.tr("Envoi")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
+                gpsInfo.append(i18n.tr("Send to GPS")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
                 fmold.setListPFMWP(listForGps);
                 fmold.sendWaypoint();
                 fmold.closePort();
