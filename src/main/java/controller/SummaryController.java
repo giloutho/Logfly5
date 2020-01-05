@@ -76,7 +76,10 @@ public class SummaryController {
     private TraceViewController traceController; 
     
     // Reference to FullMapController
-    private FullMapController fullMapController;     
+    private FullMapController fullMapController; 
+
+    // Reference to CarnetViewController
+    private CarnetViewController carnetController;     
     
     private Stage dialogStage;     
     
@@ -112,6 +115,14 @@ public class SummaryController {
      */
     public void setTraceBridge(TraceViewController pTraceViewController) {
         this.traceController = pTraceViewController;        
+    }   
+
+    /**
+     * Initialize communication brdige with CarnetViewController 
+     * @param pCarnetViewController 
+     */
+    public void setCarnetBridge(CarnetViewController pCarnetViewController) {
+        this.carnetController = pCarnetViewController;        
     }   
     
     /**
