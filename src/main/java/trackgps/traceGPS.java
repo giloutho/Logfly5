@@ -638,6 +638,8 @@ public class traceGPS {
         BadAlti = 9000;
         TotPoint = 0;
         NbPointsAberr = 0;
+        // it's neccesary for computing a flight around midnight UTC (in Australia or NZ)
+        LocalDateTime _Date_Vol = LocalDateTime.of(2000, 1, 1, 0, 0, 0); 
         
         // For PEV details see FAI documentation p44
         // In a nutshell
@@ -738,6 +740,7 @@ public class traceGPS {
                                     // Ces paramètres calculés sur L'UTC seront modifiés plus tard après calcul du décalage UTC
                                     // On eu des vols réalisés en Australie le 1er janvier à 10h où l'UTC est au 31 décembre à 23h... 
                                     Date_Vol = LocalDateTime.of(Annee, Mois, Jour,0,0,0);
+                                    _Date_Vol = Date_Vol;
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                     Decodage_HFDTE = true;                                                                          
                                 }                                                                 
@@ -860,7 +863,7 @@ public class traceGPS {
                             Point1.setPeriode(checkParseInt(sLine[i].substring(1,3),0)*3600+checkParseInt(sLine[i].substring(3,5),0)*60+checkParseInt(sLine[i].substring(5,7),0));                            
                             // date coding
                             if (Decodage_HFDTE) {
-                                Point1.setdHeure(Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));    
+                                Point1.setdHeure(_Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));    
                             }
                             
                             if (i-LignesNonB == 0) {   
@@ -869,12 +872,13 @@ public class traceGPS {
                                     // We can find a track without date header (SeeYou export).
                                     // To avoid exception we initialize 01/01/2000
                                     Date_Vol = LocalDateTime.of(2000, 1, 1, 0, 0, 0); 
+                                    _Date_Vol = Date_Vol;
                                     sDate_Vol = Date_Vol.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                                     // For SQLIte
                                     Date_Vol_SQL = "2000-01-01 ";
                                     Decodage_HFDTE = true;
                                     // In this case Point1.dHeure was not initialized
-                                    Point1.setdHeure(Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));                            
+                                    Point1.setdHeure(_Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0));                            
                                 }
                                 // Decoding without points, we want only header with global informations :date, pilot name, etc...
                                 if (!avecPoints) {
@@ -922,7 +926,19 @@ public class traceGPS {
                                 }                                                                        
                             }
                             else  {                                        
-                                pointIGC PtPcdt = Tb_Tot_Points.get(TotPoint - 1);                                 
+                                pointIGC PtPcdt = Tb_Tot_Points.get(TotPoint - 1);   
+                                // in Australia or NZ, a flight around midnight UTC is possible. We must manage a date change
+                                // we had a track with outliers like
+                                // Point X 18:38.38     Point X+1 18:38.39         Point X+2 18:38.38
+                                // we must check with first point
+                                if (Point1.dHeure.isBefore(PtPcdt.dHeure))  {
+                                    pointIGC firstPt = Tb_Tot_Points.get(0);
+                                    if (Point1.dHeure.isBefore(firstPt.dHeure)) {
+                                        // day date must be incremented
+                                        _Date_Vol = Date_Vol.plusDays(1);
+                                        Point1.setdHeure(_Date_Vol,checkParseInt(sLine[i].substring(1,3),0), checkParseInt(sLine[i].substring(3,5),0), checkParseInt(sLine[i].substring(5,7),0)); 
+                                    }
+                                }                                
                                 // parameters computing with previous point
                                 // Totpoint = 1 more than last array index
                                 Point1.setDistPtPcdt(trigo.CoordDistance(Point1.Latitude,Point1.Longitude,PtPcdt.Latitude,PtPcdt.Longitude));
@@ -943,21 +959,6 @@ public class traceGPS {
                                     // we put a flag to skip this point in flight analysis
                                     Point1.setComment("DOUBLON");
                                 }   
-                                // in Australia or NZ, a flight around midnight UTC is possible. We must manage a date change
-                                // we had a track with outliers like
-                                // Point X 18:38.38     Point X+1 18:38.39         Point X+2 18:38.38
-                                // we must check with first point
-                                if (Point1.dHeure.isBefore(PtPcdt.dHeure))  {
-                                    PtPcdt = Tb_Tot_Points.get(0);
-                                    if (Point1.dHeure.isBefore(PtPcdt.dHeure)) {
-                                        // day date must be incremented
-                                        Date_Vol.plusDays(1);                       
-                                    }
-                                }
-                                
-                                
-              
-              
                             } 
                            if (!"DOUBLON".equals(Point1.Comment))   {
                                 // outliers management            
@@ -1042,6 +1043,7 @@ public class traceGPS {
         int Alti_Baro;
         int Alti_GPS;
         boolean res = false;
+        LocalDateTime _Date_Vol;
         
         try {
             if (lastB.length() > 34) {
@@ -1089,10 +1091,15 @@ public class traceGPS {
                 Min = checkParseDouble(lastB.substring(18,23),0);
                 Point1.setLongitudeSec(Deg,(int)Min,lastB.substring(23,24));                       
                 // date coding Decodage_HFDTE is necessarily OK
-                Point1.setdHeure(iniDateVol,checkParseInt(lastB.substring(1,3),0), checkParseInt(lastB.substring(3,5),0), checkParseInt(lastB.substring(5,7),0));                
+                
+                Point1.setdHeure(iniDateVol,checkParseInt(lastB.substring(1,3),0), checkParseInt(lastB.substring(3,5),0), checkParseInt(lastB.substring(5,7),0));                      
                 // Update final flight parameters
                 long decUTC = (long) (utcOffset*3600);
                 DT_Attero = Point1.dHeure.plusSeconds(decUTC);
+                if (DT_Attero.isBefore(DT_Deco)) {
+                    // day date must be incremented
+                    DT_Attero = DT_Attero.plusDays(1);
+                }                                 
                 
                 Alt_Attero_Baro = Point1.AltiBaro;
                 Alt_Attero_GPS = Point1.AltiGPS;
