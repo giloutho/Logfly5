@@ -100,13 +100,16 @@ public class varduino {
                 throw new AssertionError();
         }
         if (drives != null && drives.length > 0) {
+            FileSystemView fsv = FileSystemView.getFileSystemView();
             driveList.clear();
-             for (File aDrive : drives) {       
+             for (File aDrive : drives) {  
+                // With MacOs aDrive.getName is enough
+                // fsv needed in Windows
+                String sName = fsv.getSystemDisplayName(aDrive);
                 long size = aDrive.getTotalSpace();
                 float sizeGo = size / 1000000000;    
                 StringBuilder sb = new StringBuilder();
-                sb.append(aDrive.getName()).append(" ").append(String.format("%4.0f", sizeGo)).append(" Go");
-                String sName = aDrive.getName();
+                sb.append(sName).append(" ").append(String.format("%4.0f", sizeGo)).append(" Go");
                 driveList.add(sb.toString());
                 // Capacity > 64 Go jumped
                 if (size < 63999999999L && sName.contains("VARDUINO")) {
