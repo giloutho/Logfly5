@@ -112,6 +112,7 @@ public class varduino {
                 sb.append(sName).append(" ").append(String.format("%4.0f", sizeGo)).append(" Go");
                 driveList.add(sb.toString());
                 // Capacity > 64 Go jumped
+                sName = sName.toUpperCase();
                 if (size < 63999999999L && sName.contains("VARDUINO")) {
                     fDrive = aDrive;
                     fFlights = aDrive;
