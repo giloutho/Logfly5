@@ -88,6 +88,10 @@ public class remarkable {
         return climbAverage;
     }        
 
+    public String getStringClimbAverage() {
+        return String.format("%2.1f",climbAverage);    
+    }
+    
     public void setClimbMax(double climbMax) {
         this.climbMax = climbMax;
     }
@@ -111,7 +115,11 @@ public class remarkable {
     public int getDeltaAlt() {
         return DeltaAlt;
     }
-    
+
+    public int getFinish_altitude() {
+        return finish_altitude;
+    }
+            
     public void setEfficiency(int efficiency) {
         this.efficiency = efficiency;
     }
@@ -143,6 +151,10 @@ public class remarkable {
 
     public double getAverage_speed() {
         return average_speed;
+    }
+    
+    public String getStringAverageSpeed() {
+        return String.format("%3.0f",average_speed);
     }
     
     public void setMaximum_descent(double maximum_descent) {
