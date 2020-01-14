@@ -106,15 +106,35 @@
             transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
         }
         
-        /* The navigation menu links */
-        .sidenav a {
-            padding: 8px 8px 8px 32px;
+        /* The navigation menu links  Transition*/
+        .sidenav a.rouge {
+            padding: 8px 8px 8px 16px;
             text-decoration: none;
             font-size: 12px;
-            color: #000000;
+            color: #FF0000;
             display: block;
             transition: 0.3s
         }
+
+       /* The navigation menu links Glides*/
+       .sidenav a.bleu  {
+            padding: 8px 8px 8px 16px;
+            text-decoration: none;
+            font-size: 12px;
+            color: #0000FF;
+            display: block;
+            transition: 0.3s
+        }        
+
+        /* The navigation menu links black */
+        .sidenav a.black  {
+                padding: 8px 8px 8px 16px;
+                text-decoration: none;
+                font-size: 12px;
+                color: #000000;
+                display: block;
+                transition: 0.3s
+        }  
         
         /* When you mouse over the navigation links, change their color */
         .sidenav a:hover {
@@ -186,9 +206,9 @@
     }
 
     function openNav() {
-        document.getElementById("sideNavigation").style.width = "200px";
-        document.getElementById("carte").style.marginLeft = "200px";
-        document.getElementById("graphe").style.marginLeft = "200px";
+        document.getElementById("sideNavigation").style.width = "260px";
+        document.getElementById("carte").style.marginLeft = "260px";
+        document.getElementById("graphe").style.marginLeft = "260px";
         $("#graphe").highcharts().reflow();
         $('.leaflet-control-layers-selector')[10].click();
         $('.leaflet-control-layers-selector')[11].click();
