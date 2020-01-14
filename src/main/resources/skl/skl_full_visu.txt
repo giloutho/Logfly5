@@ -111,7 +111,7 @@
             padding: 8px 8px 8px 16px;
             text-decoration: none;
             font-size: 12px;
-            color: #FF0000;
+            color: #ff8c00;
             display: block;
             transition: 0.3s
         }
@@ -121,7 +121,7 @@
             padding: 8px 8px 8px 16px;
             text-decoration: none;
             font-size: 12px;
-            color: #0000FF;
+            color: #848484;
             display: block;
             transition: 0.3s
         }        
@@ -152,6 +152,7 @@
             top: 0;
             right: 25px;
             font-size: 22px;
+            color: #000000;
             margin-left: 50px;
         }
     </style>
