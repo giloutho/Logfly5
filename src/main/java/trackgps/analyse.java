@@ -451,7 +451,12 @@ public class analyse {
             h = currRmk.getStart_time().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
             cu.setCTime(h);
             cu.setCElapsed("xx");
-            cu.setCText(i18n.tr("Thermal")+" "+String.valueOf(i));  
+            StringBuilder sbText = new StringBuilder();
+            sbText.append(" class=\"rouge\">% ");
+            sbText.append(String.valueOf(currRmk.getFinish_altitude())).append("m");
+            sbText.append(" [+").append(String.valueOf(currRmk.getDeltaAlt())).append("m");
+            sbText.append(" ").append(currRmk.getStringClimbAverage()).append("m/s]");
+            cu.setCText(sbText.toString());  
             cu.setCHTML(currRmk.getHTMLThermal(i18n));
             cu.setCLdt(currRmk.getFinish_time());
             int pThermal = (int) Math.abs(Duration.between(currRmk.getFinish_time(),currRmk.getStart_time()).getSeconds());  
@@ -485,7 +490,12 @@ public class analyse {
             h = currRmk.getStart_time().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
             cu.setCTime(h);
             cu.setCElapsed("xx");
-            cu.setCText(i18n.tr("Glide")+" "+String.valueOf(i));  
+            StringBuilder sbText = new StringBuilder();
+            sbText.append(" class=\"bleu\">% ");
+            sbText.append(String.valueOf(currRmk.getFinish_altitude())).append("m");
+            sbText.append(" [").append(String.format("%2.1f",currRmk.getDistance())).append("km");
+            sbText.append(" ").append(currRmk.getStringAverageSpeed()).append("km/h]");
+            cu.setCText(sbText.toString());  
             cu.setCHTML(currRmk.getHTMLGlides(i18n));
             cu.setCLdt(currRmk.getFinish_time());
             
@@ -520,7 +530,9 @@ public class analyse {
         Collections.sort(cuttingList, cutting.elapsedComparator);
         for (int i = 1; i < cuttingList.size(); i++) {
             int period = (int) Math.abs(Duration.between(cuttingList.get(i).getCLdt(),cuttingList.get(0).getCLdt()).getSeconds()); 
-            cuttingList.get(i).setCElapsed(formatPeriod(period));   
+            cuttingList.get(i).setCElapsed(formatPeriod(period));             
+            String s = cuttingList.get(i).getCText().replace("%", formatPeriod(period));
+            cuttingList.get(i).setCText(s);            
         }
         
         percThermals = totThermals/totPeriod;
