@@ -53,6 +53,7 @@ public class webdown {
     private boolean downSuccess;
     private String downPath;
     private String textButton;
+    private String srtmLabel = null;
     
     public webdown(String reqUrl, String reqDirDestination, I18n pI18n, String reqSuccessMsg) {
         
@@ -66,6 +67,9 @@ public class webdown {
         } else {
             this.strSuccessMsg = reqSuccessMsg; 
             textButton = i18n.tr("Close");
+        }
+        if (reqUrl.contains("viewfinderpanoramas")) {
+            srtmLabel = i18n.tr("Downloading digital elevation data");
         }
         winDisplay();        
     }
@@ -165,10 +169,13 @@ public class webdown {
         Scene secondScene = new Scene(subRoot, 290, 150);
         // modal mode
         subStage.initModality(Modality.APPLICATION_MODAL);        
-        subStage.setScene(secondScene);     
+        subStage.setScene(secondScene); 
         
         progressBar.setVisible(true);
-        labelSucceeded.setText(i18n.tr("Loading in progress"));
+        if (srtmLabel != null)
+            labelSucceeded.setText(srtmLabel);
+        else
+            labelSucceeded.setText(i18n.tr("Loading in progress"));
         myService.start();
         
         subStage.showAndWait();
