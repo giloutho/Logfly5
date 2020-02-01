@@ -7,17 +7,15 @@
 package srtm;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.xnap.commons.i18n.I18n;
+import settings.configProg;
 
 /**
  *
@@ -28,17 +26,31 @@ import org.xnap.commons.i18n.I18n;
 public class srtmcalc {
     
     private String srtmDir;
+    private configProg myConfig;
     private I18n i18n; 
     private double THREE_SECONDS_IN_DEGREE = 1200.0;    
     private Map<File, SoftReference<BufferedInputStream>> srtmMap;
+    private boolean readySrtm;
 
 
-    public srtmcalc(I18n pI18n, String pDir) {        
-        this.i18n = pI18n;
-        this.srtmDir = pDir;        
-        srtmMap = new HashMap<File, SoftReference<BufferedInputStream>>();
+    public srtmcalc(configProg pConfig) {   
+        myConfig = pConfig;  
+        this.i18n = myConfig.getI18n();
+        File fSrtm = new File(myConfig.getPathW()+File.separator+"Srtm");
+        if (!fSrtm.exists()) fSrtm.mkdirs();        
+        if (fSrtm.exists()) {
+            this.srtmDir = fSrtm.getAbsolutePath();
+            srtmMap = new HashMap<File, SoftReference<BufferedInputStream>>();            
+            readySrtm = true;
+        } else {
+            readySrtm = false;
+        }
     }        
-   
+
+    public boolean isReadySrtm() {
+        return readySrtm;
+    }
+           
     public double getHeight(double lat, double lon) throws IOException {    
         double val = 9999;    
         
