@@ -54,12 +54,12 @@ public class scoring {
     public scoring (int myParam, configProg currConfig)  {
         // myParam unused... this is just a new constructor
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
     }
     
     public scoring (CarnetViewController callCarnet, int pRetour, configProg currConfig)  {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         this.carnetController = callCarnet;
         // 0 only for test ...
         // 1 when process finished, display a fullmao in CarnetViewController 
@@ -69,14 +69,14 @@ public class scoring {
     
     public scoring (FullMapController callFullMap, configProg currConfig)  {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         this.mapController = callFullMap;
         codeRetour = 5;
     }    
     
     public scoring (TraceViewController callExterne, int pRetour, int myParam, configProg currConfig)  {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",scoring.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         this.extController = callExterne;
         // myParam unused... this is just a new constructor
         
