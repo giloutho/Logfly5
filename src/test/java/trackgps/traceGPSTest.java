@@ -48,7 +48,7 @@ public class traceGPSTest {
                                   
         if (myConfig.isValidConfig()) {        
             //File fIGC = new File("/Users/gil/Documents/Logflya/Clem_Turq1.IGC");   // OK
-            File fIGC = new File("/Users/gil/Documents/Logfly/17060201.IGC");   // unvalid
+            File fIGC = new File("/Users/gil/Documents/Logfly/2020-01-06-12-31.igc");   // unvalid
             //File fIGC = new File("/Users/gil/Documents/Logfly/flytec/unvalid.igc");  
             traceGPS instance = new traceGPS(fIGC, true, myConfig);                       
             if (instance.isDecodage())  {            
