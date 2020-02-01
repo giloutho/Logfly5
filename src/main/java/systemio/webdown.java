@@ -54,6 +54,7 @@ public class webdown {
     private String downPath;
     private String textButton;
     private String srtmLabel = null;
+    private boolean srtmDwnl = false;
     
     public webdown(String reqUrl, String reqDirDestination, I18n pI18n, String reqSuccessMsg) {
         
@@ -70,6 +71,7 @@ public class webdown {
         }
         if (reqUrl.contains("viewfinderpanoramas")) {
             srtmLabel = i18n.tr("Downloading digital elevation data");
+            srtmDwnl = true;
         }
         winDisplay();        
     }
@@ -140,6 +142,7 @@ public class webdown {
                 btnCancel.setVisible(false);
                 btnClose.setVisible(true);
                 downSuccess = true;
+                if (srtmDwnl) subStage.close();
             }
         });
         
