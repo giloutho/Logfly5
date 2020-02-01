@@ -103,6 +103,8 @@ import photos.imgmanip;
 import photos.filesUtils;
 import settings.fileType;
 import settings.osType;
+import srtm.srtmcalc;
+import srtm.srtmhgt;
 import systemio.mylogging;
 import systemio.textio;
 import systemio.webio;
@@ -468,7 +470,7 @@ public class CarnetViewController  {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp; 
         myConfig = mainApp.myConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",CarnetViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         iniTable();
@@ -841,7 +843,8 @@ public class CarnetViewController  {
         MenuItem cmItemSumm = new MenuItem(i18n.tr("Summary"));
         cmItemSumm.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                showSummary();
+                //showSummary();
+                debugSrtm();
             }
         });
         tableContextMenu.getItems().add(cmItemSumm);  
@@ -1125,6 +1128,28 @@ public class CarnetViewController  {
             }
             tableVols.refresh();
         }        
+    }
+    
+    private void debugSrtm() {
+        
+        double annLatitude = 45.8630;   // Annecy
+	double annLongitude = 6.1725;
+        double lachLatitude = 45.9588;  // Lachat
+        double lachLongitude = 6.4773;        
+        double mattLatitude = 45.976652;   // Cervin 45.976652, 7.657731
+	double mattLongitude = 7.657731;                
+        
+        srtmcalc ele = new srtmcalc(myConfig, i18n);
+        if (ele.isReadySrtm()) {
+            try {
+                double annEle = ele.getHeight(annLatitude, annLongitude);
+                System.out.println("Elevation Annecy Lac (447) : "+annEle);
+                double mattEle = ele.getHeight(mattLatitude, mattLongitude);
+                System.out.println("Elevation Cervin :"+mattEle);
+            } catch (Exception e) {
+
+            }  
+        }
     }
     
     private void showSummary() {
