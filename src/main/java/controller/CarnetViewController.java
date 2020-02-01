@@ -843,8 +843,7 @@ public class CarnetViewController  {
         MenuItem cmItemSumm = new MenuItem(i18n.tr("Summary"));
         cmItemSumm.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                //showSummary();
-                debugSrtm();
+                showSummary();
             }
         });
         tableContextMenu.getItems().add(cmItemSumm);  
@@ -1128,28 +1127,6 @@ public class CarnetViewController  {
             }
             tableVols.refresh();
         }        
-    }
-    
-    private void debugSrtm() {
-        
-        double annLatitude = 45.8630;   // Annecy
-	double annLongitude = 6.1725;
-        double lachLatitude = 45.9588;  // Lachat
-        double lachLongitude = 6.4773;        
-        double mattLatitude = 45.976652;   // Cervin 45.976652, 7.657731
-	double mattLongitude = 7.657731;                
-        
-        srtmcalc ele = new srtmcalc(myConfig, i18n);
-        if (ele.isReadySrtm()) {
-            try {
-                double annEle = ele.getHeight(annLatitude, annLongitude);
-                System.out.println("Elevation Annecy Lac (447) : "+annEle);
-                double mattEle = ele.getHeight(mattLatitude, mattLongitude);
-                System.out.println("Elevation Cervin :"+mattEle);
-            } catch (Exception e) {
-
-            }  
-        }
     }
     
     private void showSummary() {
