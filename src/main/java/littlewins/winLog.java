@@ -24,9 +24,7 @@ import javafx.stage.Stage;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
-import settings.privateData;
 import systemio.mylogging;
-import systemio.webio;
 
 /**
  *
@@ -46,7 +44,7 @@ public class winLog {
     
     public winLog(configProg currConfig, int pAction) {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",winLog.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
+        i18n = myConfig.getI18n();   
         switch (pAction) {
             case 0:
                 readLogFile();

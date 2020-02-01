@@ -68,7 +68,7 @@ public class winMail {
     public winMail(configProg currConfig, String pFilePath, boolean pSupport) {
         myConfig = currConfig;
         supportMsg = pSupport;  
-        i18n = I18nFactory.getI18n("","lang/Messages",winMail.class.getClass().getClassLoader(),myConfig.getLocale(),0);   
+        i18n = myConfig.getI18n();  
         if (pFilePath != null)  {
             filePath = pFilePath;
             uploadFile = new File(filePath);

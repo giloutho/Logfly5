@@ -40,7 +40,7 @@ public class winRename {
     
     public winRename(String initialName, configProg currConfig)  {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",winRename.class.getClass().getClassLoader(),myConfig.getLocale(),0);  
+        i18n = myConfig.getI18n(); 
         this.sInitial = initialName;
         showWin();
     }

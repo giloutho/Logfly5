@@ -38,7 +38,7 @@ public class winCoord {
 
     public winCoord(configProg currConfig, String pLat, String pLong, traceGPS pTrack) {
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",winCoord.class.getClass().getClassLoader(),myConfig.getLocale(),0); 
+        i18n = myConfig.getI18n(); 
         mapLat = null;
         mapLong = null;
         mapAlt = null;

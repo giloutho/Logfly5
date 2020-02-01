@@ -28,7 +28,7 @@ public class winWeb {
     public winWeb(configProg currConfig, String pURL) {
         // it will be useful if we choose url according to current language
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",winWeb.class.getClass().getClassLoader(),myConfig.getLocale(),0);    
+        i18n = myConfig.getI18n();  
         this.dispUrl = pURL;
         showBrowser();
     }       

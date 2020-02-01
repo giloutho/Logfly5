@@ -54,7 +54,7 @@ public class checkUpdate {
     
     public checkUpdate(Release release, configProg mainConfig) throws IOException  {
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",alertbox.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         myLocale = myConfig.getLocale();
         updateURL = privateData.updateUrl.toString();
         webio myConnect = new webio();
