@@ -84,7 +84,8 @@ public class Main extends Application {
                                   
         if (myConfig.isValidConfig()) {
             myConfig.setVersion(currVersion);           
-            i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+          //  i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+            i18n = myConfig.getI18n();
                                     
             initRootLayout();   
             switch (idStartScreen) {
