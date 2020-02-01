@@ -20,6 +20,8 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.logging.Level;
 import littlewins.winLanguage;
+import org.xnap.commons.i18n.I18n;
+import org.xnap.commons.i18n.I18nFactory;
 import systemio.mylogging;
 
 
@@ -80,6 +82,7 @@ public class configProg {
     private  String version;
     private  Connection dbConn;
     private StringBuilder sbError;
+    private I18n i18n;
     
     public void whichOS()  {
         String OS = System.getProperty("os.name").toLowerCase();
@@ -297,6 +300,10 @@ public class configProg {
         return locale;
     }
 
+    public I18n getI18n() {
+        return i18n;
+    }
+        
     public  void setLocale(int idxLang) {
         switch (idxLang) {
             case 0 :
@@ -318,7 +325,7 @@ public class configProg {
             default:
                 locale = new Locale("fr"); 
         }
-       
+        i18n = I18nFactory.getI18n("","lang/Messages",this.getClass().getClassLoader(),locale,org.xnap.commons.i18n.I18nFactory.FALLBACK);
     }
 
     public  int getGpsLimit() {
