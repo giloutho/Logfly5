@@ -6,7 +6,6 @@
  */
 package controller;
 
-import dialogues.alertbox;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -143,7 +142,7 @@ public class KmlViewController implements Initializable {
         // 2 -> call by TraceViewController 
         this.appel = appel;
         myConfig = currConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",KmlViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);        
+        i18n = myConfig.getI18n();      
         winTraduction(); 
         iniTitre();  
     }

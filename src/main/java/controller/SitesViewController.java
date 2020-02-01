@@ -777,7 +777,7 @@ public class SitesViewController {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp; 
         myConfig = mainApp.myConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",SitesViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         iniTable();

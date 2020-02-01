@@ -566,7 +566,7 @@ public class CoordController {
         });              
         
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",CoordController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         txDesc.setText(pDesc);
         txBalise.setText(pBalise);

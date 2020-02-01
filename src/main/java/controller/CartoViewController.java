@@ -252,7 +252,7 @@ public class CartoViewController {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp; 
         myConfig = mainApp.myConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",CartoViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         iniMap();
         cartoStage.setOnHiding( event -> {

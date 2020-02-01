@@ -1826,7 +1826,7 @@ public class GPSViewController {
             if (!fDebug.exists()) fDebug.mkdirs();            
         } else
             mDebug = false;
-        i18n = I18nFactory.getI18n("","lang/Messages",GPSViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         // clear status bar
         rootController.updateMsgBar("", false, 60);
         winTraduction();

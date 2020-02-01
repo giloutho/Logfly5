@@ -183,7 +183,7 @@ public class RootLayoutController {
         myConfig = mainApp.myConfig;       
         mainApp.getPrimaryStage().setWidth(myConfig.getMainWidth());
         mainApp.getPrimaryStage().setHeight(myConfig.getMainHeight());
-        i18n = I18nFactory.getI18n("","lang/Messages",RootLayoutController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         switch (idStartScreen) {
             case 0 :
@@ -227,7 +227,7 @@ public class RootLayoutController {
             // This window will be modal
             dialogStage.showAndWait();
             // If language changed, translation is needed
-            i18n = I18nFactory.getI18n("","lang/Messages",RootLayoutController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+            i18n = myConfig.getI18n();
             winTraduction();
             
             return true;

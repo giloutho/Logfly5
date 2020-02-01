@@ -27,7 +27,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import littlewins.winFileChoose;
 import littlewins.winOsmCities;
@@ -288,7 +287,7 @@ public class XcpViewController {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp; 
         myConfig = mainApp.myConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",XcpViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
         // To return first option  

@@ -326,7 +326,7 @@ public class ConfigViewController {
     
     public void setMyConfig(configProg mainConfig) {
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",ConfigViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         
         // Fields will be filled after myConfig reading

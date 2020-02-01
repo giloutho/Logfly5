@@ -603,7 +603,7 @@ public class TraceViewController {
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp;    
         myConfig = mainApp.myConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",TraceViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0); 
+        i18n = myConfig.getI18n();
         // StatusBar is cleaned
         mainApp.rootLayoutController.updateMsgBar("", false, 60);
         winTraduction();

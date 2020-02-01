@@ -46,7 +46,6 @@ import javafx.util.converter.IntegerStringConverter;
 import leaflet.map_markers_coord;
 import littlewins.winOsmCities;
 import model.Sitemodel;
-import netscape.javascript.JSObject;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -544,7 +543,7 @@ public class SiteFormController {
         this.myConfig = mainConfig;
         this.idSite = pIdSite;
         this.editMode = modeEdit;
-        i18n = I18nFactory.getI18n("","lang/Messages",SiteFormController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         iniForm();
     }

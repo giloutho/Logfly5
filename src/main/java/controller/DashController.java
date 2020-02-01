@@ -702,7 +702,7 @@ public class DashController {
     public void setMyConfig(configProg mainConfig) {
         this.mainApp = mainApp; 
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         rootController.updateMsgBar("", false,50); 
         tablesIni();
         winTraduction();        

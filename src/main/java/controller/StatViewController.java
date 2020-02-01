@@ -28,13 +28,10 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Data;
-import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.paint.Color;
 import littlewins.winStatHours;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -931,7 +928,7 @@ public class StatViewController {
     public void setMyConfig(configProg mainConfig) {
         this.mainApp = mainApp; 
         this.myConfig = mainConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",ImportViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         rootController.updateMsgBar("", false,50); 
         winTraduction();
         dateInterval totPeriod = getDates(null, null);

@@ -129,7 +129,7 @@ public class FullMapController {
         this.carnetHTML = pHTML;
         this.idxDb = idxCarnet;
         viewMap.getEngine().loadContent(carnetHTML,"text/html");
-        i18n = I18nFactory.getI18n("","lang/Messages",FullMapController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         winTraduction();
         iniChbLeague();
     }

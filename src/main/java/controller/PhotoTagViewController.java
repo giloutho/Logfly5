@@ -54,7 +54,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import leaflet.map_markers;
 import leaflet.map_photos;
@@ -64,7 +63,6 @@ import littlewins.winMapPhotoPoint;
 import littlewins.winPhoto;
 import littlewins.winTrackFile;
 import littlewins.winWebFile;
-import model.Carnet;
 import model.Photo;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
@@ -880,7 +878,7 @@ public class PhotoTagViewController {
         this.myConfig = mainConfig;
         this.mainApp = mainApp; 
         this.mainApp.rootLayoutController.updateMsgBar("", false, 50); 
-        i18n = I18nFactory.getI18n("","lang/Messages",PhotoTagViewController.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         // clear status bar
         rootController.updateMsgBar("", false, 60);
         cmFullMap = new MenuItem(i18n.tr("Display the entire map"));
