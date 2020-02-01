@@ -118,7 +118,11 @@ public class TraceViewController {
                 else
                     isGPX = false;
                 extTrace = new traceGPS(selectedFile,true, myConfig);
-                if (extTrace.isDecodage()) {        
+                if (extTrace.isDecodage()) { 
+                    extTrace.fillElevation();
+                    for (int i = 0; i < extTrace.Tb_Good_Points.size(); i++) {
+                        System.out.println(i+" alt GPS : "+extTrace.Tb_Good_Points.get(i).AltiGPS+" ele : "+extTrace.Tb_Good_Points.get(i).elevation);
+                    }
                     map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
                     StringBuilder sbInfo = new StringBuilder();
                     sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
