@@ -114,7 +114,7 @@ public class map_visu {
         jsGalleryCode = new StringBuilder();
         jsChronoData = new StringBuilder();
                
-        i18n = I18nFactory.getI18n("","lang/Messages",map_visu.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
         
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
         decimalFormatSymbols.setDecimalSeparator('.');        

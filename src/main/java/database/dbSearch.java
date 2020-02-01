@@ -6,20 +6,14 @@
  */
 package database;
 
-import dialogues.alertbox;
 import geoutils.trigo;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
-import javafx.scene.control.Alert;
-import javax.management.StringValueExp;
 import org.xnap.commons.i18n.I18n;
 import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
@@ -45,7 +39,7 @@ public class dbSearch {
     
     public dbSearch(configProg pConfig)  {
         myConfig = pConfig;
-        i18n = I18nFactory.getI18n("","lang/Messages",dbSearch.class.getClass().getClassLoader(),myConfig.getLocale(),0);
+        i18n = myConfig.getI18n();
     }
 
     public String getErrSearch() {

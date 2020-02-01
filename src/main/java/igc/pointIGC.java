@@ -38,6 +38,7 @@ public class pointIGC {
     public double Vitesse;
     public double VitesseMoy;
     public boolean violation;
+    public int elevation;
     
     public pointIGC() {
         AltiBaro = 0;
@@ -61,7 +62,8 @@ public class pointIGC {
         Vario = 0;
         Vitesse = 0;
         VitesseMoy = 0;    
-        violation = false;       
+        violation = false;  
+        elevation = 0;
     }
     
     public void setAltiBaro(int pAltiBaro)
