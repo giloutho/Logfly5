@@ -49,7 +49,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.xnap.commons.i18n.I18n;
 import settings.configProg;
+import srtm.srtmcalc;
 import systemio.mylogging;
 import systemio.textio;
 
@@ -129,7 +131,8 @@ public class traceGPS {
     private final String CrLf = "\r\n";
     private StringBuilder sbError;
     
-    configProg myConfig;
+    private configProg myConfig;
+    private I18n i18n; 
     
     /**
      * Track is a file
@@ -148,6 +151,7 @@ public class traceGPS {
         airPoints = 0;
         
         myConfig = pConfig;
+        this.i18n = myConfig.getI18n();
         if (myConfig.getIntegration() > 0) {
             APP_INTEGRATION = myConfig.getIntegration();
         } else {
@@ -189,6 +193,7 @@ public class traceGPS {
         Decodage = false;
         Scored = false;
         myConfig = pConfig;
+        this.i18n = myConfig.getI18n();
         sSite = "";
         sVoile = "";
         sPilote = "";
@@ -1211,7 +1216,7 @@ public class traceGPS {
         * this is why point 2 is now the first point of Tb_Good_Points
         * Problem : speed must be zero. If not, point is tagged OK and this big speed becomes the reference for max and average computing
         */
-        
+
         int i, ii, TotPoints, TotGoodPoints;
         int BadVitesse;
         int BadAlti;
@@ -1405,7 +1410,8 @@ public class traceGPS {
                                 if (PcdtPoint.Vario > VarioMax.Vario) 
                                     VarioMax = PcdtPoint;
                                 if (PcdtPoint.Vario < VarioMini.Vario)
-                                    VarioMini = PcdtPoint;                           
+                                    VarioMini = PcdtPoint;    
+                                // get Elevation data
                             }
                             Tb_Good_Points.add(PcdtPoint); 
                         }
@@ -1642,6 +1648,22 @@ public class traceGPS {
             sbError.append("\r\n").append("Path : ").append(pathFichier);
             mylogging.log(Level.SEVERE, sbError.toString());        
         }     
+    }
+    
+    public void fillElevation() {
+        srtmcalc ele = new srtmcalc(myConfig);
+        if (ele.isReadySrtm()) {
+            try {
+                for (int i = 0; i < Tb_Good_Points.size(); i++) {    
+                    double dLat = Tb_Good_Points.get(i).Latitude;
+                    double dLong =Tb_Good_Points.get(i).Longitude;
+                    double elePoint = ele.getHeight(dLat, dLong);
+                    Tb_Good_Points.get(i).setElevation((int) elePoint);
+                }
+            } catch (Exception e) {
+
+            }  
+        }        
     }
                         
     /**
