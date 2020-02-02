@@ -31,11 +31,13 @@ public class srtmcalc {
     private double THREE_SECONDS_IN_DEGREE = 1200.0;    
     private Map<File, SoftReference<BufferedInputStream>> srtmMap;
     private boolean readySrtm;
+    private double srtmHeight;
 
 
     public srtmcalc(configProg pConfig) {   
         myConfig = pConfig;  
         this.i18n = myConfig.getI18n();
+        // Checking the working directory
         File fSrtm = new File(myConfig.getPathW()+File.separator+"Srtm");
         if (!fSrtm.exists()) fSrtm.mkdirs();        
         if (fSrtm.exists()) {
@@ -50,17 +52,30 @@ public class srtmcalc {
     public boolean isReadySrtm() {
         return readySrtm;
     }
-           
-    public double getHeight(double lat, double lon) throws IOException {    
+    
+    public double getSrtmHeight() {
+        return srtmHeight;
+    } 
+    
+    public boolean getElevation(double lat, double lon) throws IOException { 
+        boolean res = false;
         double val = 9999;    
         
         srtmhgt selHgt = new srtmhgt(i18n, srtmDir, lat, lon);
         File fHgt = selHgt.getHgtFile();
         if (fHgt != null) {
             val = extractHeight(lat,lon, fHgt);
+            res = true;
+        } else {
+            // a problem has occurred with the hgt file. 
+            // to avoid a hellish loop, we stop the procedure.
+            readySrtm = false;
+            res = false;
         } 
         
-        return val;        
+        srtmHeight = val;
+                
+        return res;
     }
     
     public double extractHeight(double lat, double lon, File fHgt) throws IOException {
