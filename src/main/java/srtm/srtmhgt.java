@@ -64,11 +64,10 @@ public class srtmhgt {
                 if (fSrtm.exists()) {
                     setHgtFile(fSrtm);
                 } else {
-                    fSrtm = null;
+                   setHgtFile(null);
                 }
             }
         }        
-        
     }
     
     private void downloadSrtmZip(String zipName) {
@@ -79,6 +78,8 @@ public class srtmhgt {
         if (myLoad.isDownSuccess()) {
             File downFile = new File(myLoad.getDownPath());
             unzipping(zipName);
+        } else {
+            
         }                        
     }
     
@@ -86,7 +87,8 @@ public class srtmhgt {
 
         int bufferSize = 8192;   
         int hgtNb = 0;
-        String pattern = Pattern.quote(System.getProperty("file.separator"));
+        //String pattern = Pattern.quote(System.getProperty("file.separator"));
+        String pattern = Character.toString((char)47);
 
         String source = srtmDir+File.separator+fName+".zip";
         File fZip = new File(source);
@@ -106,6 +108,7 @@ public class srtmhgt {
                 try {
                     byte[] buffer = new byte[bufferSize];
                     String fHgt = null;
+                    // L32/N44E006.hgt
                     String[] s = zipEntry.getName().split(pattern);
                     for (int i = 0; i < s.length; i++) {
                         if (s[i].contains(".hgt")) {
