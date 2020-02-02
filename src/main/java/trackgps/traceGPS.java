@@ -1654,11 +1654,16 @@ public class traceGPS {
         srtmcalc ele = new srtmcalc(myConfig);
         if (ele.isReadySrtm()) {
             try {
-                for (int i = 0; i < Tb_Good_Points.size(); i++) {    
-                    double dLat = Tb_Good_Points.get(i).Latitude;
-                    double dLong =Tb_Good_Points.get(i).Longitude;
-                    double elePoint = ele.getHeight(dLat, dLong);
-                    Tb_Good_Points.get(i).setElevation((int) elePoint);
+                for (int i = 0; i < Tb_Good_Points.size(); i++) {  
+                    if (ele.isReadySrtm()) {
+                        double dLat = Tb_Good_Points.get(i).Latitude;
+                        double dLong =Tb_Good_Points.get(i).Longitude;
+                        if (ele.getElevation(dLat, dLong)) 
+                            Tb_Good_Points.get(i).setElevation((int) ele.getSrtmHeight());
+                    } else {
+                        System.out.println("A problem occured during strm downloading");
+                        break;
+                    }
                 }
             } catch (Exception e) {
 
