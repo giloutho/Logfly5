@@ -25,7 +25,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import trackgps.traceGPS;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import trackgps.analyse;
 import trackgps.remarkable;
@@ -50,6 +49,8 @@ public class map_visu {
     private final String RC = "\n";  
     private StringBuilder jsaltiLg ;
     private StringBuilder jsaltiVal;
+    private StringBuilder jseleVal;
+    private StringBuilder jsgroundVal;
     private StringBuilder jsHeure;
     private StringBuilder jsSpeed;
     private StringBuilder jsTabPoints;
@@ -65,6 +66,8 @@ public class map_visu {
     private StringBuilder jsPhotosCode;
     private StringBuilder jsGalleryCode;
     private StringBuilder jsChronoData;
+    private StringBuilder jsAreaCode;
+    private StringBuilder jsMinMax;
     
     private analyse trackAnalyze;
     
@@ -98,6 +101,8 @@ public class map_visu {
         map_HTML = null;
         jsaltiLg = new StringBuilder();
         jsaltiVal = new StringBuilder();
+        jseleVal = new StringBuilder();
+        jsgroundVal = new StringBuilder();
         jsHeure = new StringBuilder();
         jsSpeed = new StringBuilder();
         jsTabPoints = new StringBuilder();
@@ -113,6 +118,7 @@ public class map_visu {
         jsGallery = new StringBuilder();
         jsGalleryCode = new StringBuilder();
         jsChronoData = new StringBuilder();
+        jsMinMax = new StringBuilder();
                
         i18n = myConfig.getI18n();
         
@@ -121,7 +127,9 @@ public class map_visu {
         decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);       
         
         trackAnalyze = new analyse(traceVisu, i18n);
-                        
+        
+        traceVisu.fillElevation();
+                                
         carteVisu(traceVisu);       
     } 
     
@@ -134,7 +142,7 @@ public class map_visu {
         
         Boolean res = false;
         String sNb;
-                        
+                           
         
         int step;
         int totPoints = traceVisu.Tb_Good_Points.size();
@@ -159,6 +167,13 @@ public class map_visu {
                 jsaltiVal.append(String.valueOf(currPoint.AltiBaro)).append(",");
             }  else {
                 jsaltiVal.append(String.valueOf(currPoint.AltiGPS)).append(",");
+            }
+            if (traceVisu.isElevationOK()) {
+                jseleVal.append(String.valueOf(currPoint.elevation)).append(",");
+                jsgroundVal.append(String.valueOf(currPoint.AltiGPS - currPoint.elevation)).append(",");
+            } else {
+                jseleVal.append("0").append(",");
+                jsgroundVal.append("0").append(",");
             }
             // locale.ROOT -> force point a decimal separator
             sNb = String.format(Locale.ROOT,"%5.2f",currPoint.Vario);
@@ -191,6 +206,12 @@ public class map_visu {
         if ( res && jsaltiVal.length() > 0 ) {
             jsaltiVal.setLength(jsaltiVal.length() - 1);
         }  else res = false;
+        if ( res && jseleVal.length() > 0 ) {
+            jseleVal.setLength(jseleVal.length() - 1);
+        }  else res = false;      
+        if ( res && jsgroundVal.length() > 0 ) {
+            jsgroundVal.setLength(jsgroundVal.length() - 1);
+        }  else res = false;          
         if ( res && jsVario.length() > 0 ) {
             jsVario.setLength(jsVario.length() - 1);
         }  else res = false;
@@ -202,6 +223,15 @@ public class map_visu {
         }  else res = false;
           
         return res;
+    }
+    
+    private void genAreaCode() {
+        
+        jsAreaCode = new StringBuilder();
+        jsAreaCode.append("                ,{  showInLegend: false,");
+        jsAreaCode.append("                    type: 'area',");
+        jsAreaCode.append("                    color: '#D2691E',");
+        jsAreaCode.append("                    data: eleVal  }");         
     }
     
     /**
@@ -571,21 +601,33 @@ public class map_visu {
         }
     }
     
+    public void genMinMax(traceGPS traceVisu)  {    
+        jsMinMax.append("               ,min:").append(String.valueOf(traceVisu.getAlt_Mini_GPS().AltiGPS)).append(",").append(RC);
+        jsMinMax.append("               max:").append(String.valueOf(traceVisu.getAlt_Maxi_GPS().AltiGPS)).append(RC);
+    }
+    
     /**
      * HTML generation of detailed info panel
      * @param traceVisu 
      */
     public void genLegende(traceGPS traceVisu)  {
                 
-        jsLegende.append("legend._div.innerHTML += '").append(traceVisu.getsDate_Vol()).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(traceVisu.getsPilote()).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(traceVisu.getsVoile()).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Duration")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append("<hr />';").append(RC);
+        jsLegende.append("        switch(numTab) {").append(RC);
+        jsLegende.append("            case 1:").append(RC);
+        jsLegende.append("                content += '<ul id=\"tabnav\">'").append(RC);
+        jsLegende.append("                content +='<li class=\"active\"><a onclick=\"fillInfo(1)\">1</a></li>';").append(RC);
+        jsLegende.append("                content +='<li><a onclick=\"fillInfo(2)\">2</a></li>';").append(RC);
+        jsLegende.append("                content +='<li><a onclick=\"fillInfo(3)\">3</a></li>';").append(RC);
+        jsLegende.append("                content +='</ul><br>';").append(RC);       
+        jsLegende.append("                content +='").append(traceVisu.getsDate_Vol()).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append(traceVisu.getsPilote()).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append(traceVisu.getsVoile()).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Duration")).append(" : ").append(traceVisu.getsDuree_Vol()).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append("<hr />';").append(RC);
         // Launching time
         String hDeco = traceVisu.getDT_Deco().format(DateTimeFormatter.ofPattern("HH:mm"));                
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Take off")).append(" : ").append(hDeco).append("<br>';").append(RC);   
-        jsLegende.append("        legend._div.innerHTML += '").append("GPS : ").append(String.valueOf(traceVisu.getAlt_Deco_GPS())).append("m<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Take off")).append(" : ").append(hDeco).append("<br>';").append(RC);   
+        jsLegende.append("                content +='").append("GPS : ").append(String.valueOf(traceVisu.getAlt_Deco_GPS())).append("m<br>';").append(RC);
         String[] siteComplet;       
         // Search for launching site
         String finalSiteDeco = null; 
@@ -623,7 +665,7 @@ public class map_visu {
         // To avoid an unsightly \ in place of apostrophe
         String goodSiteDeco = finalSiteDeco.replace("'", "\\'");     
         //String goodSiteDeco = "Plan de L\\'AIGOUILLER"; 
-        jsLegende.append("        legend._div.innerHTML += '").append(goodSiteDeco).append("<br>';").append(RC);         
+        jsLegende.append("                content +='").append(goodSiteDeco).append("<br>';").append(RC);         
         // Search for landing site with last point coordinates
         pointIGC lastPoint = traceVisu.Tb_Good_Points.get(traceVisu.Tb_Good_Points.size()-1);  
         String finalSiteAtterro = null;
@@ -659,26 +701,44 @@ public class map_visu {
         // To avoid an unsightly \ in place of apostrophe
         String goodSiteAterro = finalSiteAtterro.replace("'", "\\'");    
         String hAttero = traceVisu.getDT_Attero().format(DateTimeFormatter.ofPattern("HH:mm"));                 
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Landing")).append(" : ").append(hAttero).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(" GPS : ").append(String.valueOf(traceVisu.getAlt_Attero_GPS())).append("m<br>';").append(RC);        
-        jsLegende.append("        legend._div.innerHTML += '").append(goodSiteAterro).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append("<hr />';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Landing")).append(" : ").append(hAttero).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append(" GPS : ").append(String.valueOf(traceVisu.getAlt_Attero_GPS())).append("m<br>';").append(RC);        
+        jsLegende.append("                content +='").append(goodSiteAterro).append("<br>';").append(RC);
+        jsLegende.append("                break").append(RC);
+        // End of case 1
+        jsLegende.append("            case 2:").append(RC);
+        jsLegende.append("                content += '<ul id=\"tabnav\">'").append(RC);
+        jsLegende.append("                content +='<li><a onclick=\"fillInfo(1)\">1</a></li>';").append(RC);
+        jsLegende.append("                content +='<li class=\"active\"><a onclick=\"fillInfo(2)\">2</a></li>';").append(RC);
+        jsLegende.append("                content +='<li><a onclick=\"fillInfo(3)\">3</a></li>';").append(RC);
+        jsLegende.append("                content +='</ul><br>';").append(RC);                             
         pointIGC ptAltMax = traceVisu.getAlt_Maxi_GPS();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max GPS alt")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Max GPS alt")).append(" : ").append(String.valueOf(ptAltMax.AltiGPS)).append("m<br>';").append(RC);
         pointIGC ptAltMini = traceVisu.getAlt_Mini_GPS();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Min GPS alt")).append(" : ").append(String.valueOf(ptAltMini.AltiGPS)).append("m<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Min GPS alt")).append(" : ").append(String.valueOf(ptAltMini.AltiGPS)).append("m<br>';").append(RC);
         pointIGC ptVarioMax = traceVisu.getVario_Max();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max climb")).append(" : ").append(String.format("%2.2f",ptVarioMax.Vario)).append("m/s<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Max climb")).append(" : ").append(String.format("%2.2f",ptVarioMax.Vario)).append("m/s<br>';").append(RC);
         pointIGC ptVarioMini = traceVisu.getVario_Mini();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max sink")).append(" : ").append(String.format("%2.2f",ptVarioMini.Vario)).append("m/s<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max gain")).append(" : ").append(String.valueOf(traceVisu.getBestGain())).append("m<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Max sink")).append(" : ").append(String.format("%2.2f",ptVarioMini.Vario)).append("m/s<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Max gain")).append(" : ").append(String.valueOf(traceVisu.getBestGain())).append("m<br>';").append(RC);
         pointIGC ptVitMax = traceVisu.getVit_Max();
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Max speed")).append(" : ").append(String.format("%3.2f",ptVitMax.Vitesse)).append("km/h<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Best transition")).append(" : ").append(String.format("%3.2f",dBestT)).append("km<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Size")).append(" : ").append(String.format("%3.2f",traceVisu.getTrackLen())).append("km<br>';").append(RC);        
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Points")).append(" : ").append(String.valueOf(traceVisu.getNbPoints())).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Aberrants")).append(" : ").append(String.valueOf(traceVisu.getNbPointsAberr())).append("<br>';").append(RC);
-        jsLegende.append("        legend._div.innerHTML += '").append(i18n.tr("Signature")).append(" : ").append(traceVisu.getSignature()).append("<br>';").append(RC);        
+        jsLegende.append("                content +='").append(i18n.tr("Max speed")).append(" : ").append(String.format("%3.2f",ptVitMax.Vitesse)).append("km/h<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Best transition")).append(" : ").append(String.format("%3.2f",dBestT)).append("km<br>';").append(RC);
+        jsLegende.append("                break").append(RC);
+        // end of Case 2    
+        jsLegende.append("            case 3:").append(RC);
+        jsLegende.append("                content += '<ul id=\"tabnav\">'").append(RC);
+        jsLegende.append("                content +='<li><a onclick=\"fillInfo(1)\">1</a></li>';").append(RC);
+        jsLegende.append("                content +='<li><a onclick=\"fillInfo(2)\">2</a></li>';").append(RC);
+        jsLegende.append("                content +='<li class=\"active\"><a onclick=\"fillInfo(3)\">3</a></li>';").append(RC);
+        jsLegende.append("                content +='</ul><br>';").append(RC);          
+        jsLegende.append("                content +='").append(i18n.tr("Size")).append(" : ").append(String.format("%3.2f",traceVisu.getTrackLen())).append("km<br>';").append(RC);        
+        jsLegende.append("                content +='").append(i18n.tr("Points")).append(" : ").append(String.valueOf(traceVisu.getNbPoints())).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Aberrants")).append(" : ").append(String.valueOf(traceVisu.getNbPointsAberr())).append("<br>';").append(RC);
+        jsLegende.append("                content +='").append(i18n.tr("Signature")).append(" : ").append(traceVisu.getSignature()).append("<br>';").append(RC);       
+        jsLegende.append("                break").append(RC);
+        // end of Case 3
+        jsLegende.append("        }").append(RC);
     }
     
     /**
@@ -779,6 +839,7 @@ public class map_visu {
         jsMenu.append("        \"").append(i18n.tr("Thermals")).append("\": THmarkers,").append(RC);
         jsMenu.append("        \"").append(i18n.tr("Transitions")).append("\": GLmarkers,").append(RC);        
     }
+        
     
     /**
      * HTML generation of the map
@@ -803,7 +864,9 @@ public class map_visu {
                 String pointsHTML = beginHTML.replace("%tabPoints%", jsTabPoints.toString());
                 String altiLgHTML = pointsHTML.replace("%altiLg%", jsaltiLg.toString());
                 String altiValHTML = altiLgHTML.replace("%altiVal%", jsaltiVal.toString());
-                String varioHTML =  altiValHTML.replace("%Vario%", jsVario.toString());
+                String eleValHTML = altiValHTML.replace("%eleVal%", jseleVal.toString());
+                String groundValHTML = eleValHTML.replace("%groundVal%", jsgroundVal.toString());
+                String varioHTML =  groundValHTML.replace("%Vario%", jsVario.toString());
                 String speedHTML = varioHTML.replace("%Speed%", jsSpeed.toString());
                 String heureHTML = "";
                 if (traceVisu.getPhotosPath() != null) {
@@ -844,6 +907,7 @@ public class map_visu {
                     chronoHTML = thermiqHTML;
                 }                    
                 genLegende(traceVisu);
+                genMinMax(traceVisu);
                 map_HTML_NoScore = chronoHTML;
                 String endHTML = chronoHTML;
                 if (traceVisu.isScored())  {
@@ -902,8 +966,16 @@ public class map_visu {
                 }
                 genDisplayMenu();
                 String menu_HTML = endHTML.replace("%DisplayMenu%", jsMenu.toString());
-                String Code_HTML = menu_HTML.replace("%legende%", jsLegende.toString());                
-                map_HTML = Code_HTML;      
+                String legende_HTML = menu_HTML.replace("%legende%", jsLegende.toString());
+                String Code_HTML = legende_HTML.replace("%minmax%", jsMinMax.toString());
+                String final_HTML;
+                if (traceVisu.isElevationOK()) {
+                    genAreaCode();
+                    final_HTML = Code_HTML.replace("//%elevationarea%", jsAreaCode.toString());
+                } else {
+                    final_HTML = Code_HTML;
+                }
+                map_HTML = final_HTML;      
                 map_OK = true;
             }
         } catch (Exception e) {
