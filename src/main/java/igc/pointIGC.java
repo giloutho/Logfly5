@@ -176,8 +176,14 @@ public class pointIGC {
           Vario = pVario;
       }
 
-    public void setElevation(int elevation) {
+      public void setElevation(int elevation) {
         this.elevation = elevation;
-    }                  
+      }  
+
+      public int getElevation() {
+        return elevation;
+      }
+      
+      
     
 }
