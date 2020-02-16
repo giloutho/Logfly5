@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import littlewins.winFileChoose;
 import littlewins.winFileSave;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.fileType;
 import settings.osType;
@@ -118,11 +117,7 @@ public class TraceViewController {
                 else
                     isGPX = false;
                 extTrace = new traceGPS(selectedFile,true, myConfig);
-                if (extTrace.isDecodage()) { 
-                    extTrace.fillElevation();
-                    for (int i = 0; i < extTrace.Tb_Good_Points.size(); i++) {
-                        System.out.println(i+" alt GPS : "+extTrace.Tb_Good_Points.get(i).AltiGPS+" ele : "+extTrace.Tb_Good_Points.get(i).elevation);
-                    }
+                if (extTrace.isDecodage()) {                     
                     map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
                     StringBuilder sbInfo = new StringBuilder();
                     sbInfo.append(selectedFile.getAbsolutePath()).append("    ");
