@@ -51,7 +51,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.xnap.commons.i18n.I18n;
 import settings.configProg;
-import srtm.srtmcalc;
+import srtm.hgtReader;
 import systemio.mylogging;
 import systemio.textio;
 
@@ -121,6 +121,7 @@ public class traceGPS {
     private String photosPath;
     private String idDatabase;
     private int bestGain;
+    private boolean elevationOK;
     
     
     public List<pointIGC> Tb_Tot_Points = new ArrayList<pointIGC>();
@@ -145,6 +146,7 @@ public class traceGPS {
     {
         Decodage = false;
         Scored = false;  
+        elevationOK = false;
         sSite = "";
         sVoile = "";
         sPilote = "";
@@ -580,7 +582,11 @@ public class traceGPS {
     public void setIdDatabase(String idDatabase) {
         this.idDatabase = idDatabase;
     }
-        
+
+    public boolean isElevationOK() {
+        return elevationOK;
+    }
+                
                                    
     /**
      * if there is a non numeric character, Integer.parseInt triggers an exception
@@ -1411,7 +1417,6 @@ public class traceGPS {
                                     VarioMax = PcdtPoint;
                                 if (PcdtPoint.Vario < VarioMini.Vario)
                                     VarioMini = PcdtPoint;    
-                                // get Elevation data
                             }
                             Tb_Good_Points.add(PcdtPoint); 
                         }
@@ -1651,22 +1656,37 @@ public class traceGPS {
     }
     
     public void fillElevation() {
-        srtmcalc ele = new srtmcalc(myConfig);
-        if (ele.isReadySrtm()) {
+
+        hgtReader hr = new hgtReader(myConfig);
+        if (hr.isReadySrtm()) {            
             try {
                 for (int i = 0; i < Tb_Good_Points.size(); i++) {  
-                    if (ele.isReadySrtm()) {
+                    if (hr.isReadySrtm()) {
                         double dLat = Tb_Good_Points.get(i).Latitude;
                         double dLong =Tb_Good_Points.get(i).Longitude;
-                        if (ele.getElevation(dLat, dLong)) 
-                            Tb_Good_Points.get(i).setElevation((int) ele.getSrtmHeight());
+                        double elevation = hr.getElevationFromHgt(dLat, dLong);
+                        if (elevation < 9999) {                        
+                            Tb_Good_Points.get(i).setElevation((int) elevation);
+                        } else {
+                            if (i > 0) {
+                                int prevEle = Tb_Good_Points.get(i-1).getElevation();
+                                if (prevEle >= 0) 
+                                    Tb_Good_Points.get(i).setElevation(prevEle);
+                                else
+                                    Tb_Good_Points.get(i).setElevation(-1);
+                            } else 
+                                Tb_Good_Points.get(i).setElevation(-1);
+                        }
                     } else {
-                        System.out.println("A problem occured during strm downloading");
+                        mylogging.log(Level.SEVERE, "A problem occured during strm downloading in fillElevation"); 
                         break;
                     }
                 }
+                if (hr.isReadySrtm()) {
+                    elevationOK = true;
+                }
             } catch (Exception e) {
-
+                mylogging.log(Level.SEVERE, "A problem occured during strm downloading in fillElevation"); 
             }  
         }        
     }
