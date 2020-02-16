@@ -49,26 +49,6 @@
         .leaflet-map-pane{
             z-index: 100;
         }
-        .info {
-            padding: 6px 8px;
-            font: 14px/16px Arial, Helvetica, sans-serif;
-            background: white;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 5px;
-        }
-        .info h4 {
-            margin: 0 0 5px;
-            color: #777;
-        }
-        .legend {
-            padding: 6px 8px;
-            font: 12px/14px Arial, Helvetica, sans-serif;
-            background: white;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 5px;
-        }
         table{
             border:1px solid black;
             border-collapse: collapse;
@@ -155,6 +135,63 @@
             color: #000000;
             margin-left: 50px;
         }
+        .legend {
+            padding: 6px 8px;
+            font: 12px/14px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        ul#tabnav {
+            font: normal 14px arial, sans, sans-serif;
+            -list-style-type: none;
+            border-bottom: 1px solid gray;
+            margin: 0;
+            padding-left:0;
+            padding-right:0;
+            padding-bottom: 26px;
+        }
+
+        ul#tabnav li {
+            display: inline;
+            float: left;
+            height: 24px;
+            min-width:30px;
+            text-align:center;
+            padding:0;
+            margin: 1px 0px 0px 0px;
+            border: 1px solid gray;
+        }
+
+        ul#tabnav li.active {
+            border-bottom: 1px solid #fff;
+            background-color: #fff;
+        }
+
+        ul#tabnav li.active a {
+            color: #000;
+            font-weight:bold;
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+
+        #tabnav a {
+            float: left;
+            color: #666;
+            text-decoration: none;
+            padding: 4px;
+            text-align:center;
+            background-color:#eee;
+            min-width:30px;
+            border-bottom: 1px solid gray;
+        }
+
+        #tabnav a:hover {
+            color: #000;
+            font-weight:bold;
+            background-color: #fff;
+        }        
     </style>
 </head>
 <body>
@@ -175,6 +212,10 @@
     var altiLg = [%altiLg%];
 
     var altiVal = [%altiVal%];
+
+    var eleVal = [%eleVal%];
+
+    var groundVal = [%groundVal%];
 
     var Vario = [%Vario%];
 
@@ -197,7 +238,6 @@
         }
         mousemarker = new L.marker(tabPoints[i]).addTo(map);
         map.panTo(tabPoints[i]);
-        info.update(altiLg[i]+'<br/>Alt : '+altiVal[i]+'m<br/>Vz : '+Vario[i]+'m/s<br/>Vit : '+Speed[i]+' km/h');
     }
 
     function popup(feature, layer) {
@@ -241,14 +281,19 @@
 
     // Efface la légende
     function hideLegend() {
-        legend.getContainer().innerHTML='';   
+        legend.removeFrom(map);  
     }
 
     // Affiche la légende
     function fillLegend() {
-        legend._div.innerHTML = '';
-        %legende%        
+        legend.addTo(map);    
     };
+
+    function fillInfo(numTab) {
+        var content = "";
+        %legende%    
+        legend._div.innerHTML = content;  
+    }
 
     // Démarre la mesure
     function startMeasure() {
@@ -325,23 +370,6 @@
         weight: 3,
         opacity: 0.85
     };
-
-    var info = L.control({position: 'bottomright'});
-
-    info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-        this.update();
-        return this._div;
-    };
-
-    // method that we will use to update the control based on feature properties passed
-    info.update = function (paramVol) {
-        this._div.innerHTML = paramVol;
-    };
-
-    info.addTo(map);
-
-    info.update('');
 
     var track = new L.Polyline(tabPoints, trackOptions);
 
@@ -425,7 +453,6 @@
                                 else {
                                     mousemarker.setLatLng(tabPoints[this.x]);
                                 }
-                                info.update(Heure[this.x]+'<br/>Alt : '+altiVal[this.x]+'m<br/>Vz : '+Vario[this.x]+'m/s<br/>Vit : '+Speed[this.x]+' km/h');
                             },
                             click: function () {
                                 // On peut préciser un niveau de zoom
@@ -440,14 +467,21 @@
                                 map.removeLayer(mousemarker);
                                 mousemarker = null;
                             }
-                            info.update('');
                         }
                     }
                 }
             },
 
             tooltip: {
-                enabled: false
+                formatter: function (tooltip) {
+                    if (this.point.isNull) {
+                        return 'Null';
+                    }
+                    var index = this.point.index;
+                    var tooltip = Heure[index]+'<br/>Alt : '+altiVal[index]+'m<br/>HS : '+groundVal[index]+'m<br/>Vz : '+Vario[index]+'m/s<br/>Vit : '+Speed[index]+' km/h';
+                    return tooltip;
+                },
+                crosshairs: true
             },
 
             xAxis: {
@@ -461,12 +495,16 @@
                 labels: {
                     format: '{value} m'
                 }
+%minmax%
             },
 
-            series: [{
-                showInLegend: false,
-                data: altiVal
-            }]
+            series: [
+                {   showInLegend: false,
+                    type: 'line',
+                    color: '#0000FF',
+                    data: altiVal }
+//%elevationarea%      
+            ]
         });
     });
 
@@ -495,10 +533,9 @@
     //%btnGallery%
 
     var legend = L.control({position: 'topleft'});
-
     legend.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'legend');
-        fillLegend();
+        fillInfo(1);
         return this._div;
     };
 
