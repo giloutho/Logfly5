@@ -46,7 +46,6 @@ import littlewins.winMail;
 import littlewins.winSendDb;
 import littlewins.winWeb;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.fileType;
 import systemio.mylogging;
