@@ -26,9 +26,11 @@ public class Airspace {
     {
         coordinates = new ArrayList<Coordinate>();
         AltLimit_Top = 0;
+        AltLimit_Top_AGL = 0;
         AltLimit_Top_Ref = AltitudeReference.STD;
         AltLimit_Top_Unit = AltitudeUnit.F;
         AltLimit_Bottom = 0;
+        AltLimit_Bottom_AGL = 0;
         AltLimit_Bottom_Ref = AltitudeReference.STD;
         AltLimit_Bottom_Unit = AltitudeUnit.F;
         originalText = new StringBuilder();
@@ -46,6 +48,7 @@ public class Airspace {
     public String Country;
     public String Name;
     public Integer AltLimit_Top;
+    public Integer AltLimit_Top_AGL;
     public StringBuilder originalText;
     public Integer getAltLimit_Top()
     {
@@ -55,6 +58,7 @@ public class Airspace {
 
     public AltitudeReference AltLimit_Top_Ref;
     public Integer AltLimit_Bottom;
+    public Integer AltLimit_Bottom_AGL;
     public Integer getAltLimit_Bottom()
     {
         return (AltLimit_Top == null) ? 0 : AltLimit_Bottom;
