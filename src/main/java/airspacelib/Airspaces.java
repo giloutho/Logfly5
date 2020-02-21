@@ -236,6 +236,7 @@ public class Airspaces extends ArrayList<Airspace> {
                                 airspace.AltLimit_Top_Ref = Helpers.parseReference(m);
                                 airspace.AltLimit_Top_Unit = Helpers.parseUnit(m);
                                 if (airspace.AltLimit_Top_Ref == AltitudeReference.AGL) {
+                                    airspace.AltLimit_Top_AGL = 1;
                                     String altMeter = Helpers.findRegex("\\d+[Mm]*", l);
                                     if (altMeter.contains("M") || altMeter.contains("m")) {
                                         // unit altitude is meters. Not current but possible
@@ -266,6 +267,7 @@ public class Airspaces extends ArrayList<Airspace> {
                                 airspace.AltLimit_Bottom_Ref = Helpers.parseReference(m);
                                 airspace.AltLimit_Bottom_Unit = Helpers.parseUnit(m);
                                 if (airspace.AltLimit_Bottom_Ref == AltitudeReference.AGL) {
+                                    airspace.AltLimit_Bottom_AGL = 1;
                                     String altMeter = Helpers.findRegex("\\d+[Mm]*", l);
                                     if (altMeter.contains("M") || altMeter.contains("m")) {
                                         // unit altitude is meters. Not current but possible
