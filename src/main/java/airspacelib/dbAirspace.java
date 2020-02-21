@@ -11,7 +11,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.logging.Level;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
@@ -162,21 +161,24 @@ public class dbAirspace {
     private int addAirspaceToDb(Airspace airspace, String airJson) {
         int res = 0;
         try {            
+            System.out.println("Floor_AGL");
             StringBuilder insertTableSQL = new StringBuilder();        
-            insertTableSQL.append("INSERT INTO Zones ( Openair, Geojson, Name, Classe, Floor, Ceiling, LatMini, LatMaxi, LongMini, LongMaxi, Visu ) VALUES");
-            insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?)");  
+            insertTableSQL.append("INSERT INTO Zones ( Openair, Geojson, Name, Classe, Floor, Floor_AGL, Ceiling, Ceiling_AGL, LatMini, LatMaxi, LongMini, LongMaxi, Visu ) VALUES");
+            insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?,?,?)");  
             PreparedStatement preparedStatement = dbConn.prepareStatement(insertTableSQL.toString());
             preparedStatement.setString(1, airspace.originalText.toString());
             preparedStatement.setString(2, airJson);
             preparedStatement.setString(3, airspace.Name);
             preparedStatement.setString(4, airspace.Category.toString());
             preparedStatement.setInt(5, airspace.AltLimit_Bottom);
-            preparedStatement.setInt(6, airspace.AltLimit_Top);
-            preparedStatement.setDouble(7, airspace.getLatMini());
-            preparedStatement.setDouble(8, airspace.getLatMaxi());
-            preparedStatement.setDouble(9, airspace.getLongMini());
-            preparedStatement.setDouble(10, airspace.getLongMaxi());
-            preparedStatement.setInt(11, 1);
+            preparedStatement.setInt(6, airspace.AltLimit_Bottom_AGL);
+            preparedStatement.setInt(7, airspace.AltLimit_Top);
+            preparedStatement.setInt(8, airspace.AltLimit_Top_AGL);
+            preparedStatement.setDouble(9, airspace.getLatMini());
+            preparedStatement.setDouble(10, airspace.getLatMaxi());
+            preparedStatement.setDouble(11, airspace.getLongMini());
+            preparedStatement.setDouble(12, airspace.getLongMaxi());
+            preparedStatement.setInt(13, 1);
             preparedStatement.executeUpdate();              
             res = 1;            
         } catch (Exception e) {
@@ -249,7 +251,7 @@ public class dbAirspace {
             if (con != null) {
                 StringBuilder req = new StringBuilder();
                 req.append("CREATE TABLE Zones( Z_ID integer NOT NULL PRIMARY KEY, Openair Long Text, ");
-                req.append("Geojson Long Text, Name Text, Classe TEXT, Floor INTEGER, Ceiling INTEGER, ");
+                req.append("Geojson Long Text, Name Text, Classe TEXT, Floor INTEGER, Floor_AGL INTEGER, Ceiling INTEGER, Ceiling_AGL INTEGER, ");
                 req.append("LatMini REAL, LatMaxi REAL, LongMini REAL, LongMaxi REAL, Visu VARCHAR(1))");
                 Statement stmt = con.createStatement();
                 stmt.execute(req.toString());
