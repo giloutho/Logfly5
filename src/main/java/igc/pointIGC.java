@@ -38,7 +38,10 @@ public class pointIGC {
     public double Vitesse;
     public double VitesseMoy;
     public boolean violation;
+    public String violationName;
+    public int violationLimit;
     public int elevation;
+    public int groundHeight;
     
     public pointIGC() {
         AltiBaro = 0;
@@ -63,7 +66,10 @@ public class pointIGC {
         Vitesse = 0;
         VitesseMoy = 0;    
         violation = false;  
+        violationName = null;
+        violationLimit = 0;
         elevation = 0;
+        groundHeight = 0;
     }
     
     public void setAltiBaro(int pAltiBaro)
@@ -183,7 +189,13 @@ public class pointIGC {
       public int getElevation() {
         return elevation;
       }
-      
-      
+
+    public void setViolationName(String violationName) {
+        this.violationName = violationName;
+    }
+
+    public void setGroundHeight(int groundHeight) {
+        this.groundHeight = groundHeight;
+    }            
     
 }
