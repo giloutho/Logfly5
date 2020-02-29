@@ -211,6 +211,9 @@ public class Airspaces extends ArrayList<Airspace> {
                                 case  ZP :                                    
                                     airspace.typeColor = "23";                                    
                                     break;
+                                case  ZSM :                                    
+                                    airspace.typeColor = "12";                                    
+                                    break;                                    
                                 case  UKN:
                                     airspace.typeColor = "14";                                    
                                     break;
