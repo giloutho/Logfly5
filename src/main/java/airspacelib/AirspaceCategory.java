@@ -41,6 +41,7 @@ public enum AirspaceCategory {
     RMZ,
     Z,
     ZP,
+    ZSM,
     UKN;
 
     @Override
