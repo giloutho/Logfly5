@@ -161,7 +161,6 @@ public class dbAirspace {
     private int addAirspaceToDb(Airspace airspace, String airJson) {
         int res = 0;
         try {            
-            System.out.println("Floor_AGL");
             StringBuilder insertTableSQL = new StringBuilder();        
             insertTableSQL.append("INSERT INTO Zones ( Openair, Geojson, Name, Classe, Floor, Floor_AGL, Ceiling, Ceiling_AGL, LatMini, LatMaxi, LongMini, LongMaxi, Visu ) VALUES");
             insertTableSQL.append("(?,?,?,?,?,?,?,?,?,?,?,?,?)");  
