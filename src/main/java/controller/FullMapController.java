@@ -36,6 +36,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import leaflet.map_visu;
+import littlewins.winComment;
 import littlewins.winFileChoose;
 import littlewins.winMail;
 import littlewins.winSaveXcp;
@@ -44,7 +45,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.fileType;
 import settings.listLeague;
@@ -408,46 +408,47 @@ public class FullMapController {
         
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OACheck, myConfig.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
-        if (selectedFile != null && selectedFile.exists()) {           
-            checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile);
+        if (selectedFile != null && selectedFile.exists()) {  
+            dialogbox dg = new dialogbox(i18n);
+            boolean withoutE = dg.YesNo(i18n.tr("Do you want to exclude airspaces of type E"), "");
+            checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile, withoutE);
             if (trackCheck.isAirDbLoad()) {               
                 if (mapTrace.isDecodage()) {  
                     res = trackCheck.prepareCheck(mapTrace);
                     if (res == 1) {
-                        System.out.println(trackCheck.getAirToCheck()+" airspaces sélectionnés");
-                        System.out.println(trackCheck.getAirPolygons()+" polygones créés");
                         int badPoints = trackCheck.checkPoints();
-                        alertbox aError = new alertbox(myConfig.getLocale());
-                        StringBuilder sbInfo = new StringBuilder();
-                        sbInfo.append(i18n.tr("File")).append(" : ").append(selectedFile.getName()).append("\r\n");
-                        sbInfo.append("    ").append(String.valueOf(badPoints)).append(" ").append(i18n.tr("violation(s)"));                       
-                        if (badPoints == 0) {
-                            aError.alertInfo(sbInfo.toString());                        
-                        } else {
-                            aError.alertError(sbInfo.toString());   
+                        String s = trackCheck.reportPoints();
+                        final Clipboard clipboard = Clipboard.getSystemClipboard();
+                        final ClipboardContent content = new ClipboardContent();
+                        content.putString(s);            
+                        clipboard.setContent(content);                            
+                        winComment myComment = new winComment(s,i18n); 
+                        if (badPoints > 0) {
                             mapTrace.setAirPoints(badPoints);
                             mapTrace.setGeoJsonAirsp(trackCheck.getViGeoJson());
-                            mapTrace.setGeoJsonBadPts(trackCheck.getPtGeoJson());  
-                            try {
-                                map_visu visuFullMap = new map_visu(mapTrace, myConfig);
-                                if (visuFullMap.isMap_OK()) {                                
-                                    carnetHTML = visuFullMap.getMap_HTML();
-                            /** ----- Debut Debug --------*/ 
-                            final Clipboard clipboard = Clipboard.getSystemClipboard();
-                            final ClipboardContent content = new ClipboardContent();
-                            content.putString(carnetHTML);            
-                            clipboard.setContent(content);
-                            /** ----- Fin Debug --------*/                                     
-                                    viewMap.getEngine().loadContent(carnetHTML,"text/html");
-                                }
-
-                            } catch (Exception e) {                                
-                                aError.alertError(e.getMessage());                 
-                            }                                                        
+                            mapTrace.setGeoJsonBadPts(trackCheck.getPtGeoJson());                        
+                        } else {
+                             mapTrace.setGeoJsonAirsp(trackCheck.getCheckedGeoJson());      
                         }
+                        try {
+                            map_visu visuFullMap = new map_visu(mapTrace, myConfig);
+                            if (visuFullMap.isMap_OK()) {                                                                  
+                                carnetHTML = visuFullMap.getMap_HTML();                                             
+                                viewMap.getEngine().loadContent(carnetHTML,"text/html");
+                            }
+
+                        } catch (Exception e) {      
+                            alertbox aError = new alertbox(myConfig.getLocale());
+                            aError.alertError(e.getMessage());                 
+                        }                                                                                
                     } else {
-                        alertbox aError = new alertbox(myConfig.getLocale());
-                        aError.alertNumError(res);
+                        if (res == 0) {
+                            alertbox aInfo = new alertbox(myConfig.getLocale());
+                            aInfo.alertInfo(i18n.tr("No airspaces to check"));
+                        } else {
+                            alertbox aError = new alertbox(myConfig.getLocale());
+                            aError.alertNumError(res);
+                        }
                     }
                 }
             } else {
