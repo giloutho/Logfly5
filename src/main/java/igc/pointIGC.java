@@ -7,6 +7,7 @@
 package igc;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -42,6 +43,8 @@ public class pointIGC {
     public int violationLimit;
     public int elevation;
     public int groundHeight;
+    public int airspaceTop;
+    public int airspaceBottom;
     
     public pointIGC() {
         AltiBaro = 0;
@@ -70,6 +73,8 @@ public class pointIGC {
         violationLimit = 0;
         elevation = 0;
         groundHeight = 0;
+        airspaceTop = 0;
+        airspaceBottom = 0;
     }
     
     public void setAltiBaro(int pAltiBaro)
@@ -198,4 +203,8 @@ public class pointIGC {
         this.groundHeight = groundHeight;
     }            
     
+    public String getTimeHHMMSS() {
+        DateTimeFormatter dtfHHmmss = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return dHeure.format(dtfHHmmss);
+    }
 }
