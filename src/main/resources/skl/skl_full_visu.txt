@@ -213,6 +213,10 @@
 
     var altiVal = [%altiVal%];
 
+//%airTop%
+
+//%airBottom%
+
     var eleVal = [%eleVal%];
 
     var groundVal = [%groundVal%];
@@ -469,7 +473,11 @@
                             }
                         }
                     }
-                }
+                },
+                areaspline: {
+                    fillOpacity: 0.5,
+                    threshold: 9000
+                } 
             },
 
             tooltip: {
@@ -503,7 +511,8 @@
                     type: 'line',
                     color: '#0000FF',
                     data: altiVal }
-//%elevationarea%      
+//%elevationarea%  
+//%airspacerea%      
             ]
         });
     });
