@@ -68,7 +68,9 @@ public class map_visu {
     private StringBuilder jsChronoData;
     private StringBuilder jsAreaCode;
     private StringBuilder jsMinMax;
-    
+    private StringBuilder jsAirspaceTop;
+    private StringBuilder jsAirspaceBottom;
+    private StringBuilder jsAirSpaceArea;
     private analyse trackAnalyze;
     
     private String jsLayer;
@@ -119,6 +121,9 @@ public class map_visu {
         jsGalleryCode = new StringBuilder();
         jsChronoData = new StringBuilder();
         jsMinMax = new StringBuilder();
+        jsAirspaceTop = new StringBuilder();
+        jsAirspaceBottom = new StringBuilder();
+        jsAirSpaceArea = new StringBuilder();
                
         i18n = myConfig.getI18n();
         
@@ -170,11 +175,12 @@ public class map_visu {
             }
             if (traceVisu.isElevationOK()) {
                 jseleVal.append(String.valueOf(currPoint.elevation)).append(",");
-                jsgroundVal.append(String.valueOf(currPoint.AltiGPS - currPoint.elevation)).append(",");
+                jsgroundVal.append(String.valueOf(currPoint.groundHeight)).append(",");
+              //  jsgroundVal.append(String.valueOf(currPoint.AltiGPS - currPoint.elevation)).append(",");
             } else {
                 jseleVal.append("0").append(",");
                 jsgroundVal.append("0").append(",");
-            }
+            }       
             // locale.ROOT -> force point a decimal separator
             sNb = String.format(Locale.ROOT,"%5.2f",currPoint.Vario);
             // in xLogfly sometimes we have expressions like : -NAN(000).00 
@@ -220,7 +226,59 @@ public class map_visu {
         }  else res = false;
         if ( res && jsHeure.length() > 0 ) {
             jsHeure.setLength(jsHeure.length() - 1);
-        }  else res = false;
+        }  else res = false;       
+          
+        return res;
+    }
+
+    private boolean genAirSpaceData(traceGPS traceVisu)  {
+        
+        Boolean res = false;
+        String sNb;
+                           
+        
+        int step;
+        int totPoints = traceVisu.Tb_Good_Points.size();
+        
+        // Be careful with big tracklogs, we reduced total number of points 
+        if (totPoints > 1500)  {
+            step = totPoints / 1500;
+        }  else  {
+            step = 1;
+        }               
+        stepLoop = step;
+        // Checking of double cast to string
+        Pattern DOUBLE = Pattern.compile("\\d");
+        
+        for(int i = 1; i<=totPoints; i = i+step)
+        {
+            pointIGC currPoint = traceVisu.Tb_Good_Points.get(i-1);            
+            if (currPoint.airspaceTop == 0)
+                jsAirspaceTop.append("null").append(",");
+            else {
+                jsAirspaceTop.append(String.valueOf(currPoint.airspaceTop)).append(",");
+            }        
+            if (currPoint.airspaceBottom == 0)
+                jsAirspaceBottom.append("null").append(",");
+            else {
+                jsAirspaceBottom.append(String.valueOf(currPoint.airspaceBottom)).append(",");
+            }              
+        }
+        
+        // last comma is removed
+        if (jsAirspaceTop.length() > 0 ) {
+            jsAirspaceTop.setLength(jsAirspaceTop.length() - 1);
+            jsAirspaceTop.insert(0, "    var airTop = [");
+            jsAirspaceTop.append("];");
+        } else 
+            res = false;
+        if (jsAirspaceBottom.length() > 0 ) {
+            jsAirspaceBottom.setLength(jsAirspaceBottom.length() - 1);
+            jsAirspaceBottom.insert(0, "    var airBottom = [");
+            jsAirspaceBottom.append("];");
+            res = true;
+        } else
+            res = false;
           
         return res;
     }
@@ -228,11 +286,24 @@ public class map_visu {
     private void genAreaCode() {
         
         jsAreaCode = new StringBuilder();
-        jsAreaCode.append("                ,{  showInLegend: false,");
-        jsAreaCode.append("                    type: 'area',");
-        jsAreaCode.append("                    color: '#D2691E',");
-        jsAreaCode.append("                    data: eleVal  }");         
+        jsAreaCode.append("                ,{  showInLegend: false,").append(RC);
+        jsAreaCode.append("                    type: 'area',").append(RC);
+        jsAreaCode.append("                    color: '#D2691E',").append(RC);
+        jsAreaCode.append("                    data: eleVal  }").append(RC);         
     }
+    
+    private void genAirSpaceAreaCode() {
+        
+        jsAirSpaceArea = new StringBuilder(); 
+        jsAirSpaceArea.append("                ,{  showInLegend: false,").append(RC);
+        jsAirSpaceArea.append("                    type: 'area',").append(RC);
+        jsAirSpaceArea.append("                    color: '#FF4500',").append(RC);
+        jsAirSpaceArea.append("                    data: airTop  }").append(RC); 
+        jsAirSpaceArea.append("                ,{  showInLegend: false,").append(RC);
+        jsAirSpaceArea.append("                    type: 'areaspline',").append(RC);
+        jsAirSpaceArea.append("                    color: '#2E8B57',").append(RC);
+        jsAirSpaceArea.append("                    data: airBottom  }").append(RC);         
+    }    
     
     /**
      * HTML generation of thermals markers
@@ -932,22 +1003,44 @@ public class map_visu {
                     }  
                 }
                 if (traceVisu.getAirPoints() > 0 && traceVisu.getGeoJsonAirsp() != null) {
-                    String beginAirHTML = endHTML;
-                    String zoneRegHTML = beginAirHTML.replace("//%zoneReg%", traceVisu.getGeoJsonAirsp());
-                    String badPtHTML = zoneRegHTML.replace("//%badPoints%", traceVisu.getGeoJsonBadPts());
-                    StringBuilder sbAff = new StringBuilder();
-                    sbAff.append("var Aff_Zone = new L.geoJson.css(zoneReg, { onEachFeature: popup});").append(RC);
-                    sbAff.append("    map.addLayer(Aff_Zone);").append(RC);
-                    String affZoneHTML = badPtHTML.replace("//%Aff_Zones%", sbAff.toString());
-                    sbAff.setLength(0);
-                    sbAff.append("var Aff_BadPoints = new L.geoJson.css(badPoints, {pointToLayer: function(f, latlng) {return L.circleMarker(latlng,geojsonMarkerOptions);}});");
-                    sbAff.append(RC).append("    map.addLayer(Aff_BadPoints);").append(RC);
-                    String affBadHTML = affZoneHTML.replace("//%Aff_BadPoints%", sbAff.toString());
-                    StringBuilder checkOptions = new StringBuilder();
-                    checkOptions.append("\"Litige : zones\" : Aff_Zone,").append(RC); 
-                    checkOptions.append("\"Litige : points\" : Aff_BadPoints,").append(RC); 
-                    String checkOpHTML = affBadHTML.replace("//%CheckOption%",checkOptions.toString());
-                    endHTML = checkOpHTML;
+                    if (genAirSpaceData(traceVisu)) {
+                        String beginAirHTML = endHTML;
+                        String airTopHTML = beginAirHTML.replace("//%airTop%", jsAirspaceTop.toString());
+                        String airBottomHTML = airTopHTML.replace("//%airBottom%", jsAirspaceBottom.toString());
+                        String zoneRegHTML = airBottomHTML.replace("//%zoneReg%", traceVisu.getGeoJsonAirsp());
+                        String badPtHTML = zoneRegHTML.replace("//%badPoints%", traceVisu.getGeoJsonBadPts());
+                        StringBuilder sbAff = new StringBuilder();
+                        sbAff.append("var Aff_Zone = new L.geoJson.css(zoneReg, { onEachFeature: popup});").append(RC);
+                        sbAff.append("    map.addLayer(Aff_Zone);").append(RC);
+                        String affZoneHTML = badPtHTML.replace("//%Aff_Zones%", sbAff.toString());
+                        sbAff.setLength(0);
+                        sbAff.append("var Aff_BadPoints = new L.geoJson.css(badPoints, {pointToLayer: function(f, latlng) {return L.circleMarker(latlng,geojsonMarkerOptions);}});");
+                        sbAff.append(RC).append("    map.addLayer(Aff_BadPoints);").append(RC);
+                        String affBadHTML = affZoneHTML.replace("//%Aff_BadPoints%", sbAff.toString());
+                        StringBuilder checkOptions = new StringBuilder();
+                        checkOptions.append("\"Litige : zones\" : Aff_Zone,").append(RC); 
+                        checkOptions.append("\"Litige : points\" : Aff_BadPoints,").append(RC); 
+                        String checkOpHTML = affBadHTML.replace("//%CheckOption%",checkOptions.toString());
+                        genAirSpaceAreaCode();
+                        String airSpAreaHTML = checkOpHTML.replace("//%airspacerea%",jsAirSpaceArea.toString());
+                        endHTML = airSpAreaHTML;
+                    } 
+                } else {
+                    if (traceVisu.getGeoJsonAirsp() != null) {
+                        if (genAirSpaceData(traceVisu)) {
+                            String beginAirHTML = endHTML;
+                            String airTopHTML = beginAirHTML.replace("//%airTop%", jsAirspaceTop.toString());
+                            String airBottomHTML = airTopHTML.replace("//%airBottom%", jsAirspaceBottom.toString());
+                            String zoneRegHTML = airBottomHTML.replace("//%zoneReg%", traceVisu.getGeoJsonAirsp());                    
+                            StringBuilder sbAff = new StringBuilder();
+                            sbAff.append("var Aff_Zone = new L.geoJson.css(zoneReg, { onEachFeature: popup});").append(RC);
+                            sbAff.append("    map.addLayer(Aff_Zone);").append(RC);
+                            String affZoneHTML = zoneRegHTML.replace("//%Aff_Zones%", sbAff.toString());
+                            genAirSpaceAreaCode();
+                            String airSpAreaHTML = affZoneHTML.replace("//%airspacerea%",jsAirSpaceArea.toString());
+                            endHTML = airSpAreaHTML;  
+                        }
+                    }
                 }
                 if (traceVisu.getPhotosPath() != null) {
                     String beforePhotosHTML = endHTML;
