@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -26,16 +27,19 @@ import org.json.simple.parser.JSONParser;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.xnap.commons.i18n.I18n;
 import settings.configProg;
 import systemio.mylogging;
 
 /**
  *
  * @author gil
+ * 
+ * Checks whether a gps track violates one or more airspaces
+ * 
  */
 public class checkAirspace {
     
-    // Settings
     private configProg myConfig;    
     private dbAirspace currDbAir = null;
     private int airTotal = 0;
@@ -51,12 +55,21 @@ public class checkAirspace {
     private StringBuilder sbPtGeoJson;
     private StringBuilder sbBadPoints;
     private StringBuilder sbCheckedGeoJson;
+    private StringBuilder sbTested;
     private final String RC = "\n";
-    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();        
+    private DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();    
+    private I18n i18n;    
+    private String strDash = "-------------------------------------------------------------------------------";
+    private StringBuilder sbInfo;
+    private boolean withoutE;
     
-    public checkAirspace (configProg currConfig, File airFile)  {
-        // myParam unused... this is just a new constructor
+    public checkAirspace (configProg currConfig, File airFile, boolean pWithoutE)  {
         myConfig = currConfig;
+        i18n = myConfig.getI18n();
+        withoutE = pWithoutE;
+        sbInfo = new StringBuilder();
+        sbInfo.append("  ").append("The content of this report is placed in the clipboard").append(RC).append(RC);
+        sbInfo.append("  ").append(i18n.tr("File")).append(" : ").append(airFile.getName()).append(RC);
         currDbAir = new dbAirspace(airFile, null);
         if (currDbAir.isDbOK()) {
             airNameFile = airFile.getName();
@@ -64,6 +77,7 @@ public class checkAirspace {
             airDbLoad = true;
         }
         decimalFormatSymbols.setDecimalSeparator('.');
+        sbTested = new StringBuilder();
     }   
 
     public dbAirspace getCurrDbAir() {
@@ -101,7 +115,12 @@ public class checkAirspace {
     public String getCheckedGeoJson() {
         return sbCheckedGeoJson.toString();
     }
-            
+     
+    /**
+     * Determines the airspaces to be checked in the selected file
+     * @param pTrace
+     * @return 
+     */
     public int prepareCheck(traceGPS pTrace) {
         
         int res = -1;
@@ -118,26 +137,31 @@ public class checkAirspace {
             Connection conn = currDbAir.getDbConn();                                 
             // With PreparedStatement we had an error 
             // [SQLITE_ERROR] SQL error or missing database (parameters are not allowed in views)
-            //sbReq.append("CREATE VIEW SELECT_VIEW AS SELECT Z_ID,Name, Geojson, Openair, Classe,Floor,Ceiling,Visu FROM Zones ");
             sbReq.append("CREATE VIEW SELECT_VIEW AS SELECT * FROM Zones ");
-            sbReq.append("WHERE Visu = '1' AND (((LatMini >= ").append(sLatMini).append(" AND LatMini <= ").append(sLatMaxi).append(") ");
+            sbReq.append("WHERE Visu = '1' AND ((((LatMini >= ").append(sLatMini).append(" AND LatMini <= ").append(sLatMaxi).append(") ");
             sbReq.append("OR (LatMaxi >= ").append(sLatMini).append(" AND LatMaxi <= ").append(sLatMaxi).append(")) ");
             sbReq.append("AND ((LongMini >= ").append(sLongMini).append(" AND LongMini <= ").append(sLongMaxi).append(") ");
-            sbReq.append("OR (LongMaxi >= ").append(sLongMini).append(" AND LongMaxi <= ").append(sLongMaxi).append(")))");  
-            sbReq.append(" AND (Floor < ").append(sAltMax).append(")");
+            sbReq.append("OR (LongMaxi >= ").append(sLongMini).append(" AND LongMaxi <= ").append(sLongMaxi).append(")))"); 
+            sbReq.append("OR (").append(sLatMini).append(" > LatMini AND ").append(sLatMaxi);
+            sbReq.append(" < LatMaxi AND ").append(sLongMini).append(" > LongMini AND ").append(sLongMaxi);
+            sbReq.append(" < LongMaxi)) AND (Floor < ").append(sAltMax).append(")");
             Statement st2 = conn.createStatement();
             st2.execute(sbReq.toString());
             st2.close();       
             // How many airspaces selected
             Statement st3 = conn.createStatement();
             ResultSet rs = null;                
-            String reqCount = "SELECT Count(Z_ID) FROM SELECT_VIEW  WHERE Visu = '1'";                 
+            String reqCount = "SELECT Count(Z_ID) FROM SELECT_VIEW  WHERE Visu = '1'";                
             rs = st3.executeQuery(reqCount);
             if (rs != null && rs.next())  {   
                 airToCheck = rs.getInt(1);
+            } 
+            if (airToCheck > 0) {
                 buildPolygons();
-                res = 1;
-            }                       
+                res = 1;   
+            } else {
+                res = 0;
+            }               
         } catch (Exception ex) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(ex.toString());
@@ -149,6 +173,10 @@ public class checkAirspace {
         return res;
     }
     
+    /**
+     * Build geojson from selected airspaces
+     * @return 
+     */
     private int buildPolygons() {
         int res = - 1;
         int cpt = 0;
@@ -157,24 +185,40 @@ public class checkAirspace {
             Statement stmt = currDbAir.getDbConn().createStatement();     
             ResultSet rs = null;            
             rs = stmt.executeQuery(sReq);
-            if (rs != null)  {  
+            if (rs != null)  {                  
+                sbTested.append(strDash).append(RC);
+                sbTested.append("  ").append(i18n.tr("Checked airspaces")).append(RC);
+                sbTested.append(strDash).append(RC);
                 while (rs.next()) {  
                     Airspace airspace = new Airspace();
                     airspace.Category = AirspaceCategory.valueOf(Helpers.findRegex("[A-Za-z]+\\w|[A-Za-z]", rs.getString(3)));
-                    airspace.AltLimit_Top = rs.getInt(4);
-                    airspace.AltLimit_Top_AGL = rs.getInt(5);
-                    airspace.AltLimit_Bottom = rs.getInt(6);
-                    airspace.AltLimit_Bottom_AGL = rs.getInt(7);
-                    airspace.Name = rs.getString(1);
-                    airspace.setDbGeoJson(rs.getString(2));
-                    ArrayList<Coordinate> lsCoord = geojsonToCoord(rs.getString(2));
-                    if (lsCoord.size() > 0) {
-                        airspace.coordinates = lsCoord;
-                    }  
-                    lsAirsp.add(airspace);
-                    cpt++;
+                    if (withoutE && airspace.Category == AirspaceCategory.E) {
+                        continue;
+                    } else {
+                        airspace.AltLimit_Top = rs.getInt(4);
+                        airspace.AltLimit_Top_AGL = rs.getInt(5);
+                        airspace.AltLimit_Bottom = rs.getInt(6);
+                        airspace.AltLimit_Bottom_AGL = rs.getInt(7);
+                        airspace.Name = rs.getString(1);
+                        airspace.setDbGeoJson(rs.getString(2));
+                        ArrayList<Coordinate> lsCoord = geojsonToCoord(rs.getString(2));
+                        if (lsCoord.size() > 0) {
+                            airspace.coordinates = lsCoord;
+                        }  
+                        lsAirsp.add(airspace);
+                        sbTested.append("  ").append(airspace.Name).append(RC);
+                        sbTested.append("     ").append(i18n.tr("Floor")).append(" ").append(String.valueOf(airspace.AltLimit_Bottom)).append("m  ");
+                        sbTested.append(i18n.tr("Ceiling")).append(" ").append(String.valueOf(airspace.AltLimit_Top)).append("m").append(RC);
+                        cpt++;
+                    }
                 }
                 airPolygons = cpt;
+                StringBuilder sb = new StringBuilder();
+                sb.append(strDash).append(RC);
+                sb.append("  ").append(String.valueOf(cpt)).append(" ").append(i18n.tr("airspaces checked")).append(RC);
+                sb.append(strDash).append(RC);
+                
+                sbTested.append(RC);
             }      
         } catch (Exception ex ) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -185,6 +229,11 @@ public class checkAirspace {
         return res;
     }
     
+    /**
+     * Build geometric polygons from selected airspaces
+     * @param strGeoJson
+     * @return 
+     */
     private ArrayList<Coordinate> geojsonToCoord(String strGeoJson) {
         
         ArrayList<Coordinate> lsCoord = new ArrayList<Coordinate>();
@@ -217,11 +266,21 @@ public class checkAirspace {
         return lsCoord;
     }   
     
+    /**
+     * Check every point of the track
+     * @return 
+     */
     public int checkPoints() {
         int res = 0;
         boolean onceViolation = false;
-        GeometryFactory gf = new GeometryFactory();        
+        GeometryFactory gf = new GeometryFactory();       
         int totPoints = evalTrace.Tb_Good_Points.size();
+        int iMult = evalTrace.getAlt_Maxi_GPS().AltiGPS/500;         
+        int maxGraphValue;
+        if (iMult*500 < evalTrace.getAlt_Maxi_GPS().AltiGPS)
+            maxGraphValue = (iMult*500)+500;
+        else
+            maxGraphValue = iMult*500;
         try {
             for(int i = 0; i<=totPoints-1; i++)
             {
@@ -241,14 +300,22 @@ public class checkAirspace {
                             localLimitTop = currPoint.elevation + lsAirsp.get(j).AltLimit_Top;
                         } else {
                             localLimitTop = lsAirsp.get(j).AltLimit_Top;
-                        }
+                        }             
                         if (currPoint.AltiGPS > localLimitBottom && currPoint.AltiGPS < localLimitTop) {
                             lsAirsp.get(j).setViolations(lsAirsp.get(j).getViolations()+1);                            
                             currPoint.violation = true;
                             currPoint.violationName = lsAirsp.get(j).Name;  
                             currPoint.violationLimit = localLimitTop;
                             onceViolation = true;
-                        }                                                
+                        } 
+                        if (localLimitTop < maxGraphValue)
+                            currPoint.airspaceTop = localLimitTop;
+                        if (localLimitBottom > 0) {
+                            if (localLimitBottom < maxGraphValue)
+                                currPoint.airspaceBottom = localLimitBottom;
+                            else
+                                currPoint.airspaceBottom = maxGraphValue;
+                        }                                        
                     }
                 }
             }         
@@ -270,6 +337,11 @@ public class checkAirspace {
         return res;
     }
     
+    
+    /**
+     * generate geojson of violated airspaces
+     * will be used in fullmap
+     */
     private void genViolatedGeojson() {
         
         sbViGeoJson = new StringBuilder();        
@@ -279,7 +351,6 @@ public class checkAirspace {
         for (int i = 0; i < lsAirsp.size(); i++) {
             if (lsAirsp.get(i).getViolations() > 0) {
                 sbViGeoJson.append(lsAirsp.get(i).getDbGeoJson()).append(",");
-           //     System.out.println(lsAirsp.get(i).Name+"  "+lsAirsp.get(i).getViolations()+" violations");
             }
         } 
         // totalGeoJson is completed, last comma deleted
@@ -289,6 +360,10 @@ public class checkAirspace {
         sbViGeoJson.append("]}");     
     }
     
+    /**
+     * generate geojson of checked airspaces
+     * will be used in fullmap
+     */
     private void genCheckedGeojson() {
         
         sbCheckedGeoJson = new StringBuilder();        
@@ -305,6 +380,10 @@ public class checkAirspace {
         sbCheckedGeoJson.append("]}");     
     }    
     
+    /**
+     * generate geojson of bad points
+     * will be used in fullmap
+     */
     private void genBadPointsGeoJson() {
         DecimalFormat decimalFormat = new DecimalFormat("###.00000", decimalFormatSymbols);  
         int totPoints = evalTrace.Tb_Good_Points.size();
@@ -326,5 +405,60 @@ public class checkAirspace {
         sbPtGeoJson.append(sbBadPoints.toString());
         sbPtGeoJson.append("]} ,\"style\": {'color': \"#FFFF00\",'weight': 2,'opacity': 1}};  ");       
     }
+    
+    /**
+     * Format a string with complete reporting : 
+     * checked airspaces and violation enter/exit time
+     * @return 
+     */    
+    public String reportPoints() {
+        String res = "";   
+        DateTimeFormatter dtfHHmm = DateTimeFormatter.ofPattern("HH:mm");
+        StringBuilder sbRep = new StringBuilder();
+        Boolean currViolation = false;
+        int totPoints = evalTrace.Tb_Good_Points.size();
+        int nbViolPoints = 0;
+        try {
+            for(int i = 0; i<=totPoints-1; i++)
+            {
+                pointIGC currPoint = evalTrace.Tb_Good_Points.get(i);                
+                if (currPoint.violation) {
+                    nbViolPoints++;
+                    if (!currViolation) {
+                        System.out.println("NbViolPoints "+nbViolPoints);
+                        sbRep.append(currPoint.violationName).append(RC);
+                        sbRep.append("     ").append(i18n.tr("enter")).append(" : ").append(currPoint.getTimeHHMMSS()).append(" ").append(i18n.tr("GPS alt"));
+                        sbRep.append(" ").append(String.valueOf(currPoint.getElevation())).append("m").append(RC); 
+                        currViolation = true;
+                    }
+                }
+                if (!currPoint.violation && currViolation) {
+                    sbRep.append("     ").append(i18n.tr("exit")).append(" : ").append(currPoint.getTimeHHMMSS()).append(" ").append(i18n.tr("GPS alt"));
+                    sbRep.append(" ").append(String.valueOf(currPoint.getElevation())).append("m").append(RC); 
+                    sbRep.append("     ").append(String.valueOf(nbViolPoints)).append(" ").append("point(s)").append(RC); 
+                    currViolation = false;
+                    nbViolPoints = 0;
+                }                                
+            }         
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append("Error in and track ansd airspace loops");
+            mylogging.log(Level.SEVERE, sbError.toString());                  
+            nbBadpoints = -1;
+        } finally {         
+            sbInfo.append("  ").append(String.valueOf(nbBadpoints)).append(" ").append("point(s) within the airspace(s)").append(RC).append(RC);
+            sbTested.insert(0, sbInfo.toString());
+            sbTested.append(strDash).append(RC);
+            if (nbBadpoints > 0) {
+                sbTested.append("  ").append(i18n.tr("violation(s)")).append(RC);
+                sbTested.append("  ").append("(").append(i18n.tr("if a point is in more than one airspace, the last tested is displayed")).append(")").append(RC);
+                sbTested.append(strDash).append(RC);
+                sbTested.append(sbRep.toString());
+            }
+            res = sbTested.toString();            
+        }
+        
+        return res;
+    }    
     
 }
