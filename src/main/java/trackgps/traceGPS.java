@@ -1667,15 +1667,21 @@ public class traceGPS {
                         double elevation = hr.getElevationFromHgt(dLat, dLong);
                         if (elevation < 9999) {                        
                             Tb_Good_Points.get(i).setElevation((int) elevation);
+                            Tb_Good_Points.get(i).setGroundHeight(Tb_Good_Points.get(i).AltiGPS - Tb_Good_Points.get(i).elevation);
                         } else {
                             if (i > 0) {
                                 int prevEle = Tb_Good_Points.get(i-1).getElevation();
-                                if (prevEle >= 0) 
+                                if (prevEle >= 0) {
                                     Tb_Good_Points.get(i).setElevation(prevEle);
-                                else
+                                    Tb_Good_Points.get(i).setGroundHeight(Tb_Good_Points.get(i).AltiGPS - Tb_Good_Points.get(i).elevation);
+                                } else {
                                     Tb_Good_Points.get(i).setElevation(-1);
-                            } else 
+                                    Tb_Good_Points.get(i).setGroundHeight(Tb_Good_Points.get(i).AltiGPS - Tb_Good_Points.get(i).elevation);
+                                }
+                            } else {
                                 Tb_Good_Points.get(i).setElevation(-1);
+                                Tb_Good_Points.get(i).setGroundHeight(Tb_Good_Points.get(i).AltiGPS - Tb_Good_Points.get(i).elevation);
+                            }
                         }
                     } else {
                         mylogging.log(Level.SEVERE, "A problem occured during strm downloading in fillElevation"); 
