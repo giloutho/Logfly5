@@ -18,6 +18,7 @@ public enum privateData {
     mailSupport ("contact@logfly.org"),
     sitesUrl ("http://logfly.org/download/sites"), 
     xcplannerUrl("http://alpidev.com/xclogfly/"),
+    bazileUrl("http://pascal.bazile.free.fr/paraglidingFolder/divers/GPS/OpenAir-Format/files/LastVersionsCatalog_BPa.txt"),
     // google keys are no longer used
     geocodeKey ("something"),  // from https://developers.google.com/maps/documentation/geocoding/start?hl=fr
     elevationKey ("something");  // from https://developers.google.com/maps/documentation/elevation/start?hl=fr
