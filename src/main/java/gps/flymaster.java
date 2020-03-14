@@ -218,24 +218,27 @@ public class flymaster {
         boolean res = false;
         listPFMWP = new ArrayList<String>();
         try {
-            openPort(namePort);
-            if (getDeviceInfo(false)) {
-                res = true;
-            } else {
-                closePort();
-            } 
+            if (openPort(namePort)) {
+                if (getDeviceInfo(false)) {
+                    res = true;
+                } else {
+                    closePort();
+                }
+            } else
+                res = false;    
         } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
+            sbError = new StringBuilder("flymaster.isPresent error with port : ");
+            sbError.append(namePort).append("\r\n");
             mylogging.log(Level.SEVERE, sbError.toString());
         }
         return res;        
     }
     
-    public void openPort(String namePort)
+    private boolean openPort(String namePort)
     {
+        boolean res = false;
         if (!portClosed)
-            return;
+            return true;
         try {
             // open and configure serial port
             serialPortName = namePort;
@@ -244,18 +247,16 @@ public class flymaster {
             portClosed=false;
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
-           // if(osType != SerialComPlatform.OS_WINDOWS) {
-                // Prepare serial port for burst style data read of 500 milli-seconds timeout
-                // This line is a problem with Windows
-                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-                // scm.fineTuneReadBehaviour(handle, 0, 3000, 0, 0, 0);
-
+            scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            res = true;
         } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
+            res = false;
+            sbError = new StringBuilder("flymaster.Openport error with port : ");
+            sbError.append(namePort).append("\r\n");
             mylogging.log(Level.SEVERE, sbError.toString());
         }
+        
+        return res;
     }
     
     public void closePort() {
