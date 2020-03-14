@@ -1007,7 +1007,7 @@ public class GPSViewController {
                         }
                         break;    
                     case FlymSD :
-                        // if we're here, it's because the flightlist has been posted
+                        // if we're here, it's because the flightlist has been downloaded
                         gpsOK = true; 
                         break;                                                                     
                     case FlymPlus :
@@ -1020,13 +1020,13 @@ public class GPSViewController {
                             gpsOK = true;  
                         }                            
                         break;                         
-                    case FlymOld :
-                        // if we're here, it's because the flightlist has been posted
+                    case FlymOld :                       
                         switch (myConfig.getOS()) {
                             case WINDOWS :
+                            case LINUX :
+                                 // if we're here, it's because the flightlist has been downloaded
                                 gpsOK = true; 
                                 break;
-                            case LINUX :
                             case MACOS :
                                 if (fmold.isPresent(currNamePort)) {
                                     gpsOK = true;  
@@ -1775,14 +1775,17 @@ public class GPSViewController {
                     case FlymOld :
                         switch (myConfig.getOS()) {
                             case WINDOWS :
-                                idx = tableImp.getSelectionModel().getSelectedIndex();
                                 // Strangely, for Flymater Old, the first record has the index 0 so -> idx - 1
-                                idx = idx - 1;
+                                idx = tableImp.getSelectionModel().getSelectedIndex() - 1;
+                                // 2 is id of Flymaster Old
+                                oneFlightWithGpsDump(2,idx);                                                        
+                                break;                               
+                            case LINUX :
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
                                 // 2 is id of Flymaster Old
                                 oneFlightWithGpsDump(2,idx);                                                        
                                 break;
-                            case MACOS :                              
-                            case LINUX : 
+                            case MACOS :                               
                                 oneFlightWithProgress(currLineSelection);                                  
                             break;
                         }                                                       
