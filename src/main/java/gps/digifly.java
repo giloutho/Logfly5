@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import model.Gpsmodel;
 import systemio.mylogging;
-import waypio.pointRecord;
 
 /**
  * @author Alessandro Faillace
@@ -125,26 +124,30 @@ public class digifly {
         boolean res = false;
         try {
             listFLL = new ArrayList<String>();
-            openPort(namePort);
-            // ID GPS request + raw flight list (true)
-            if (getDeviceInfo(true)) {
-                res = true;
-            }   
-            // Closing port mandatory
-            closePort();
+            if (openPort(namePort)) {
+                // ID GPS request + raw flight list (true)
+                if (getDeviceInfo(true)) {
+                    res = true;
+                }   
+                // Closing port mandatory
+                closePort();
+            } else 
+                res = false;
         } catch (Exception e) {
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.toString());
+            sbError = new StringBuilder("Error on digifly.init function with port : ");
+            sbError.append(namePort).append("\r\n");
             mylogging.log(Level.SEVERE, sbError.toString());
         }
         
         return res;        
-    }    
-    public void openPort(String namePort)
+    }   
+    
+    private boolean openPort(String namePort)
     {
-        if (!portClosed)
-            return;
+        boolean res = false;
         
+        if (!portClosed)
+            return true;        
          try {
             // open and configure serial port
             serialPortName = namePort;
@@ -153,20 +156,17 @@ public class digifly {
             portClosed=false;
             scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B115200, 0);
             scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-
-            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
-            //if(osType != SerialComPlatform.OS_WINDOWS) {
-                // Prepare serial port for burst style data read of 500 milli-seconds timeout
-                // This line is a problem with Windows
-                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-            //}
-
-            } catch (Exception e) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(e.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());
-            }
+            scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+            res = true;
+        } catch (Exception e) {
+            res = false;
+            sbError = new StringBuilder("Error on digifly.Openport with port : ");
+            sbError.append(namePort).append("\r\n");
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+        return res;
     }
+    
     public void closePort() {
         try {
             if (portClosed)
