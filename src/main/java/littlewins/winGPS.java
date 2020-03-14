@@ -15,6 +15,7 @@ import gps.connect;
 import gps.digifly;
 import gps.element;
 import gps.flymaster;
+import gps.flymasterold;
 import gps.flynet;
 import gps.flytec15;
 import gps.flytec20;
@@ -625,7 +626,14 @@ public class winGPS {
                 case FlymOld :
                     if (currNamePort != null && !currNamePort.equals("")) {
                         try {
-
+                            // No need for debugging
+                            flymasterold fmold = new flymasterold(false, "");
+                            if (fmold.isPresent(currNamePort)) {    
+                                gpsPresent();
+                            } else {
+                                gpsNotPresent();
+                            } 
+                            fmold.closePort();       
                         } catch (Exception e) {
                             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                             sbError.append("\r\n").append(e.toString());
