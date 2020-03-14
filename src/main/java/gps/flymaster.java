@@ -231,6 +231,7 @@ public class flymaster {
         }
         return res;        
     }
+    
     public void openPort(String namePort)
     {
         if (!portClosed)
@@ -250,11 +251,11 @@ public class flymaster {
                 scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
                 // scm.fineTuneReadBehaviour(handle, 0, 3000, 0, 0, 0);
 
-            } catch (Exception e) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(e.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());
-            }
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
     }
     
     public void closePort() {
