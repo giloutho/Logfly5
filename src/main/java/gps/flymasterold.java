@@ -53,13 +53,16 @@ public class flymasterold {
     private StringBuilder sbRead;      
     private final int iBufLen = 6144;    
     private ArrayList<String> listPFMWP;    
-    private ArrayList<pointRecord> wpreadList;    
+    private ArrayList<pointRecord> wpreadList;   
+    private String debugPath;
+    private boolean portClosed=true;
                 
-    public flymasterold() throws Exception {
+    public flymasterold(boolean pDebug, String pDebugPath) throws Exception {
         // Create and initialize serialpundit. Note 'private final' word before variable name.
         scm = null;     
         SerialComPlatform scp = new SerialComPlatform(new SerialComSystemProperty());
         osType = scp.getOSType();
+        debugPath = pDebugPath;              
     }
     
     public String getDeviceType() {
@@ -133,21 +136,12 @@ public class flymasterold {
         boolean res = false;
         listPFMWP = new ArrayList<String>();        
         try {
-            // open and configure serial port
-            serialPortName = namePort;
-            scm = new SerialComManager();
-            handle = scm.openComPort(serialPortName, true, true, true);            
-            scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
-            scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
-
-            if(osType != SerialComPlatform.OS_WINDOWS) {
-                // Prepare serial port for burst style data read of 500 milli-seconds timeout
-                // This line is a problem with Windows
-                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
-            }
+            openPort(namePort);
             if (getDeviceInfo(false)) {
                 res = true;
-            }   
+            } else {
+                closePort();
+            } 
         } catch (Exception e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.toString());
@@ -155,6 +149,32 @@ public class flymasterold {
         }
         return res;        
     }
+    
+    public void openPort(String namePort)
+    {
+        if (!portClosed)
+            return;
+        try {
+            // open and configure serial port
+            serialPortName = namePort;
+            scm = new SerialComManager();
+            handle = scm.openComPort(serialPortName, true, true, true);       
+            portClosed=false;
+            scm.configureComPortData(handle, SerialComManager.DATABITS.DB_8, SerialComManager.STOPBITS.SB_1, SerialComManager.PARITY.P_NONE, SerialComManager.BAUDRATE.B57600, 0);
+            scm.configureComPortControl(handle, SerialComManager.FLOWCONTROL.NONE, 'x', 'x', false, false);
+            // Normally this instruction should not be a problem for Windows, it's special parameters for Windows !!!
+           // if(osType != SerialComPlatform.OS_WINDOWS) {
+                // Prepare serial port for burst style data read of 500 milli-seconds timeout
+                // This line is a problem with Windows
+                scm.fineTuneReadBehaviour(handle, 0, 5, 100, 5, 200);
+                // scm.fineTuneReadBehaviour(handle, 0, 3000, 0, 0, 0);
+
+        } catch (Exception e) {
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            mylogging.log(Level.SEVERE, sbError.toString());
+        }
+    }    
     
     public void closePort() {
         try {
@@ -424,6 +444,7 @@ public class flymasterold {
         return recIGC.toString();
     }
     
+    // Not usable, stay in a dead loop
     private void getFlightPOS(String gpsCommand) throws Exception  {
         String reqPacket;
         String begPacket;
