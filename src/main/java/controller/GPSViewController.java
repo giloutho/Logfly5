@@ -81,7 +81,7 @@ import trackgps.traceGPS;
  * setMyConfig : 
  *          Start method, displayWinGPS is called. 
  * Select GPS : display winGPS
- * displayWinGPS : return from winGPS, if a GPS is connected, FlyWithProgress is started
+ * displayWinGPS : return from winGPS, if a GPS is connected, FlightListWithProgress is started
  * readGPS : at clic on btnGo, run flightListWithProgress()
  * afficheFlyList :   started at the end of flightListWithProgress()
  *         - Logbook update : insertLog   
@@ -401,10 +401,10 @@ public class GPSViewController {
      * Old Flymaster series communication method
      */
     private void readFlymOld()  {
-        String s = "fmold called sur "+currNamePort;
-        if (mDebug) mylogging.log(Level.INFO, s);   
+        String debugPath = "";
+        if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
         try {
-            flymasterold fmold = new flymasterold();
+            flymasterold fmold = new flymasterold(myConfig.isDebugMode(), debugPath);
             if (fmold.init(currNamePort)) {     
                 // Communication OK
                 resCom = 1;
@@ -971,7 +971,7 @@ public class GPSViewController {
             if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
             flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
             digifly dig = new digifly(myConfig.isDebugMode(), debugPath);            
-            flymasterold fmold = new flymasterold();            
+            flymasterold fmold = new flymasterold(myConfig.isDebugMode(), debugPath);            
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
                     case Flytec20 :
@@ -1142,6 +1142,8 @@ public class GPSViewController {
                                     case FlymOld :
                                         switch (myConfig.getOS()) {
                                             case WINDOWS :
+                                                // Strangely, for Flymater Old, the first record has the index 0 so -> idx - 1
+                                                idxTable = idxTable - 1;
                                                 strTrack = gpsd.directFlight(2,idxTable);
                                                 break;
                                             case MACOS :
@@ -1472,6 +1474,7 @@ public class GPSViewController {
         Task<Object> worker = new Task<Object>() {
             @Override
             protected Object call() throws Exception {
+                String debugPath = "";
                 try {
                     switch (currGPS) {
                         case Flytec20 :
@@ -1516,7 +1519,7 @@ public class GPSViewController {
                             break;     
                         case FlymPlus :    
                         case FlymSD :
-                            String debugPath = "";
+                            debugPath = "";
                             if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
                             flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
                             if (fms.isPresent(currNamePort)) {
@@ -1536,7 +1539,9 @@ public class GPSViewController {
                             }
                             break;        
                         case FlymOld :
-                            flymasterold fmold = new flymasterold();
+                            debugPath = "";
+                            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+                            flymasterold fmold = new flymasterold(myConfig.isDebugMode(), debugPath);
                             if (fmold.isPresent(currNamePort)) {
                                 if (fmold.getIGC(selLineTable.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {
                                     strTrack = fmold.getFinalIGC();
@@ -1771,8 +1776,10 @@ public class GPSViewController {
                         switch (myConfig.getOS()) {
                             case WINDOWS :
                                 idx = tableImp.getSelectionModel().getSelectedIndex();
+                                // Strangely, for Flymater Old, the first record has the index 0 so -> idx - 1
+                                idx = idx - 1;
                                 // 2 is id of Flymaster Old
-                                oneFlightWithGpsDump(2,idx);                                
+                                oneFlightWithGpsDump(2,idx);                                                        
                                 break;
                             case MACOS :                              
                             case LINUX : 
