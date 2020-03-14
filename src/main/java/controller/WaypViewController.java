@@ -951,7 +951,9 @@ public class WaypViewController {
        
         try {
             prepWritingFlym();
-            flymasterold fmold = new flymasterold();
+            String debugPath = "";
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
+            flymasterold fmold = new flymasterold(myConfig.isDebugMode(), debugPath);
             if (listForGps.size() > 0 && fmold.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Send to GPS")).append("  ").append("Flymaster ").append(fmold.getDeviceType()).append(" ").append(fmold.getDeviceFirm()).append("  ");
@@ -1378,7 +1380,9 @@ public class WaypViewController {
     private void readFlymOld()  {
         gpsReadList = new ArrayList<>();
         try {
-            flymasterold fmsold = new flymasterold();
+            String debugPath = "";
+            if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;   
+            flymasterold fmsold = new flymasterold(myConfig.isDebugMode(), debugPath);
             if (fmsold.isPresent(currNamePort)) {             
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Réception")).append("  ").append("Flymaster ").append(fmsold.getDeviceType()).append(" ").append(fmsold.getDeviceFirm()).append("  ");            
