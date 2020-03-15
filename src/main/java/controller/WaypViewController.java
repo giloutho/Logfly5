@@ -1185,15 +1185,7 @@ public class WaypViewController {
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flytec 6020/30 ").append("  ");
                 displayInfo(gpsInfo.toString());
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                    case LINUX :
-                        writeGpsdProgress();  
-                        break;
-                    case MACOS : 
-                        writeToGpsProgress();
-                        break;
-                } 
+                writeGpsdProgress();
                 break;  
             case Flytec15 :
                 gpsInfo = new StringBuilder();
@@ -1219,29 +1211,13 @@ public class WaypViewController {
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
                 displayInfo(gpsInfo.toString());
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                    case LINUX :
-                        writeGpsdProgress();  
-                        break;
-                    case MACOS : 
-                        writeToGpsProgress();
-                        break;
-                } 
+                writeGpsdProgress(); 
                 break;                
             case FlymOld :
                 gpsInfo = new StringBuilder();
                 gpsInfo.append(i18n.tr("Sending to")).append("  ").append("Flymaster ").append("  ");
                 displayInfo(gpsInfo.toString());
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                    case LINUX :
-                        writeGpsdProgress();  
-                        break;
-                    case MACOS : 
-                        writeToGpsProgress();
-                        break;
-                } 
+                writeGpsdProgress();                  
                 break;    
             case Digifly :
                 StringBuilder sbDigi = new StringBuilder();
@@ -1579,51 +1555,19 @@ public class WaypViewController {
         alertbox aError = new alertbox(myConfig.getLocale());             
         switch (currGPS) {
             case Flytec20 :
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                    case LINUX :
-                        readGpsdProgress();
-                        break;
-                    case MACOS :     
-                        readFromGpsProgress();
-                        break;
-                }                 
+                readGpsdProgress();                 
                 break;
             case Flytec15 :
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                        readGpsdProgress();
-                        break;
-                    case LINUX :                        
-                    case MACOS :     
-                        readFromGpsProgress();                                               
-                        break;
-                }      
+                readGpsdProgress();    
                 break;
             case FlymPlus:
                 readFromGpsProgress();                                               
                 break;                       
             case FlymSD :
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                    case LINUX :
-                        readGpsdProgress();
-                        break;
-                    case MACOS :     
-                        readFromGpsProgress();                                               
-                        break;
-                }                 
+                readGpsdProgress();              
                 break;
             case FlymOld :
-                switch (myConfig.getOS()) {
-                    case WINDOWS :
-                    case LINUX :
-                        readGpsdProgress();
-                        break;
-                    case MACOS :     
-                        readFromGpsProgress(); 
-                        break;
-                }                 
+                readGpsdProgress();              
                 break;
             case Digifly :
                 aError.alertInfo(i18n.tr("Not supported, use an external program"));                
