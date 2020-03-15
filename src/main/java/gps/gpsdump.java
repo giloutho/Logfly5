@@ -30,7 +30,6 @@ import javafx.event.EventHandler;
 import model.Gpsmodel;
 import org.controlsfx.dialog.ProgressDialog;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import systemio.mylogging;
 import systemio.textio;
@@ -60,6 +59,7 @@ public class gpsdump {
     private String strLog;
     private String portNumber; 
     private String linuxPort;
+    private String macPort;
     private ArrayList<String> listPFM;
     private ObservableList <Gpsmodel> listFlights;   
     private String waypWriteReport = null;
@@ -77,6 +77,11 @@ public class gpsdump {
             case WINDOWS :
                 this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
                 break;
+            case MACOS :
+                // something like /dev/cu.usbserial-A7004W23
+                // in WinGPS ListSerialPort kept only "/dev/cu."
+                macPort = pNamePort.replace("/dev/cu","-cu");  
+                break;                   
             case LINUX :
                 String subPort = "ca0";
                 if (pNamePort.length() > 8) subPort = pNamePort.substring(0,9);
@@ -103,6 +108,11 @@ public class gpsdump {
             case WINDOWS :
                 this.portNumber = pNamePort.replace("COM","");   // For Windows we need only the port number 
                 break;
+            case MACOS :
+                // something like /dev/cu.usbserial-A7004W23
+                // in WinGPS ListSerialPort kept only "/dev/cu."
+                macPort = pNamePort.replace("/dev/cu","-cu");  
+                break;                
             case LINUX :
                 String subPort = "ca0";
                 if (pNamePort.length() > 8) subPort = pNamePort.substring(0,9);
@@ -188,10 +198,10 @@ public class gpsdump {
         switch (idGPS) {
             case 1:
                 switch (myConfig.getOS()) {
-                    case MACOS :
                     case WINDOWS :
                         sTypeGps = "/gps=flymaster";
                         break;
+                    case MACOS :                        
                     case LINUX : 
                         sTypeGps = "-gyn"; 
                         break;
@@ -199,12 +209,10 @@ public class gpsdump {
                 break;
             case 2:
                  switch (myConfig.getOS()) {
-                    case MACOS :
-                        sTypeGps = "/gps=flymasterold";
-                        break;
                     case WINDOWS :                     
                         sTypeGps = "/gps=flymasterold";
                         break;
+                    case MACOS :    
                     case LINUX : 
                         sTypeGps = "-gy";    // A vérifier
                         break;
@@ -216,8 +224,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqcompeo";	// Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=flytec";
-                        break;
                     case LINUX :
                         sTypeGps = "-gc";
                         break;                        
@@ -264,8 +270,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=iqbasic";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
-                        break;
                     case LINUX :
                         sTypeGps = "-giq";
                         break;
@@ -277,9 +281,6 @@ public class gpsdump {
         String numberIGC = null;
         // Index track is different in Mac 
         switch (myConfig.getOS()) {
-            case MACOS :
-                numberIGC = "/track="+String.valueOf(idFlight+1);
-                break;
             case WINDOWS :
                 switch (idGPS) {
                         case 1 :
@@ -300,6 +301,7 @@ public class gpsdump {
                             break;
                     }                      
                 break;
+            case MACOS :    
             case LINUX :
                     switch (idGPS) {
                         case 1 :
@@ -354,8 +356,8 @@ public class gpsdump {
                         arrayParam = new String[]{pathGpsDump,wNoWin,wComPort,sTypeGps, logIGC, numberIGC, wExit};
                         break;
                     case MACOS : 
-                        String nameIGC = "/name="+igcFile.getAbsolutePath();   
-                        arrayParam =new String[]{pathGpsDump,sTypeGps, nameIGC, numberIGC};
+                        String nameIGC = "-l"+igcFile.getAbsolutePath();   
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, macPort, nameIGC, numberIGC};
                         break;
                     case LINUX : 
                         String tempIGC = "-l"+igcFile.getAbsolutePath();   
@@ -363,7 +365,6 @@ public class gpsdump {
                         break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam));
-                System.out.println(java.util.Arrays.toString(arrayParam));
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -438,7 +439,9 @@ public class gpsdump {
                         winListFormatting();
                         break;
                     case MACOS :
-                        macListFormatting(idGPS);
+                        //macListFormatting(idGPS);
+                        // GPSDump Mac 64 bit is a port from the Linux version
+                        linuxListFormatting(idGPS);
                         break;
                     case LINUX : 
                         linuxListFormatting(idGPS);
@@ -554,6 +557,13 @@ public class gpsdump {
         }         
     }
     
+    /**
+     * 
+     * @param idGPS 
+     * 
+     * Deprecated, used with GPSDump 32 bit
+     * 
+     */    
     private void macListFormatting(int idGPS) {
         int nbFlights = 0;
         
@@ -619,10 +629,10 @@ public class gpsdump {
         switch (idGPS) {
             case 1:
                 switch (myConfig.getOS()) {
-                    case MACOS :
                     case WINDOWS :
                         sTypeGps = "/gps=flymaster";
                         break;
+                    case MACOS :                        
                     case LINUX : 
                         sTypeGps = "-gyn"; 
                         break;
@@ -630,12 +640,10 @@ public class gpsdump {
                 break;
             case 2:
                  switch (myConfig.getOS()) {
-                    case MACOS :
-                        sTypeGps = "/gps=flymasterold";
-                        break;
                     case WINDOWS :                     
                         sTypeGps = "/gps=flymasterold";
                         break;
+                    case MACOS :                        
                     case LINUX : 
                         sTypeGps = "-gy";    // A vérifier
                         break;
@@ -647,8 +655,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqcompeo";	// Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=flytec";
-                        break;
                     case LINUX :
                         sTypeGps = "-gc";
                         break;                        
@@ -695,8 +701,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=iqbasic";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
-                        break;
                     case LINUX :
                         sTypeGps = "-giq";
                         break;
@@ -704,12 +708,10 @@ public class gpsdump {
                 break;                
         }        
         switch (myConfig.getOS()) {
-            case MACOS :
-                sAction = "/flightlist";
-                break;
             case WINDOWS :
                 sAction = "/flightlist";
                 break;
+            case MACOS :
             case LINUX :
                 // -f“N” Select a specific flight (Brauniger/Flytec/Flymaster). If N=0 a flightlist is displayed.
                 numberIGC = "-f0";
@@ -738,6 +740,7 @@ public class gpsdump {
             }    
             if (gpsDumpOK) {
                 listPFM =new ArrayList<String>();
+                String tempList = "-l"+listFile.getAbsolutePath(); 
                 // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
                 // the author has serious doubts : ok only if program run correctly or crashes
                 switch (myConfig.getOS()) {
@@ -747,11 +750,11 @@ public class gpsdump {
                        // arrayParam = new String[]{pathGpsDump,wNoWin, sTypeGps, sAction, sNotify, sOverw,wExit};
                         break;
                     case MACOS : 
-                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction};                        
-                        break;
+                        // result is displayed on the screen but a file path is required  
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, macPort, tempList, numberIGC};
+                        break;                           
                     case LINUX :   
                         // result is displayed on the screen but a file path is required
-                        String tempList = "-l"+listFile.getAbsolutePath();   
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempList, numberIGC};
                         break;                        
                 }
@@ -797,9 +800,12 @@ public class gpsdump {
                         break;
                     case MACOS : 
                         String ligne = ""; 
-                        if (res == 0) {
+                        if (res == 255) {
+                            // GPSDump returned a flightlist with an error code : Flight number out of range 
+                            res = 0;
                             BufferedReader output = getOutput(p);                    
                             while ((ligne = output.readLine()) != null) {
+                                System.out.println(ligne);
                                 listPFM.add(ligne);
                             }
                         } else {
@@ -864,10 +870,10 @@ public class gpsdump {
         switch (idGPS) {
             case 1:
                 switch (myConfig.getOS()) {
-                    case MACOS :
                     case WINDOWS :
                         sTypeGps = "/gps=flymaster";
                         break;
+                    case MACOS :                        
                     case LINUX : 
                         sTypeGps = "-gyn"; 
                         break;
@@ -875,12 +881,10 @@ public class gpsdump {
                 break;
             case 2:
                  switch (myConfig.getOS()) {
-                    case MACOS :
-                        sTypeGps = "/gps=flymasterold";
-                        break;
                     case WINDOWS :                     
                         sTypeGps = "/gps=flymasterold";
                         break;
+                    case MACOS :
                     case LINUX : 
                         sTypeGps = "-gy";    // A vérifier
                         break;
@@ -949,12 +953,10 @@ public class gpsdump {
                 break;                
         }        
         switch (myConfig.getOS()) {
-            case MACOS :
-                sAction = "/rdwpt";
-                break;
             case WINDOWS :
                 sAction = "/rd_wpt="+wptFile.getAbsolutePath();
                 break;
+            case MACOS :    
             case LINUX :
                 sAction = "-w"+wptFile.getAbsolutePath();
                 break;
@@ -989,7 +991,8 @@ public class gpsdump {
                         arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, sOverw,wExit};
                         break;
                     case MACOS : 
-                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};                        
+                        //arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};    
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, macPort, sAction};
                         break;
                     case LINUX :    
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
@@ -1049,10 +1052,10 @@ public class gpsdump {
         switch (idGPS) {
             case 1:
                 switch (myConfig.getOS()) {
-                    case MACOS :
                     case WINDOWS :
                         sTypeGps = "/gps=flymaster";
                         break;
+                    case MACOS :                        
                     case LINUX : 
                         sTypeGps = "-gyn"; 
                         break;
@@ -1060,12 +1063,10 @@ public class gpsdump {
                 break;
             case 2:
                  switch (myConfig.getOS()) {
-                    case MACOS :
-                        sTypeGps = "/gps=flymasterold";
-                        break;
                     case WINDOWS :                     
                         sTypeGps = "/gps=flymasterold";
                         break;
+                    case MACOS :                        
                     case LINUX : 
                         sTypeGps = "-gy";    // A vérifier
                         break;
@@ -1134,9 +1135,6 @@ public class gpsdump {
                 break;                
         }        
         switch (myConfig.getOS()) {
-            case MACOS :
-                sAction = "/wrwpt";
-                break;
             case WINDOWS :
                 switch (gpsTypeName) {
                     case 0:    // long name  
@@ -1148,6 +1146,7 @@ public class gpsdump {
                         break;
                 }                    
                 break;
+            case MACOS :                
             case LINUX :
                 sAction ="-r"+wptFile.getAbsolutePath();
                 break;
@@ -1182,7 +1181,7 @@ public class gpsdump {
                         arrayParam = new String[]{pathGpsDump,wNoWin, wComPort, sTypeGps, sAction, wExit};
                         break;
                     case MACOS : 
-                        arrayParam =new String[]{pathGpsDump,sTypeGps, sAction, macType, macFile};                        
+                        arrayParam =new String[]{pathGpsDump,sTypeGps, macPort, sAction};                        
                         break;
                     case LINUX :   
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
