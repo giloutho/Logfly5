@@ -342,16 +342,7 @@ public class winGPS {
             case 4:    
                 // Flymaster old series
                 currGPS = gpsType.FlymOld;               
-                switch (myConfig.getOS()) {
-                    case MACOS :
-                        currNamePort = "nil";
-                        gpsPresent();
-                        break;
-                case WINDOWS :        
-                case LINUX : 
-                    listSpSerialPort();
-                    break;
-                }                         
+                listSpSerialPort();                                         
                 break;
             case 5:
                 // Reversale
@@ -593,6 +584,7 @@ public class winGPS {
                             flymaster fms = new flymaster(false, "");
                             if (fms.isPresent(currNamePort)) {    
                                 gpsPresent();
+                                gpsCharac =  "Flymaster "+fms.getDeviceType()+" "+fms.getDeviceSerial()+" "+fms.getDeviceFirm();
                             } else {
                                 gpsNotPresent();
                             } 
@@ -611,6 +603,7 @@ public class winGPS {
                                 flymaster fms = new flymaster(false, "");
                                 if (fms.isPresent(currNamePort)) {    
                                     gpsPresent();
+                                    gpsCharac = "Flymaster "+fms.getDeviceType()+" "+fms.getDeviceSerial()+" "+fms.getDeviceFirm();
                                 } else {
                                     gpsNotPresent();
                                 } 
@@ -630,6 +623,7 @@ public class winGPS {
                             flymasterold fmold = new flymasterold(false, "");
                             if (fmold.isPresent(currNamePort)) {    
                                 gpsPresent();
+                                gpsCharac = "Flymaster "+fmold.getDeviceType()+" "+fmold.getDeviceSerial()+" "+fmold.getDeviceFirm();                                
                             } else {
                                 gpsNotPresent();
                             } 
