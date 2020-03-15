@@ -342,7 +342,7 @@ public class GPSViewController {
         }        
     }
     
-/**
+    /**
      * Flymaster SD series communication method
      */
     private void readFlymaster()  {
@@ -886,24 +886,18 @@ public class GPSViewController {
                 updateMessage(i18n.tr("Retrieving the list of flights in progress"));
                 switch (currGPS) {
                     case Flytec20 :   
+                        // We don't use gpsDump beacause our old Flytec 6030 
+                        // has flights dated 00.00.00, it causes a crash
                         readFlytec20();
                         break;
                     case FlymOld :
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                            case LINUX :  
-                                gpsdReadFlightList();
-                                break;   
-                            case MACOS :
-                                readFlymOld();
-                                break;                                
-                        }                         
+                        gpsdReadFlightList();                     
                         break;  
                     case FlymPlus :    
                         readFlymaster();
                         break;
                     case FlymSD :
-                         gpsdReadFlightList();
+                        gpsdReadFlightList();
                         break;                        
                     case Flytec15 :
                         switch (myConfig.getOS()) {
@@ -1020,23 +1014,8 @@ public class GPSViewController {
                             gpsOK = true;  
                         }                            
                         break;                         
-                    case FlymOld :                       
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                            case LINUX :
-                                 // if we're here, it's because the flightlist has been downloaded
-                                gpsOK = true; 
-                                break;
-                            case MACOS :
-                                if (fmold.isPresent(currNamePort)) {
-                                    gpsOK = true;  
-                                    // We release the port for GPSDump
-                                    // if GPSDump used, we must release the port 
-                                    // Otherwise, port must stay open
-                                    //fmold.closePort();
-                                }
-                                break;                                
-                        }      
+                    case FlymOld :   
+                        gpsOK = true;      
                         break;  
                     case Rever :
                         gpsOK = usbRever.isConnected();
@@ -1146,11 +1125,7 @@ public class GPSViewController {
                                                 idxTable = idxTable - 1;
                                                 strTrack = gpsd.directFlight(2,idxTable);
                                                 break;
-                                            case MACOS :
-                                                if (fmold.getIGC(item.getCol5(), myConfig.getDefaultPilote(), myConfig.getDefaultVoile())) {          
-                                                    strTrack = fmold.getFinalIGC();                                        
-                                                }
-                                                break;                                
+                                            case MACOS :                              
                                             case LINUX : 
                                                 strTrack = gpsd.directFlight(2,idxTable);
                                             break;
@@ -1732,29 +1707,15 @@ public class GPSViewController {
             int idx;
             Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem();
             switch (currGPS) {                    
-                    case Flytec20 :
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :                       
-                                idx = tableImp.getSelectionModel().getSelectedIndex();
-                                // 3 is id of Flytec
-                                oneFlightWithGpsDump(3,idx); 
-                            case MACOS :                              
-                            case LINUX :                                 
-                                oneFlightWithProgress(currLineSelection);
-                                break;
-                        }
+                    case Flytec20 :                
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
+                        // 3 is id of Flytec
+                        oneFlightWithGpsDump(3,idx); 
                         break;
-                    case Flytec15 :
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                                idx = tableImp.getSelectionModel().getSelectedIndex();
-                                // 8 is id of Flytec 6015
-                                oneFlightWithGpsDump(8,idx);     
-                            case MACOS :                              
-                            case LINUX :                                 
-                                oneFlightWithProgress(currLineSelection);
-                                break;
-                        }
+                    case Flytec15 :                        
+                        idx = tableImp.getSelectionModel().getSelectedIndex();
+                        // 8 is id of Flytec 6015
+                        oneFlightWithGpsDump(8,idx);                             
                         break;
                     case FlymSD :
                         switch (myConfig.getOS()) {
@@ -1763,10 +1724,16 @@ public class GPSViewController {
                                 // 1 is id of Flymaster SD for GPSDump
                                 oneFlightWithGpsDump(1,idx);                                
                                 break;
-                            case MACOS :                              
-                            case LINUX : 
-                                oneFlightWithProgress(currLineSelection);                                  
-                            break;
+                            case LINUX :
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
+                                // 2 is id of Flymaster Old
+                                oneFlightWithGpsDump(1,idx);                                                        
+                                break;
+                            case MACOS :                               
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
+                                // 2 is id of Flymaster Old
+                                oneFlightWithGpsDump(1,idx);                                 
+                                break;                                 
                         }                                               
                         break;
                     case FlymPlus :
@@ -1786,8 +1753,10 @@ public class GPSViewController {
                                 oneFlightWithGpsDump(2,idx);                                                        
                                 break;
                             case MACOS :                               
-                                oneFlightWithProgress(currLineSelection);                                  
-                            break;
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
+                                // 2 is id of Flymaster Old
+                                oneFlightWithGpsDump(2,idx);                                 
+                                break;
                         }                                                       
                         break;
                     case Digifly:
