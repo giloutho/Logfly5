@@ -111,6 +111,14 @@ public class skytraax {
     }
     
     /**
+     * DEPRECATED
+     * A partir de janvier 2020, la charte de nommage n'est plus repectée
+     * il y a probablement un bug dans le firmware du Skytraxx
+     * Les traces de 2020 étaient écartées
+     * 
+     * Charte de nommage
+     * First digit : year 2017 -> year -2000 %10 second digit : month January -> 1 december -> C 1-12 in hex third digit : day First -> 1 31 -> V 
+     * dayNumber[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
      * Il faut fixer la valeur qui sera la skyClosureDate
      * Si Closing date renvoit 01/07/2016 la skyClosureDate sera "67"
      * Si Closing date renvoit 01/11/2015 la skyClosureDate sera "5B"
@@ -118,8 +126,9 @@ public class skytraax {
      * https://stackoverflow.com/questions/7383624/how-to-transform-listx-to-another-listy
      * 
      * @param gpsLimit 
+     * Deprecated
      */
-    private void setDateLevel(int gpsLimit) {       
+    private void oldSetDateLevel(int gpsLimit) {       
         int closingYear;
         int closingMonth;
         int closingDay;
@@ -147,7 +156,25 @@ public class skytraax {
         closingDate = sdf.format(myCalendar.getTime());   
         SimpleDateFormat sdfMsg = new SimpleDateFormat("dd/MM/YY");
         msgClosingDate = sdfMsg.format(myCalendar.getTime());  
-    }    
+    }  
+    
+    /**
+     * Fix the limit of folders exploration
+     * Originally the limit is set in monthes (oldSetDateLevel)
+     * From now on we will only take into account the year
+     * 
+     * @param gpsLimit 
+     */
+    private void setDateLevel(int gpsLimit) {   
+        int closingYear;
+        
+        if (gpsLimit == 0) gpsLimit = 99;
+        Calendar myCalendar = Calendar.getInstance();
+        myCalendar.add(Calendar.MONTH, -(gpsLimit));
+        SimpleDateFormat ydf = new SimpleDateFormat("YYYY");
+        closingYear = Integer.parseInt(ydf.format(myCalendar.getTime()));
+        closingSky = String.valueOf(closingYear);
+    }
     
     public boolean testConnection(osType currOs) {
         
@@ -270,6 +297,28 @@ public class skytraax {
             e.printStackTrace();
         }        
     }
+    
+    private void exploreSubFolder(File dir, ArrayList<String> trackPathList) throws Exception {  
+        
+        File[] files = dir.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            // We had a problem with an empty folder.
+            // this folder trigerred a dead loop
+            // In this case files.length had a value of 1 instead of 0 !!!
+            if (files[i].isDirectory() && !files[i].getName().equals(dir.getName())) {
+                String fName = files[i].getName();
+                    exploreSubFolder(files[i], trackPathList);                    
+            } else {
+                String fileName = files[i].getName();
+                if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {                                    
+                    // Problem of dot files writed by MacOS 
+                    if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {                        
+                       trackPathList.add(files[i].getPath());
+                    }
+                }
+            }
+        }                   
+    }
             
     private void exploreFolder(File dir, ArrayList<String> trackPathList) throws Exception {  
         // Recursivité à vérifier pour le skytraax        
@@ -279,18 +328,11 @@ public class skytraax {
             // this folder trigerred a dead loop
             // In this case files.length had a value of 1 instead of 0 !!!
             if (files[i].isDirectory() && !files[i].getName().equals(dir.getName())) {
-                exploreFolder(files[i], trackPathList);                
-            } else {
-                String fileName = files[i].getName();
-                if (fileName.endsWith(".igc") || fileName.endsWith(".IGC")) {                                    
-                    // Problem of dot files writed by MacOS 
-                    if (files[i].isFile() && !fileName.startsWith("._") && files[i].getName().length() > 3) {
-                        if (files[i].getName().substring(0,3).compareTo(closingSky) > 0) {                            
-                            trackPathList.add(files[i].getPath());
-                        }
-                    }
-                }
-            }
+                String fName = files[i].getName();
+                if (fName.matches("\\d{4}") && fName.compareTo(closingSky) >= 0 ) {
+                    exploreSubFolder(files[i], trackPathList); 
+                }               
+            } 
         }        
     }
     
