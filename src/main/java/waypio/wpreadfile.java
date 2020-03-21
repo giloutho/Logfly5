@@ -18,6 +18,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
@@ -27,6 +28,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import systemio.mylogging;
 
 
 /**
@@ -40,6 +42,7 @@ public class wpreadfile {
     private DecimalFormat df2;
     private DecimalFormat df3;    
     private final Pattern patternInt = Pattern.compile("([\\+-]?\\d+)([eE][\\+-]?\\d+)?");
+    private StringBuilder sbError;
 
     public ArrayList<pointRecord> getWpreadList() {
         return wpreadList;
@@ -243,20 +246,50 @@ public class wpreadfile {
         return res;
     }
     
+    /**
+     *  Pattern de l'expression régulière
+     *     W                          La ligne commencera par un W majuscule
+     *    \\s{2}                      sera suivie de deux espaces
+     *    ([a-zA-Z0-9_\\s]{2,})       une séquence de lettres ou de chiffres ou du caractères _ ou de l'espace d'au moins deux lettres
+     *                                mis entre parenthèse = groupe isolable et récupérable
+     *    \\s{1}                      sera suivie d' un espace
+     *    A                           comportera un A majuscule
+     *    \\s                         sera suivie d' un espace
+     *    (\\d+\\.\\d*)               comportera un nombre positif avec un séparateur décimal sous forme de point
+     *                                mis entre parenthèse = groupe isolable et récupérable
+     *    \\W([N|S])                  comportera un caractère N ou S
+     *                                mis entre parenthèse = groupe isolable et récupérable
+     *    \\s                         sera suivie d' un espace
+     *    (\\d+\\.\\d*)               comportera un nombre positif avec un séparateur décimal sous forme de point
+     *                                mis entre parenthèse = groupe isolable et récupérable
+     *    \\W([E|W])                  comportera un caractère E ou W
+     *                                mis entre parenthèse = groupe isolable et récupérable
+     *    \\s\\d{2}-\\w{3}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\s
+     *                                sera suivi d'une séquence espace27-MAR-62 00:00:00espace
+     *    (\\d+\\.?\\d*)              comportera un nombre avec ou sans séparateur décimal sous forme de point
+     *    \\s                         sera suivi d' un espace
+     *    (.*)                        séquence de caractère quelconque
+     *                                mise entre parenthèse = groupe isolable et récupérable 
+     *
+     * @param strFichier
+     * @return 
+     */
     public boolean litComp(String strFichier) {
         boolean res = false;
         String tbFile[];
-        String piecePoint;
-        String realLine;
-        String sAlt;
-        String sDesc;
+        String realLine="";
         String sCoord;
-        String lastCoord;
         // each line begin with W and two spaces
         final String begLine = "W  ";
         final int begSize = begLine.length();
+        
         int nbPoint = 0;
         int iAlt;
+        String pattern_Compe = "W\\s{2}([a-zA-Z0-9_\\s]{2,})\\s{1}A\\s(\\d+\\.\\d*)\\W([N|S])\\s(\\d+\\.\\d*)\\W([E|W])";
+        // ^ 27-MAR-62 00:00:00 $
+        pattern_Compe += "\\s\\d{2}-\\w{3}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\s";
+        pattern_Compe += "(\\d+\\.?\\d*)\\s(.*)";
+        Pattern pCompe = Pattern.compile(pattern_Compe);
         wpreadList = new ArrayList<pointRecord>();
         // We read some files where there is only one character 10
         tbFile = strFichier.split(Character.toString((char)10));
@@ -268,70 +301,55 @@ public class wpreadfile {
         }
         
         try {
-            for (int i = 0; i < lgTb; i++) {      
-                // snippet from https://bytefreaks.net/programming-2/java/java-remove-leading-character-or-any-prefix-from-string-only-if-it-matches
-                realLine = tbFile[i].startsWith(begLine) ? tbFile[i].substring(begSize) : tbFile[i];
-                if (!realLine.substring(0, 1).equals("w")) {
-                    String [] partPoint = realLine.split(" ");
-                    if (partPoint.length > 6)  {
-                      //  System.out.println(realLine);
-                     //   System.out.println("0 -"+partPoint[0]+"- 1 -"+partPoint[1]+"- 2 -"+partPoint[2]+"- 3 -"+partPoint[3]+"- 4 -"+partPoint[4]+"- 5 -"+partPoint[5]+"- 6 -"+partPoint[6]+"-7 -"+partPoint[7]+"-");
+            for (int i = 0; i < lgTb; i++) {  
+                realLine = tbFile[i];                
+                realLine = tbFile[i].replaceAll("\\r", "");
+                realLine = realLine.replaceAll("\\n", "");
+                Matcher mCompe = pCompe.matcher(realLine);                    
+                if (mCompe.find()) {                   
+                    if (mCompe.groupCount() == 7) {
                         pointRecord myPoint = new pointRecord("","","");
-                        myPoint.setFBalise(partPoint[0]);
-                        // Description is the last part. Generally line ends with (char)13 (char)10 
-                        // We split with (char)10 -> char(13) can remains
-                        // a blank field is possible
-                        if (partPoint.length > 7)  {
-                            // Description is splitted on space character
-                            StringBuilder sbDesc = new StringBuilder();
-                            for (int j = 7; j < partPoint.length; j++) {
-                                sbDesc.append(partPoint[j]);
-                                if (j < partPoint.length - 1) sbDesc.append(" ");
-                            }
-                            sDesc = sbDesc.toString().replaceAll(Character.toString((char)13), "");
+                        myPoint.setFBalise(mCompe.group(1));
+                        String sHem = mCompe.group(3);
+                        if (sHem.equals("S")) {
+                            sCoord = "-"+mCompe.group(2);
                         } else {
-                            sDesc = partPoint[0];
-                        }                    
-                        myPoint.setFDesc(sDesc);
-                        int idxPoint = partPoint[6].indexOf(".");
-                        if (idxPoint > 0) {
-                            sAlt = partPoint[6].substring(0, idxPoint);
-                        } else {
-                            sAlt = partPoint[6];
-                        }
-                        myPoint.setFAlt(sAlt);   
-                        // Latitude includes a mysterious character between coord and hemisphere : 36.8155390�S
-                        // Split is problematic with encoding variations. We extract last character                    
-                        lastCoord = partPoint[2].substring(partPoint[2].length() - 1,partPoint[2].length());
-                        if (lastCoord.equals("S")) {
-                            sCoord = "-"+partPoint[2].substring(0,partPoint[2].length()-2);
-                        } else {
-                            sCoord = partPoint[2].substring(0,partPoint[2].length()-2);
+                            sCoord = mCompe.group(2);
                         }
                         myPoint.setFLat(sCoord);
-                        // Longitude includes a mysterious character between coord and meridian : 146.8527860�E
-                        // Split is problematic with encoding variations. We extract last character                      
-                        lastCoord = partPoint[3].substring(partPoint[3].length() - 1,partPoint[3].length());
-                        if (lastCoord.equals("W")) {
-                            sCoord = "-"+partPoint[3].substring(0,partPoint[3].length()-2);
+                        String sMer = mCompe.group(5);
+                        if (sMer.equals("W")) {
+                            sCoord = "-"+mCompe.group(4);
                         } else {
-                            sCoord = partPoint[3].substring(0,partPoint[3].length()-2);
+                            sCoord = mCompe.group(4);
                         }
-                        myPoint.setFLong(sCoord); 
+                        myPoint.setFLong(sCoord);  
+                        String sAlt = "";
+                        int idxPoint = mCompe.group(6).indexOf(".");
+                        if (idxPoint > 0) {
+                            sAlt = mCompe.group(6).substring(0, idxPoint);
+                        } else {
+                            sAlt = mCompe.group(6);
+                        }
+                        myPoint.setFAlt(sAlt);
+                        myPoint.setFDesc(mCompe.group(7));
                         myPoint.setFIndex(nbPoint);
                         wpreadList.add(myPoint);    
-                        nbPoint++;
-                    }
-                }                        
-            }
-            res = true;             
+                        nbPoint++;                            
+                    }                                        
+                }                
+            } 
+            res = true;
         } catch (Exception e) {
             res = false;
-        }        
+            sbError = new StringBuilder("Error while decoding the file in CompeGPS format");
+            sbError.append("\r\n").append(realLine);
+            mylogging.log(Level.SEVERE, sbError.toString());             
+        }
         
         return res;
     }
-    
+        
     /**
      * Library jpx-1.3.0 used from https://github.com/jenetics/jpx
      * Javadoc http://www.javadoc.io/doc/io.jenetics/jpx     
