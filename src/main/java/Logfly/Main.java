@@ -41,6 +41,7 @@ import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
+import systemio.webutils;
 import trackgps.traceGPS;
 
 public class Main extends Application {
@@ -75,37 +76,45 @@ public class Main extends Application {
         // last bundle
         release.setseverity("5.24");
         
-        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.1.01";
+        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.1.02";
         this.primaryStage.setTitle(currVersion);
         
         // Reading settings
         myConfig = new configProg();
         myConfig.readSettings();         
                                   
+        boolean webOK = webutils.isInternetOk();
+        
         if (myConfig.isValidConfig()) {
             myConfig.setVersion(currVersion);           
           //  i18n = I18nFactory.getI18n("","lang/Messages",Main.class.getClass().getClassLoader(),myConfig.getLocale(),0);
             i18n = myConfig.getI18n();
                                     
-            initRootLayout();   
-            switch (idStartScreen) {
-                case 0 :
-                    showCarnetOverview(); 
-                    break;
-                case 1 :
-                    showDash(); 
-                    break;                    
-                default:
-                    throw new AssertionError();
-            }           
-                        
-            try {
-                checkUpdate checkUpgrade = new checkUpdate(release, myConfig);
-            } catch (Exception e) {
-                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-                sbError.append("\r\n").append(e.toString());
-                mylogging.log(Level.SEVERE, sbError.toString());
-            }            
+            initRootLayout(); 
+            if (webOK) {
+                switch (idStartScreen) {
+                    case 0 :
+                        showCarnetOverview(); 
+                        break;
+                    case 1 :
+                        showDash(); 
+                        break;                    
+                    default:
+                        throw new AssertionError();
+                }           
+
+                try {
+                    checkUpdate checkUpgrade = new checkUpdate(release, myConfig);
+                } catch (Exception e) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }           
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(i18n.tr("No internet connection"));  
+                System.exit(0);
+            }
         } else  {            
             alertbox aError = new alertbox(java.util.Locale.ENGLISH);            
             StringBuilder errMsg = new StringBuilder();
