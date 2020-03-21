@@ -89,7 +89,7 @@ public class wpwritefile {
         String sPart1;
         String sPart2;
         decimalFormatSymbols.setDecimalSeparator('.');       
-        df2 = new DecimalFormat("####.000000", decimalFormatSymbols); 
+        df2 = new DecimalFormat("###0.000000", decimalFormatSymbols); 
         try
         {
             // Encodage ASCII
@@ -295,7 +295,7 @@ public class wpwritefile {
         boolean res = false;   
         // date time required
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter parser = new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("dd-MMM-yyyy HH:mm:ss").toFormatter(Locale.ENGLISH);
+        DateTimeFormatter parser = new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("dd-MMM-yy HH:mm:ss").toFormatter(Locale.ENGLISH);
         String sDate = now.format(parser).toUpperCase();         
         try
         {   
@@ -448,7 +448,7 @@ public class wpwritefile {
             switch (idFormat) {
                 case 1:
                     // CompeGPS
-                    df2 = new DecimalFormat("##.0000000", decimalFormatSymbols);                     
+                    df2 = new DecimalFormat("#0.0000000", decimalFormatSymbols);                     
                     sbRes.append(df2.format(dLat));                        
                     sbRes.append((char) 186).append(sHem);                    
                     break;
@@ -479,7 +479,7 @@ public class wpwritefile {
             switch (idFormat) {
                 case 1:
                     // CompeGPS
-                    df3 = new DecimalFormat("###.0000000", decimalFormatSymbols);                     
+                    df3 = new DecimalFormat("##0.0000000", decimalFormatSymbols);                     
                     sbRes.append(df3.format(dLong));            
                     sbRes.append((char) 186).append(sMer);                    
                     break;
