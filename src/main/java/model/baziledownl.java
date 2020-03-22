@@ -18,28 +18,27 @@ public class baziledownl {
     public SimpleStringProperty dateTrans = new SimpleStringProperty();
     public SimpleStringProperty dateOrigin = new SimpleStringProperty();
     public SimpleStringProperty description = new SimpleStringProperty();  
-    
+
     public baziledownl(String pFilename, String pDateTrans, String pDateOrigin, String pDescription) {
         this.filename = new SimpleStringProperty(pFilename);
         this.dateTrans = new SimpleStringProperty(pDateTrans);
         this.dateOrigin = new SimpleStringProperty(pDateOrigin);
         this.description = new SimpleStringProperty(pDescription);                
-    }    
+    }  
 
     public String getFilename() {
         return filename.get();
-    }
+    }        
+
+    public String getDateOrigin() {
+        return dateOrigin.get();
+    }    
 
     public String getDateTrans() {
         return dateTrans.get();
     }
 
-    public String getDateOrigin() {
-        return dateOrigin.get();
-    }
-
     public String getDescription() {
         return description.get();
-    }
-    
+    }            
 }
