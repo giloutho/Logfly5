@@ -38,7 +38,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.HBox;
 import littlewins.winBackup;
-import littlewins.winBazile;
 import littlewins.winCsv;
 import littlewins.winDirChoose;
 import littlewins.winFileChoose;
@@ -390,8 +389,7 @@ public class RootLayoutController {
         MenuItem cmItem1 = new MenuItem(i18n.tr("Release notes"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                //winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=historique:historique");
-                winBazile myWin = new winBazile(myConfig,i18n);
+                winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=historique:historique");
             }
         });
         cm.getItems().add(cmItem1);          
