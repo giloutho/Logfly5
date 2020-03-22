@@ -112,7 +112,7 @@ public class Main extends Application {
                 }           
             } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertError(i18n.tr("No internet connection"));  
+                aError.alertNumError(10);    // No internet connection
                 System.exit(0);
             }
         } else  {            
