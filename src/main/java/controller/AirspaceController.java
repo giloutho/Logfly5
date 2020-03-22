@@ -47,6 +47,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTreeCell;
@@ -62,6 +63,7 @@ import leaflet.map_air;
 import leaflet.map_air_draw;
 import littlewins.winAirDraw;
 import littlewins.winAirSearch;
+import littlewins.winBazile;
 import littlewins.winFileChoose;
 import littlewins.winFileSave;
 import model.airdraw;
@@ -90,7 +92,9 @@ import systemio.tempacess;
 public class AirspaceController {
     
     @FXML
-    private Button btReadFile;    
+    private Button btReadFile;   
+    @FXML
+    private Button btBazile;  
     @FXML
     private Button btDraw;
     @FXML
@@ -238,6 +242,23 @@ public class AirspaceController {
             screenForTree();
             readAirspaceFile(selectedFile); 
         }          
+    }    
+    
+    @FXML
+    private void handleBazile(ActionEvent event) {
+        
+        // if it's not first time levelFlight must be reset
+        if (ch_Flight.getSelectionModel().getSelectedIndex() > 0) {
+            ch_Flight.getSelectionModel().selectFirst();
+            levelFlight = 9999;            
+        }        
+        winBazile myWin = new winBazile(myConfig,i18n);
+        File bazileFile = myWin.getDownFile();
+        if (bazileFile != null && bazileFile.exists()) {
+            actionDraw = false;
+            screenForTree();
+            readAirspaceFile(bazileFile);
+        }
     }    
     
     @FXML
@@ -1123,6 +1144,7 @@ public class AirspaceController {
         mapPane.getItems().remove(componentsPane);         
         hbAction.setVisible(false);
         btReadFile.setVisible(false);
+        btBazile.setVisible(false);
         btDraw.setVisible(false);
         btDrawCancel.setVisible(true);
         btDrawValid.setVisible(true);  
@@ -1135,6 +1157,7 @@ public class AirspaceController {
         mapPane.setVisible(true);
         hbAction.setVisible(true);
         btReadFile.setVisible(true);
+        btBazile.setVisible(true);
         btDraw.setVisible(true);
         btDrawCancel.setVisible(false);
         btDrawValid.setVisible(false);        
@@ -1146,6 +1169,7 @@ public class AirspaceController {
         mapPane.setVisible(false);        
         hbAction.setVisible(false);
         btReadFile.setVisible(true);
+        btBazile.setVisible(true);
         btDraw.setVisible(true);
         btDrawCancel.setVisible(false);
         btDrawValid.setVisible(false);  
@@ -1283,7 +1307,19 @@ public class AirspaceController {
     private void winTraduction() {
 
         btReadFile.setText(i18n.tr("OpenAir"));
+        Tooltip oaToolTip = new Tooltip();
+        oaToolTip.setStyle(myConfig.getDecoToolTip());
+        oaToolTip.setText(i18n.tr("Open OpenAir files"));
+        btReadFile.setTooltip(oaToolTip);        
+        Tooltip bazToolTip = new Tooltip();
+        bazToolTip.setStyle(myConfig.getDecoToolTip());
+        bazToolTip.setText(i18n.tr("Download french OpenAir files from http://pascal.bazile.free.fr"));
+        btBazile.setTooltip(bazToolTip);
         btDraw.setText(i18n.tr("Draw"));
+        Tooltip drawToolTip = new Tooltip();
+        drawToolTip.setStyle(myConfig.getDecoToolTip());
+        drawToolTip.setText(i18n.tr("Draw free airspaces on map"));  
+        btDraw.setTooltip(drawToolTip);
         btDrawCancel.setText(i18n.tr("Cancel"));
         btDrawValid.setText(i18n.tr("Save"));
         btRefresh.setText(i18n.tr("Update"));
