@@ -7,9 +7,10 @@
 package systemio;
 
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.logging.Level;
+import org.apache.commons.io.IOUtils;
 import settings.privateData;
 
 /**
@@ -35,44 +36,33 @@ public class textdownload {
         }
     }
     
+    /**
+     * With a copy of sitelistdown code, we have an encoding problem 
+     * We change for a new code from https://stackoverflow.com/questions/5769717/how-can-i-get-an-http-response-body-as-a-string-in-java/5769756#5769756
+     * great article about encoding in java : https://www.codeflow.site/fr/article/java-char-encoding
+     * 
+     * @return 
+     */
     public String askList() {
-    
-        StringBuilder sbListe = new StringBuilder();
+            
+        String sList = null;
         
-        try {
-
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-            // optional default is GET
-            con.setRequestMethod("GET");
-
-            //add request header
-            con.setRequestProperty("User-Agent", "Mozilla/5.0");
-
-            int responseCode = con.getResponseCode();
-            //System.out.println("\nSending 'GET' request to URL : " + url);
-            //System.out.println("Response Code : " + responseCode);
-
+        try {            
+            URL urlBaz = new URL(url);
+            URLConnection con = urlBaz.openConnection();
             InputStream in = con.getInputStream();
-            try {
-              byte[] bytes = new byte[2048];
-              int length;
-
-              while ((length = in.read(bytes)) != -1) {
-                String s = new String(bytes,0,length);
-                sbListe.append(s);           
-              }
-            } finally {
-              in.close();
-            }
+            String encoding = con.getContentEncoding();
+            encoding = encoding == null ? "ISO-8859-1" : encoding;
+            String body = IOUtils.toString(in, encoding); 
+            sList = body;
         } catch (Exception ex) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(ex.toString());
             mylogging.log(Level.SEVERE, sbError.toString());            
         }
-        
-        return sbListe.toString();
+
+
+        return sList;
 
     }         
     
