@@ -72,6 +72,10 @@ public class webdown {
         if (reqUrl.contains("viewfinderpanoramas")) {
             srtmLabel = i18n.tr("Downloading digital elevation data");
             srtmDwnl = true;
+        }        
+        if (reqUrl.contains("bazile")) {
+            srtmLabel = i18n.tr("Downloading OpenAir file from pascal.bazile.free.fr");
+            srtmDwnl = true;
         }
         winDisplay();        
     }
