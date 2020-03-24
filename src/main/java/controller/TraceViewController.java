@@ -93,6 +93,7 @@ public class TraceViewController {
     private Main mainApp;
     private boolean isGPX;
     private StringBuilder sbError;
+    private String lastDirUsed = null;
     
     @FXML
     private void initialize() {
@@ -107,10 +108,11 @@ public class TraceViewController {
     private void selectTrackFolder() throws Exception {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, null);  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, lastDirUsed);  
         File selectedFile = wf.getSelectedFile(); 
         try {            
             if(selectedFile != null && selectedFile.exists()){
+                lastDirUsed = selectedFile.getParent();
                 String extension = getFileExtension(selectedFile);
                 if (extension.equals("GPX") || extension.equals("gpx")) 
                     isGPX = true;
