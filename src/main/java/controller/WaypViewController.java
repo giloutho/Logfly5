@@ -197,6 +197,7 @@ public class WaypViewController {
     private ContextMenu tableContextMenu;
     private String gpsdWaypWriteReport;
     private File fDebug = null;
+    private String lastDirUsed = null;
     
     @FXML
     public void initialize() {
@@ -336,10 +337,11 @@ public class WaypViewController {
     }
     
     @FXML
-    private void handleReadFile() {
-        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.wpt, null);  
+    private void handleReadFile() {        
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.wpt, lastDirUsed);  
         File selectedFile = wf.getSelectedFile();     
         if(selectedFile != null && selectedFile.exists()){ 
+            lastDirUsed = selectedFile.getParent();
             readFromFile(selectedFile.getAbsolutePath());
         }       
     }
