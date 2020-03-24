@@ -28,7 +28,6 @@ import littlewins.winFileChoose;
 import littlewins.winMail;
 import littlewins.winTrackFile;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.fileType;
 import systemio.mylogging;
@@ -74,6 +73,7 @@ public class CartoViewController {
     int typeTrack;     // 1 IGC  2 GPX
     private File snapFile;  
     private String screenHtml;
+    private String lastDirUsed;
     
         
     @FXML
@@ -90,9 +90,10 @@ public class CartoViewController {
     private void handleTrack(ActionEvent event) {
         
         alertbox aError = new alertbox(myConfig.getLocale());
-        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.IgcGpx, null);  
+        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.GpxIgc, lastDirUsed);  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
+            lastDirUsed = selectedFile.getParent();
             try {
                 String fileExt = wf.getExtFormat().toUpperCase();
                 switch (fileExt) {
