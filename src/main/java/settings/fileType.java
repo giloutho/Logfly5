@@ -11,5 +11,5 @@ package settings;
  * @author gil
  */
     
-public enum fileType {IgcGpx,OpenAir,Gpx,Kml,OACheck,db,dbk,csv,wpt,xcp,foldertracks} 
+public enum fileType {IgcGpx,GpxIgc,OpenAir,Gpx,Kml,OACheck,db,dbk,csv,wpt,xcp,foldertracks} 
 
