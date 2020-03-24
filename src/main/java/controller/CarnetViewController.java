@@ -852,6 +852,14 @@ public class CarnetViewController  {
             }
         });
         tableContextMenu.getItems().add(cmItemGlider);                
+
+        MenuItem cmItemGliderHours = new MenuItem(i18n.tr("Glider flight time"));
+        cmItemGliderHours.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                askHoursGlider();
+            }
+        });
+        tableContextMenu.getItems().add(cmItemGliderHours);          
         
         MenuItem cmItem1 = new MenuItem(i18n.tr("Comment"));
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
@@ -1017,6 +1025,14 @@ public class CarnetViewController  {
             }
         });
         cm.getItems().add(cmItemGlider);
+        
+        MenuItem cmItemGliderHours = new MenuItem(i18n.tr("Glider flight time"));
+        cmItemGliderHours.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                askHoursGlider();
+            }
+        });
+        cm.getItems().add(cmItemGliderHours);            
         
         MenuItem cmItemMerging = new MenuItem(i18n.tr("Merge flights"));
         cmItemMerging.setOnAction(new EventHandler<ActionEvent>() {
@@ -1241,6 +1257,16 @@ public class CarnetViewController  {
             }
         }         
      }
+     
+    private void askHoursGlider() {
+        
+        int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+            dbSearch dbs = new dbSearch(myConfig);
+            dbs.getTotGliderHours(selectedVol.getEngin());
+        }        
+    } 
     
     private void askEditSite() {
 
