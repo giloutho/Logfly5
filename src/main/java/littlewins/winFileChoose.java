@@ -95,13 +95,21 @@ public class winFileChoose {
     private void setInfos() {
         switch (winType) {
             case IgcGpx :
-                // GPX or IGC used with FullMapController
+                // IGC or GPX used with FullMapController
                 sbInfo.append(i18n.tr("Supported file types"));
                 sbInfo.append(" ").append("IGC").append(" ").append(i18n.tr("or"));
                 sbInfo.append(" ").append("GPX");                
                 btCaption = i18n.tr("Select a track");
                 sTitle = "";
                 break;
+            case GpxIgc :
+                // GPX or IGC used with FullMapController
+                sbInfo.append(i18n.tr("Supported file types"));
+                sbInfo.append(" ").append("GPX").append(" ").append(i18n.tr("or"));
+                sbInfo.append(" ").append("IGC");                
+                btCaption = i18n.tr("Select a track");
+                sTitle = "";
+                break;                
             case OpenAir :
                 // txt OpenAir used with AirSpaceController
                 sbInfo.append(i18n.tr("Supported file types"));
@@ -227,6 +235,11 @@ public class winFileChoose {
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
                 fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Track files (igc ", "*.igc"));  
                 break;
+            case GpxIgc :
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (gpx)", "*.gpx", "*.GPX"));       
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Track files (igc)", "*.igc", "*.IGC")); 
+                fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
+                break;                
             case OpenAir :
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Airspaces (txt)", "*.txt","*.TXT"));        
                 fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("All files", "*.*")); 
