@@ -157,6 +157,7 @@ public class AirspaceController {
     private reversale usbRever;
     private int comReversale;
     private boolean DrawScreen;
+    private String lastDirUsed = null;
     
     @FXML
     private void initialize() {
@@ -238,6 +239,7 @@ public class AirspaceController {
         winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OpenAir, myConfig.getPathOpenAir());  
         File selectedFile = wf.getSelectedFile();
         if (selectedFile != null && selectedFile.exists()) {
+            lastDirUsed = selectedFile.getParent();
             actionDraw = false;
             screenForTree();
             readAirspaceFile(selectedFile); 
