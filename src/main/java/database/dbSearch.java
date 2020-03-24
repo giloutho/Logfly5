@@ -6,7 +6,9 @@
  */
 package database;
 
+import dialogues.alertbox;
 import geoutils.trigo;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -303,4 +305,48 @@ public class dbSearch {
         
         return res;
     }    
+
+    public void getTotGliderHours(String gliderName) {
+        
+        StringBuilder sbDur = new StringBuilder();
+        sbDur.append(gliderName).append("\n");
+        PreparedStatement pstmt = null;
+        ResultSet rsGlider = null;                   
+        String sReq = "SELECT Sum(V_Duree), Count(V_ID) FROM Vol WHERE V_Engin = ?";
+        try {
+            pstmt = myConfig.getDbConn().prepareStatement(sReq);   
+            pstmt.setString(1, gliderName); 
+            rsGlider = pstmt.executeQuery();            
+            if (rsGlider.next()) {  
+                int iDuration = rsGlider.getInt("Sum(V_Duree)");
+                int nbHour = iDuration/3600;
+                int nbMn = (iDuration - (nbHour*3600))/60;
+                sbDur.append(i18n.tr("Flights")).append(" : ").append(rsGlider.getString("Count(V_ID)")).append(" ").append("\n");
+                sbDur.append(i18n.tr("Flight hours")).append(" : ");
+                sbDur.append(String.format("%3d", nbHour)).append("h");
+                sbDur.append(String.format("%02d", nbMn)).append("mn");
+            } else {
+                sbDur.append(i18n.tr("No flights counted for this glider"));
+            }
+            alertbox aInfo = new alertbox(myConfig.getLocale());
+            aInfo.alertWithTitle("",sbDur.toString()); 
+        } catch ( Exception e ) {     
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertInfo(i18n.tr("Could not read logbook"));             
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.toString());
+            sbError.append(sReq).append(" -> ").append(gliderName);
+            mylogging.log(Level.SEVERE, sbError.toString());                  
+        }  finally {
+            try{
+                rsGlider.close(); 
+                pstmt.close();
+            } catch(Exception e) { 
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                
+            } 
+        }                   
+    }    
+    
 }
