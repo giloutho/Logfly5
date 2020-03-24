@@ -385,6 +385,7 @@ public class gpsdump {
                     }
                 }
                 strLog = sbLog.toString();
+                if (mDebug) mylogging.log(Level.INFO, strLog.toString());
             } else {
                 res = 1201;
                 errorGpsDump = 1201;                
