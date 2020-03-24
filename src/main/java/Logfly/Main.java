@@ -29,6 +29,7 @@ import controller.StatViewController;
 import controller.TraceViewController;
 import controller.WaypViewController;
 import controller.XcpViewController;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import javafx.geometry.Rectangle2D;
@@ -76,7 +77,7 @@ public class Main extends Application {
         // last bundle
         release.setseverity("5.24");
         
-        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.1.02";
+        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.1.03";
         this.primaryStage.setTitle(currVersion);
         
         // Reading settings
@@ -121,14 +122,22 @@ public class Main extends Application {
             
             errMsg.append("myConfig.isValidConfig() = false\n");
             if (myConfig.isReadConfig())  {
-                errMsg.append("Logfly.properties file OK\n");
+                errMsg.append("Reading Logfly.properties file OK\n");
                 if (myConfig.isConfigDefault())  {
                     errMsg.append("Default settings applied\n");
                 } else {
                     errMsg.append("Custom settings applied\n");
                 }
-                errMsg.append("Working path : "+myConfig.getPathW()).append("\n");
-                errMsg.append("Logbook path : "+myConfig.getFullPathDb()).append("\n");
+                File fW = new File(myConfig.getPathW());
+                if (fW.exists())
+                    errMsg.append("Working path : ").append(myConfig.getPathW()).append(" OK").append("\n");
+                else
+                    errMsg.append("Working path : ").append(myConfig.getPathW()).append(" does not exist").append("\n");
+                File fDb = new File(myConfig.getFullPathDb());
+                if (fDb.exists())
+                    errMsg.append("Logbook path : ").append(myConfig.getFullPathDb()).append(" OK").append("\n");
+                else
+                    errMsg.append("Logbook path : "+myConfig.getFullPathDb()).append(" does not exist").append("\n");
             } else {
                 errMsg.append("Logfly.properties not read\n");
             }              
@@ -243,6 +252,9 @@ public class Main extends Application {
         }
     }  
     
+    /**
+     * Deprecated
+     */
     public void showDashView() {
         
         try {
@@ -265,6 +277,9 @@ public class Main extends Application {
         
     }
     
+    /**
+     * New view of current year
+     */
     public void showDash() {
         
         try {
