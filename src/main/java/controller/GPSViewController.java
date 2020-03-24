@@ -1080,6 +1080,7 @@ public class GPSViewController {
                                         switch (myConfig.getOS()) {
                                             case WINDOWS :                                        
                                                 strTrack = gpsd.directFlight(3,idxTable);
+                                                break;
                                             case LINUX :
                                             case MACOS :
                                                 strTrack = fls.getIGC(item.getCol5());
@@ -1090,6 +1091,7 @@ public class GPSViewController {
                                         switch (myConfig.getOS()) {
                                             case WINDOWS :                                        
                                                 strTrack = gpsd.directFlight(8,idxTable);
+                                                break;
                                             case LINUX :
                                             case MACOS :
                                                 strTrack = fliq.getIGC(item.getCol5());
