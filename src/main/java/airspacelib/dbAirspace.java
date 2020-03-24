@@ -128,8 +128,34 @@ public class dbAirspace {
             properties.put("Cat", (airspace.typeColor == null)? "0" : airspace.typeColor);
             properties.put("Class", (airspace.Category == null)? "UNK" : airspace.Category.toString());            
             properties.put("Name", (airspace.Name == null)? "UNK" : airspace.Name );
-            properties.put("Floor",(airspace.AltLimit_Bottom == null)? "UNK" : airspace.AltLimit_Bottom );
-            properties.put("Ceiling",(airspace.AltLimit_Top == null)? "UNK" : airspace.AltLimit_Top );
+            
+            // original code
+            //properties.put("Floor",(airspace.AltLimit_Bottom == null)? "UNK" : airspace.AltLimit_Bottom );
+            // we want to show AGL on the map
+            String sFloorValue = "";
+             if (airspace.AltLimit_Bottom == null) {
+                sFloorValue = "UNK";
+            } else {
+                if (airspace.AltLimit_Bottom_AGL == 1)
+                    sFloorValue = "(AGL) "+String.valueOf(airspace.AltLimit_Bottom);
+                else
+                    sFloorValue = String.valueOf(airspace.AltLimit_Bottom);
+            }           
+            properties.put("Floor", sFloorValue);
+            
+            // original code
+            //properties.put("Ceiling",(airspace.AltLimit_Top == null)? "UNK" : airspace.AltLimit_Top );
+            String sCeilingValue = "";
+            if (airspace.AltLimit_Top == null) {
+                sCeilingValue = "UNK";
+            } else {
+                if (airspace.AltLimit_Top_AGL == 1)
+                    sCeilingValue = "(AGL) "+String.valueOf(airspace.AltLimit_Top);
+                else
+                    sCeilingValue = String.valueOf(airspace.AltLimit_Top);
+            }
+            properties.put("Ceiling",sCeilingValue);
+            
             feature.put("properties", properties);
 
 
