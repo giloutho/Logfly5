@@ -364,7 +364,12 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
                         break;                        
                 }
-                sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam));
+                sbLog.append("Call ").append(java.util.Arrays.toString(arrayParam));
+                if (mDebug) {
+                    System.out.println(sbLog.toString());
+                    mylogging.log(Level.INFO, sbLog.toString());
+                }
+                sbLog.setLength(0);
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -385,7 +390,10 @@ public class gpsdump {
                     }
                 }
                 strLog = sbLog.toString();
-                if (mDebug) mylogging.log(Level.INFO, strLog.toString());
+                if (mDebug) {
+                    System.out.println(strLog.toString());
+                    mylogging.log(Level.INFO, strLog.toString());
+                }
             } else {
                 res = 1201;
                 errorGpsDump = 1201;                
