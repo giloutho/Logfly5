@@ -888,8 +888,8 @@ public class GPSViewController {
                     case Flytec20 :   
                         // We don't use gpsDump beacause our old Flytec 6030 
                         // has flights dated 00.00.00, it causes a crash
-                        //readFlytec20();  // it seems to be OK    
-                        gpsdReadFlightList();   
+                        readFlytec20();  // it seems to be OK    
+                        //gpsdReadFlightList();   
                         break;
                     case FlymOld :
                         gpsdReadFlightList();                     
