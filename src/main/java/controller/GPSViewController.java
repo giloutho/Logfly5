@@ -888,7 +888,8 @@ public class GPSViewController {
                     case Flytec20 :   
                         // We don't use gpsDump beacause our old Flytec 6030 
                         // has flights dated 00.00.00, it causes a crash
-                        readFlytec20();
+                        //readFlytec20();  // it seems to be OK    
+                        gpsdReadFlightList();   
                         break;
                     case FlymOld :
                         gpsdReadFlightList();                     
@@ -969,36 +970,12 @@ public class GPSViewController {
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
                     case Flytec20 :
-                        // if we're here, it's because the flightlist has been posted
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                                gpsOK = true; 
-                                break;
-                            case LINUX :
-                            case MACOS :                                
-                                if (fls.isPresent(currNamePort)) {
-                                    gpsOK = true;
-                                    // if GPSDump used, we must release the port 
-                                    // Otherwise, port must stay open
-                                    //  fliq.closePort();
-                                }          
-                        }       
+                        // if we're here, it's because the flightlist has been posted                      
+                        gpsOK = true; 
                         break;
                     case Flytec15 :
                         // if we're here, it's because the flightlist has been posted
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                                gpsOK = true; 
-                                break;
-                            case LINUX :
-                            case MACOS :                                
-                                if (fliq.isPresent(currNamePort)) {
-                                    gpsOK = true;
-                                    // if GPSDump used, we must release the port 
-                                    // Otherwise, port must stay open
-                                    //  fliq.closePort();
-                                }          
-                        }
+                        gpsOK = true; 
                         break;    
                     case FlymSD :
                         // if we're here, it's because the flightlist has been downloaded
@@ -1076,27 +1053,11 @@ public class GPSViewController {
                                 try {
                                     // Download instruction of the flight is stored in column 5
                                     switch (currGPS) {
-                                    case Flytec20 :                                           
-                                        switch (myConfig.getOS()) {
-                                            case WINDOWS :                                        
-                                                strTrack = gpsd.directFlight(3,idxTable);
-                                                break;
-                                            case LINUX :
-                                            case MACOS :
-                                                strTrack = fls.getIGC(item.getCol5());
-                                                break;
-                                        }                                        
+                                    case Flytec20 :                                                                            
+                                        strTrack = gpsd.directFlight(3,idxTable);                                  
                                         break;
-                                    case Flytec15 :
-                                        switch (myConfig.getOS()) {
-                                            case WINDOWS :                                        
-                                                strTrack = gpsd.directFlight(8,idxTable);
-                                                break;
-                                            case LINUX :
-                                            case MACOS :
-                                                strTrack = fliq.getIGC(item.getCol5());
-                                                break;
-                                        }
+                                    case Flytec15 :                                   
+                                        strTrack = gpsd.directFlight(8,idxTable);
                                         break;    
                                     case FlymSD :
                                         strTrack = gpsd.directFlight(1,idxTable);
@@ -1710,9 +1671,19 @@ public class GPSViewController {
             Gpsmodel currLineSelection = tableImp.getSelectionModel().getSelectedItem();
             switch (currGPS) {                    
                     case Flytec20 :                
-                        idx = tableImp.getSelectionModel().getSelectedIndex();
-                        // 3 is id of Flytec
-                        oneFlightWithGpsDump(3,idx); 
+                        switch (myConfig.getOS()) {
+                            case WINDOWS :                       
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
+                                // 3 is id of Flytec                                
+                                oneFlightWithGpsDump(3,idx); 
+                                break;
+                            case MACOS :                              
+                            case LINUX :                                 
+                                //oneFlightWithProgress(currLineSelection);
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
+                                oneFlightWithGpsDump(3,idx); 
+                                break;
+                        }
                         break;
                     case Flytec15 :                        
                         idx = tableImp.getSelectionModel().getSelectedIndex();
