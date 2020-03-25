@@ -101,6 +101,10 @@ public class gpsdump {
     
     public gpsdump(GPSViewController callGPSView, int pRetour, String pNamePort, configProg currConfig, I18n pI18n)  {
         myConfig = currConfig;
+        if (myConfig.isDebugMode())
+            mDebug = true;
+        else
+            mDebug = false;
         i18n = pI18n;
         this.gpsController = callGPSView;
         listFlights = FXCollections.observableArrayList();  
