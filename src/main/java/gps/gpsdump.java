@@ -772,7 +772,10 @@ public class gpsdump {
                         break;                        
                 }
                 sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
-                System.out.println("Call : "+java.util.Arrays.toString(arrayParam));
+                if (mDebug) {
+                    System.out.println(sbLog.toString());
+                    mylogging.log(Level.INFO, sbLog.toString());
+                }
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
