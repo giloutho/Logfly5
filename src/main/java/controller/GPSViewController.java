@@ -964,12 +964,12 @@ public class GPSViewController {
         
         ObservableList <Gpsmodel> checkedData = tableImp.getItems(); 
         try {
-            flytec20 fls = new flytec20(); 
-            flytec15 fliq = new flytec15();
+       //     flytec20 fls = new flytec20(); 
+       //     flytec15 fliq = new flytec15();
             if (fDebug != null && fDebug.exists()) debugPath = fDebug.getAbsolutePath()+File.separator;
             flymaster fms = new flymaster(myConfig.isDebugMode(), debugPath);
             digifly dig = new digifly(myConfig.isDebugMode(), debugPath);            
-            flymasterold fmold = new flymasterold(myConfig.isDebugMode(), debugPath);            
+       //     flymasterold fmold = new flymasterold(myConfig.isDebugMode(), debugPath);            
             gpsdump gpsd = new gpsdump(this, 7, currNamePort, myConfig, i18n);
             switch (currGPS) {
                     case Flytec20 :
@@ -980,7 +980,7 @@ public class GPSViewController {
                         // if we're here, it's because the flightlist has been posted
                         gpsOK = true; 
                         break;    
-                    case FlymSD :
+                    case FlymSD :                       
                         // if we're here, it's because the flightlist has been downloaded
                         gpsOK = true; 
                         break;                                                                     
@@ -989,7 +989,7 @@ public class GPSViewController {
                             gpsOK = true;  
                         }                            
                         break;    
-                    case Digifly :
+                    case Digifly :  
                         if (dig.isPresent(currNamePort)) {
                             gpsOK = true;  
                         }                            
@@ -1171,10 +1171,10 @@ public class GPSViewController {
                         try {
                             switch (currGPS) {  
                                 case Flytec20 :
-                                    fls.closePort();
+                               //     fls.closePort();
                                     break;
                                 case Flytec15 :
-                                    fliq.closePort();
+                                //    fliq.closePort();
                                     break;
                                 case FlymPlus :
                                     fms.closePort();
@@ -1183,7 +1183,7 @@ public class GPSViewController {
                                     dig.closePort();
                                     break;                                           
                                 case FlymOld :
-                                    fmold.closePort();
+                                 //   fmold.closePort();
                                     break;
                             }
                         } catch (Exception e) {
