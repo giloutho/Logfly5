@@ -888,8 +888,9 @@ public class GPSViewController {
                     case Flytec20 :   
                         // We don't use gpsDump beacause our old Flytec 6030 
                         // has flights dated 00.00.00, it causes a crash
-                        readFlytec20();  // it seems to be OK    
-                        //gpsdReadFlightList();   
+                       // readFlytec20();  // it's OK 
+                        // for reliability, we prefer to use this procedure
+                        gpsdReadFlightList();   
                         break;
                     case FlymOld :
                         gpsdReadFlightList();                     
@@ -901,15 +902,17 @@ public class GPSViewController {
                         gpsdReadFlightList();
                         break;                        
                     case Flytec15 :
-                        switch (myConfig.getOS()) {
-                            case WINDOWS :
-                                gpsdReadFlightList();
-                                break;
-                            case LINUX :     
-                            case MACOS :
-                                readFlytec15();
-                                break;                                
-                        } 
+//                        switch (myConfig.getOS()) {
+//                            case WINDOWS :
+//                                gpsdReadFlightList();
+//                                break;
+//                            case LINUX :     
+//                            case MACOS :
+//                                readFlytec15();
+//                                break;                                
+//                        }
+                        // GpsDump for everyone
+                        gpsdReadFlightList();
                         break;
                    case Digifly:
                         readDigifly();
