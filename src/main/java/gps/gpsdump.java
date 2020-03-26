@@ -368,12 +368,9 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempIGC, numberIGC};
                         break;                        
                 }
-                sbLog.append("Call ").append(java.util.Arrays.toString(arrayParam));
                 if (mDebug) {
-                    System.out.println(sbLog.toString());
-                    mylogging.log(Level.INFO, sbLog.toString());
+                    mylogging.log(Level.INFO, java.util.Arrays.toString(arrayParam));
                 }
-                sbLog.setLength(0);
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -384,19 +381,22 @@ public class gpsdump {
                 String ligne = ""; 
                 if (res == 0) {
                     BufferedReader output = getOutput(p);                    
-                    while ((ligne = output.readLine()) != null) {
-                        sbLog.append(ligne).append(CF);
+//                    while ((ligne = output.readLine()) != null) {
+//                        sbLog.append(ligne).append(CF);
+//                    }
+                    if (mDebug) {
+                        mylogging.log(Level.INFO, "res = 0");
                     }
                 } else {
                     BufferedReader error = getError(p);
+                    StringBuilder sbBuffered = new StringBuilder();
+                    sbBuffered.append("res = ").append(String.valueOf(res)).append(CF);
                     while ((ligne = error.readLine()) != null) {
-                        sbLog.append(ligne).append(CF);
+                        sbBuffered.append(ligne).append(CF);
                     }
-                }
-                strLog = sbLog.toString();
-                if (mDebug) {
-                    System.out.println(strLog.toString());
-                    mylogging.log(Level.INFO, strLog.toString());
+                    if (mDebug) {                        
+                        mylogging.log(Level.INFO, sbBuffered.toString());
+                    }
                 }
             } else {
                 res = 1201;
@@ -771,10 +771,8 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, tempList, numberIGC};
                         break;                        
                 }
-                sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
                 if (mDebug) {
-                    System.out.println(sbLog.toString());
-                    mylogging.log(Level.INFO, sbLog.toString());
+                    mylogging.log(Level.INFO, java.util.Arrays.toString(arrayParam));
                 }
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
@@ -782,7 +780,9 @@ public class gpsdump {
                 switch (myConfig.getOS()) {
                     case WINDOWS :
                         if (res == 0) {
-                            System.out.println("res = 0");
+                            if (mDebug) {
+                                mylogging.log(Level.INFO, "res = 0");
+                            }
                             if (listFile.exists()) {
                                 try {
                                     InputStream flux=new FileInputStream(listFile); 
@@ -798,20 +798,19 @@ public class gpsdump {
                                     sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());                                    
                                     sbError.append("\r\n").append(e.toString());
                                     sbError.append("\r\n").append("Problem to read flightlist file");
+                                    if (mDebug) {
+                                        mylogging.log(Level.INFO, "res = 1 Problem to read flightlist file");
+                                    }                                    
                                 }
                             } else {
                                 sbError = new StringBuilder("===== GPSDump return Error : No flight list =====\r\n");
                                 sbError = sbError.append(sbLog.toString());
-                                mylogging.log(Level.INFO, sbError.toString());
-                                sbLog.setLength(0);
-                                sbLog.append("GPSDump error").append(" ").append("No flight list returned");                               
+                                mylogging.log(Level.INFO, sbError.toString());                          
                             }                                 
                         } else {
                             sbError = new StringBuilder("===== GPSDump return Error : No response from GPS =====\r\n");
                             sbError = sbError.append(sbLog.toString());
                             mylogging.log(Level.INFO, sbError.toString());
-                            sbLog.setLength(0);
-                            sbLog.append(sTypeGps).append(" ").append("No response from GPS");
                         }    
                         break;
                     case MACOS : 
@@ -821,28 +820,38 @@ public class gpsdump {
                             res = 0;
                             BufferedReader output = getOutput(p);                    
                             while ((ligne = output.readLine()) != null) {
-                                System.out.println(ligne);
-                                listPFM.add(ligne);
+                                if (mDebug) {
+                                    System.out.println(ligne);
+                                    listPFM.add(ligne);
+                                }
                             }
+                            if (mDebug) {
+                                mylogging.log(Level.INFO, "res = 0 litstPFM.size = "+String.valueOf(+listPFM.size()));
+                            }                            
                         } else {
                             BufferedReader error = getError(p);
                             while ((ligne = error.readLine()) != null) {
                                 listPFM.add(ligne);
-                            }
+                            }                            
+                            sbError = new StringBuilder("===== GPSDump return Error : ").append(String.valueOf(res));                           sbError = sbError.append(sbLog.toString());
+                            mylogging.log(Level.INFO, sbError.toString());                          
                         }                                               
                         break;
                     case LINUX :                         
                         ligne = ""; 
-                        System.out.println(res);
                         if (res == 255) {
                             // GPSDump returned a flightlist with an error code : Flight number out of range 
                             res = 0;
                             BufferedReader output = getOutput(p);                    
                             while ((ligne = output.readLine()) != null) {
-                                System.out.println(ligne);
+                                if (mDebug) {
+                                    System.out.println(ligne);
+                                }
                                 listPFM.add(ligne);
                             }
-                            System.out.println("listPFM size : "+listPFM.size());
+                            if (mDebug) {
+                                mylogging.log(Level.INFO, "res = 0 litstPFM.size = "+String.valueOf(+listPFM.size()));
+                            }
                         } else {
                             BufferedReader error = getError(p);
                             while ((ligne = error.readLine()) != null) {
