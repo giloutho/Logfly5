@@ -56,7 +56,6 @@ public class gpsdump {
     private int codeRetour;      
     private File igcFile;    
     private String CF =  "\r\n"; 
-    private String strLog;
     private String portNumber; 
     private String linuxPort;
     private String macPort;
@@ -64,6 +63,7 @@ public class gpsdump {
     private ObservableList <Gpsmodel> listFlights;   
     private String waypWriteReport = null;
     private boolean mDebug;
+    private String gpsdError;
     
 
     public gpsdump(String pNamePort, configProg currConfig, I18n pI18n)  {
@@ -139,10 +139,10 @@ public class gpsdump {
         return errorGpsDump;
     }    
 
-    public String getStrLog() {
-        return strLog;
+    public String getGpsdError() {
+        return gpsdError;
     }
-
+    
     public ObservableList<Gpsmodel> getListFlights() {
         return listFlights;
     }            
@@ -293,11 +293,11 @@ public class gpsdump {
                             break;
                         case 2 :
                             // Flymaster Old
-                            numberIGC = "/track="+String.valueOf(idFlight+1);    
+                            numberIGC = "/track="+String.valueOf(idFlight);    
                             break;    
                         case 3 :
                             // 6020 6030
-                            numberIGC = "/track="+String.valueOf(idFlight+1);   
+                            numberIGC = "/track="+String.valueOf(idFlight);   
                             break;
                         case 8: 
                             // 6015 
@@ -381,9 +381,6 @@ public class gpsdump {
                 String ligne = ""; 
                 if (res == 0) {
                     BufferedReader output = getOutput(p);                    
-//                    while ((ligne = output.readLine()) != null) {
-//                        sbLog.append(ligne).append(CF);
-//                    }
                     if (mDebug) {
                         mylogging.log(Level.INFO, "res = 0");
                     }
@@ -425,12 +422,14 @@ public class gpsdump {
             int resDown = getFlight(idGPS,idFlight);
             if (resDown == 0 && igcFile.exists()) {
                 // We want to check GPSDump communication
-                if (mDebug) mylogging.log(Level.INFO, strLog.toString());
+                if (mDebug) {
+                    String s = igcFile.getAbsolutePath()+" exist";
+                    mylogging.log(Level.INFO,s);
+                }
                 textio fread = new textio();                                    
                 res = fread.readTxt(igcFile);
             } else {
-                sbError = new StringBuilder("===== GPSDump Error =====\r\n");
-                sbError.append(strLog);
+                sbError = new StringBuilder("Exception in directFlight - resDown = ").append(String.valueOf(resDown));
                 mylogging.log(Level.SEVERE, sbError.toString());
             }
         } catch (Exception e) {
@@ -460,7 +459,7 @@ public class gpsdump {
                         linuxListFormatting(idGPS);
                         break;
                 }
-        } // if error strLog will be read;
+        } 
     }     
     
     /**
@@ -511,7 +510,7 @@ public class gpsdump {
                 sbError.append(listPFM.get(i)).append(CF);                
             }              
             System.out.println("Sb error "+sbError.toString());
-            strLog = sbError.toString();
+            gpsdError = sbError.toString();
         }        
     }
     
@@ -566,7 +565,7 @@ public class gpsdump {
                 sbError.append(listPFM.get(i)).append(CF);                
             }              
             System.out.println("Sb error "+sbError.toString());
-            strLog = sbError.toString();
+            gpsdError = sbError.toString();
         }         
     }
     
@@ -619,7 +618,7 @@ public class gpsdump {
                 sbError.append(listPFM.get(i)).append(CF);                
             }              
             System.out.println(sbError.toString());
-            strLog = sbError.toString();
+            gpsdError = sbError.toString();
         }                
     }
     
@@ -871,7 +870,7 @@ public class gpsdump {
             errorGpsDump = 1;
         }  
         
-        strLog = sbLog.toString();
+        gpsdError = sbLog.toString();
         return res;            
         
     } 
@@ -1023,8 +1022,9 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
                         break;                        
                 }
-                sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
-                System.out.println("Call : "+(java.util.Arrays.toString(arrayParam)));
+                if (mDebug) {
+                    mylogging.log(Level.INFO, java.util.Arrays.toString(arrayParam));
+                }
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -1032,16 +1032,16 @@ public class gpsdump {
                 String ligne = ""; 
                 if (res == 0) {
                     BufferedReader output = getOutput(p);                    
-                    while ((ligne = output.readLine()) != null) {
-                        sbLog.append(ligne).append(CF);
+                    if (mDebug) {
+                        mylogging.log(Level.INFO, "res = 0");
                     }
                 } else {
                     BufferedReader error = getError(p);
                     while ((ligne = error.readLine()) != null) {
                         sbLog.append(ligne).append(CF);
-                    }
-                }
-                strLog = sbLog.toString();               
+                    }                      
+                    mylogging.log(Level.SEVERE, sbLog.toString());
+                }             
             } else {
                 sbLog.append("Error 1201 ").append(CF);
                 res = 1201;
@@ -1051,11 +1051,11 @@ public class gpsdump {
             sbLog.append("Error 1 ").append(CF);
             res = 1;
             errorGpsDump = 1;
-        }  
+        } finally {
+            gpsdError = sbLog.toString();
+        } 
         
-        strLog = sbLog.toString();
-        return res;            
-        
+        return res;                    
     }    
 
     public int setOziWpt(int idGPS, String pPath, int gpsTypeName)  {   
@@ -1212,8 +1212,9 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
                         break;                        
                 }
-                sbLog.append("Call : ").append(java.util.Arrays.toString(arrayParam)).append(CF);
-                System.out.println("SetOzi : "+(java.util.Arrays.toString(arrayParam)));
+                if (mDebug) {
+                    mylogging.log(Level.INFO, java.util.Arrays.toString(arrayParam));
+                }
                 Process p = Runtime.getRuntime().exec(arrayParam);   
                 p.waitFor();
                 res = p.exitValue();  // 0 if all is OK  
@@ -1222,8 +1223,10 @@ public class gpsdump {
                     // even in case of error the returned code by GPSDump is 0
                     BufferedReader output = getOutput(p);                    
                     while ((ligne = output.readLine()) != null) {
-                        sbLog.append(ligne).append(CF);
                         sbRep.append(ligne).append(CF);
+                    }
+                    if (mDebug) {
+                        mylogging.log(Level.INFO, "res = 0");
                     }
                 } else {
                     BufferedReader error = getError(p);
@@ -1231,8 +1234,8 @@ public class gpsdump {
                         sbLog.append(ligne).append(CF);
                         sbRep.append(ligne).append(CF);
                     }
+                    mylogging.log(Level.SEVERE, sbLog.toString());
                 }
-                strLog = sbLog.toString();  
                 waypWriteReport = sbRep.toString();
             } else {
                 sbLog.append("Error 1201 ").append(CF);
@@ -1243,9 +1246,9 @@ public class gpsdump {
             sbLog.append("Error 1 ").append(CF);
             res = 1;
             errorGpsDump = 1;
-        }  
-        
-        strLog = sbLog.toString();
+        } finally {
+            gpsdError = sbLog.toString();
+        }
         return res;            
         
     }         
@@ -1281,7 +1284,6 @@ public class gpsdump {
             switch (codeRetour) {
                 case 0:
                     // test case
-                    System.out.println(strLog);
                     System.out.println("OK...");
                     break;
                 case 1:
@@ -1301,7 +1303,6 @@ public class gpsdump {
                     break;  
                 case 6:
                     // GPSViewController ask for one track with progress bar
-                    System.out.println(strLog);
                     String strIGC = null;
                     try {
                         textio fread = new textio();                                    
