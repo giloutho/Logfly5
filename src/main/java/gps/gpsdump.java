@@ -920,8 +920,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqcompeo";	// Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=flytec";
-                        break;
                     case LINUX :
                         sTypeGps = "-gc";
                         break;                        
@@ -968,8 +966,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=iqbasic";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
-                        break;
                     case LINUX :
                         sTypeGps = "-giq";
                         break;
@@ -1022,6 +1018,7 @@ public class gpsdump {
                         arrayParam =new String[]{pathGpsDump,sTypeGps, linuxPort, sAction};
                         break;                        
                 }
+                System.out.println(java.util.Arrays.toString(arrayParam));
                 if (mDebug) {
                     mylogging.log(Level.INFO, java.util.Arrays.toString(arrayParam));
                 }
@@ -1103,8 +1100,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqcompeo";	// Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=flytec";
-                        break;
                     case LINUX :
                         sTypeGps = "-gc";
                         break;                        
@@ -1151,8 +1146,6 @@ public class gpsdump {
                         sTypeGps = "/gps=iqbasic";	// IQ-Basic / Flytec 6015
                         break;
                     case MACOS :
-                        sTypeGps = "/gps=iqbasic";       // with Mac, same as Compeo/Compeo+/Galileo/Competino/Flytec 5020,5030,6030
-                        break;
                     case LINUX :
                         sTypeGps = "-giq";
                         break;
