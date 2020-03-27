@@ -338,7 +338,7 @@ public class GPSViewController {
         } else  {
             // Errror will be displayed in AfficheFlyList 
             resCom = 6;      
-            errorComMsg = gpsd.getStrLog();
+            errorComMsg = gpsd.getGpsdError();
         }        
     }
     
@@ -1036,7 +1036,7 @@ public class GPSViewController {
             }            
             if (gpsOK){                      
                    
-                if (mDebug) mylogging.log(Level.INFO, "gpsInsertion begin loop");
+                if (mDebug) mylogging.log(Level.INFO, "gpsInsertion begin loop for "+currGPS.toString());
                 Task<Object> worker = new Task<Object>()  {
                     
                     @Override
@@ -1088,7 +1088,7 @@ public class GPSViewController {
                                         switch (myConfig.getOS()) {
                                             case WINDOWS :
                                                 // Strangely, for Flymater Old, the first record has the index 0 so -> idx - 1
-                                                idxTable = idxTable - 1;
+                                            //    idxTable = idxTable - 1;
                                                 strTrack = gpsd.directFlight(2,idxTable);
                                                 break;
                                             case MACOS :                              
@@ -1717,9 +1717,8 @@ public class GPSViewController {
                         break;
                     case FlymOld :
                         switch (myConfig.getOS()) {
-                            case WINDOWS :
-                                // Strangely, for Flymater Old, the first record has the index 0 so -> idx - 1
-                                idx = tableImp.getSelectionModel().getSelectedIndex() - 1;
+                            case WINDOWS :                               
+                                idx = tableImp.getSelectionModel().getSelectedIndex();
                                 // 2 is id of Flymaster Old
                                 oneFlightWithGpsDump(2,idx);                                                        
                                 break;                               
