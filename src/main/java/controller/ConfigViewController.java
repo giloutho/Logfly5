@@ -123,7 +123,9 @@ public class ConfigViewController {
     @FXML
     private TextField txVoile;    
     @FXML
-    private ChoiceBox chbGPS;    
+    private ChoiceBox chbGPS;   
+    @FXML
+    private TextField txSerialGPS;
     @FXML
     private TextField txIntegration;    
     @FXML
@@ -358,6 +360,7 @@ public class ConfigViewController {
         txPilote.setText(myConfig.getDefaultPilote());
         txVoile.setText(myConfig.getDefaultVoile());
         iniChbGPS();
+        txSerialGPS.setText(myConfig.getLastSerialCom());
         txIntegration.setText(String.valueOf(myConfig.getIntegration()));
         txLimite.setText(String.valueOf(myConfig.getGpsLimit()));
         txMailPilote.setText(myConfig.getPiloteMail());
@@ -427,6 +430,7 @@ public class ConfigViewController {
             myConfig.setDefaultPilote(txPilote.getText());
             myConfig.setDefaultVoile(txVoile.getText());
             myConfig.setIdxGPS(chbGPS.getSelectionModel().getSelectedIndex()); 
+            myConfig.setLastSerialCom(txSerialGPS.getText());
             myConfig.setIntegration(Integer.parseInt(txIntegration.getText()));
             myConfig.setGpsLimit(Integer.parseInt(txLimite.getText()));
             myConfig.setPiloteMail(txMailPilote.getText());
