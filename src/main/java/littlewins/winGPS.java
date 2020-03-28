@@ -454,7 +454,10 @@ public class winGPS {
                 Pattern p6 = Pattern.compile("^/dev/ptmx.*");
                 for(String port: ports){
                     if(osType == SerialComPlatform.OS_MAC_OS_X) {
-                        // Pour éviter de lister 25000 ports inutilisables
+                        // On fait un tri sur /dev/cu.* pour éviter de lister 25000 ports inutilisables
+                        
+                        // problème du 6030 apparu avec deux ports dev/cu.usbserial et dev/cu.usbserial-1440
+                        // plantage si on utilise cu.usbserial alors que cela fonctionne avec cu.usbserial-1440
                         if (ports[idx].substring(0,8).equals("/dev/cu."))  {                 
                             portList.add(port);
                             if (lastSerialUsed.equals(port)) {
@@ -478,7 +481,7 @@ public class winGPS {
                     }
                     idx ++; 
                 }    
-                if (portList.size() > 0) {                  
+                if (portList.size() > 0) { 
                     cbSerial.getItems().clear();
                     cbSerial.setItems(portList);  
                     cbSerial.setVisible(true);
