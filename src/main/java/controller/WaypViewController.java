@@ -53,6 +53,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -215,6 +216,7 @@ public class WaypViewController {
         });        
         
         tablePoints.setItems(pointList); 
+        tablePoints.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         
         // We can't put buildContextMenu() here
         // because we need to intialize i18n before 
@@ -261,7 +263,7 @@ public class WaypViewController {
         MenuItem cmDelete = new MenuItem(i18n.tr("Delete"));
         cmDelete.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                deletePoint();
+                deleteSelectedPoints();
             }
         });
         tableContextMenu.getItems().add(cmDelete);     
@@ -1919,27 +1921,14 @@ public class WaypViewController {
         }
     }
     
-    private void deletePoint() {
-        int selectedIndex = tablePoints.getSelectionModel().getSelectedIndex();
-        if (selectedIndex >= 0) {            
-            pointRecord selectedPoint = tablePoints.getSelectionModel().getSelectedItem();            
-            tablePoints.getItems().remove(selectedIndex);
-            if (pointList.size() > 0) {
-                // Index position must be refreshed
-                int idx = 0;
-                for(pointRecord onePoint : pointList){  
-                    onePoint.setFIndex(idx);
-                    idx++;
-                }                    
-            } else {
-                defaultPos.setLatitudeDd(Double.parseDouble(selectedPoint.getFLat()));
-                defaultPos.setLongitudeDd(Double.parseDouble(selectedPoint.getFLong()));
-            }
-            displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");               
-            showMapPoints();
-        }        
+    private void deleteSelectedPoints() {
+        ObservableList<pointRecord> selPoints = tablePoints.getSelectionModel().getSelectedItems(); 
+        pointList.removeAll(selPoints);       
+        tablePoints.refresh();
+        tablePoints.getSelectionModel().clearSelection();
+        displayInfo(debStatusBar+String.valueOf(pointList.size())+" waypoints");               
+        showMapPoints();        
     }
-    
     private void disableInput() {
         tablePoints.setDisable(true);
         hbInput.setDisable(true);
