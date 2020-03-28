@@ -142,7 +142,9 @@ public class winBackup {
                             String newName = s[0]+".db"; 
                             // step 2 : file copy
                             Path srcPath = Paths.get(selectedFile.getAbsolutePath());
-                            Path dstPath = Paths.get(myConfig.getPathDb()+File.separator+newName);                        
+                            Path dstPath = Paths.get(myConfig.getPathDb()+File.separator+newName);
+                            // We close actual db
+                            myConfig.getDbConn().close();                            
                             Files.copy(srcPath, dstPath, StandardCopyOption.REPLACE_EXISTING);                          
                             // step 3 : change current log file
                             if (myConfig.dbSwitch(newName)) {
