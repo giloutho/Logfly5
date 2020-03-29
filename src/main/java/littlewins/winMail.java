@@ -280,6 +280,10 @@ public class winMail {
                 sbTxFile.append("------------------------------------------").append("\r\n");
                 sbTxFile.append("   ").append(myConfig.getOS().toString());
                 sbTxFile.append("   ").append(myConfig.getVersion()).append("\r\n");
+                sbTxFile.append("   ").append("PathW : ").append(myConfig.getPathW()).append("\r\n");
+                sbTxFile.append("   ").append("Path Db : ").append(myConfig.getPathDb()).append("\r\n");
+                sbTxFile.append("   ").append("IdxGPS : ").append(String.valueOf(myConfig.getIdxGPS())).append(" sur ").append(myConfig.getLastSerialCom());
+                sbTxFile.append(" Limite USB : ").append(String.valueOf(myConfig.getGpsLimit())).append("\r\n");
                 sbTxFile.append("------------------------------------------");
             }
             http.addFormField("msgtext", sbTxFile.toString());
