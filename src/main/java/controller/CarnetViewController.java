@@ -888,7 +888,6 @@ public class CarnetViewController  {
         MenuItem cmItemSup = new MenuItem(i18n.tr("Delete"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                //supprimeVol();
                 deleteSelectedFlights();
             }
         });
@@ -973,7 +972,7 @@ public class CarnetViewController  {
         MenuItem cmItemSup = new MenuItem(i18n.tr("Delete"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                supprimeVol();
+                deleteSelectedFlights();
             }
         });
         cm.getItems().add(cmItemSup);
