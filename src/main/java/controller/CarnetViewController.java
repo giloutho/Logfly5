@@ -474,36 +474,28 @@ public class CarnetViewController  {
         iniEventBar();     
     }
     
-    /**
-     * Delete a flight in the logbook
-     */
-    private void supprimeVol() {
+    private void deleteSelectedFlights() {
         PreparedStatement pstmt = null;
         
-        int selectedIndex = tableVols.getSelectionModel().getSelectedIndex();
-        if (selectedIndex >= 0) {
-            Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
-            dialogbox dConfirm = new dialogbox(i18n);
-            StringBuilder sbMsg = new StringBuilder(); 
-            sbMsg.append(selectedVol.getDate()).append(" ").append(i18n.tr("Duration")).append(" : ").append(selectedVol.getDuree());                 
-            if (dConfirm.YesNo(i18n.tr("Delete flight"), sbMsg.toString()))   {                
-                String sReq = "DELETE FROM Vol WHERE V_ID = ?";
-                try {
-                    pstmt = myConfig.getDbConn().prepareStatement(sReq);
-                    pstmt.setInt(1, Integer.valueOf(selectedVol.getIdVol()));
-                    pstmt.executeUpdate();    
-                    tableVols.getItems().remove(selectedIndex);
-                    pstmt.close();
-                } catch (Exception e) {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertError(e.getMessage());                                                           
-                }                                                
-            }                                 
-        } else {
-            // no flight selected
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(i18n.tr("A flight must be selected"));                       
-        }        
+        ObservableList<Carnet> selFlights = tableVols.getSelectionModel().getSelectedItems(); 
+        for (Carnet item : selFlights){   
+            String sReq = "DELETE FROM Vol WHERE V_ID = ?";
+            try {
+                pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                pstmt.setInt(1, Integer.valueOf(item.getIdVol()));
+                pstmt.executeUpdate();    
+                pstmt.close();
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getMessage());                                                           
+            }             
+        }
+        dataCarnet.removeAll(selFlights);             
+        tableVols.refresh();
+        tableVols.getSelectionModel().clearSelection();        
+        tableVols.getSelectionModel().select(0);
+        String selectedYear = (String) top_chbYear.getSelectionModel().getSelectedItem();
+        updateStatusBar(selectedYear);
     }
     
     /**
@@ -896,7 +888,8 @@ public class CarnetViewController  {
         MenuItem cmItemSup = new MenuItem(i18n.tr("Delete"));        
         cmItemSup.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                supprimeVol();
+                //supprimeVol();
+                deleteSelectedFlights();
             }
         });
         tableContextMenu.getItems().add(cmItemSup);
