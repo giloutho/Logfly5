@@ -285,7 +285,6 @@ public class SitesViewController {
                 }    
                 tableSites.setItems(sortedData);
                 tableSites.refresh();
-                System.out.println("J'ai rafraichi "+iDebug);
                 if (tableSites.getItems().size() > 0) {
                     tableSites.getSelectionModel().select(0);                    
                 }                
@@ -517,43 +516,27 @@ public class SitesViewController {
         }        
     }    
     
-    /**
-     * Delete a site in database
-     */
-    private void siteDelete() {
+    private void deleteSelectedSites() {
         PreparedStatement pstmt = null;
         
-        int selectedIndex = tableSites.getSelectionModel().getSelectedIndex();
-        if (selectedIndex >= 0) {
-            Sitemodel selSite = tableSites.getSelectionModel().getSelectedItem();
-            dialogbox dConfirm = new dialogbox(i18n);
-            StringBuilder sbMsg = new StringBuilder();             
-            sbMsg.append(selSite.getNom());
-            sbMsg.append(" ");
-            sbMsg.append(selSite.getVille());                        
-            if (dConfirm.YesNo(i18n.tr("Delete site"), sbMsg.toString()))   {                
-                String sReq = "DELETE FROM Site WHERE S_ID = ?";
-                try {
-                    pstmt = myConfig.getDbConn().prepareStatement(sReq);
-                    pstmt.setInt(1, Integer.valueOf(selSite.getIdSite()));
-                    pstmt.executeUpdate();    
-                    // With filtered list tableSites.getItems().remove(selectedIndex) does'nt work
-                    int visibleIndex = tableSites.getSelectionModel().getSelectedIndex();
-                    // Source index of master data.
-                    int sourceIndex = sortedData.getSourceIndexFor(dataSites, visibleIndex);
-                    dataSites.remove(sourceIndex);
-                    pstmt.close();
-                } catch (Exception e) {
-                    alertbox aError = new alertbox(myConfig.getLocale());
-                    aError.alertError(e.getMessage());                                                           
-                }                                                
-            }                                 
-        } else {
-            // no site selected
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(i18n.tr("No site selected"));                       
-        }        
-    }    
+        ObservableList<Sitemodel> selSites = tableSites.getSelectionModel().getSelectedItems(); 
+        for (Sitemodel item : selSites){   
+            String sReq = "DELETE FROM Site WHERE S_ID = ?";
+            try {
+                pstmt = myConfig.getDbConn().prepareStatement(sReq);
+                pstmt.setInt(1, Integer.valueOf(item.getIdSite()));
+                pstmt.executeUpdate();    
+                pstmt.close();
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getMessage());                                                           
+            }             
+        }
+        dataSites.removeAll(selSites);             
+        tableSites.refresh();
+        tableSites.getSelectionModel().clearSelection();        
+        tableSites.getSelectionModel().select(0);
+    }            
     
     private void siteFormAdd() {
         try {                     
@@ -820,7 +803,7 @@ public class SitesViewController {
         MenuItem cmItem2 = new MenuItem(i18n.tr("Delete"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                siteDelete();
+                deleteSelectedSites();
             }            
         });
         cm.getItems().add(cmItem2);
@@ -896,7 +879,7 @@ public class SitesViewController {
         MenuItem cmItem2 = new MenuItem(i18n.tr("Delete"));        
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                siteDelete();
+                deleteSelectedSites();
             }            
         });
         tableContextMenu.getItems().add(cmItem2);
