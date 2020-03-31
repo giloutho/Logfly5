@@ -7,10 +7,12 @@
 package controller;
 
 import dialogues.alertbox;
+import dialogues.dialogbox;
 import geoutils.position;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -405,7 +407,16 @@ public class CoordController {
             } else {
                txDMSLongMer.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));   
             }
-        });                       
+        });
+        
+        txBalise.textProperty().addListener((observable, oldValue, newValue) -> {                        
+            if (!validBalise(newValue)) {                
+                txBalise.setStyle("-fx-control-inner-background: #"+colorBadValue.toString().toString().substring(2));
+                txBalise.requestFocus();    
+            } else {
+               txBalise.setStyle("-fx-control-inner-background: #"+colorGoodValue.toString().substring(2));   
+            }
+        });
     }    
     
     /**
@@ -445,30 +456,43 @@ public class CoordController {
                 
         updateProgress = false;
     }    
+    
+    private boolean checkBalise() {
+        if (!validBalise(txBalise.getText())) {
+            alertbox al = new alertbox(myConfig.getLocale());
+            al.alertError(i18n.tr("Input allowed: letters, numbers, underscore"));
+            return false;
+        } else 
+            return true;
+    }
          
     
     @FXML
     private void handleManual() {
         int res = 0;
         
-        try {
-            if (txDesc.getText().trim() != null && !txDesc.getText().trim().equals("")) {
-                ba.setNomLong(txDesc.getText().trim());
-                if (txBalise.getText().trim() != null && !txBalise.getText().trim().equals("")) {
-                    ba.setNomCourt(txBalise.getText().trim()); 
-                    res = 1;                                                         
+        if (checkBalise()) {
+            try {
+                if (txDesc.getText().trim() != null && !txDesc.getText().trim().equals("")) {
+                    ba.setNomLong(txDesc.getText().trim());
+                    if (txBalise.getText().trim() != null && !txBalise.getText().trim().equals("")) {
+                        ba.setNomCourt(txBalise.getText().trim()); 
+                        res = 1;                                                         
+                    }            
                 }            
-            }            
-        } catch (Exception e) {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.getMessage());
-            mylogging.log(Level.SEVERE, sbError.toString());             
-        } finally {      
-            waypController.returnCoordForm(res, ba);   
-            dialogStage.close();              
-        }      
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.getMessage());
+                mylogging.log(Level.SEVERE, sbError.toString());             
+            } finally {      
+                waypController.returnCoordForm(res, ba);   
+                dialogStage.close();              
+            }  
+        } else {
+            txBalise.requestFocus();
+        }
     }
     
     /**
@@ -478,33 +502,37 @@ public class CoordController {
     private void handleCoord() {
        int res = 0;
         
-        try {
-            if (txDesc.getText().trim() != null && !txDesc.getText().trim().equals("")) {
-                ba.setNomLong(txDesc.getText().trim());
-                if (txBalise.getText().trim() != null && !txBalise.getText().trim().equals("")) {
-                    ba.setNomCourt(txBalise.getText().trim()); 
-                    res = 1;
-                    double dLat = Double.parseDouble(txLat.getText());
-                    double dLong = Double.parseDouble(txLong.getText());
-                    if (dLat != 0) {
-                        ba.setLatitude(txLat.getText());
-                        if (dLong != 0) {
-                            ba.setLongitude(txLong.getText());   
-                            res = 2; 
-                        }
-                    }                                           
+        if (checkBalise()) {
+            try {
+                if (txDesc.getText().trim() != null && !txDesc.getText().trim().equals("")) {
+                    ba.setNomLong(txDesc.getText().trim());
+                    if (txBalise.getText().trim() != null && !txBalise.getText().trim().equals("")) {
+                        ba.setNomCourt(txBalise.getText().trim()); 
+                        res = 1;
+                        double dLat = Double.parseDouble(txLat.getText());
+                        double dLong = Double.parseDouble(txLong.getText());
+                        if (dLat != 0) {
+                            ba.setLatitude(txLat.getText());
+                            if (dLong != 0) {
+                                ba.setLongitude(txLong.getText());   
+                                res = 2; 
+                            }
+                        }                                           
+                    }            
                 }            
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append(e.getMessage());
+                mylogging.log(Level.SEVERE, sbError.toString());                    
+            } finally {      
+                waypController.returnCoordForm(res, ba);   
+                dialogStage.close();              
             }            
-        } catch (Exception e) {
-            alertbox aError = new alertbox(myConfig.getLocale());
-            aError.alertError(e.getClass().getName() + ": " + e.getMessage());  
-            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
-            sbError.append("\r\n").append(e.getMessage());
-            mylogging.log(Level.SEVERE, sbError.toString());                    
-        } finally {      
-            waypController.returnCoordForm(res, ba);   
-            dialogStage.close();              
-        }            
+        } else {
+            txBalise.requestFocus();
+        }
     }
         
     /**
@@ -575,6 +603,12 @@ public class CoordController {
         this.dialogStage.showAndWait();
     }    
 
+    private boolean validBalise(String sText) {
+        Pattern p = Pattern.compile("^[a-zA-Z0-9_]+$");
+        Matcher matcher = p .matcher(sText);
+        return matcher.find();
+    }   
+    
     /**
      * Translate labels of the window
      */
