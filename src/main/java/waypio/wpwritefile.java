@@ -428,7 +428,7 @@ public class wpwritefile {
     private String encodeCompAlt(String sAlt) {
         String res = "";
         decimalFormatSymbols.setDecimalSeparator('.');       
-        df2 = new DecimalFormat("#####.000000", decimalFormatSymbols); 
+        df2 = new DecimalFormat("####0.000000", decimalFormatSymbols); 
         double dAlt = Double.parseDouble(sAlt);
         res = df2.format(dAlt);       
         
