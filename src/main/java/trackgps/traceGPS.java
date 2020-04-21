@@ -122,6 +122,7 @@ public class traceGPS {
     private String idDatabase;
     private int bestGain;
     private boolean elevationOK;
+    private String cutFilePath = null;
     
     
     public List<pointIGC> Tb_Tot_Points = new ArrayList<pointIGC>();
@@ -136,7 +137,7 @@ public class traceGPS {
     private I18n i18n; 
     
     /**
-     * Track is a file
+     * Track is a file, called by TraceViewController
      * @param pFile 
      * @param pType
      * @param pPath
@@ -586,8 +587,12 @@ public class traceGPS {
     public boolean isElevationOK() {
         return elevationOK;
     }
-                
-                                   
+
+    public String getCutFilePath() {
+        return cutFilePath;
+    }
+                       
+    
     /**
      * if there is a non numeric character, Integer.parseInt triggers an exception
      * exception is managed with a default value
@@ -624,8 +629,7 @@ public class traceGPS {
     /**
      * decoding all track points or only header and firstpoint (boolean avecPoints)
      * This choice of the first point is not relevant : GPS fix can be bad when first point is recorded
-     */
-    
+     */    
     private void decode_IGC()
     {
         Boolean Valid_Trace;
@@ -1034,9 +1038,16 @@ public class traceGPS {
                                    
     }
     
+    public void newDecodage() {
+        Tb_Tot_Points = new ArrayList<pointIGC>();
+        Tb_Good_Points = new ArrayList<pointIGC>();
+        Tb_Calcul = new ArrayList<pointIGC>();
+        Score_Tb_Balises = new ArrayList<Integer>();
+        decode_IGC();
+    }
+    
     
     /**
-
      * @param lastB
      * @param iniDateVol 
      */
@@ -1641,7 +1652,7 @@ public class traceGPS {
                         // Reduce number of points for scoring
                         fillTb_Calcul();
 
-                        encodeIGC();
+                        encodeIGC(Tb_Good_Points);
 
                         Decodage = true;
                     }                
@@ -1734,8 +1745,9 @@ public class traceGPS {
         
         return res;
     }
-    
-    public void encodeIGC() {
+
+
+    private void encodeIGC(List<pointIGC> exportPoint) {
         StringBuilder sbIGC = new StringBuilder();
         String igc_Lat;
         String igc_Long;
@@ -1745,7 +1757,7 @@ public class traceGPS {
 
         // Header
         sbIGC.append("AXLF").append(CrLf);
-        DateTimeFormatter fHDTE = DateTimeFormatter.ofPattern("YYMMdd");
+        DateTimeFormatter fHDTE = DateTimeFormatter.ofPattern("ddMMYY");
         sbIGC.append("HFDTE").append(Date_Vol.format(fHDTE)).append(CrLf);  
         // By default, we put the pilot name and glider name stored in settings
         // for external tracks we overhide it...
@@ -1757,24 +1769,24 @@ public class traceGPS {
         sbIGC.append("HOCCLCOMPETITION CLASS:").append(CrLf); 
         sbIGC.append("HOSITSite:").append(CrLf); 
         
-        if (Tb_Good_Points.get(0).dHeure != null) {
-            majParamUTC(Tb_Good_Points.get(0).dHeure);
+        if (exportPoint.get(0).dHeure != null) {
+            majParamUTC(exportPoint.get(0).dHeure);
             decUTC = (long) (utcOffset*3600);
             dtfTime = DateTimeFormatter.ofPattern("HHmmss");
         } else {
             decUTC = 999999;
         }
                 
-        for (int i = 0; i < Tb_Good_Points.size(); i++) {                      
-            igc_Lat = Lat_Dd_IGC(Tb_Good_Points.get(i).Latitude);
-            igc_Long = Long_Dd_IGC(Tb_Good_Points.get(i).Longitude);
+        for (int i = 0; i < exportPoint.size(); i++) {                      
+            igc_Lat = Lat_Dd_IGC(exportPoint.get(i).Latitude);
+            igc_Long = Long_Dd_IGC(exportPoint.get(i).Longitude);
             if (decUTC == 999999) {
                 igc_Time = "000000";
             } else {
-                igc_Time = Tb_Good_Points.get(i).dHeure.minusSeconds(decUTC).format(dtfTime);   // UTC offset is removed
+                igc_Time = exportPoint.get(i).dHeure.minusSeconds(decUTC).format(dtfTime);   // UTC offset is removed
             }
             sbIGC.append("B").append(igc_Time).append(igc_Lat).append(igc_Long);
-            sbIGC.append("A00000").append(String.format("%05d",Tb_Good_Points.get(i).AltiGPS)).append(CrLf);            
+            sbIGC.append("A00000").append(String.format("%05d",exportPoint.get(i).AltiGPS)).append(CrLf);            
         }
         
         // footer
@@ -1790,39 +1802,85 @@ public class traceGPS {
      * Cet export est nécessaire pour l'upload de la trace à destination de VisuGPS
      * @return 
      */
-    public String exportVisu()  {
-        String res = null;
+    public void exportNewIgc()  {
         
-        LocalDateTime ldt = LocalDateTime.now();
-        String sLdt = ldt.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss_"));    
-        // On veut un nombre aleatoire entre 1 et 1000
-        // Min + (int)(Math.random() * ((Max - Min) + 1))
-        // glané sur http://stackoverflow.com/questions/363681/generating-random-integers-in-a-specific-range
-        int aleaNumber = 1 + (int)(Math.random() * ((1000 - 1) + 1));
-        StringBuilder suggName = new StringBuilder();
-        suggName.append(sLdt).append(String.format("%d",aleaNumber));
-        
-        try{
+        try {            
+            // to be sur for a new name
+            //String fileName = myConfig.getPathW()+File.separator+suggestShortName()+".igc";            
+            // The new name is made up of the old one with the addition of "cut"
+            String newPath = new String(); 
+            String oldPath = pathFichier;
+            for (int i = oldPath.length() - 1; i >= 0; i--) {
+                if (oldPath.charAt(i) == '.') {
+                    newPath = oldPath.substring(0 , i)+"_cut.igc";
+                }
+            }            
+            File newIGC = new File(newPath);
 
-    	    //create a temp file
-    	    File temp = File.createTempFile("tempfile", ".igc");
-
-	    //write it
-    	    BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+    	    BufferedWriter bw = new BufferedWriter(new FileWriter(newIGC));
     	    bw.write(FicIGC);
     	    bw.close();  
 
-            res = temp.getAbsolutePath();
-            System.out.println(res);
+            cutFilePath = newIGC.getAbsolutePath();
 
-    	}catch(IOException e){
+    	} catch(IOException e){
+            sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+            sbError.append("\r\n").append(e.getMessage());
+            mylogging.log(Level.SEVERE, sbError.toString());    	    
+    	}
+
+    }
+    
+    public boolean exportOldIgc() {
+        
+        boolean res = false;
+        try {
+            String fileName = suggestShortName()+"_bkp.igc";
+            File newIGC = new File(myConfig.getPathW()+File.separator+fileName);
+
+    	    BufferedWriter bw = new BufferedWriter(new FileWriter(newIGC));
+    	    bw.write(FicIGC);
+    	    bw.close();  
+            res = true;
+
+    	} catch(IOException e) {
             sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
             sbError.append("\r\n").append(e.getMessage());
             mylogging.log(Level.SEVERE, sbError.toString());    	    
     	}
         
+        return res;                
+    }
+    
+    public boolean cutPoints(int iStart, int iEnd, boolean isDb) {
+        boolean res = false;
+        // map_visu reduced points
+        int step;
+        int totPoints = Tb_Good_Points.size();
+        if (totPoints > 1500)  {
+            step = totPoints / 1500;
+        }  else  {
+            step = 1;
+        }               
+        iStart = iStart * step;
+        iEnd = iEnd * step;
+        try {        
+            if (isDb) exportOldIgc();
+            List<pointIGC> cutPoints = Tb_Good_Points.subList(iStart, iEnd);
+            // ficIGC is overwrited
+            encodeIGC(cutPoints);
+            if (isDb) {
+                
+            } else {
+                exportNewIgc();
+            }           
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        
         return res;
     }
+    
     
     /**
      * April 6, 2019, will mark a special rollover of the GPS week number, or WNRO, that helps receivers tell time more precisely.  
