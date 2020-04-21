@@ -205,6 +205,7 @@
     var map = null;
     var mousemarker = null;
     var LayerBal = new L.LayerGroup();
+    var letClick = false;
 
     var tabPoints = [];
 %tabPoints%
@@ -266,7 +267,15 @@
         $("#graphe").highcharts().reflow();
         $('.leaflet-control-layers-selector')[10].click();
         $('.leaflet-control-layers-selector')[11].click();
-    }    
+    } 
+
+    function enableClick() {
+        letClick = true;
+    } 
+   
+    function disableClick() {
+        letClick = false;
+    } 
 
     // Affiche un segment de la trace
     function displaySegment(lat1,long1,lat2,long2) {
@@ -428,6 +437,7 @@
 
     L.marker(tabPoints[tabPoints.length-1],{icon: EndIcon}).addTo(map);
 
+    var lastPoint = -1;
     $(function () {
 
         $('#graphe').highcharts({
@@ -459,9 +469,13 @@
                                 }
                             },
                             click: function () {
-                                // On peut préciser un niveau de zoom
-                                // On peut utiliser map.setView
-                                map.panTo(tabPoints[this.x]);
+                                if (letClick) {
+                                    chartClick(this.x);
+                                } else {
+                                    // On peut préciser un niveau de zoom
+                                    // On peut utiliser map.setView
+                                    map.panTo(tabPoints[this.x]);
+                                }
                             }
                         }
                     },
@@ -516,6 +530,44 @@
             ]
         });
     });
+
+    function chartClick(x) {
+        var chart = $("#graphe").highcharts();
+        if (lastPoint < 0) {
+            chart.xAxis[0].removePlotBand('range');
+            chart.xAxis[0].removePlotLine('first');
+            chart.xAxis[0].removePlotLine('last');
+            chart.xAxis[0].addPlotLine({
+                id: 'first',
+                value: x,
+                color: 'red',
+                width: 2,
+                zIndex: 100
+            });
+            lastPoint = x;
+        } else {
+            chart.xAxis[0].removePlotBand('range');
+            chart.xAxis[0].addPlotBand({
+                id: 'range',
+                color: 'green',
+                from: lastPoint,
+                to: x
+            })
+            if (x < lastPoint)
+                document.title = "Range;"+x+";"+lastPoint;
+            else
+                document.title = "Range;"+lastPoint+";"+x;
+            chart.xAxis[0].removePlotLine('last');
+            chart.xAxis[0].addPlotLine({
+                id: 'last',
+                value: x,
+                color: 'red',
+                width: 2,
+                zIndex: 100
+            });
+            lastPoint = -1;
+        }  
+    }
 
     var toggle = L.easyButton({
         states: [{
