@@ -807,47 +807,51 @@ public class map_visu {
         jsLegende.append("                content +='").append(i18n.tr("Points")).append(" : ").append(String.valueOf(traceVisu.getNbPoints())).append("<br>';").append(RC);
         jsLegende.append("                content +='").append(i18n.tr("Aberrants")).append(" : ").append(String.valueOf(traceVisu.getNbPointsAberr())).append("<br>';").append(RC);
         jsLegende.append("                content +='").append(i18n.tr("Signature")).append(" : ").append(traceVisu.getSignature()).append("<br>';").append(RC);       
-        jsLegende.append("                break").append(RC);
-        // end of Case 3
-        jsLegende.append("        }").append(RC);
+        if (traceVisu.isScored()) {
+            genScoreLegende();
+        } else {
+            jsLegende.append("                break").append(RC);
+            // end of Case 3
+            jsLegende.append("        }").append(RC);            
+        }
     }
     
     /**
      * HTML generation of socre info panel
      */
     private void genScoreLegende() {
-        jsLegende.append("        legend._div.innerHTML += '").append("<hr />';").append(RC);
+        jsLegende.append("                content +='").append("<hr />';").append(RC);
         switch (legLeague) {
             case "FR" :
-                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("French contest")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content +='<b>").append(i18n.tr("French contest")).append("</b><br>';").append(RC);    
                 break;
             case "CH" :
-                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("Swiss contest")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content +='<b>").append(i18n.tr("Swiss contest")).append("</b><br>';").append(RC);    
                 break;
             case "XC":
-                jsLegende.append("        legend._div.innerHTML += '<b>").append(i18n.tr("World XContest")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content +='<b>").append(i18n.tr("World XContest")).append("</b><br>';").append(RC);    
                 break;
             default:
-                jsLegende.append("        legend._div.innerHTML += '<b>").append(legLeague).append("</b><br>';").append(RC);    
+                jsLegende.append("                content +='<b>").append(legLeague).append("</b><br>';").append(RC);    
         }
         switch (legShape) {
             case "FAI Triangle" :
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("FAI triangle")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(i18n.tr("FAI triangle")).append("</b><br>';").append(RC);    
                 break;
             case "Free flight 2 wpt" :
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 2 points")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 2 points")).append("</b><br>';").append(RC);    
                 break;
             case "Flat Triangle":
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flat triangle")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(i18n.tr("Flat triangle")).append("</b><br>';").append(RC);    
                 break;
              case "Free flight 1 wpt" :
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 1 point")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 1 point")).append("</b><br>';").append(RC);    
                 break;
             case "Free flight 3 wpt":
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 3 points")).append("</b><br>';").append(RC);    
+                jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(i18n.tr("Flight 3 points")).append("</b><br>';").append(RC);    
                 break;
             default:
-                jsLegende.append("        legend._div.innerHTML += '<b>&nbsp;&nbsp;").append(legShape).append("</b><br>';").append(RC);    
+                jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(legShape).append("</b><br>';").append(RC);    
         }
         // Formatting distance is of the form 21.89160109032659
         int iLength = legPoints.length();
@@ -857,7 +861,7 @@ public class map_visu {
         } else {
             legFormate = legDistance;
         }
-        jsLegende.append("        legend._div.innerHTML += '&nbsp;&nbsp;&nbsp;&nbsp;").append(legFormate).append(" km").append("<br>';").append(RC);    
+        jsLegende.append("                content += '&nbsp;&nbsp;&nbsp;&nbsp;").append(legFormate).append(" km").append("<br>';").append(RC);    
         // Formatting score is of the form 9.89160109032659
         iLength = legPoints.length();        
         if (iLength > legPoints.indexOf(".")+3) {
@@ -865,7 +869,10 @@ public class map_visu {
         } else {
             legFormate = legPoints;
         }
-        jsLegende.append("        legend._div.innerHTML += '&nbsp;&nbsp;&nbsp;&nbsp;").append(legFormate).append(" pts").append("<br>';").append(RC);    
+        jsLegende.append("                content += '&nbsp;&nbsp;&nbsp;&nbsp;").append(legFormate).append(" pts").append("<br>';").append(RC);
+        jsLegende.append("                break").append(RC);
+        // end of Case 3
+        jsLegende.append("        }").append(RC);        
     }
     
     /**
@@ -977,7 +984,6 @@ public class map_visu {
                 } else {
                     chronoHTML = thermiqHTML;
                 }                    
-                genLegende(traceVisu);
                 genMinMax(traceVisu);
                 map_HTML_NoScore = chronoHTML;
                 String endHTML = chronoHTML;
@@ -997,11 +1003,11 @@ public class map_visu {
                         String scoreLayer = "    map.addLayer(ScoreMarkers);";
                         String scoreLayerHTML =scoreOptHTML.replace("//%AddScoreMarkers%", scoreLayer);
                         endHTML = scoreLayerHTML;
-                        genScoreLegende();
                     } else {
                         endHTML = balisesHTML;
                     }  
                 }
+                genLegende(traceVisu);
                 if (traceVisu.getAirPoints() > 0 && traceVisu.getGeoJsonAirsp() != null) {
                     if (genAirSpaceData(traceVisu)) {
                         String beginAirHTML = endHTML;
