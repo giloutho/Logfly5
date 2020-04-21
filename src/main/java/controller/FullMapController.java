@@ -10,16 +10,19 @@ import Logfly.Main;
 import dialogues.alertbox;
 import dialogues.dialogbox;
 import geoutils.geonominatim;
+import igc.pointIGC;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -31,16 +34,17 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javax.imageio.ImageIO;
 import leaflet.map_visu;
 import littlewins.winComment;
 import littlewins.winFileChoose;
 import littlewins.winMail;
 import littlewins.winSaveXcp;
-import littlewins.winTrackFile;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -85,7 +89,7 @@ public class FullMapController {
     private Button btCheck;    
     
     @FXML
-    private Button btHtml;    
+    private Button btCut;    
 
     @FXML
     private Button btMail;    
@@ -115,12 +119,19 @@ public class FullMapController {
     private ObservableList <String> allLeagues;
     private StringBuilder sbError;
     private File snapFile;
-
+    private WebEngine webEngine;
+    // Flag for track changes
+    private boolean changedSuccess = false;
+    
     @FXML
     private void initialize() {
         
-      //  WebEngine engine = viewMap.getEngine();
-       // engine.load("http://www.example.org");   
+        webEngine = viewMap.getEngine();
+        webEngine.setJavaScriptEnabled(true);
+        webEngine.titleProperty().addListener( (observable, oldValue, newValue) -> {
+            if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
+                cutAction(newValue);
+        });       
                    
     }    
     
@@ -128,7 +139,7 @@ public class FullMapController {
         this.myConfig = mainConfig;
         this.carnetHTML = pHTML;
         this.idxDb = idxCarnet;
-        viewMap.getEngine().loadContent(carnetHTML,"text/html");
+        webEngine.loadContent(carnetHTML,"text/html");
         i18n = myConfig.getI18n();
         winTraduction();
         iniChbLeague();
@@ -137,22 +148,22 @@ public class FullMapController {
     @FXML
     private void toggleInfos(ActionEvent event) {
         if (dispLegend) {
-            viewMap.getEngine().executeScript("hideLegend()"); 
+            webEngine.executeScript("hideLegend()"); 
             dispLegend = false;
         } else {
-            viewMap.getEngine().executeScript("fillLegend()"); 
+            webEngine.executeScript("fillLegend()"); 
             dispLegend = true;            
         }
     }    
     
     @FXML
     private void showMeasure(ActionEvent event) {
-        viewMap.getEngine().executeScript("startMeasure()");
+        webEngine.executeScript("startMeasure()");
     }    
     
     @FXML
     private void showChrono(ActionEvent event) {
-        viewMap.getEngine().executeScript("openNav()()");
+        webEngine.executeScript("openNav()()");
     }    
     
     @FXML 
@@ -207,7 +218,7 @@ public class FullMapController {
         currScore.start(mapTrace,chbLeague.getSelectionModel().getSelectedIndex());
     }
     
-    private void updateDb()  {
+    private void updateDbLeague()  {
         StringBuilder sReq = new StringBuilder();
         sReq.append("UPDATE Vol SET V_League='").append(String.valueOf(mapTrace.getScore_Idx_League())).append("'");
         sReq.append(",V_Score='").append(mapTrace.getScore_JSON()).append("'");
@@ -222,6 +233,50 @@ public class FullMapController {
             aError.alertError(e.getMessage()); 
         } 
     }
+        
+    private void cutAction(String sPoints) {
+        DateTimeFormatter dtfHHmmss = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String[] tbPoints = sPoints.split(";");
+        if (tbPoints.length > 2) {
+            try {
+                int iStart = Integer.parseInt(tbPoints[1]);
+                int iEnd = Integer.parseInt(tbPoints[2]);
+                pointIGC pStart = mapTrace.Tb_Good_Points.get(iStart);
+                pointIGC pEnd = mapTrace.Tb_Good_Points.get(iEnd);
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.append(i18n.tr("The track will start at")).append("\n");
+                sbMsg.append(i18n.tr("   Point")).append(" ").append(tbPoints[1]).append("  ").append(pStart.dHeure.format(dtfHHmmss));
+                sbMsg.append("  ").append(String.format("%3.2f",pStart.Vitesse)).append("km/h").append("\n");
+                sbMsg.append(i18n.tr("and will end at")).append("\n");
+                sbMsg.append(i18n.tr("   Point")).append(" ").append(tbPoints[2]).append("  ").append(pEnd.dHeure.format(dtfHHmmss));
+                sbMsg.append("  ").append(String.format("%3.2f",pEnd.Vitesse)).append("km/h").append("\n");
+                dialogbox dlb = new dialogbox(i18n);
+                if (dlb.YesNo("", sbMsg.toString())) {
+                    boolean isDb = false;
+                    if (idxDb > 0) {
+                        // idxDb > O the track came from logbook
+                        // a backup will be created on work folder
+                        isDb = true;
+                    }
+                    mapTrace.cutPoints(iStart, iEnd, isDb);
+                    mapTrace.newDecodage();
+                    if (mapTrace.isDecodage()) {
+                        map_visu newFullMap = new map_visu(mapTrace, myConfig);
+                        if (newFullMap.isMap_OK()) {   
+                            carnetHTML = newFullMap.getMap_HTML();
+                            webEngine.loadContent(carnetHTML,"text/html");
+                        }
+                        changedSuccess = true;
+                    }
+                }                
+            } catch (Exception e) {
+                sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                sbError.append("\r\n").append("sPoints = ").append(sPoints);
+                sbError.append("\r\n").append(e.toString());
+                mylogging.log(Level.SEVERE, sbError.toString());                                                
+            }
+        }
+    }  
     
     public void scoreReturn() {
         // If scoring failed, error message was sent by Scoring class
@@ -231,7 +286,7 @@ public class FullMapController {
                 if (visuFullMap.isMap_OK()) {
                     btXcplanner.setVisible(true);
                     carnetHTML = visuFullMap.getMap_HTML();
-                    viewMap.getEngine().loadContent(carnetHTML,"text/html");
+                    webEngine.loadContent(carnetHTML,"text/html");
                 }
                 
             } catch (Exception e) {
@@ -242,9 +297,19 @@ public class FullMapController {
     }    
     
     @FXML
-    private void recHTML(ActionEvent event) {
+    private void cutRequest(ActionEvent event) {
         
-        winTrackFile myTrace = new winTrackFile(carnetHTML);        
+        StringBuilder sbMsg = new StringBuilder();
+//        Pour éliminer les points inutiles, 
+//        sélectionner par un clic sur la courbe d'altitude, 
+//        le point de départ et le point de fin de la zone à conserver.
+//        Une copie de l'original est généré dans le dossier de travail.        
+        sbMsg.append(i18n.tr("To remove the useless points, select by a click on the altitude line "));
+        sbMsg.append(i18n.tr("the starting point and the end point of the zone to be kept")).append("\n");
+        sbMsg.append(i18n.tr("A copy of the original track will be generated in the working folder")).append("\n");
+        alertbox aInfo = new alertbox(myConfig.getLocale());
+        aInfo.alertInfo(sbMsg.toString());      
+        webEngine.executeScript("enableClick()");
         
     }    
     
@@ -434,7 +499,7 @@ public class FullMapController {
                             map_visu visuFullMap = new map_visu(mapTrace, myConfig);
                             if (visuFullMap.isMap_OK()) {                                                                  
                                 carnetHTML = visuFullMap.getMap_HTML();                                             
-                                viewMap.getEngine().loadContent(carnetHTML,"text/html");
+                                webEngine.loadContent(carnetHTML,"text/html");
                             }
 
                         } catch (Exception e) {      
@@ -484,11 +549,10 @@ public class FullMapController {
         
     }    
     
-    @FXML
-    private void closeMap(ActionEvent event) {
+    private void closeMap()  {
         if (idxDb != -1) {
             if (firstLeagueIdx != newLeagueIdx && firstLeagueIdx == -1) {
-                updateDb();
+                updateDbLeague();
             } else if (firstLeagueIdx != newLeagueIdx)  {
                 String stFirstLeague = allLeagues.get(firstLeagueIdx);
                 String stNewLeague = allLeagues.get(newLeagueIdx);
@@ -496,10 +560,24 @@ public class FullMapController {
                 StringBuilder sbMsg = new StringBuilder(); 
                 sbMsg.append(i18n.tr("Update Score")).append(" : ").append(stFirstLeague).append(" -> ").append(stNewLeague);
                 if (dConfirm.YesNo(i18n.tr("Scoring"), sbMsg.toString())) { 
-                    updateDb();
+                    updateDbLeague();
                 }
             }
+            if (changedSuccess) {
+                carnetController.trackChanged(mapTrace);
+            }
+        } else {
+            // external track
+            if (changedSuccess) {
+                // track was modified              
+                extController.trackChanged(mapTrace.getCutFilePath());
+            }
         }
+    }
+    
+    @FXML
+    private void handleClose(ActionEvent event) {
+        closeMap();
         // get a handle to the stage
         Stage stage = (Stage) btClose.getScene().getWindow();
         stage.close();  
@@ -516,6 +594,11 @@ public class FullMapController {
      */
     public void setMapStage(Stage pMapStage) {
         this.mapStage = pMapStage;
+        this.mapStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+          public void handle(WindowEvent we) {
+              closeMap();
+          }
+        });          
     }    
     
     /**
@@ -626,7 +709,10 @@ public class FullMapController {
         scToolTip.setStyle(myConfig.getDecoToolTip());
         scToolTip.setText(i18n.tr("Score evaluation"));        
         btScoring.setTooltip(scToolTip);          
-        btHtml.setText("HTML");
+        btCut.setText(i18n.tr("Modify"));
+        Tooltip cutToolTip = new Tooltip();
+        cutToolTip.setStyle(myConfig.getDecoToolTip());
+        cutToolTip.setText(i18n.tr("Adjust track structure"));        
         btMail.setText(i18n.tr("Mail"));
         btCheck.setText(i18n.tr("Checking"));
         Tooltip checkToolTip = new Tooltip();
