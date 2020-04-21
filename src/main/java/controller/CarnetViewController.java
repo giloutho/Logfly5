@@ -2058,6 +2058,44 @@ public class CarnetViewController  {
     }
     
     /**
+     * During FullMap display, the track was modified
+     * changes must be put in logbook
+     * @param mapTrace 
+     */
+    public void trackChanged(traceGPS mapTrace) {
+        if (mapTrace.isDecodage()) {
+            StringBuilder sReq = new StringBuilder();
+            sReq.append("UPDATE Vol SET V_Date = ?, V_Duree = ?, V_sDuree = ?, V_LatDeco = ?, V_LongDeco = ?, V_AltDeco = ?, V_IGC = ?");
+            sReq.append(" WHERE V_ID = ?");
+            try {
+                Carnet selectedVol = tableVols.getSelectionModel().getSelectedItem();
+                PreparedStatement pstmt = myConfig.getDbConn().prepareStatement(sReq.toString());
+                pstmt.setString(1, mapTrace.getDate_Vol_SQL());
+                pstmt.setLong(2, mapTrace.getDuree_Vol());
+                pstmt.setString(3,mapTrace.getsDuree_Vol());
+                pstmt.setDouble(4,mapTrace.getLatDeco());
+                pstmt.setDouble(5,mapTrace.getLongDeco());
+                pstmt.setInt(6,mapTrace.getAlt_Deco_GPS());
+                pstmt.setString(7,mapTrace.getFicIGC());    
+                pstmt.setInt(8, Integer.valueOf(selectedVol.getIdVol()));
+                pstmt.executeUpdate(); 
+                pstmt.close();      
+                decodeVolCarnet(selectedVol.getIdVol());
+                selectedVol.setDate(currTrace.getDate_Vol_SQL());
+                selectedVol.setHeure(currTrace.getDate_Vol_SQL());
+                selectedVol.setDuree(String.valueOf(currTrace.getDuree_Vol()));
+                selectedVol.setLatDeco(String.valueOf(currTrace.getLatDeco())); 
+                selectedVol.setLongDeco(String.valueOf(currTrace.getLongDeco()));                     
+                selectedVol.setAltiDeco(String.valueOf(currTrace.getAlt_Deco_GPS()));                         
+                tableVols.refresh();
+            } catch (Exception e) {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertError(e.getMessage());             
+            }                 
+        }         
+    }    
+    
+    /**
      * Answer of scoring class
      * @param pRetour 
      */
