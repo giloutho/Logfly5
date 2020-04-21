@@ -3,6 +3,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
@@ -28,10 +30,6 @@
                <font>
                   <Font size="12.0" />
                </font></Button>
-            <Button fx:id="btHtml" layoutX="140.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#recHTML" prefHeight="27.0" prefWidth="70.0" text="fHTML">
-               <font>
-                  <Font size="12.0" />
-               </font></Button>
             <Button fx:id="btMail" layoutX="214.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#sendMail" prefHeight="27.0" prefWidth="70.0" text="fMail">
                <font>
                   <Font size="12.0" />
@@ -45,11 +43,30 @@
                <font>
                   <Font size="11.0" />
                </font></Button>
-            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="90.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="90.0" text="fVérification">
+            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="100.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="100.0" text="fVérification">
                <font>
                   <Font size="11.0" />
-               </font></Button>
-            <Button fx:id="btClose" layoutX="278.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#closeMap" prefHeight="27.0" prefWidth="70.0" text="fClose">
+               </font>
+               <graphic>
+                  <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/avion.png" />
+                     </image>
+                  </ImageView>
+               </graphic></Button>
+            <Button fx:id="btCut" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#cutRequest" prefHeight="27.0" prefWidth="100.0" text="fModify">
+               <font>
+                  <Font size="12.0" />
+               </font>
+               <graphic>
+                  <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/ciseaux.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="btClose" layoutX="278.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#handleClose" prefHeight="27.0" prefWidth="70.0" text="fClose">
                <font>
                   <Font size="12.0" />
                </font></Button>
