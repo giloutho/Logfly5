@@ -38,9 +38,11 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import java.time.format.DateTimeFormatter;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import java.util.logging.Level;
+import javafx.stage.WindowEvent;
 import littlewins.winFileChoose;
 import littlewins.winFileSave;
 import org.xnap.commons.i18n.I18n;
@@ -166,6 +168,21 @@ public class TraceViewController {
             aError.alertError(ex.getClass().getName() + ": " + ex.getMessage());                
         }             
     }
+    
+    public void trackChanged(String filePath) {
+        this.mainApp.rootLayoutController.updateMsgBar("Gagné Toto...", true, 50); 
+        // check changes
+        //DateTimeFormatter dtfHHmmss = DateTimeFormatter.ofPattern("HH:mm:ss");
+        //System.out.println(extTrace.Tb_Good_Points.get(0).dHeure.format(dtfHHmmss));
+        map_pm visuMap = new map_pm(extTrace, true, myConfig.getIdxMap(),i18n); 
+        StringBuilder sbInfo = new StringBuilder();
+        sbInfo.append(filePath).append("    ");
+        sbInfo.append(String.valueOf(extTrace.getNbPoints())).append(" ").append(i18n.tr("points"));
+        this.mainApp.rootLayoutController.updateMsgBar(sbInfo.toString(), true, 50);              
+        if (visuMap.isMap_OK()) {
+            mapViewer.getEngine().loadContent(visuMap.getMap_HTML());
+        }        
+    }    
        
     
     /**
@@ -240,7 +257,7 @@ public class TraceViewController {
                     AnchorPane page = (AnchorPane) loader.load();
                     Stage fullMap = new Stage();            
                     fullMap.initModality(Modality.WINDOW_MODAL);       
-                    fullMap.initOwner(mainApp.getPrimaryStage());
+                    fullMap.initOwner(mainApp.getPrimaryStage());                   
                     Scene scene = null;
                     if (myConfig.getOS() == osType.LINUX) {
                         // With this code for Linux, this is not OK with Win and Mac 
@@ -267,7 +284,7 @@ public class TraceViewController {
                 }
             }
         }
-    }        
+    }   
     
     /**
      * VisuGPS need a track with http url
