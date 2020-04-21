@@ -540,12 +540,30 @@ public class gpsdump {
                         } 
                         break;
                     case 8 :
-                        // sample      1; 19.07.19; 07:37:24;        2; 0
-                        Pattern pTime8 = Pattern.compile("\\d{2}:\\d{2}:\\d{2};");
-                        Matcher mTime8 = pTime8.matcher(ligPFM);                    
-                        if (mTime8.find()) {
-                            sTime = mTime8.group(0).substring(0,8);                       
-                        } 
+                        // Sample
+                        // 6015, SW 1.3.07, S/N 1068
+                        // Track list:
+                        // 1; 19.07.19; 07:37:24;        2; 00:18:05;  
+                        // 2; 19.07.14; 07:52:45;        2; 00:11:33;  
+                        // Date is inverted
+                        String goodDate = sDate.substring(6,8)+sDate.substring(2,5)+"."+sDate.substring(0,3);
+                        sDate = goodDate;
+                        Pattern p8 = Pattern.compile("\\d{2}:\\d{2}:\\d{2}{2}");
+                        Matcher m8 = p8.matcher(ligPFM);  
+                        // on est obligé de se le faire comme ça en java8
+                        // https://stackoverflow.com/questions/7378451/how-can-i-count-the-number-of-matches-for-a-regex
+                        int count = 0;
+                        while(m8.find()) {
+                            count++;
+                            switch (count) {
+                                case 1 :
+                                    sTime = m8.group(0);
+                                    break;
+                                case 2 :
+                                    sDur = m8.group(0);
+                                    break;
+                            }       
+                        }                        
                         break;                        
 
                 }
