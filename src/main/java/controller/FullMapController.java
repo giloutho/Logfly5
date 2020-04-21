@@ -18,6 +18,9 @@ import java.sql.PreparedStatement;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -26,10 +29,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.WritableImage;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -41,10 +45,12 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.imageio.ImageIO;
 import leaflet.map_visu;
+import littlewins.winBazile;
 import littlewins.winComment;
 import littlewins.winFileChoose;
 import littlewins.winMail;
 import littlewins.winSaveXcp;
+import org.controlsfx.dialog.CommandLinksDialog;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -210,7 +216,7 @@ public class FullMapController {
     
     @FXML
     private void handleCheck(ActionEvent event) {
-        airChecking();
+        airFileChoose();
     }
     
     private void askScoring() {
@@ -468,59 +474,86 @@ public class FullMapController {
         }
     }
     
-    private void airChecking() {
+    private void airFileChoose() {
+        List<CommandLinksDialog.CommandLinksButtonType> links = new ArrayList<>(); 
+        CommandLinksDialog dg;
+        Optional<ButtonType> result;
+        String resDg;
+        links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("Local file"),i18n.tr("Using an OpenAir file on the computer"),true));
+        links.add(new CommandLinksDialog.CommandLinksButtonType(i18n.tr("pascal.bazile.free.fr"),i18n.tr("Download the latest update on website"),false));        
+        dg = new CommandLinksDialog(links);
+        dg.setTitle(i18n.tr("OpenAir files"));
+        result = dg.showAndWait();
+        resDg = result.get().getText(); 
+        if (resDg != null && resDg != "") { 
+            System.out.println(resDg);
+            if (resDg.contains("bazile")) {
+                winBazile myWin = new winBazile(myConfig,i18n);            
+                File bazileFile = myWin.getDownFile();
+                if (bazileFile != null && bazileFile.exists()) {      
+                    airChecking(bazileFile);
+                }                
+            } else {
+                winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OACheck, myConfig.getPathOpenAir());  
+                File selectedFile = wf.getSelectedFile();  
+                if (selectedFile != null && selectedFile.exists()) {  
+                    airChecking(selectedFile);
+                }
+            }
+        }
+                      
+    }
+    
+    private void airChecking(File selectedFile) {
         int res = -1;
         
-        winFileChoose wf = new winFileChoose(myConfig, i18n, fileType.OACheck, myConfig.getPathOpenAir());  
-        File selectedFile = wf.getSelectedFile();
-        if (selectedFile != null && selectedFile.exists()) {  
-            dialogbox dg = new dialogbox(i18n);
-            boolean withoutE = dg.YesNo(i18n.tr("Do you want to exclude airspaces of type E"), "");
-            checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile, withoutE);
-            if (trackCheck.isAirDbLoad()) {               
-                if (mapTrace.isDecodage()) {  
-                    res = trackCheck.prepareCheck(mapTrace);
-                    if (res == 1) {
-                        int badPoints = trackCheck.checkPoints();
-                        String s = trackCheck.reportPoints();
-                        final Clipboard clipboard = Clipboard.getSystemClipboard();
-                        final ClipboardContent content = new ClipboardContent();
-                        content.putString(s);            
-                        clipboard.setContent(content);                            
-                        winComment myComment = new winComment(s,i18n); 
-                        if (badPoints > 0) {
-                            mapTrace.setAirPoints(badPoints);
-                            mapTrace.setGeoJsonAirsp(trackCheck.getViGeoJson());
-                            mapTrace.setGeoJsonBadPts(trackCheck.getPtGeoJson());                        
-                        } else {
-                             mapTrace.setGeoJsonAirsp(trackCheck.getCheckedGeoJson());      
-                        }
-                        try {
-                            map_visu visuFullMap = new map_visu(mapTrace, myConfig);
-                            if (visuFullMap.isMap_OK()) {                                                                  
-                                carnetHTML = visuFullMap.getMap_HTML();                                             
-                                webEngine.loadContent(carnetHTML,"text/html");
-                            }
-
-                        } catch (Exception e) {      
-                            alertbox aError = new alertbox(myConfig.getLocale());
-                            aError.alertError(e.getMessage());                 
-                        }                                                                                
+        dialogbox dg = new dialogbox(i18n);
+        boolean withoutE = dg.YesNo(i18n.tr("Do you want to exclude airspaces of type E"), "");
+        checkAirspace trackCheck = new checkAirspace(myConfig, selectedFile, withoutE);
+        if (trackCheck.isAirDbLoad()) {               
+            if (mapTrace.isDecodage()) {  
+                res = trackCheck.prepareCheck(mapTrace);
+                if (res == 1) {
+                    int badPoints = trackCheck.checkPoints();
+                    String s = trackCheck.reportPoints();
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(s);            
+                    clipboard.setContent(content);                            
+                    winComment myComment = new winComment(s,i18n); 
+                    if (badPoints > 0) {
+                        mapTrace.setAirPoints(badPoints);
+                        mapTrace.setGeoJsonAirsp(trackCheck.getViGeoJson());
+                        mapTrace.setGeoJsonBadPts(trackCheck.getPtGeoJson());                        
                     } else {
-                        if (res == 0) {
-                            alertbox aInfo = new alertbox(myConfig.getLocale());
-                            aInfo.alertInfo(i18n.tr("No airspaces to check"));
-                        } else {
-                            alertbox aError = new alertbox(myConfig.getLocale());
-                            aError.alertNumError(res);
+                         mapTrace.setGeoJsonAirsp(trackCheck.getCheckedGeoJson());      
+                    }
+                    try {
+                        map_visu visuFullMap = new map_visu(mapTrace, myConfig);
+                        if (visuFullMap.isMap_OK()) {                                                                  
+                            carnetHTML = visuFullMap.getMap_HTML();                                             
+                            webEngine.loadContent(carnetHTML,"text/html");
                         }
+
+                    } catch (Exception e) {      
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertError(e.getMessage());                 
+                    }                                                                                
+                } else {
+                    if (res == 0) {
+                        alertbox aInfo = new alertbox(myConfig.getLocale());
+                        aInfo.alertInfo(i18n.tr("No airspaces to check"));
+                    } else {
+                        alertbox aError = new alertbox(myConfig.getLocale());
+                        aError.alertNumError(res);
                     }
                 }
-            } else {
-                alertbox aError = new alertbox(myConfig.getLocale());
-                aError.alertNumError(res);
-            }                          
-        }        
+            }
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertNumError(res);
+        }                          
+                
     }
     
     private String askLocationName(double dLat, double dLong) {
