@@ -99,7 +99,10 @@ public class simpleGPX {
             List<Track> lTrack = mygpx.getTracks();
             nbTracks = lTrack.size();
             for (int i = 0; i < lTrack.size(); i++) {
-                String trackName = lTrack.get(i).getName().get().toString();
+                String trackName = null;
+                if (lTrack.get(i).getName().isPresent()) {
+                    trackName = lTrack.get(i).getName().get().toString();
+                }               
                 if (trackName == null || trackName.equals("")) {
                     trackName = "Track "+String.valueOf(i);
                 }
@@ -114,7 +117,11 @@ public class simpleGPX {
                         double currLong = lWayp.get(k).getLongitude().doubleValue();
                         currPoint.setLatitudeDd(currLat);
                         currPoint.setLongitudeDd(currLong);
-                        currPoint.setAltitude(lWayp.get(k).getElevation().get().intValue());
+                        if (lWayp.get(k).getElevation().isPresent()) {
+                            currPoint.setAltitude(lWayp.get(k).getElevation().get().intValue());
+                        } else {
+                            currPoint.setAltitude(0);
+                        }
                         Tb_Track.add(currPoint);
                         nbWp++; 
                         if (currLat> latMaxi) latMaxi = currLat;
