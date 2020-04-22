@@ -766,6 +766,7 @@ public class ConfigViewController {
         } else {
             // No db file that match the db stored in settings
             // Choicebox is opened
+            chbCarnet.requestFocus();
             chbCarnet.show();
         }
         chbCarnet.setOnAction((event) -> {
