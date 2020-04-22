@@ -251,10 +251,10 @@ public class FullMapController {
                 pointIGC pEnd = mapTrace.Tb_Good_Points.get(iEnd);
                 StringBuilder sbMsg = new StringBuilder();
                 sbMsg.append(i18n.tr("The track will start at")).append("\n");
-                sbMsg.append(i18n.tr("   Point")).append(" ").append(tbPoints[1]).append("  ").append(pStart.dHeure.format(dtfHHmmss));
+                sbMsg.append("   ").append(i18n.tr("Point")).append(" ").append(tbPoints[1]).append("  ").append(pStart.dHeure.format(dtfHHmmss));
                 sbMsg.append("  ").append(String.format("%3.2f",pStart.Vitesse)).append("km/h").append("\n");
                 sbMsg.append(i18n.tr("and will end at")).append("\n");
-                sbMsg.append(i18n.tr("   Point")).append(" ").append(tbPoints[2]).append("  ").append(pEnd.dHeure.format(dtfHHmmss));
+                sbMsg.append("   ").append(i18n.tr("Point")).append(" ").append(tbPoints[2]).append("  ").append(pEnd.dHeure.format(dtfHHmmss));
                 sbMsg.append("  ").append(String.format("%3.2f",pEnd.Vitesse)).append("km/h").append("\n");
                 dialogbox dlb = new dialogbox(i18n);
                 if (dlb.YesNo("", sbMsg.toString())) {
@@ -310,7 +310,7 @@ public class FullMapController {
 //        sélectionner par un clic sur la courbe d'altitude, 
 //        le point de départ et le point de fin de la zone à conserver.
 //        Une copie de l'original est généré dans le dossier de travail.        
-        sbMsg.append(i18n.tr("To remove the useless points, select by a click on the altitude line "));
+        sbMsg.append(i18n.tr("To remove the useless points, select by a click on the altitude line")).append(" ");
         sbMsg.append(i18n.tr("the starting point and the end point of the zone to be kept")).append("\n");
         sbMsg.append(i18n.tr("A copy of the original track will be generated in the working folder")).append("\n");
         alertbox aInfo = new alertbox(myConfig.getLocale());
