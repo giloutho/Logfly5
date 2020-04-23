@@ -201,11 +201,15 @@ public class ManualViewController  {
             alertbox aError = new alertbox(myConfig.getLocale());
             aError.alertInfo(i18n.tr("Date and time unchanged"));             
         } else {
+            int currEditMode = editMode;
             if (checkFields()) {
                 editMode = 0;
                 dbUpdate();
-                clearFields();
-                btDuplicate.setVisible(false);
+            } 
+            if (currEditMode == 1) {
+                 exitController();
+            } else {
+                clearFields();  
             }            
         }
            
@@ -528,26 +532,6 @@ public class ManualViewController  {
         winTraduction();
         fillCbGlider();
         rootController.updateMsgBar("", false,50); 
-//        if (pModeEdit == 1) {
-//            if (!dbRead()) {
-//                alertbox aError = new alertbox(myConfig.getLocale());
-//                StringBuilder sbMsg = new StringBuilder();
-//                sbMsg.append(i18n.tr("Site not found")).append(" - ").append("Unable to edit");
-//                aError.alertInfo(sbMsg.toString()); 
-//                exitController();
-//            } else {
-//                btDuplicate.setVisible(true);
-//                // Refresh menu option
-//                rootController.switchMenu(4);
-//            }
-//        } else {
-//            btDuplicate.setVisible(false);
-//        } 
-       // txComment.setText("Ah que voila..");
-        System.out.println("editComment inside setMyConfig(1) : "+editComment);
-        editComment = "Ah que voila";
-        System.out.println("editComment inside setMyConfig(2) : "+editComment);
-        txComment.setText(editComment);
         iniScreeen();
     }    
     
