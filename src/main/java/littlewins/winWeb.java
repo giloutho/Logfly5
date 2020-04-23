@@ -40,7 +40,7 @@ public class winWeb {
         StackPane root = new StackPane();
         root.getChildren().add(wv);
 
-        Scene scene = new Scene(root, 1000, 650);
+        Scene scene = new Scene(root, 1200, 700);
        
         subStage.setScene(scene);
         subStage.show();
