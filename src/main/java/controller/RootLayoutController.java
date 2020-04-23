@@ -455,7 +455,11 @@ public class RootLayoutController {
         MenuItem cmItem5 = new MenuItem(i18n.tr("Translation"));        
         cmItem5.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-                winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=trad:tradinprog");
+                if (myConfig.getLocale() == java.util.Locale.FRENCH) {
+                    winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=trad:traduction");
+                } else {
+                    winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=en:trad:traduction"); 
+                }
             }
         });
         cm.getItems().add(cmItem5);         
