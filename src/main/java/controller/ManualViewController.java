@@ -115,6 +115,8 @@ public class ManualViewController  {
     private String modStatusMsg;    
     private String initialDate;
     
+    private String editComment;
+    
     @FXML
     private void initialize() {    
         pickDate.setOnAction(event -> {
@@ -215,9 +217,12 @@ public class ManualViewController  {
         // by default datePicker.getValue gives yyyy-mm-dd. 
         // Ok for db insertion... Pour une date il faudrait LocalDate date = pickDate.getValue();        
         if (checkFields()) {
-            dbUpdate();            
-            editMode = 0;   // Force for a new record
-            clearFields();                            
+            dbUpdate();                                 
+        }
+        if (editMode == 1) {
+             exitController();
+        } else {
+            clearFields();  
         }
     }    
     
@@ -340,6 +345,8 @@ public class ManualViewController  {
                 txSite.setText(siteName);
                 txAlt.setText(rs.getString("V_AltDeco"));
                 txComment.setText(rs.getString("V_Commentaire"));  
+                editComment = rs.getString("V_Commentaire");
+                System.out.println("editComment inside dbread : "+editComment);
                 // Site record 
                 String sReqSite = "SELECT * FROM Site WHERE S_Nom = ?";
                 pstmtSite = myConfig.getDbConn().prepareStatement(sReqSite);                      
@@ -520,23 +527,46 @@ public class ManualViewController  {
         i18n = myConfig.getI18n();
         winTraduction();
         fillCbGlider();
-        rootController.updateMsgBar("", false,50);      
-        if (pModeEdit == 1) {
-            if (!dbRead()) {
+        rootController.updateMsgBar("", false,50); 
+//        if (pModeEdit == 1) {
+//            if (!dbRead()) {
+//                alertbox aError = new alertbox(myConfig.getLocale());
+//                StringBuilder sbMsg = new StringBuilder();
+//                sbMsg.append(i18n.tr("Site not found")).append(" - ").append("Unable to edit");
+//                aError.alertInfo(sbMsg.toString()); 
+//                exitController();
+//            } else {
+//                btDuplicate.setVisible(true);
+//                // Refresh menu option
+//                rootController.switchMenu(4);
+//            }
+//        } else {
+//            btDuplicate.setVisible(false);
+//        } 
+       // txComment.setText("Ah que voila..");
+        System.out.println("editComment inside setMyConfig(1) : "+editComment);
+        editComment = "Ah que voila";
+        System.out.println("editComment inside setMyConfig(2) : "+editComment);
+        txComment.setText(editComment);
+        iniScreeen();
+    }    
+    
+    private void iniScreeen() {
+        if (editMode == 0) {
+            btDuplicate.setVisible(false);
+        } else {
+            if (dbRead()) {                
+                btDuplicate.setVisible(true);
+                btOk.setText(i18n.tr("Modify"));
+            } else {
                 alertbox aError = new alertbox(myConfig.getLocale());
                 StringBuilder sbMsg = new StringBuilder();
                 sbMsg.append(i18n.tr("Site not found")).append(" - ").append("Unable to edit");
                 aError.alertInfo(sbMsg.toString()); 
-                exitController();
-            } else {
-                btDuplicate.setVisible(true);
-                // Refresh menu option
-                rootController.switchMenu(4);
+                exitController();                
             }
-        } else {
-            btDuplicate.setVisible(false);
         }
-    }    
+    }
     
    /**
     * Translate labels of the window
