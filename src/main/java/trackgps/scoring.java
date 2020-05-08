@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 import javafx.concurrent.Task;
 import controller.CarnetViewController;
 import controller.FullMapController;
@@ -144,8 +145,25 @@ public class scoring {
                 if (pointsOK)  {
                     // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
                     // the author has serious doubts : ok only if program run correctly or crashes
-                    Process p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), scoreType});
-                    //Process p = Runtime.getRuntime().exec(pathModPoints);           
+                    //Process p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), scoreType});
+                    //Process p = Runtime.getRuntime().exec(pathModPoints);
+
+
+                    // scoreType can be like this:
+                    //  "USER Free3pt freeFlight 3 1"
+                    //  "USER FlatTrg flat pct 0.2 penalize 1.2"
+                    //  "USER FaiTrg fai pct 0.2 penalize 1.4"
+                    //  "USER Leonardo flat pct 0.2 penalize 1.75 fai pct 0.2 penalize 2 freeFlight 3 1.5"
+                    // We have to parse it correctly
+                    StringTokenizer st = new StringTokenizer(scoreType);
+                    String[] cmdarray = new String[3 + st.countTokens()];
+                    cmdarray[0] = pathModPoints;
+                    cmdarray[1] = tempf.getFileAbsPath();
+                    cmdarray[2] = optFile.getAbsolutePath();
+                    for (int i = 0; st.hasMoreTokens(); i++)
+                        cmdarray[3 + i] = st.nextToken();
+                    Process p = Runtime.getRuntime().exec(cmdarray);
+
                     BufferedReader error = getError(p);
                     String ligne = "";     
                     StringBuilder sbError = new StringBuilder();
@@ -362,6 +380,18 @@ public class scoring {
             case "SKX": 
                 res = 13;
                 break;  
+            case "Free3pt":
+                res = 14;
+                break;
+            case "FlatTrg":
+                res = 15;
+                break;
+            case "FaiTrg":
+                res = 16;
+                break;
+            case "Leonardo":
+                res = 17;
+                break;
             default:
                 res = 0;
         }                
@@ -414,6 +444,18 @@ public class scoring {
             case 13:
                 res = "SKX";                 
                 break;  
+            case 14:  // Free flight 3pt scoring
+                res = "USER Free3pt freeFlight 3 1";
+                break;
+            case 15: // Flat triangle scoring
+                res = "USER FlatTrg flat pct 0.2 penalize 1.2";
+                break;
+            case 16: //  FAI triangle scoring
+                res = "USER FaiTrg fai pct 0.2 penalize 1.4";
+                break;
+            case 17: //  "Leonardo scoring":
+                res = "USER Leonardo flat pct 0.2 penalize 1.75 fai pct 0.2 penalize 2 freeFlight 3 1.5";
+                break;
             default:
                 res = "FR";
         }                

@@ -35,7 +35,11 @@ public class listLeague {
         League_List.add("NEX");
         League_List.add("SK");
         League_List.add("SKX");
-        League_List.add("XC");
+        //League_List.add("XC");  // ? This is a dublicate. See above ln. 26
+        League_List.add("Free 3pt");
+        League_List.add("Flat Trg");
+        League_List.add("FAI Trg");
+        League_List.add("Leonardo");
         
         return League_List;
         
