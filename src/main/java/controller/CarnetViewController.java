@@ -1523,7 +1523,10 @@ public class CarnetViewController  {
                     if (sameDay == 0) {
                         nbVol++;
                         totTime = totTime+rs.getLong("V_Duree");
-                        mgIGC.extractBRec(rs.getString("V_IGC"));
+                        if (nbVol == 1)
+                            mgIGC.extractFirst(rs.getString("V_IGC"));
+                        else
+                            mgIGC.extractBRec(rs.getString("V_IGC"));
                         String dbImage =rs.getString("V_Photos");
                         if (dbImage != null && !dbImage.isEmpty() && !dbImage.equals("null")) {
                             sImage = dbImage;
