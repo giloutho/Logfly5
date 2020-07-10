@@ -54,6 +54,8 @@ public class configProg {
     private  int mainHeight;          // Main window height App.Main_Height = 681                       
     private  String urlLogflyIGC;     // App.ServerURL
     private  String urlVisu;          // App.VisuURL
+    private String urlFlyXC = "https://flyxc.app/?track=";
+    private String  oldUrlVisu = "http://www.victorb.fr/visugps/visugps.html?track=";    // deprecated url
     private  String urlLogfly;        // App.urlSite  url du site de base de Logfly
     private  String urlIcones;        // App.urlIcones Recup url des icônes utilisées dans les cartes Google    
     private  String mailPass;         // App.MailPass     
@@ -811,7 +813,8 @@ public class configProg {
                         urlLogflyIGC = line;    // App.ServerURL
                         break;
                     case 16 :
-                        urlVisu = line;    // App.VisuURL
+                        // urlVisu = line;    // App.VisuURL deprecated, Logfly 4 used VisuGPS
+                        urlVisu = urlFlyXC;
                         break;
                     case 17 :
                         urlLogfly = line;    // App.urlSite  logfly base url 
@@ -1034,7 +1037,7 @@ public class configProg {
                 mainWidth = 1102;  
                 mainHeight = 650;          
                 urlLogflyIGC = "http://www.logfly.org/Visu/";     
-                urlVisu = "http://www.victorb.fr/visugps/visugps.html?track=";          
+                urlVisu = urlFlyXC;       
                 urlLogfly = "http://www.logfly.org";       
                 urlIcones = "http://www.logfly.org/download/gmap/"; 
                 mailPass = "";
@@ -1267,6 +1270,9 @@ public class configProg {
             mainHeight = 650;           
         urlLogflyIGC = prop.getProperty("urllogflyigc");
         urlVisu = prop.getProperty("urlvisu");
+        // VisuGPS is now deprecated
+        if (urlVisu.contains("visugps")) urlVisu = urlFlyXC;
+            
         urlLogfly = prop.getProperty("urllogfly");
         urlIcones = prop.getProperty("urlicones");
         mailPass = prop.getProperty("mailpass");
