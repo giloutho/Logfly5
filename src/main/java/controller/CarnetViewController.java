@@ -375,11 +375,16 @@ public class CarnetViewController  {
         top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
             new EventHandler<MouseEvent>() {
                 @Override public void handle(MouseEvent e) { 
-                    if (myConfig.isVisuGPSinNav()) {
-                        runVisuGPS(true);
-                    } else {
-                        clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
-                    }
+//                    Old code with choice between webviewer and default navigator
+//                    In Java 8, webviewer is not able to display FlyXC
+//                    We display by default navigator
+//                    we keep the code for new versions of Java
+//                    if (myConfig.isVisuGPSinNav()) {
+//                        runVisuGPS(true);
+//                    } else {
+//                        clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
+//                    }
+                      runVisuGPS(true);
                 }
         });         
     }
@@ -1736,7 +1741,8 @@ public class CarnetViewController  {
     }    
     
      /**
-     * VisuGPS is a powerful webservice for gps track display
+     * VisuGPS was a powerful webservice for gps track display
+     * it was replaced by FlyXc, we keep old name Visu to run FlyXC
      * the track must be an http url
      * runVisuGPS upload the track with a special php script in a server
      * This script upload the track and delete old tracks     
