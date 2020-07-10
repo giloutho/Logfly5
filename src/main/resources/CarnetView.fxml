@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
+<AnchorPane id="AnchorPane" prefWidth="880.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.CarnetViewController">
    <children>
       <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -45,7 +45,7 @@
                         </Button>
                         <ImageView fx:id="top_Visu_Menu" fitHeight="25.0" fitWidth="32.0" layoutX="694.0" layoutY="39.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@images/Visu_GPS_5.png" />
+                              <Image url="@images/FlyXC.png" />
                            </image>
                            <HBox.margin>
                               <Insets left="2.0" right="2.0" top="12.0" />
