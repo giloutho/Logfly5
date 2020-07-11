@@ -808,7 +808,7 @@ public class map_visu {
         jsLegende.append("                content +='").append(i18n.tr("Aberrants")).append(" : ").append(String.valueOf(traceVisu.getNbPointsAberr())).append("<br>';").append(RC);
         jsLegende.append("                content +='").append(i18n.tr("Signature")).append(" : ").append(traceVisu.getSignature()).append("<br>';").append(RC);       
         if (traceVisu.isScored()) {
-            genScoreLegende();
+            genScoreLegende(traceVisu.getDuree_Vol());
         } else {
             jsLegende.append("                break").append(RC);
             // end of Case 3
@@ -819,7 +819,7 @@ public class map_visu {
     /**
      * HTML generation of socre info panel
      */
-    private void genScoreLegende() {
+    private void genScoreLegende(Long lDureeVol) {
         jsLegende.append("                content +='").append("<hr />';").append(RC);
         switch (legLeague) {
             case "FR" :
@@ -853,6 +853,23 @@ public class map_visu {
             default:
                 jsLegende.append("                content += '<b>&nbsp;&nbsp;").append(legShape).append("</b><br>';").append(RC);    
         }
+        // Compute multiplier and speed
+        String sCoeff;
+        String sSpeed;
+        try {
+            double dPoints = Double.valueOf(legPoints);
+            double dDist = Double.valueOf(legDistance);
+            double coeff = dPoints / dDist;
+            sCoeff = String.format("%1.1f" , coeff) ;
+            double speed = (dDist / lDureeVol) * 3600;     // lDureeVol -> duration in seconds
+            sSpeed = String.format("%3.1f" , speed) ;
+        } catch (Exception e) {
+            sCoeff = null;
+            sSpeed = null;            
+        }
+        if (sCoeff != null) {
+            jsLegende.append("                content += '&nbsp;&nbsp;&nbsp;&nbsp;").append(i18n.tr("Mult")).append(" ").append(sCoeff).append("<br>';").append(RC);   
+        }
         // Formatting distance is of the form 21.89160109032659
         int iLength = legPoints.length();
         String legFormate = null;
@@ -870,6 +887,9 @@ public class map_visu {
             legFormate = legPoints;
         }
         jsLegende.append("                content += '&nbsp;&nbsp;&nbsp;&nbsp;").append(legFormate).append(" pts").append("<br>';").append(RC);
+        if (sSpeed != null) {
+            jsLegende.append("                content += '&nbsp;&nbsp;&nbsp;&nbsp;").append(i18n.tr("Speed")).append(" ").append(sSpeed).append(" ").append("km/h").append("<br>';").append(RC);
+        }        
         jsLegende.append("                break").append(RC);
         // end of Case 3
         jsLegende.append("        }").append(RC);        
