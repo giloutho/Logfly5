@@ -102,7 +102,7 @@ public class scoring {
         return new BufferedReader(new InputStreamReader(p.getErrorStream()));
     }
     
-    public int runScoring(traceGPS evalTrace, String scoreType) {
+    private int runScoring(traceGPS evalTrace, String scoreType) {
         int res = -1; 
         String pathModPoints = "";
         boolean pointsOK = false;
@@ -112,7 +112,7 @@ public class scoring {
             int creaFile = tempf.creaIgcForCalcul(evalTrace, "tpoints.igc");
             if (creaFile == 0)  {
                 File optFile = systemio.tempacess.getAppFile("Logfly", "tpoints.opt");
-                if (optFile.exists())  optFile.delete();
+                if (optFile.exists())  optFile.delete();                               
 
                 String executionPath = System.getProperty("user.dir");
                 /* First code
@@ -144,7 +144,13 @@ public class scoring {
                 if (pointsOK)  {
                     // http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
                     // the author has serious doubts : ok only if program run correctly or crashes
-                    Process p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), scoreType});
+                    Process p;
+                    if (scoreType.equals("FR")) {
+                        // Special case of french contest
+                        p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), "USER", "FR", "flat", "pct", "0.05", "penalize", "1.2", "fai", "pct", "0.05", "penalize", "1.4", "freeFlight", "3", "1"});
+                    } else {
+                        p = Runtime.getRuntime().exec(new String[]{pathModPoints,tempf.getFileAbsPath(), optFile.getAbsolutePath(), scoreType});
+                    }
                     //Process p = Runtime.getRuntime().exec(pathModPoints);           
                     BufferedReader error = getError(p);
                     String ligne = "";     
