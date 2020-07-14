@@ -100,6 +100,7 @@ import littlewins.winSiteChoice;
 import model.Sitemodel;
 import photos.imgmanip;
 import photos.filesUtils;
+import polyline.convertJson;
 import settings.fileType;
 import settings.osType;
 import systemio.mylogging;
@@ -324,7 +325,8 @@ public class CarnetViewController  {
             rsYear = stmt.executeQuery("SELECT strftime('%Y',V_date) FROM Vol GROUP BY strftime('%Y',V_date) ORDER BY strftime('%Y',V_date) DESC");
             if (rsYear != null)  {             
                 while (rsYear.next()) {
-                    dataYear.add(rsYear.getString(1));
+                    String currYear = rsYear.getString(1);
+                    if (currYear != null && !currYear.equals("")) dataYear.add(currYear);
                 }
                 // Year choicebox initialization
                 top_chbYear.setItems(dataYear);
@@ -384,7 +386,7 @@ public class CarnetViewController  {
 //                    } else {
 //                        clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
 //                    }
-                      runVisuGPS(true);
+                     runVisuGPS(true);
                 }
         });         
     }
@@ -1739,6 +1741,17 @@ public class CarnetViewController  {
             }
         }
     }    
+    
+    private void testPolyline() {
+        if (currTrace.isDecodage()) { 
+            if (currTrace.isScored()) {
+                convertJson convJs = new convertJson();
+                convJs.scorePoint(currTrace.getScore_JSON());
+            } else {
+                System.out.println("Trace non scorée");
+            }
+        }
+    }
     
      /**
      * VisuGPS was a powerful webservice for gps track display
