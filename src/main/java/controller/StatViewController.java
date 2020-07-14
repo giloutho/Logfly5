@@ -466,7 +466,8 @@ public class StatViewController {
             rsYear = stmt.executeQuery("SELECT strftime('%Y',V_date) FROM Vol GROUP BY strftime('%Y',V_date) ORDER BY strftime('%Y',V_date) DESC");
             if (rsYear != null)  {             
                 while (rsYear.next()) {
-                    dataYear.add(rsYear.getString(1));
+                    String currYear = rsYear.getString(1);
+                    if (currYear != null && !currYear.equals("")) dataYear.add(rsYear.getString(1));
                 }
                 // Year choicebox initialization
                 chbYear.setItems(dataYear);
