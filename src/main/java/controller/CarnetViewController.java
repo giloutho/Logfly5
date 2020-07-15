@@ -134,7 +134,9 @@ public class CarnetViewController  {
     @FXML
     private Button btnAllFlights;        
     @FXML
-    private Button btnMap; 
+    private Button btnMap;
+    @FXML
+    private ImageView imv_Flyxc;
     @FXML
     private Button btnScore;      
     @FXML
@@ -143,8 +145,6 @@ public class CarnetViewController  {
     private ChoiceBox top_chbYear;    
     @FXML
     private ImageView top_Menu;    
-    @FXML
-    private ImageView top_Visu_Menu;
     @FXML
     private WebView mapViewer;
     
@@ -373,22 +373,13 @@ public class CarnetViewController  {
                 @Override public void handle(MouseEvent e) {                        
                         clicTop_Menu().show(top_Menu, e.getScreenX(), e.getScreenY());
                 }
-        });    
-        top_Visu_Menu.addEventHandler(MouseEvent.MOUSE_CLICKED,
+        });  
+        imv_Flyxc.addEventHandler(MouseEvent.MOUSE_CLICKED,
             new EventHandler<MouseEvent>() {
                 @Override public void handle(MouseEvent e) { 
-//                    Old code with choice between webviewer and default navigator
-//                    In Java 8, webviewer is not able to display FlyXC
-//                    We display by default navigator
-//                    we keep the code for new versions of Java
-//                    if (myConfig.isVisuGPSinNav()) {
-//                        runVisuGPS(true);
-//                    } else {
-//                        clicTop_VisuMenu().show(top_Visu_Menu, e.getScreenX(), e.getScreenY());
-//                    }
-                     runVisuGPS(true);
+                     runFlyXc(true);
                 }
-        });         
+        });             
     }
         
     @FXML 
@@ -1051,30 +1042,7 @@ public class CarnetViewController  {
         
         return cm;
     }
-    
-    private ContextMenu clicTop_VisuMenu()   {
-        final ContextMenu cm = new ContextMenu();
         
-        MenuItem cmItem0 = new MenuItem(i18n.tr("Visu GPS in Logfly"));        
-        cmItem0.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                runVisuGPS(false);
-            }            
-        });
-        cm.getItems().add(cmItem0);
-        
-        MenuItem cmItem1 = new MenuItem(i18n.tr("VisuGPS in browser"));
-        cmItem1.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-               runVisuGPS(true);
-            }
-        });
-        cm.getItems().add(cmItem1);
-        
-        return cm;
-    }
-        
-    
     private ObservableList<String> listGliders() {
         ObservableList<String> lsGliders = FXCollections.observableArrayList();       
         Statement stmt = null;
@@ -1741,29 +1709,25 @@ public class CarnetViewController  {
             }
         }
     }    
-    
-    private void testPolyline() {
+        
+     /**
+     * FlyXc is a powerful webservice for gps track display
+     * the track must be an http url
+     * runFlyxc upload the track with a special php script in a server
+     * This script upload the track and delete old tracks     
+     * FlyXc has webGL functions. They cannot operate in the java webviewer in Java 8
+     * Theoretically, the user can choose between javawbeview or default browser
+     * But currently, we are forcing the display in the browser
+     */
+    private void runFlyXc(boolean inBrowser) {
+        String scoreLink;
         if (currTrace.isDecodage()) { 
             if (currTrace.isScored()) {
                 convertJson convJs = new convertJson();
-                convJs.scorePoint(currTrace.getScore_JSON());
+                scoreLink = convJs.scorePoint(currTrace.getScore_JSON(), currTrace.getDuree_Vol());
             } else {
-                System.out.println("Trace non scorée");
+                scoreLink = null;
             }
-        }
-    }
-    
-     /**
-     * VisuGPS was a powerful webservice for gps track display
-     * it was replaced by FlyXc, we keep old name Visu to run FlyXC
-     * the track must be an http url
-     * runVisuGPS upload the track with a special php script in a server
-     * This script upload the track and delete old tracks     
-     * VisuGPS has webGL functions. They cannot operate in the java webviewer
-     * User can choose between javawbeview or default browser
-     */
-    private void runVisuGPS(boolean inBrowser) {
-        if (currTrace.isDecodage()) { 
             webio myUpload = new webio();
             try {
                 String uploadUrl = myConfig.getUrlLogflyIGC()+"jtransfert.php";
@@ -1772,10 +1736,12 @@ public class CarnetViewController  {
                     if (igcBytes.length > 100)  {
                         String webFicIGC = myUpload.httpUploadIgc(igcBytes, uploadUrl);
                         if (webFicIGC != null) {
+                            if (scoreLink !=null) webFicIGC += scoreLink;
+                            System.out.println(webFicIGC);
                             if (inBrowser) 
-                                showVisuInBrowser(webFicIGC);
+                                showFlyXcInBrowser(webFicIGC);
                             else
-                                showVisuDirect(webFicIGC);
+                                showFlyXcDirect(webFicIGC);
                         } else {                            
                             myUpload.getDlError();
                             alertbox aError = new alertbox(myConfig.getLocale());     
@@ -1802,7 +1768,7 @@ public class CarnetViewController  {
      * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
      * @param webFicIGC 
      */ 
-    private void showVisuInBrowser(String webFicIGC)  {
+    private void showFlyXcInBrowser(String webFicIGC)  {
         StringBuilder visuUrl = new StringBuilder();
         
         visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
@@ -1850,7 +1816,7 @@ public class CarnetViewController  {
      * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
      * @param webFicIGC 
      */   
-    private void showVisuDirect(String webFicIGC)  {
+    private void showFlyXcDirect(String webFicIGC)  {
         StringBuilder visuUrl = new StringBuilder();
         
         visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
@@ -1901,7 +1867,7 @@ public class CarnetViewController  {
             }
         }
     }
-    
+        
     /**
      * Manage flight comment
      */
