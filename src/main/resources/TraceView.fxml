@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TraceViewController">
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="880.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TraceViewController">
    <children>
       <VBox style="-fx-background-color: black;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -20,7 +20,7 @@
                         <Insets left="10.0" top="10.0" />
                      </HBox.margin>
                   </Button>
-                  <HBox fx:id="buttonBar" alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" visible="false" HBox.hgrow="ALWAYS">
+                  <HBox fx:id="buttonBar" alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Button fx:id="btnMap" contentDisplay="GRAPHIC_ONLY" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#showFullMap" prefHeight="30.0" prefWidth="30.0" text="Button">
                            <graphic>
@@ -34,18 +34,14 @@
                               <Insets right="5.0" top="10.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="btnVisuGPS" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#runVisuGPS" prefHeight="23.0" prefWidth="32.0" text="Button">
-                           <graphic>
-                              <ImageView fx:id="top_Visugps" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/Visu_GPS_5.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
+                        <ImageView fx:id="imv_Flyxc" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@images/FlyXC.png" />
+                           </image>
                            <HBox.margin>
-                              <Insets right="2.0" top="10.0" />
+                              <Insets right="5.0" top="10.0" />
                            </HBox.margin>
-                        </Button>
+                        </ImageView>
                         <Button fx:id="btnScore" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#showScore" prefHeight="23.0" prefWidth="32.0">
                            <graphic>
                               <ImageView fx:id="top_Score" fitHeight="23.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
