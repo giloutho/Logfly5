@@ -373,8 +373,6 @@
 
 //%GLmarker%
 
-    var ScoreMarkers = new L.LayerGroup();
-
     //%ScoreLines%
 
     // Couche trace
@@ -596,7 +594,11 @@
     var legend = L.control({position: 'topleft'});
     legend.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'legend');
-        fillInfo(1);
+        if (typeof ScoreMarkers !== 'undefined') {
+            fillInfo(3);
+        } else {
+            fillInfo(1);
+        }      
         return this._div;
     };
 
