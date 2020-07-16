@@ -565,6 +565,9 @@ public class map_visu {
         boolean res = false;
         String sLine, sCoord1, sCoord2, key;
         boolean IsTriangle = false;
+        
+        // Initialization
+        jsScore.append("var ScoreMarkers = new L.LayerGroup();").append(RC).append(RC);
   
         try {
             JSONParser jsonParser = new JSONParser();
