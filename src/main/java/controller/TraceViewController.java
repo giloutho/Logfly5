@@ -38,6 +38,8 @@ import leaflet.map_visu;
 import littlewins.winPoints;
 import littlewins.winTrackFile;
 import Logfly.Main;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.format.DateTimeFormatter;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -46,6 +48,7 @@ import javafx.stage.WindowEvent;
 import littlewins.winFileChoose;
 import littlewins.winFileSave;
 import org.xnap.commons.i18n.I18n;
+import polyline.convertJson;
 import settings.configProg;
 import settings.fileType;
 import settings.osType;
@@ -85,7 +88,7 @@ public class TraceViewController {
     @FXML
     private Button btnMap;
     @FXML
-    private Button btnVisuGPS;  
+    private ImageView imv_Flyxc; 
     @FXML
     private Button btnScore;      
     @FXML
@@ -99,7 +102,12 @@ public class TraceViewController {
     
     @FXML
     private void initialize() {
-        // empty but necessary
+        imv_Flyxc.addEventHandler(MouseEvent.MOUSE_CLICKED,
+            new EventHandler<MouseEvent>() {
+                @Override public void handle(MouseEvent e) { 
+                     runFlyXc(true);
+                }
+        });
     }
     
     /**
@@ -286,14 +294,24 @@ public class TraceViewController {
         }
     }   
     
-    /**
-     * VisuGPS need a track with http url
-     * runVisuGPS upload the track with a special php script in a server
-     * This script upload the track and delete old tracks      
+ /**
+     * FlyXc is a powerful webservice for gps track display
+     * the track must be an http url
+     * runFlyxc upload the track with a special php script in a server
+     * This script upload the track and delete old tracks     
+     * FlyXc has webGL functions. They cannot operate in the java webviewer in Java 8
+     * Theoretically, the user can choose between javawbeview or default browser
+     * But currently, we are forcing the display in the browser
      */
-    @FXML
-    private void runVisuGPS() {
+    private void runFlyXc(boolean inBrowser) {
+        String scoreLink;
         if (extTrace.isDecodage()) { 
+            if (extTrace.isScored()) {
+                convertJson convJs = new convertJson();
+                scoreLink = convJs.scorePoint(extTrace.getScore_JSON(), extTrace.getDuree_Vol());
+            } else {
+                scoreLink = null;
+            }
             webio myUpload = new webio();
             try {
                 String uploadUrl = myConfig.getUrlLogflyIGC()+"jtransfert.php";
@@ -302,16 +320,22 @@ public class TraceViewController {
                     if (igcBytes.length > 100)  {
                         String webFicIGC = myUpload.httpUploadIgc(igcBytes, uploadUrl);
                         if (webFicIGC != null) {
-                            showVisuGPS(webFicIGC);
-                        } else {
+                            if (scoreLink !=null) webFicIGC += scoreLink;
+                            System.out.println(webFicIGC);
+                            if (inBrowser) 
+                                showFlyXcInBrowser(webFicIGC);
+                            else {
+                                //showFlyXcDirect(webFicIGC);
+                            }
+                        } else {                            
                             myUpload.getDlError();
                             alertbox aError = new alertbox(myConfig.getLocale());     
-                            aError.alertNumError(myUpload.getDlError());                                                          
+                            aError.alertNumError(myUpload.getDlError());                                                    
                         }
                     }                                        
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);           
-                    alert.setContentText(i18n.tr("Bad download URL"));
+                    alert.setContentText(i18n.tr("Bad download url"));
                     alert.showAndWait();  
                 }                
             } catch (Exception e) {
@@ -322,35 +346,54 @@ public class TraceViewController {
                 alert.showAndWait();     
             }       
         }
-    }
+    }    
     
     /**
      * track uploaded in a server with a name like
      * YYYYMMDDHHMMSS_Random  [Random = number between 1 and 1000]
      * @param webFicIGC 
-     */    
-    private void showVisuGPS(String webFicIGC)  {
+     */ 
+    private void showFlyXcInBrowser(String webFicIGC)  {
         StringBuilder visuUrl = new StringBuilder();
+        
         visuUrl.append(myConfig.getUrlVisu()).append(myConfig.getUrlLogflyIGC());
         visuUrl.append(webFicIGC);
-        System.out.println(visuUrl.toString());
-        AnchorPane anchorPane = new AnchorPane();                
-        WebView viewMap = new WebView();   
-        AnchorPane.setTopAnchor(viewMap, 10.0);
-        AnchorPane.setLeftAnchor(viewMap, 10.0);
-        AnchorPane.setRightAnchor(viewMap, 10.0);
-        AnchorPane.setBottomAnchor(viewMap, 10.0);
-        anchorPane.getChildren().add(viewMap);                         
-        viewMap.getEngine().load(visuUrl.toString());
-        StackPane subRoot = new StackPane();
-        subRoot.getChildren().add(anchorPane);
-        Scene secondScene = new Scene(subRoot, 500, 400);
-        Stage subStage = new Stage();
-        // On veut que cette fenêtre soit modale
-        subStage.initModality(Modality.APPLICATION_MODAL);
-        subStage.setScene(secondScene); 
-        subStage.setMaximized(true);
-        subStage.show();       
+        // https://stackoverflow.com/questions/5226212/how-to-open-the-default-webbrowser-using-java
+        // http://www.java2s.com/Code/Java/JDK-6/UsingtheDesktopclasstolaunchaURLwithdefaultbrowser.htm
+        switch (myConfig.getOS()) {
+            case WINDOWS :
+                if(Desktop.isDesktopSupported()){
+                    Desktop desktop = Desktop.getDesktop();
+                    try {
+                        desktop.browse(new URI(visuUrl.toString()));
+                    } catch (IOException | URISyntaxException e) {
+                        sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                        sbError.append("\r\n").append(e.toString());
+                        mylogging.log(Level.SEVERE, sbError.toString());
+                    }
+                }
+                break;
+            case MACOS :
+                try {
+                    Runtime rt = Runtime.getRuntime();
+                    rt.exec("open " + visuUrl.toString());
+                } catch (Exception e) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }
+                break;
+            case LINUX :
+                Runtime runtime = Runtime.getRuntime();
+                try {
+                    runtime.exec("xdg-open " + visuUrl.toString());
+                } catch (IOException e) {
+                    sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
+                    sbError.append("\r\n").append(e.toString());
+                    mylogging.log(Level.SEVERE, sbError.toString());
+                }
+                break;
+        }
     }
     
     /**
@@ -637,13 +680,7 @@ public class TraceViewController {
         Tooltip mapToolTip = new Tooltip();
         mapToolTip.setStyle(myConfig.getDecoToolTip());
         mapToolTip.setText(i18n.tr("Full screen map"));
-        btnMap.setTooltip(mapToolTip);
-                
-        btnVisuGPS.setStyle("-fx-background-color: transparent;"); 
-        Tooltip visuToolTip = new Tooltip();
-        visuToolTip.setStyle(myConfig.getDecoToolTip());
-        visuToolTip.setText(i18n.tr("VisuGPS display"));
-        btnVisuGPS.setTooltip(visuToolTip);
+        btnMap.setTooltip(mapToolTip);                
         
         btnScore.setStyle("-fx-background-color: transparent;");      
         Tooltip scoreToolTip = new Tooltip();
