@@ -43,12 +43,12 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <ImageView fx:id="top_Visu_Menu" fitHeight="25.0" fitWidth="32.0" layoutX="694.0" layoutY="39.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="imv_Flyxc" fitHeight="26.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@images/FlyXC.png" />
                            </image>
                            <HBox.margin>
-                              <Insets left="2.0" right="2.0" top="12.0" />
+                              <Insets right="4.0" top="15.0" />
                            </HBox.margin>
                         </ImageView>
                         <Button fx:id="btnScore" contentDisplay="GRAPHIC_ONLY" maxHeight="23.0" maxWidth="32.0" minHeight="23.0" minWidth="32.0" mnemonicParsing="false" onAction="#showScore" prefHeight="23.0" prefWidth="32.0">
