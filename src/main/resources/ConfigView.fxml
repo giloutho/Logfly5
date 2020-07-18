@@ -23,20 +23,21 @@
                      <children>
                         <Label fx:id="lbWorkingPath" layoutX="94.0" layoutY="24.0" prefHeight="17.0" prefWidth="249.0" text="fDossier de travail" />
                         <Label fx:id="lbWorkingLog" layoutX="94.0" layoutY="68.0" text="fDossier Carnet(s)" />
-                        <Button fx:id="btNewLog" layoutX="94.0" layoutY="155.0" mnemonicParsing="false" onAction="#displayTextCarnet" text="fCréer un nouveau carnet" />
-                        <Button fx:id="btSelectLog" layoutX="96.0" layoutY="248.0" mnemonicParsing="false" onAction="#selectNewFolderDb" text="fSélectionner un nouveau dossier de carnets" />
-                        <Button fx:id="btMoveLog" layoutX="94.0" layoutY="201.0" mnemonicParsing="false" onAction="#moveDb" text="Déplacer le(s) carnet(s) vers un autre dossier" />
+                        <Label fx:id="lbCurrentLog" layoutX="412.0" layoutY="65.0" text="fCarnet actif" />
+                        <Button fx:id="btNewLog" layoutX="94.0" layoutY="248.0" mnemonicParsing="false" onAction="#displayTextCarnet" text="fCréer un nouveau carnet" />
+                        <Button fx:id="btSelectLog" layoutX="94.0" layoutY="118.0" mnemonicParsing="false" onAction="#selectNewFolderDb" text="fSélectionner un nouveau dossier de carnets" />
+                        <Button fx:id="btMoveLog" layoutX="94.0" layoutY="165.0" mnemonicParsing="false" onAction="#moveDb" text="Déplacer le(s) carnet(s) vers un autre dossier" />
                         <Button fx:id="btRestore" layoutX="96.0" layoutY="296.0" mnemonicParsing="false" onAction="#restoreBackup" text="fRestaurer une sauvegarde" />
                         <Label fx:id="lbCurrFolder" layoutX="94.0" layoutY="41.0" prefHeight="17.0" prefWidth="285.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
                         <Label fx:id="lbCurrDbPath" layoutX="94.0" layoutY="87.0" prefHeight="17.0" prefWidth="296.0" style="-fx-font-style: italic;" text="/Users/Toto/Documents/Logfly" />
                         <Button fx:id="btCarnetEdit" layoutX="411.0" layoutY="27.0" mnemonicParsing="false" onAction="#changePathW" text="Modifier" />
                         <Button fx:id="btCarnetClose" layoutX="495.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCancel" text="Fermer" />
-                        <ChoiceBox fx:id="chbCarnet" layoutX="411.0" layoutY="72.0" prefHeight="27.0" prefWidth="146.0" />
+                        <ChoiceBox fx:id="chbCarnet" layoutX="411.0" layoutY="82.0" prefHeight="27.0" prefWidth="146.0" />
                         <TextField fx:id="txnewdb" layoutX="397.0" layoutY="155.0" prefHeight="27.0" prefWidth="132.0" visible="false" />
                         <Button fx:id="btnewcarnetcancel" layoutX="408.0" layoutY="191.0" mnemonicParsing="false" onAction="#annulNewCarnet" text="Annuler" visible="false" />
                         <Button fx:id="btnewcarnetok" layoutX="493.0" layoutY="191.0" mnemonicParsing="false" onAction="#createNewCarnet" text="Ok" visible="false" />
-                        <Label fx:id="lbByYear" layoutX="94.0" layoutY="121.0" prefHeight="17.0" prefWidth="249.0" text="fPrésentation carnet" />
-                        <ChoiceBox fx:id="chbByYear" layoutX="411.0" layoutY="117.0" prefHeight="27.0" prefWidth="171.0" />
+                        <Label fx:id="lbByYear" layoutX="94.0" layoutY="212.0" prefHeight="17.0" prefWidth="249.0" text="fPrésentation carnet" />
+                        <ChoiceBox fx:id="chbByYear" layoutX="411.0" layoutY="208.0" prefHeight="27.0" prefWidth="171.0" />
                      </children>
                   </AnchorPane>
             </content>
