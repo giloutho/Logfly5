@@ -63,6 +63,8 @@ public class ConfigViewController {
     @FXML
     private Label lbWorkingLog;   
     @FXML
+    private Label lbCurrentLog;  
+    @FXML
     private Label lbByYear;
     @FXML
     private Button btNewLog;    
@@ -766,8 +768,12 @@ public class ConfigViewController {
         } else {
             // No db file that match the db stored in settings
             // Choicebox is opened
-            chbCarnet.requestFocus();
-            chbCarnet.show();
+//            if (listDb.size() > 0) {
+//                 chbCarnet.getSelectionModel().select(0);   
+//            }
+       //     chbCarnet.requestFocus();
+  //          chbCarnet.show();
+              dialogStage.setOnShown(event -> chbCarnet.show());
         }
         chbCarnet.setOnAction((event) -> {
             String selectDbName = (String)chbCarnet.getSelectionModel().getSelectedItem();
@@ -914,6 +920,7 @@ public class ConfigViewController {
         lbByYear.setText(i18n.tr("Logbook presentation"));
         btCarnetEdit.setText(i18n.tr("Modify"));
         lbWorkingLog.setText(i18n.tr("Logbook(s) path"));
+        lbCurrentLog.setText(i18n.tr("Current logbook"));
         btNewLog.setText(i18n.tr("Create a new logbook"));
         btMoveLog.setText(i18n.tr("Move logbook(s) to a different folder"));
         btSelectLog.setText(i18n.tr("Choose a new logbook folder"));
