@@ -362,16 +362,23 @@ public class TraceViewController {
         // http://www.java2s.com/Code/Java/JDK-6/UsingtheDesktopclasstolaunchaURLwithdefaultbrowser.htm
         switch (myConfig.getOS()) {
             case WINDOWS :
-                if(Desktop.isDesktopSupported()){
-                    Desktop desktop = Desktop.getDesktop();
+                //if(Desktop.isDesktopSupported()){
+                //    Desktop desktop = Desktop.getDesktop();
                     try {
-                        desktop.browse(new URI(visuUrl.toString()));
-                    } catch (IOException | URISyntaxException e) {
+                        // Big problem with polyline encoding
+                        // some characters in parameter are not allowed
+                        // java.net.URISyntaxException: Illegal character
+                        // desktop.browse(new URI(visuUrl.toString()));
+//                    } catch (IOException | URISyntaxException e) {
+                        // found at https://mkyong.com/java/open-browser-in-java-windows-or-linux/
+                        Runtime rt = Runtime.getRuntime();
+                        rt.exec("rundll32 url.dll,FileProtocolHandler " + visuUrl.toString());
+                } catch (IOException e) {                                   
                         sbError = new StringBuilder(this.getClass().getName()+"."+Thread.currentThread().getStackTrace()[1].getMethodName());
                         sbError.append("\r\n").append(e.toString());
                         mylogging.log(Level.SEVERE, sbError.toString());
                     }
-                }
+               // }
                 break;
             case MACOS :
                 try {
