@@ -43,7 +43,7 @@
                <font>
                   <Font size="11.0" />
                </font></Button>
-            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="100.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="100.0" text="fVérification">
+            <Button fx:id="btCheck" layoutX="573.0" layoutY="11.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="120.0" mnemonicParsing="false" onAction="#handleCheck" prefHeight="27.0" prefWidth="120.0" text="fVérification">
                <font>
                   <Font size="11.0" />
                </font>
@@ -54,7 +54,7 @@
                      </image>
                   </ImageView>
                </graphic></Button>
-            <Button fx:id="btCut" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#cutRequest" prefHeight="27.0" prefWidth="100.0" text="fModify">
+            <Button fx:id="btCut" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#cutRequest" prefHeight="27.0" prefWidth="120.0" text="fModify">
                <font>
                   <Font size="12.0" />
                </font>
