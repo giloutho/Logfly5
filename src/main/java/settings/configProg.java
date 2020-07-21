@@ -28,7 +28,7 @@ import systemio.mylogging;
 public class configProg {
     
     private  String pathConfig;       // Settings path file
-    private  boolean readConfig;      // Settings file read
+    private  boolean readConfig = false;      // Settings file read
     private  boolean validConfig;     // Configuration validated (db path)
     private  boolean configDefault;
     private  osType currOS;                
