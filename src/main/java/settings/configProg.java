@@ -518,7 +518,15 @@ public class configProg {
     public  void setPathOpenAir(String pathOpenAir) {
         this.pathOpenAir = pathOpenAir;
     }        
-    
+
+    public String getLastOpenAir() {
+        return lastOpenAir;
+    }
+
+    public void setLastOpenAir(String lastOpenAir) {
+        this.lastOpenAir = lastOpenAir;
+    }
+            
     private boolean dbCheckField(Connection con, String fieldName) {
         boolean res = false;       
         
