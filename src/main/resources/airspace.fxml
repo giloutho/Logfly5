@@ -19,8 +19,13 @@
          <children>
             <HBox maxHeight="50.0" minHeight="50.0" prefHeight="50.0" prefWidth="200.0">
                <children>
-                  <HBox maxHeight="45.0" maxWidth="400.0" minHeight="45.0" minWidth="400.0" prefHeight="45.0" prefWidth="400.0">
+                  <HBox maxHeight="45.0" maxWidth="400.0" minHeight="45.0" minWidth="500.0" prefHeight="45.0" prefWidth="500.0">
                      <children>
+                        <Button fx:id="btLatest" layoutX="18.0" layoutY="23.0" mnemonicParsing="false" onAction="#handleLatest" text="fDernier">
+                           <HBox.margin>
+                              <Insets left="8.0" top="8.0" />
+                           </HBox.margin>
+                        </Button>
                         <Button fx:id="btReadFile" mnemonicParsing="false" onAction="#handleReadFile" text="fOpenAir">
                            <HBox.margin>
                               <Insets left="8.0" top="8.0" />
