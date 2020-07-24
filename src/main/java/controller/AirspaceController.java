@@ -74,7 +74,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.fileType;
 import settings.osType;
@@ -90,7 +89,9 @@ import systemio.tempacess;
  * we modify treeitem for checkboxtreeitem (https://stackoverflow.com/questions/28393704/javafxcheck-every-single-checkboxtreeitem-if-selected)
  */
 public class AirspaceController {
-    
+
+    @FXML
+    private Button btLatest;    
     @FXML
     private Button btReadFile;   
     @FXML
@@ -227,6 +228,26 @@ public class AirspaceController {
         });            
         
     }       
+    
+    @FXML
+    private void handleLatest(ActionEvent event) { 
+        String latestFilePath = myConfig.getLastOpenAir();
+        if (latestFilePath !=null && !latestFilePath.equals("")) {
+            File latestOA = new File(latestFilePath);
+            if (latestOA != null && latestOA.exists()) {
+                lastDirUsed = latestOA.getParent();
+                actionDraw = false;
+                screenForTree();
+                readAirspaceFile(latestOA);                 
+            } else {
+                alertbox aError = new alertbox(myConfig.getLocale());
+                aError.alertNumError(3);   // File not found                 
+            }
+        } else {
+            alertbox aError = new alertbox(myConfig.getLocale());
+            aError.alertError(i18n.tr("No file saved...  Next time -:)"));  
+        }
+    }
         
     @FXML
     private void handleReadFile(ActionEvent event) {     
@@ -374,6 +395,7 @@ public class AirspaceController {
             airTotal = currDbAir.getNbAirspaces();                        
             dbView = false;
             myConfig.setPathOpenAir(pFile.getParent());
+            myConfig.setLastOpenAir(pFile.getAbsolutePath());
             buildTree();            
         } else {           
             alertbox aError = new alertbox(myConfig.getLocale());
@@ -1308,6 +1330,11 @@ public class AirspaceController {
     
     private void winTraduction() {
 
+        btLatest.setText(i18n.tr("Last used"));
+        Tooltip laToolTip = new Tooltip();
+        laToolTip.setStyle(myConfig.getDecoToolTip());
+        laToolTip.setText(i18n.tr("Last OpenAir file used"));
+        btLatest.setTooltip(laToolTip);            
         btReadFile.setText(i18n.tr("OpenAir"));
         Tooltip oaToolTip = new Tooltip();
         oaToolTip.setStyle(myConfig.getDecoToolTip());
