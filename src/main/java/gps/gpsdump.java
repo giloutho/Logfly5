@@ -74,6 +74,10 @@ public class gpsdump {
     private String gpsdError;
     private enum fineOsType {WINDOWS, MACOS64, MACOS32, LINUX, UNDEFINED}
     private  fineOsType currOS; 
+    private String gpsDumpMac64 = "GpsDump64_6";
+    private String gpsDumpMac32 = "GpsDump32_54";
+    private String gpsDumpWin = "GpsDump_36.exe";
+    private String gpsDumpLin = "GpsDump_27";
     
 
     public gpsdump(String pNamePort, configProg currConfig, I18n pI18n)  {
@@ -196,16 +200,16 @@ public class gpsdump {
         
             switch (currOS) {
                     case MACOS64 :
-                        pathGpsDump = executionPath+File.separator+"GpsDump64";
+                        pathGpsDump = executionPath+File.separator+gpsDumpMac64;
                         break;              
                     case MACOS32 :
-                        pathGpsDump = executionPath+File.separator+"GpsDump32";
+                        pathGpsDump = executionPath+File.separator+gpsDumpMac32;
                         break;                              
                     case WINDOWS :
-                        pathGpsDump = executionPath+File.separator+"GpsDump";
+                        pathGpsDump = executionPath+File.separator+gpsDumpWin;
                         break;
                     case LINUX :
-                        pathGpsDump = executionPath+File.separator+"gpsdump";
+                        pathGpsDump = executionPath+File.separator+gpsDumpLin;
                         System.out.println(pathGpsDump);
                         break;
             }
@@ -332,22 +336,22 @@ public class gpsdump {
         switch (currOS) {
             case WINDOWS :
                 // to do windows path testing
-                pathGpsDump = executionPath+File.separator+"GpsDump.exe";    // Windows
+                pathGpsDump = executionPath+File.separator+gpsDumpWin;    // Windows
                 File fwGpsDump = new File(pathGpsDump);
                 if(fwGpsDump.exists()) res = true;         
                 break;                
             case MACOS32 :
-                pathGpsDump = executionPath+File.separator+"GpsDump32";
+                pathGpsDump = executionPath+File.separator+gpsDumpMac32;
                 File fm32GpsDump = new File(pathGpsDump);
                 if(fm32GpsDump.exists()) res = true;  
                 break;                    
             case MACOS64 :
-                pathGpsDump = executionPath+File.separator+"GpsDump64";
+                pathGpsDump = executionPath+File.separator+gpsDumpMac64;
                 File fm64GpsDump = new File(pathGpsDump);
                 if(fm64GpsDump.exists()) res = true;  
                 break;
             case LINUX :
-                pathGpsDump = executionPath+File.separator+"gpsdump";
+                pathGpsDump = executionPath+File.separator+gpsDumpLin;
                 System.out.println(pathGpsDump);
                 File flGpsDump = new File(pathGpsDump);
                 if(flGpsDump.exists()) res = true;                        
@@ -838,7 +842,7 @@ public class gpsdump {
                         break;                        
                     case MACOS64 : 
                         String ligne64 = ""; 
-                        if (res == 255) {
+                        if (res == 255 || res == 0) {
                             // GPSDump returned a flightlist with an error code : Flight number out of range 
                             res = 0;
                             BufferedReader output = getOutput(p);                    
