@@ -74,11 +74,11 @@ public class Main extends Application {
         Release release = new Release();
         release.setpkgver("5.1");        
         //release.setPkgrel("10");
-        release.setPkgrel("00");        
+        release.setPkgrel("10");        
         // last bundle
-        release.setseverity("5.100");
+        release.setseverity("5.110");
         
-        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel()+" beta 5.11";
+        String currVersion = "Logfly "+release.getpkgver()+release.getPkgrel();
         this.primaryStage.setTitle(currVersion);
         
         // Reading settings
