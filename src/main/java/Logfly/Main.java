@@ -38,7 +38,6 @@ import javafx.stage.Screen;
 import liveUpdate.checkUpdate;
 import liveUpdate.objects.Release;
 import org.xnap.commons.i18n.I18n;
-import org.xnap.commons.i18n.I18nFactory;
 import settings.configProg;
 import settings.osType;
 import systemio.mylogging;
