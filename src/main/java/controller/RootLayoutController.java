@@ -515,12 +515,29 @@ public class RootLayoutController {
     }
     
     private void sendMailSupport() {
-        if (myConfig.isValidConfig()) {
-            // Finalement on n'envoie pas le fichier log systématiquement
-            winMail showMail = new winMail(myConfig,null, true);            
-        } else {
-            winMail showMail = new winMail(myConfig, null, true); 
-        }
+//        if (myConfig.isValidConfig()) {
+//            // Finalement on n'envoie pas le fichier log systématiquement
+//            winMail showMail = new winMail(myConfig,null, true);            
+//        } else {
+//            winMail showMail = new winMail(myConfig, null, true); 
+//        }
+        winWeb myWeb;
+        switch (myConfig.getIdxLang()) {
+            case 0:
+                myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/support_de.html");
+                break;
+            case 1:
+                myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/support_en.html");
+                break;                
+            case 2:
+                myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/support_fr.html");
+                break;                
+            case 3:
+                myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/support_it.html");
+                break;                
+            default:
+                myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/support_en.html");
+        }            
     }
     
     private void sendLogbook() {
