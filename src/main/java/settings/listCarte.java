@@ -26,8 +26,7 @@ public class listCarte {
         Carte_List.add("OSM");
         Carte_List.add("OpenTopo");
         Carte_List.add("MTK");
-        Carte_List.add("4UMaps");
-        Carte_List.add("Google");       
+        Carte_List.add("4UMaps");     
         
         return Carte_List;
     }
