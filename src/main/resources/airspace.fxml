@@ -31,11 +31,6 @@
                               <Insets left="8.0" top="8.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="btBazile" layoutX="18.0" layoutY="23.0" mnemonicParsing="false" onAction="#handleBazile" text="\@ FR">
-                           <HBox.margin>
-                              <Insets left="8.0" top="8.0" />
-                           </HBox.margin>
-                        </Button>
                         <Button fx:id="btDraw" mnemonicParsing="false" onAction="#handleDraw" text="fDessiner">
                            <HBox.margin>
                               <Insets left="8.0" top="8.0" />
