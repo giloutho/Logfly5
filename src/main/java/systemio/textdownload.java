@@ -31,7 +31,8 @@ public class textdownload {
                 url = privateData.sitesUrl.toString()+"/Liste_Sites.txt";
                 break;
             case 2 :
-                url = privateData.bazileUrl.toString()+"/LastVersionsCatalog_BPa.txt";
+                //url = privateData.bazileUrl.toString()+"/LastVersionsCatalog_BPa.txt";
+                url = privateData.bazileUrl.toString();
                 break;
         }
     }
