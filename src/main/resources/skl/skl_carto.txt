@@ -8,10 +8,6 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
-    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
-
     <script src="http://www.logfly.org/download/gmap/Control.Geocoder.js"></script>
     <link rel="stylesheet" href="http://www.logfly.org/download/gmap/Control.Geocoder.css" />
 
@@ -33,9 +29,6 @@
             width:100%;
             padding:0px;
             margin:0px;
-        }
-        .leaflet-google-layer{
-            z-index: 0 !important;
         }
         .leaflet-map-pane{
             z-index: 100;
@@ -60,8 +53,6 @@
         maxZoom: 18,
         attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         });
-    var googleLayer = new L.Google('TERRAIN');
-    var googleSat = new L.Google('SATELLITE');
 
     // Démarre la mesure
     function startMeasure() {
@@ -76,8 +67,6 @@
         "MTK" : mtklayer,
         "4UMaps" : fouryoulayer,
         "Outdoor" : outdoorlayer,
-        "Google Terrain" : googleLayer,
-        "Google Sat" : googleSat
     };
 
     L.control.layers(baseMaps).addTo(map);

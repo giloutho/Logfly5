@@ -4,9 +4,6 @@
     <title>Leaflet</title>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
     <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
-    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
     <script src="http://cdn.rawgit.com/shramov/leaflet-plugins/master/layer/tile/Bing.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
    <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
@@ -19,9 +16,6 @@
             width:100%;
             padding:0px;
             margin:0px;
-        }
-        .leaflet-google-layer{
-            z-index: 0;
         }
         .leaflet-map-pane{
             z-index: 100;
@@ -118,8 +112,10 @@
 
     function getElevation(lMarker,Idx)
     {
+        /*
+        *** Tout le code concernant google.maps.ElevationService() est éliminé ***
+        
         // Code inspiré de http://www.daftlogic.com/sandbox-google-maps-find-altitude.htm
-
         var locations = [];
         elevator = new google.maps.ElevationService();
         var myMarker = lMarker;
@@ -148,7 +144,10 @@
             {
                 document.title = [Idx,googleLocation.lat().toFixed(4),googleLocation.lng().toFixed(4),0].join(', ');
             }
-        });
+        });*/
+        var clickedLocation = lMarker.getLatLng();
+        document.title = [Idx,clickedLocation.lat.toFixed(4),clickedLocation.lng.toFixed(4),0].join(', ');
+      //  document.title = clickedLocation.lng.toFixed(4)
     }
 
 
@@ -166,8 +165,6 @@
     // Bing ne fonctionne plus    
     var imagerySet = "Aerial"; // AerialWithLabels | Birdseye | BirdseyeWithLabels | Road
     var bing = new L.BingLayer("ltzGJVGChuzN5VAohPDU~nY-qwbPPL_P2nMqr0lcGkA~AqgaTCOsTIdffrBxv2aCDQiyia70jvKkir1fU1IuKlAupEtsdPDln_k8AD7_22c2", {type: imagerySet});
-    var googleLayer = new L.Google('TERRAIN');
-    var googleSat = new L.Google('SATELLITE');
 
     %layer%
 
@@ -177,8 +174,6 @@
         "MTK" : mtklayer,
         "4UMaps" : fouryoulayer,
         "Outdoor" : outdoorlayer,
-        "Google Terrain" : googleLayer,
-        "Google Sat" : googleSat
     };
 
     var openaip_cached_basemap = new L.TileLayer("http://{s}.tile.maps.openaip.net/geowebcache/service/tms/1.0.0/openaip_basemap@EPSG%3A900913@png/{z}/{x}/{y}.png", {

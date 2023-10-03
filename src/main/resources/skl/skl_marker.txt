@@ -4,9 +4,6 @@
     <title>Leaflet</title>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
     <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
-    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
     <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.awesome-markers.css">
@@ -35,9 +32,6 @@
             right: 10px;
             top: 5px;
         }
-        .leaflet-google-layer{
-            z-index: 0 !important;
-        }
         .leaflet-map-pane{
             z-index: 100;
         }
@@ -57,7 +51,6 @@
         var mtklayer = L.tileLayer('http://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png');
         var fouryoulayer = L.tileLayer('http://4umaps.eu/{z}/{x}/{y}.png');
 
-        var googleLayer = new L.Google('TERRAIN');
 
         %layer%
 
@@ -66,7 +59,6 @@
             "OpenTopo" : OpenTopoMap,
             "MTK" : mtklayer,
             "4UMaps" : fouryoulayer,
-            "Google" : googleLayer
         };
 
         L.control.layers(baseMaps).addTo(map);

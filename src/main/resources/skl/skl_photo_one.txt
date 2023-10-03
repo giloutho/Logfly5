@@ -7,10 +7,6 @@
     <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
 
     <script src="https://code.highcharts.com/4.2.2/highcharts.js"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBjulTHPOBLYvqnnm6FS8YAVJtqvJkG2A"></script>
-
-    <script src="http://www.logfly.org/download/gmap/leaflet-google.js"></script>
 
     <script type="text/javascript" src="http://www.logfly.org/download/gmap/leaflet.draw.js"></script>
     <link rel="stylesheet" href="http://www.logfly.org/download/gmap/leaflet.draw.css" />
@@ -38,9 +34,6 @@
         }
         #carte { height: 85% }
         #graphe { height: 15% }
-        .leaflet-google-layer{
-            z-index: 0 !important;
-        }
         .leaflet-map-pane{
             z-index: 100;
         }
@@ -91,8 +84,6 @@
         attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         });
 
-    var googleLayer = new L.Google('TERRAIN');
-    var googleSat = new L.Google('SATELLITE');
 
     %layer%
 
@@ -101,9 +92,7 @@
         "OpenTopo" : OpenTopoMap,
         "MTK" : mtklayer,
         "4UMaps" : fouryoulayer,
-        "Outdoor" : outdoorlayer,
-        "Google Terrain" : googleLayer,
-        "Google Sat" : googleSat
+        "Outdoor" : outdoorlayer
     };
 
     // Couche trace
