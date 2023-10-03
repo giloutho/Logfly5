@@ -61,8 +61,6 @@ public class map_carto {
             jsLayer = "    mtklayer.addTo(map);";
         } else if (idxMap ==3) {
             jsLayer = "    fouryoulayer.addTo(map);";
-        } else if (idxMap ==4) {
-            jsLayer = "     map.addLayer(googleLayer);";
         } else {
             jsLayer = "    OpenTopoMap.addTo(map);";
         }        
