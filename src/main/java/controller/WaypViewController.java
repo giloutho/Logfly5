@@ -382,7 +382,6 @@ public class WaypViewController {
     }
     
     public void returnCoordForm(int exitCode, Balisemodel ba) {
-        
         switch (exitCode) {
             case 1 :
                 // Ajout dans la liste
@@ -796,6 +795,7 @@ public class WaypViewController {
     }
     
     private void decodeCoord(String sCoord) {
+        System.out.println("decodeCoord : ");
         String[] tbCoord = sCoord.split(",");
         if (tbCoord.length == 4) {            
             int idx = Integer.parseInt(tbCoord[0]);
@@ -1986,6 +1986,7 @@ public class WaypViewController {
         eng = viewMap.getEngine();
         eng.setUserAgent(" Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/10.0");   
         eng.titleProperty().addListener( (observable, oldValue, newValue) -> {
+            System.out.println("titleProperty Listener "+newValue);
             if(newValue != null && !newValue.isEmpty() && !newValue.equals("Leaflet"))
                 decodeCoord(newValue);
         });
