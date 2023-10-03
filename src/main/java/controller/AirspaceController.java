@@ -95,8 +95,6 @@ public class AirspaceController {
     @FXML
     private Button btReadFile;   
     @FXML
-    private Button btBazile;  
-    @FXML
     private Button btDraw;
     @FXML
     private Button btDrawCancel;
@@ -1168,7 +1166,6 @@ public class AirspaceController {
         mapPane.getItems().remove(componentsPane);         
         hbAction.setVisible(false);
         btReadFile.setVisible(false);
-        btBazile.setVisible(false);
         btDraw.setVisible(false);
         btDrawCancel.setVisible(true);
         btDrawValid.setVisible(true);  
@@ -1181,7 +1178,6 @@ public class AirspaceController {
         mapPane.setVisible(true);
         hbAction.setVisible(true);
         btReadFile.setVisible(true);
-        btBazile.setVisible(true);
         btDraw.setVisible(true);
         btDrawCancel.setVisible(false);
         btDrawValid.setVisible(false);        
@@ -1193,7 +1189,6 @@ public class AirspaceController {
         mapPane.setVisible(false);        
         hbAction.setVisible(false);
         btReadFile.setVisible(true);
-        btBazile.setVisible(true);
         btDraw.setVisible(true);
         btDrawCancel.setVisible(false);
         btDrawValid.setVisible(false);  
@@ -1340,10 +1335,6 @@ public class AirspaceController {
         oaToolTip.setStyle(myConfig.getDecoToolTip());
         oaToolTip.setText(i18n.tr("Open OpenAir files"));
         btReadFile.setTooltip(oaToolTip);        
-        Tooltip bazToolTip = new Tooltip();
-        bazToolTip.setStyle(myConfig.getDecoToolTip());
-        bazToolTip.setText(i18n.tr("Download french OpenAir files from http://pascal.bazile.free.fr"));
-        btBazile.setTooltip(bazToolTip);
         btDraw.setText(i18n.tr("Draw"));
         Tooltip drawToolTip = new Tooltip();
         drawToolTip.setStyle(myConfig.getDecoToolTip());
