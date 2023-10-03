@@ -79,12 +79,13 @@ public class winBazile {
     }
         
     private void fillData() {
-        String RC = "\n";
+        //String RC = "\n";
+        String RC = "\r\n";
         String[] lines = dataList.split(RC);
         if (lines.length > 0) {
             try {
                 // first line (descriptor) is skipped
-                for (int i = 1; i < lines.length; i++) {
+                for (int i = 1; i < lines.length; i++) {                
                     String[]lgBazile = lines[i].split(";");
                     if (lgBazile.length > 3) {
                           baziledownl fileOA = new baziledownl(lgBazile[0],lgBazile[1],lgBazile[2],lgBazile[3]);                                                   dataObs.add(fileOA);
