@@ -77,13 +77,13 @@ public class RootLayoutController {
     @FXML
     private Label mnBalises;    
     @FXML
-    private Label mnXcplanner;
-    @FXML
     private Label mnEspaces;    
     @FXML
     private Label mnPhotos;    
     @FXML
-    private Label mnCarto;     
+    private Label mnCarto;   
+    @FXML
+    private Label mnL6;
     @FXML
     private Button btnConfig;
     @FXML
@@ -148,10 +148,10 @@ public class RootLayoutController {
         });    
         mnCarto.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(12);
-        });    
-        mnXcplanner.setOnMouseClicked((MouseEvent event) -> {
+        });   
+        mnL6.setOnMouseClicked((MouseEvent event) -> {
             switchMenu(13);
-        });          
+        });   
         btnSupport.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override public void handle(MouseEvent e) {                        
@@ -278,10 +278,10 @@ public class RootLayoutController {
         mnStat.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnSites.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnBalises.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
-        mnXcplanner.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         mnEspaces.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnPhotos.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;");
         mnCarto.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
+        mnL6.setStyle("-fx-text-fill:white; -fx-background-color:  #000000;"); 
         switch (idxMenu) {
             case 1:
                 mnCarnet.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
@@ -333,12 +333,27 @@ public class RootLayoutController {
                 mainApp.showCartoOverview();
                 break;    
             case 13:    
-                mnXcplanner.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
-                mainApp.showXcplannerview();                           
-                break;                    
+                mnL6.setStyle("-fx-text-fill:black; -fx-background-color:  #CAC3C2;");
+                winWeb myWeb;
+                switch (myConfig.getIdxLang()) {
+                    case 0:
+                        myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/promo_de.html");
+                        break;
+                    case 1:
+                        myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/promo_en.html");
+                        break;                
+                    case 2:
+                        myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/promo_fr.html");
+                        break;                
+                    case 3:
+                        myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/promo_it.html");
+                        break;                
+                    default:
+                        myWeb = new winWeb(myConfig,"https://www.logfly.org/contact/promo_en.html");
+                }                   
             default:
                 throw new AssertionError();
-        }        
+            }        
     }
     
     /**
@@ -389,7 +404,7 @@ public class RootLayoutController {
         MenuItem cmItem1 = new MenuItem(i18n.tr("Release notes"));        
         cmItem1.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
-               winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=historique:historique");
+               winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/logfly5/doku.php?id=histo");
             }
         });
         cm.getItems().add(cmItem1);          
@@ -398,9 +413,9 @@ public class RootLayoutController {
         cmItem2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 if (myConfig.getIdxLang() == 2) {
-                    winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=credits");
+                    winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/logfly5/doku.php?id=credits");
                 } else {
-                    winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/doku.php?id=en:credits");
+                    winWeb myWeb = new winWeb(myConfig,"https://www.logfly.org/logfly5/doku.php?id=en:credits");
                 }
             }
         });
