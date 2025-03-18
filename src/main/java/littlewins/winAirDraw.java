@@ -261,7 +261,9 @@ public class winAirDraw {
                 createTextField();
                 setText(null);
                 setGraphic(textField);
-                textField.selectAll();
+                textField.requestFocus();
+                // textField.selectAll(); commenting out this because JavaFX confuses the caret position. Seems to be a bug.
+                // Reference: https://stackoverflow.com/questions/32154623/javafx-fail-to-display-content-properly-in-table-cell/32164598#32164598
             }
         }
 
